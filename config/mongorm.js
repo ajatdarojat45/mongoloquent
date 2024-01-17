@@ -1,9 +1,10 @@
 const { MongoClient, ServerApiVersion } = require("mongodb");
 
-const uri = "mongodb://localhost:27017";
+const MONGODB_DB = process.env.MONGODB_DB || "mongorm";
+const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017";
 let db = null;
 
-const client = new MongoClient(uri, {
+const client = new MongoClient(MONGODB_URI, {
   serverApi: {
     version: ServerApiVersion.v1,
     strict: true,
@@ -14,7 +15,7 @@ const client = new MongoClient(uri, {
 async function connect() {
   try {
     await client.connect();
-    const db = client.db("mongorm");
+    const db = client.db(MONGODB_DB);
     return db;
   } catch (error) {
     console.log(error, "mongorm error - can't connect to database");
