@@ -4,4 +4,3 @@ node_modules
 # Files
 .DS_Store
 .env
-app.js

@@ -5,55 +5,23 @@ class Model {
   static collection = "collection";
   static softDelete = false;
   static timestamps = false;
-  static condition = {};
-  static sort = {};
-  static limit = 0;
-  static _payload = {};
   static withTrashed = false;
   static onlyTrashed = false;
+  static condition = {};
+  static sort = { _id: -1 };
+  static limit = 0;
+  static _payload = {};
+  static lookup = [];
 
   static async getCollection() {
     const db = await mongorm();
     return db.collection(this.collection);
   }
 
-  static async cursor() {
+  static async all() {
     try {
-      const collection = await this.getCollection();
-
-      let _condition = this.condition;
-
-      if (this.softDelete) {
-        _condition = {
-          ..._condition,
-          isDeleted: false,
-        };
-      }
-
-      if (this.onlyTrashed) {
-        _condition = {
-          ..._condition,
-          isDeleted: true,
-        };
-      }
-
-      if (this.withTrashed) {
-        const { isDeleted, ...rest } = _condition;
-
-        _condition = {
-          ...rest,
-        };
-      }
-
-      const cursor = await collection
-        .find(this.condition)
-        .sort(this.sort)
-        .limit(this.limit);
-
-      if (this.onlyTrashed) this.onlyTrashed = false;
-      if (this.withTrashed) this.withTrashed = false;
-
-      return cursor;
+      const aggregate = await this.aggregate();
+      return await aggregate.toArray();
     } catch (error) {
       throw error;
     }
@@ -61,9 +29,8 @@ class Model {
 
   static async get() {
     try {
-      const cursor = await this.cursor();
-      const result = await cursor.toArray();
-      return result;
+      const aggregate = await this.aggregate();
+      return await aggregate.toArray();
     } catch (error) {
       throw error;
     }
@@ -71,9 +38,8 @@ class Model {
 
   static async first() {
     try {
-      const cursor = await this.cursor();
-      const result = await cursor.next();
-      return result;
+      const aggregate = await this.aggregate();
+      return await aggregate.next();
     } catch (error) {
       throw error;
     }
@@ -81,12 +47,19 @@ class Model {
 
   static async paginate(page = 1, perPage = 10) {
     try {
-      const cursor = await this.cursor();
-      const total = await cursor.count();
-      const result = await cursor
+      const aggregate = await this.aggregate();
+      const _condition = this.getCondition();
+      const collection = await this.getCollection(_condition);
+      const total = await collection.countDocuments(_condition);
+
+      const result = await aggregate
         .skip((page - 1) * perPage)
         .limit(perPage)
         .toArray();
+
+      if (this.onlyTrashed) this.onlyTrashed = false;
+      if (this.withTrashed) this.withTrashed = false;
+      if (this.lookup.length > 0) this.lookup = [];
 
       return {
         data: result,
@@ -172,6 +145,132 @@ class Model {
     } catch (error) {
       throw error;
     }
+  }
+
+  static getCondition() {
+    let _condition = this.condition;
+
+    if (this.softDelete) {
+      _condition = {
+        ..._condition,
+        isDeleted: false,
+      };
+    }
+
+    if (this.onlyTrashed) {
+      _condition = {
+        ..._condition,
+        isDeleted: true,
+      };
+    }
+
+    if (this.withTrashed) {
+      const { isDeleted, ...rest } = _condition;
+
+      _condition = {
+        ...rest,
+      };
+    }
+
+    return _condition;
+  }
+
+  static async aggregate() {
+    try {
+      const collection = await this.getCollection();
+
+      let _condition = this.getCondition();
+
+      const _pipeline = [
+        {
+          $match: _condition,
+        },
+        {
+          $sort: this.sort,
+        },
+        ...this.lookup,
+      ];
+
+      const data = await collection.aggregate(_pipeline);
+
+      if (this.onlyTrashed) this.onlyTrashed = false;
+      if (this.withTrashed) this.withTrashed = false;
+      if (this.lookup.length > 0) this.lookup = [];
+
+      return data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async cursor() {
+    try {
+      const collection = await this.getCollection();
+
+      let _condition = this.getCondition();
+
+      const cursor = await collection
+        .find(this.condition)
+        .sort(this.sort)
+        .limit(this.limit);
+
+      if (this.onlyTrashed) this.onlyTrashed = false;
+      if (this.withTrashed) this.withTrashed = false;
+
+      return cursor;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static with(method) {
+    const _model = this[method]();
+
+    this.lookup.push({
+      $lookup: {
+        from: _model.model.collection,
+        localField: _model.localKey,
+        foreignField: _model.foreignKey,
+        as: method,
+      },
+    });
+
+    if (_model.type === "one") {
+      this.lookup.push({
+        $unwind: {
+          path: `$${method}`,
+          preserveNullAndEmptyArrays: true,
+        },
+      });
+    }
+
+    return this;
+  }
+
+  static belongsTo(model, foreignKey, localKey = "_id") {
+    const _model = require(`./${model}`);
+    const _foreignKey = localKey;
+    const _localKey = foreignKey;
+
+    return {
+      model: _model,
+      foreignKey: _foreignKey,
+      localKey: _localKey,
+      type: "one",
+    };
+  }
+
+  static hasMany(model, foreignKey, localKey = "_id") {
+    const _model = require(`./${model}`);
+    const _foreignKey = foreignKey;
+    const _localKey = localKey;
+
+    return {
+      model: _model,
+      foreignKey: _foreignKey,
+      localKey: _localKey,
+      type: "many",
+    };
   }
 
   static where(key, value) {
