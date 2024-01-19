@@ -16,14 +16,17 @@ class Model {
   static limit = 0;
   static lookup = [];
   static perPage = 10;
+  static selectedFields = [];
 
   static async getCollection() {
     const db = await mongodb();
     return db.collection(this.collection);
   }
 
-  static async get() {
+  static async get(fields = []) {
     try {
+      if (fields.length > 0) this.selectedFields = fields;
+
       const aggregate = await this.aggregate();
       return await aggregate.toArray();
     } catch (error) {
@@ -144,7 +147,6 @@ class Model {
       const collection = await this.getCollection();
 
       let _condition = this.getCondition();
-
       const _sort = Query.orderBy(this.sort);
 
       const _pipeline = [
@@ -152,8 +154,15 @@ class Model {
           $match: _condition,
         },
         ..._sort,
-        ...this.lookup,
       ];
+
+      if (this.selectedFields.length > 0) {
+        const _fields = Query.selectedFields(this.selectedFields);
+
+        _pipeline.push(_fields);
+      }
+
+      if (this.lookup.length > 0) _pipeline.push(...this.lookup);
 
       if (this.limit > 0) _pipeline.push({ $limit: this.limit });
 
@@ -164,6 +173,7 @@ class Model {
       if (this.lookup.length > 0) this.lookup = [];
       if (this.limit > 0) this.limit = 0;
       if (this.sort.length > 0) this.sort = [];
+      if (this.selectedFields.length > 0) this.selectedFields = [];
 
       return data;
     } catch (error) {
@@ -210,6 +220,11 @@ class Model {
 
   static take(limit) {
     this.limit = limit;
+    return this;
+  }
+
+  static select(fields = []) {
+    this.selectedFields = fields;
     return this;
   }
 

@@ -35,6 +35,18 @@ class Query {
     return result;
   }
 
+  static selectedFields(fields) {
+    const result = {
+      $project: {},
+    };
+
+    fields.forEach((field) => {
+      result.$project[field] = 1;
+    });
+
+    return result;
+  }
+
   static buildCondition(condition, criteria) {
     let _condition = condition;
 
