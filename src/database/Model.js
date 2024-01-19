@@ -12,7 +12,7 @@ class Model {
   static withTrashed = false;
   static onlyTrashed = false;
   static condition = {};
-  static sort = { _id: -1 };
+  static sort = [];
   static limit = 0;
   static lookup = [];
   static perPage = 10;
@@ -145,13 +145,13 @@ class Model {
 
       let _condition = this.getCondition();
 
+      const _sort = Query.orderBy(this.sort);
+
       const _pipeline = [
         {
           $match: _condition,
         },
-        {
-          $sort: this.sort,
-        },
+        ..._sort,
         ...this.lookup,
       ];
 
@@ -163,6 +163,7 @@ class Model {
       if (this.withTrashed) this.withTrashed = false;
       if (this.lookup.length > 0) this.lookup = [];
       if (this.limit > 0) this.limit = 0;
+      if (this.sort.length > 0) this.sort = [];
 
       return data;
     } catch (error) {
@@ -199,8 +200,11 @@ class Model {
     return this;
   }
 
-  static orderBy(criteria, order) {
-    this.sort = Query.orderBy(criteria, order);
+  static orderBy(field = "_id", order = "asc") {
+    this.sort.push({
+      field,
+      order,
+    });
     return this;
   }
 

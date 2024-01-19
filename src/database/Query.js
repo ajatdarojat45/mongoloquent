@@ -6,13 +6,33 @@ class Query {
     };
   }
 
-  static orderBy(criteria, order) {
-    const _criteria = criteria.toLowerCase();
-    const _order = order.toLowerCase() === "desc" ? -1 : 1;
+  static orderBy(sort) {
+    const result = [
+      {
+        $project: {
+          document: "$$ROOT",
+        },
+      },
+      {
+        $sort: {},
+      },
+      {
+        $replaceRoot: {
+          newRoot: "$document",
+        },
+      },
+    ];
 
-    return {
-      [criteria]: _order,
-    };
+    sort.forEach((item) => {
+      const _field = item.field.toLowerCase();
+      const _order = item.order.toLowerCase() === "desc" ? -1 : 1;
+
+      result[0].$project[`${_field}`] = 1;
+      result[0].$project[`lowercase_${_field}`] = { $toLower: `$${_field}` };
+      result[1].$sort[`lowercase_${_field}`] = _order;
+    });
+
+    return result;
   }
 
   static buildCondition(condition, criteria) {
