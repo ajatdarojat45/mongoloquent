@@ -114,8 +114,6 @@ class Model {
 
   static async delete() {
     try {
-      const collection = await this.getCollection();
-
       if (this.softDelete) {
         return await this.update({
           isDeleted: true,
