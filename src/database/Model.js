@@ -48,7 +48,14 @@ class Model {
       const aggregate = await this.aggregate();
       const _condition = this.getCondition();
       const collection = await this.getCollection(_condition);
-      const total = await collection.countDocuments(_condition);
+      const { total } = await collection
+        .aggregate([
+          _condition,
+          {
+            $count: "total",
+          },
+        ])
+        .next();
 
       const result = await aggregate
         .skip((page - 1) * perPage)
