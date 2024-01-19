@@ -17,6 +17,7 @@ class Model {
   static lookup = [];
   static perPage = 10;
   static selectedFields = [];
+  static excludedFields = [];
 
   static async getCollection() {
     const db = await mongodb();
@@ -160,7 +161,13 @@ class Model {
       const _pipeline = [..._sort, _condition];
 
       if (this.selectedFields.length > 0) {
-        const _fields = Query.selectedFields(this.selectedFields);
+        const _fields = Query.selecteFields(this.selectedFields);
+
+        _pipeline.push(_fields);
+      }
+
+      if (this.excludedFields.length > 0) {
+        const _fields = Query.excludeFields(this.excludedFields);
 
         _pipeline.push(_fields);
       }
@@ -177,6 +184,7 @@ class Model {
       if (this.limit > 0) this.limit = 0;
       if (this.sort.length > 0) this.sort = [];
       if (this.selectedFields.length > 0) this.selectedFields = [];
+      if (this.excludedFields.length > 0) this.excludedFields = [];
 
       return data;
     } catch (error) {
@@ -261,6 +269,11 @@ class Model {
 
   static select(fields = []) {
     this.selectedFields = fields;
+    return this;
+  }
+
+  static exclude(fields = []) {
+    this.excludedFields = fields;
     return this;
   }
 

@@ -39,13 +39,25 @@ class Query {
     return result;
   }
 
-  static selectedFields(fields) {
+  static selecteFields(fields) {
     const result = {
       $project: {},
     };
 
     fields.forEach((field) => {
       result.$project[field] = 1;
+    });
+
+    return result;
+  }
+
+  static excludeFields(fields) {
+    const result = {
+      $project: {},
+    };
+
+    fields.forEach((field) => {
+      result.$project[field] = 0;
     });
 
     return result;
