@@ -1,6 +1,8 @@
 # Directories
 node_modules
+models
 
 # Files
 .DS_Store
 .env
+app.js
