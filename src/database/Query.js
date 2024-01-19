@@ -7,6 +7,10 @@ class Query {
   }
 
   static orderBy(sort) {
+    if (sort.length === 0) {
+      return [];
+    }
+
     const result = [
       {
         $project: {
@@ -48,28 +52,59 @@ class Query {
   }
 
   static buildCondition(condition, criteria) {
-    let _condition = condition;
+    let _condition = {
+      $match: {
+        $and: [],
+        $or: [],
+      },
+    };
+
+    condition.forEach((item) => {
+      if (item.logic === "or") {
+        _condition.$match.$or.push({
+          [item.field]: {
+            [`$${item.operator}`]: item.value,
+          },
+        });
+      } else {
+        _condition.$match.$and.push({
+          [item.field]: {
+            [`$${item.operator}`]: item.value,
+          },
+        });
+      }
+    });
 
     if (criteria.softDelete) {
-      _condition = {
-        ..._condition,
-        isDeleted: false,
-      };
+      _condition.$match.$and.push({
+        isDeleted: {
+          $eq: false,
+        },
+      });
     }
 
     if (criteria.onlyTrashed) {
-      _condition = {
-        ..._condition,
-        isDeleted: true,
-      };
+      _condition.$match.$and.push({
+        isDeleted: {
+          $eq: true,
+        },
+      });
     }
 
     if (criteria.withTrashed) {
-      const { isDeleted, ...rest } = _condition;
+      const $and = _condition.$match.$and.filter(
+        (item) => item.hasOwnProperty("isDeleted") === false
+      );
 
-      _condition = {
-        ...rest,
-      };
+      _condition.$match.$and = $and;
+    }
+
+    if (_condition.$match.$and.length === 0) {
+      delete _condition.$match.$and;
+    }
+
+    if (_condition.$match.$or.length === 0) {
+      delete _condition.$match.$or;
     }
 
     return _condition;

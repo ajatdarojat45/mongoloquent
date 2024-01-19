@@ -1,5 +1,3 @@
-const dayjs = require("../utils/dayjs");
-
 class Relation {
   static with(model, alias, lookup = []) {
     const _lookup = [...lookup];

@@ -11,7 +11,7 @@ class Model {
   static timestamps = false;
   static withTrashed = false;
   static onlyTrashed = false;
-  static condition = {};
+  static condition = [];
   static sort = [];
   static limit = 0;
   static lookup = [];
@@ -147,14 +147,10 @@ class Model {
       const collection = await this.getCollection();
 
       let _condition = this.getCondition();
+
       const _sort = Query.orderBy(this.sort);
 
-      const _pipeline = [
-        {
-          $match: _condition,
-        },
-        ..._sort,
-      ];
+      const _pipeline = [..._sort, _condition];
 
       if (this.selectedFields.length > 0) {
         const _fields = Query.selectedFields(this.selectedFields);
@@ -205,8 +201,41 @@ class Model {
     return Query.buildCondition(this.condition, criteria);
   }
 
-  static where(key, value) {
-    this.condition = Query.where(this.condition, key, value);
+  static where(field, operator, value = "") {
+    let _value = value;
+    let _operator = operator;
+
+    if (value === "") {
+      _value = operator;
+      _operator = "eq";
+    }
+
+    this.condition.push({
+      field,
+      operator: _operator,
+      value: _value,
+      logic: "and",
+    });
+
+    return this;
+  }
+
+  static orWhere(field, operator, value = "") {
+    let _value = value;
+    let _operator = operator;
+
+    if (value === "") {
+      _value = operator;
+      _operator = "eq";
+    }
+
+    this.condition.push({
+      field,
+      operator: _operator,
+      value: _value,
+      logic: "or",
+    });
+
     return this;
   }
 
