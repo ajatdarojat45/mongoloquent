@@ -46,14 +46,19 @@ class Relation extends Query {
     alias,
     options,
   }) {
-    this.lookup.push({
-      $lookup: {
-        from: collection,
-        localField: localKey,
-        foreignField: foreignKey,
-        as: alias,
-      },
-    });
+    this.lookup = JSON.parse(
+      JSON.stringify([
+        ...this.lookup,
+        {
+          $lookup: {
+            from: collection,
+            localField: localKey,
+            foreignField: foreignKey,
+            as: alias,
+          },
+        },
+      ])
+    );
 
     if (type === "one") {
       this.lookup.push({
