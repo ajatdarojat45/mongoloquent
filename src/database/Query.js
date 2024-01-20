@@ -21,7 +21,7 @@ class Query {
     ];
 
     sort.forEach((item) => {
-      const _field = item.field.toLowerCase();
+      const _field = item.field;
       const _order = item.order.toLowerCase() === "desc" ? -1 : 1;
 
       result[0].$project[`${_field}`] = 1;
