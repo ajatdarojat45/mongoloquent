@@ -4,14 +4,20 @@ class Relation extends Query {
   static lookup = [];
 
   static with(method, options = {}) {
-    const model = this[method]();
-    this.generateLookup({
-      ...model,
-      alias: method,
-      options,
-    });
+    try {
+      const model = this[method]();
+      this.generateLookup({
+        ...model,
+        alias: method,
+        options,
+      });
 
-    return this;
+      return this;
+    } catch (error) {
+      throw new Error(
+        `The ${method} relationship method does not exist in the ${this.name} model.`
+      );
+    }
   }
 
   static belongsTo(collection, foreignKey, localKey = "_id") {
