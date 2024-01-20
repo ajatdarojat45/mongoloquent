@@ -23,11 +23,19 @@ class Relation extends Query {
       if (model.type === "belongsToMany") {
         return this.generateBelongsToMany(payload);
       }
+
+      if (model.type === "hasManyThrough") {
+        return this.generateHasManyThrough(payload);
+      }
     } catch (error) {
       throw new Error(
         `The ${method} relationship method does not exist in the ${this.name} model.`
       );
     }
+  }
+
+  static has(method, options = {}) {
+    return this.with(method, options);
   }
 
   static belongsTo(collection, foreignKey, localKey = "_id") {
@@ -134,6 +142,56 @@ class Relation extends Query {
             from: collection,
             localField: `pivot.${localKey}`,
             foreignField: "_id",
+            as: alias,
+          },
+        },
+        {
+          $project: {
+            pivot: 0,
+          },
+        },
+      ])
+    );
+
+    this.selectFields(params);
+    return this;
+  }
+
+  static hasManyThrogh(
+    collection,
+    throughCollection,
+    foreignKey,
+    foreignKeyThrough
+  ) {
+    return {
+      collection,
+      throughCollection,
+      foreignKey: foreignKeyThrough,
+      localKey: foreignKey,
+      type: "hasManyThrough",
+    };
+  }
+
+  static generateHasManyThrough(params) {
+    const { collection, throughCollection, foreignKey, localKey, alias } =
+      params;
+
+    this.lookup = JSON.parse(
+      JSON.stringify([
+        ...this.lookup,
+        {
+          $lookup: {
+            from: throughCollection,
+            localField: "_id",
+            foreignField: localKey,
+            as: "pivot",
+          },
+        },
+        {
+          $lookup: {
+            from: collection,
+            localField: "pivot._id",
+            foreignField: `${foreignKey}`,
             as: alias,
           },
         },
