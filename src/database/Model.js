@@ -213,7 +213,7 @@ class Model {
       withTrashed: this.withTrashed,
     };
 
-    return Query.buildCondition(this.condition, criteria);
+    return Query.where(this.condition, criteria);
   }
 
   static where(field, operator, value = "") {

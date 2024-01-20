@@ -1,11 +1,4 @@
 class Query {
-  static where(condition = {}, key, value) {
-    return {
-      ...condition,
-      [key]: value,
-    };
-  }
-
   static orderBy(sort) {
     if (sort.length === 0) {
       return [];
@@ -63,7 +56,7 @@ class Query {
     return result;
   }
 
-  static buildCondition(condition, criteria) {
+  static where(condition, criteria) {
     let _condition = {
       $match: {
         $and: [],
