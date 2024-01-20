@@ -12,14 +12,17 @@ class Relation extends Query {
         options,
       };
 
-      if (model.type === "one" || model.type === "many")
-        this.generateRelation(payload);
-
-      if (model.type === "belongsToMany") {
-        this.generateBelongsToMany(payload);
+      if (model.type === "belongsTo") {
+        return this.generateBelongsTo(payload);
       }
 
-      return this;
+      if (model.type === "hasMany") {
+        return this.generateHasMany(payload);
+      }
+
+      if (model.type === "belongsToMany") {
+        return this.generateBelongsToMany(payload);
+      }
     } catch (error) {
       throw new Error(
         `The ${method} relationship method does not exist in the ${this.name} model.`
@@ -30,10 +33,39 @@ class Relation extends Query {
   static belongsTo(collection, foreignKey, localKey = "_id") {
     return {
       collection: collection,
-      foreignKey: localKey,
-      localKey: foreignKey,
-      type: "one",
+      foreignKey: foreignKey,
+      localKey: localKey,
+      type: "belongsTo",
     };
+  }
+
+  static generateBelongsTo(params) {
+    const { collection, foreignKey, localKey, alias } = params;
+
+    this.lookup = JSON.parse(
+      JSON.stringify([
+        ...this.lookup,
+        {
+          $lookup: {
+            from: collection,
+            localField: foreignKey,
+            foreignField: localKey,
+            as: alias,
+          },
+        },
+      ])
+    );
+
+    this.lookup.push({
+      $unwind: {
+        path: `$${alias}`,
+        preserveNullAndEmptyArrays: true,
+      },
+    });
+
+    this.selectFields(params);
+
+    return this;
   }
 
   static hasMany(collection, foreignKey, localKey = "_id") {
@@ -41,8 +73,30 @@ class Relation extends Query {
       collection,
       foreignKey: foreignKey,
       localKey: localKey,
-      type: "many",
+      type: "hasMany",
     };
+  }
+
+  static generateHasMany(params) {
+    const { collection, foreignKey, localKey, alias } = params;
+
+    this.lookup = JSON.parse(
+      JSON.stringify([
+        ...this.lookup,
+        {
+          $lookup: {
+            from: collection,
+            localField: localKey,
+            foreignField: foreignKey,
+            as: alias,
+          },
+        },
+      ])
+    );
+
+    this.selectFields(params);
+
+    return this;
   }
 
   static belongsToMany(
@@ -92,37 +146,6 @@ class Relation extends Query {
     );
 
     this.selectFields(params);
-    return this;
-  }
-
-  static generateRelation(params) {
-    const { collection, foreignKey, localKey, type, alias } = params;
-
-    this.lookup = JSON.parse(
-      JSON.stringify([
-        ...this.lookup,
-        {
-          $lookup: {
-            from: collection,
-            localField: localKey,
-            foreignField: foreignKey,
-            as: alias,
-          },
-        },
-      ])
-    );
-
-    if (type === "one") {
-      this.lookup.push({
-        $unwind: {
-          path: `$${alias}`,
-          preserveNullAndEmptyArrays: true,
-        },
-      });
-    }
-
-    this.selectFields(params);
-
     return this;
   }
 
