@@ -2,6 +2,7 @@ const Relation = require("./Relation");
 const dayjs = require("../utils/dayjs");
 const checkTimestamps = require("../helpers/checkTimestamps");
 const checkSoftDelete = require("../helpers/checkSoftDelete");
+const { ObjectId } = require("mongodb");
 
 class Model extends Relation {
   static async get(fields = []) {
@@ -20,6 +21,21 @@ class Model extends Relation {
 
   static async first() {
     try {
+      const aggregate = await this.aggregate();
+      this.resetQuery();
+      this.resetRelation();
+
+      return await aggregate.next();
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async find(id = "") {
+    try {
+      if (id === "") throw new Error("id is required");
+
+      this.where("_id", new ObjectId(id));
       const aggregate = await this.aggregate();
       this.resetQuery();
       this.resetRelation();
