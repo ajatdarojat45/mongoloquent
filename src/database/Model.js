@@ -34,7 +34,7 @@ class Model extends Relation {
     try {
       const aggregate = await this.aggregate();
       const collection = await this.getCollection();
-      const { total } = await collection
+      let total = await collection
         .aggregate([
           this.queries,
           {
@@ -42,6 +42,9 @@ class Model extends Relation {
           },
         ])
         .next();
+
+      if (!total) total = 0;
+      else total = total.total;
 
       const result = await aggregate
         .skip((page - 1) * perPage)
