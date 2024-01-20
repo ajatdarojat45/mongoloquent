@@ -46,9 +46,12 @@ class Query extends Database {
 
   static select(fields = []) {
     if (fields.length > 0) {
+      const _fields = JSON.parse(JSON.stringify(this.fields));
       fields.forEach((field) => {
-        this.fields.$project[field] = 1;
+        _fields.$project[field] = 1;
       });
+
+      this.fields = JSON.parse(JSON.stringify(_fields));
     }
     return this;
   }
