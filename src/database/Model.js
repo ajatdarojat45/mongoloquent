@@ -170,9 +170,13 @@ class Model extends Relation {
     try {
       const collection = await this.getCollection();
 
-      const data = await collection.findOneAndDelete(this.condition);
+      this.generateQuery();
 
-      return data;
+      if (Object.entries(this.queries.$match).length > 0) {
+        return await collection.findOneAndDelete(this.queries.$match);
+      }
+
+      return null;
     } catch (error) {
       throw error;
     }
