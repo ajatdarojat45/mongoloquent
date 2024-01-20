@@ -2,7 +2,7 @@ const dayjs = require("dayjs");
 const utc = require("dayjs/plugin/utc");
 const timezone = require("dayjs/plugin/timezone");
 
-const TIMEZONE = process.env.TIMEZONE || "Asia/Jakarta";
+const TIMEZONE = process.env.MONGOLOQUENT_TIMEZONE || "Asia/Jakarta";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
