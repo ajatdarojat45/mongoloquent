@@ -1,10 +1,12 @@
 const { MongoClient, ServerApiVersion } = require("mongodb");
 
-const MONGODB_DB = process.env.MONGODB_DB || "mongorm";
-const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017";
+const MONGOLOQUENT_DATABASE =
+  process.env.MONGOLOQUENT_DATABASE || "mongoloquent";
+const MONGOLOQUENT_URI =
+  process.env.MONGOLOQUENT_URI || "mongodb://localhost:27017";
 let db = null;
 
-const client = new MongoClient(MONGODB_URI, {
+const client = new MongoClient(MONGOLOQUENT_URI, {
   serverApi: {
     version: ServerApiVersion.v1,
     strict: true,
@@ -14,11 +16,13 @@ const client = new MongoClient(MONGODB_URI, {
 
 async function connect() {
   try {
+    console.log("Connecting to database...");
     await client.connect();
-    const db = client.db(MONGODB_DB);
+    const db = client.db(MONGOLOQUENT_DATABASE);
+    console.log("Connected to database");
     return db;
   } catch (error) {
-    console.log(error, "mongorm error - can't connect to database");
+    throw new Error("Failed to connect to database");
   }
 }
 

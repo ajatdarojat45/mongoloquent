@@ -1,26 +1,17 @@
-class Relation {
-  static with(model, alias, lookup = []) {
-    const _lookup = [...lookup];
+const Query = require("./Query");
 
-    _lookup.push({
-      $lookup: {
-        from: model.collection,
-        localField: model.localKey,
-        foreignField: model.foreignKey,
-        as: alias,
-      },
+class Relation extends Query {
+  static lookup = [];
+
+  static with(method) {
+    const model = this[method]();
+
+    this.generateLookup({
+      ...model,
+      alias: method,
     });
 
-    if (model.type === "one") {
-      _lookup.push({
-        $unwind: {
-          path: `$${alias}`,
-          preserveNullAndEmptyArrays: true,
-        },
-      });
-    }
-
-    return _lookup;
+    return this;
   }
 
   static belongsTo(collection, foreignKey, localKey = "_id") {
@@ -39,6 +30,32 @@ class Relation {
       localKey: localKey,
       type: "many",
     };
+  }
+
+  static generateLookup({ collection, foreignKey, localKey, type, alias }) {
+    this.lookup.push({
+      $lookup: {
+        from: collection,
+        localField: localKey,
+        foreignField: foreignKey,
+        as: alias,
+      },
+    });
+
+    if (type === "one") {
+      this.push({
+        $unwind: {
+          path: `$${alias}`,
+          preserveNullAndEmptyArrays: true,
+        },
+      });
+    }
+
+    return this;
+  }
+
+  static resetRelation() {
+    this.lookup = [];
   }
 }
 
