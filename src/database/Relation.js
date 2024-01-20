@@ -6,11 +6,18 @@ class Relation extends Query {
   static with(method, options = {}) {
     try {
       const model = this[method]();
-      this.generateRelation({
+      const payload = {
         ...model,
         alias: method,
         options,
-      });
+      };
+
+      if (model.type === "one" || model.type === "many")
+        this.generateRelation(payload);
+
+      if (model.type === "belongsToMany") {
+        this.generateBelongsToMany(payload);
+      }
 
       return this;
     } catch (error) {
@@ -38,14 +45,59 @@ class Relation extends Query {
     };
   }
 
-  static generateRelation({
+  static belongsToMany(
     collection,
+    pivotCollection,
     foreignKey,
-    localKey,
-    type,
-    alias,
-    options,
-  }) {
+    localKey = "_id"
+  ) {
+    return {
+      collection,
+      pivotCollection,
+      foreignKey: foreignKey,
+      localKey: localKey,
+      type: "belongsToMany",
+      attach: (ids) => this.attach(ids),
+    };
+  }
+
+  static generateBelongsToMany(params) {
+    const { collection, pivotCollection, foreignKey, localKey, alias } = params;
+
+    this.lookup = JSON.parse(
+      JSON.stringify([
+        ...this.lookup,
+        {
+          $lookup: {
+            from: pivotCollection,
+            localField: "_id",
+            foreignField: foreignKey,
+            as: "pivot",
+          },
+        },
+        {
+          $lookup: {
+            from: collection,
+            localField: `pivot.${localKey}`,
+            foreignField: "_id",
+            as: alias,
+          },
+        },
+        {
+          $project: {
+            pivot: 0,
+          },
+        },
+      ])
+    );
+
+    this.selectFields(params);
+    return this;
+  }
+
+  static generateRelation(params) {
+    const { collection, foreignKey, localKey, type, alias } = params;
+
     this.lookup = JSON.parse(
       JSON.stringify([
         ...this.lookup,
@@ -68,6 +120,14 @@ class Relation extends Query {
         },
       });
     }
+
+    this.selectFields(params);
+
+    return this;
+  }
+
+  static selectFields(params) {
+    const { alias, options } = params;
 
     if (options?.include?.length > 0) {
       const project = {
@@ -109,6 +169,18 @@ class Relation extends Query {
     }
 
     return this;
+  }
+
+  static attach() {
+    console.log("attach", "<<<<");
+  }
+
+  static detach() {
+    console.log("detach", "<<<<");
+  }
+
+  static sync() {
+    console.log("sync", "<<<<");
   }
 
   static resetRelation() {
