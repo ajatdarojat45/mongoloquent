@@ -6,7 +6,7 @@ class Relation extends Query {
   static with(method, options = {}) {
     try {
       const model = this[method]();
-      this.generateLookup({
+      this.generateRelation({
         ...model,
         alias: method,
         options,
@@ -38,7 +38,7 @@ class Relation extends Query {
     };
   }
 
-  static generateLookup({
+  static generateRelation({
     collection,
     foreignKey,
     localKey,
