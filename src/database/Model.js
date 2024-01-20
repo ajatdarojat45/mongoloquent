@@ -96,7 +96,7 @@ class Model extends Relation {
       if (Object.entries(this.sort[1].$sort).length > 0)
         _pipeline.push(...this.sort);
 
-      if (Object.entries(this.fields.$project).length > 0)
+      if (Object.entries(this.fields.$project).length > 1)
         _pipeline.push(this.fields);
 
       if (this.lookup.length > 0) _pipeline.push(...this.lookup);
