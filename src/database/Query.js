@@ -129,11 +129,11 @@ class Query extends Database {
       this.queries.$match.$and = $and;
     }
 
-    if (this.queries.$match.$and.length === 0) {
+    if (this?.queries?.$match?.$and?.length === 0) {
       delete this.queries.$match.$and;
     }
 
-    if (this.queries.$match.$or.length === 0) {
+    if (this?.queries?.$match?.$or?.length === 0) {
       delete this.queries.$match.$or;
     }
 

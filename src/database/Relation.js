@@ -3,12 +3,12 @@ const Query = require("./Query");
 class Relation extends Query {
   static lookup = [];
 
-  static with(method) {
+  static with(method, options = {}) {
     const model = this[method]();
-
     this.generateLookup({
       ...model,
       alias: method,
+      options,
     });
 
     return this;
@@ -32,7 +32,14 @@ class Relation extends Query {
     };
   }
 
-  static generateLookup({ collection, foreignKey, localKey, type, alias }) {
+  static generateLookup({
+    collection,
+    foreignKey,
+    localKey,
+    type,
+    alias,
+    options,
+  }) {
     this.lookup.push({
       $lookup: {
         from: collection,
@@ -43,12 +50,51 @@ class Relation extends Query {
     });
 
     if (type === "one") {
-      this.push({
+      this.lookup.push({
         $unwind: {
           path: `$${alias}`,
           preserveNullAndEmptyArrays: true,
         },
       });
+    }
+
+    if (options?.include?.length > 0) {
+      const project = {
+        $project: {
+          document: "$$ROOT",
+        },
+      };
+
+      options?.include?.forEach((field) => {
+        project.$project[`${alias}.${field}`] = 1;
+      });
+
+      const additionals = [
+        {
+          $set: {
+            [`document.${alias}`]: `$${alias}`,
+          },
+        },
+        {
+          $replaceRoot: {
+            newRoot: "$document",
+          },
+        },
+      ];
+
+      this.lookup.push(project, ...additionals);
+    }
+
+    if (options?.exclude?.length > 0) {
+      const project = {
+        $project: {},
+      };
+
+      options?.exclude?.forEach((field) => {
+        project.$project[`${alias}.${field}`] = 0;
+      });
+
+      this.lookup.push(project);
     }
 
     return this;
