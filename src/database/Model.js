@@ -101,6 +101,12 @@ class Model extends Relation {
 
       if (this.lookup.length > 0) _pipeline.push(...this.lookup);
 
+      _pipeline.push({
+        $project: {
+          document: 0,
+        },
+      });
+
       if (this.limit > 0) _pipeline.push({ $limit: this.limit });
 
       return await collection.aggregate(_pipeline);

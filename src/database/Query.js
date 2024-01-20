@@ -30,7 +30,9 @@ class Query extends Database {
   };
 
   static fields = {
-    $project: {},
+    $project: {
+      document: "$$ROOT",
+    },
   };
 
   static orderBy(field, order) {

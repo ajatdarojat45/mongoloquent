@@ -48,7 +48,7 @@ class Relation extends Query {
         {
           $lookup: {
             from: collection,
-            localField: foreignKey,
+            localField: `document.${foreignKey}`,
             foreignField: localKey,
             as: alias,
           },
