@@ -37,9 +37,13 @@ class Query extends Database {
     const _field = field;
     const _order = order.toLowerCase() === "desc" ? -1 : 1;
 
-    this.sort[0].$project[`${_field}`] = 1;
-    this.sort[0].$project[`lowercase_${_field}`] = { $toLower: `$${_field}` };
-    this.sort[1].$sort[`lowercase_${_field}`] = _order;
+    const _sort = JSON.parse(JSON.stringify(this.sort));
+
+    _sort[0].$project[`${_field}`] = 1;
+    _sort[0].$project[`lowercase_${_field}`] = { $toLower: `$${_field}` };
+    _sort[1].$sort[`lowercase_${_field}`] = _order;
+
+    this.sort = JSON.parse(JSON.stringify(_sort));
 
     return this;
   }
@@ -70,16 +74,20 @@ class Query extends Database {
     let _value = value;
     let _operator = operator;
 
+    const _queries = JSON.parse(JSON.stringify(this.queries));
+
     if (value === "") {
       _value = operator;
       _operator = "eq";
     }
 
-    this.queries.$match.$and.push({
+    _queries.$match.$and.push({
       [field]: {
         [`$${_operator}`]: _value,
       },
     });
+
+    this.queries = JSON.parse(JSON.stringify(_queries));
 
     return this;
   }
@@ -88,17 +96,20 @@ class Query extends Database {
     let _value = value;
     let _operator = operator;
 
+    const _queries = JSON.parse(JSON.stringify(this.queries));
+
     if (value === "") {
       _value = operator;
       _operator = "eq";
     }
 
-    this.queries.$match.$or.push({
+    _queries.$match.$or.push({
       [field]: {
         [`$${_operator}`]: _value,
       },
     });
 
+    this.queries = JSON.parse(JSON.stringify(_queries));
     return this;
   }
 
