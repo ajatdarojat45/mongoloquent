@@ -1,5 +1,5 @@
 import Relation from "./Relation";
-import dayjs from "../utils/dayjs.js";
+import dayjs from "../utils/dayjs";
 import checkTimestamps from "../helpers/checkTimestaps";
 import checkSoftDelete from "../helpers/checkSoftDelete";
 import { ObjectId } from "mongodb";
