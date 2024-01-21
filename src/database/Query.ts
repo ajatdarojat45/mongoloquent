@@ -165,11 +165,12 @@ class Query extends Database {
     return this;
   }
 
-  protected static orWhere(
+  static orWhere<T extends typeof Query>(
+    this: T,
     field: string,
     operator: string | number,
     value: string | number = ""
-  ): Query {
+  ): T {
     let _value: string | number = value;
     let _operator: string | number = operator;
 
@@ -222,12 +223,23 @@ class Query extends Database {
       }
     }
 
-    if (this?.queries?.$match?.$and?.length === 0) {
-      delete this.queries.$match.$and;
+    const _orLength = this?.queries?.$match?.$or?.length || 0;
+    const _andLength = this?.queries?.$match?.$and?.length || 0;
+
+    if (_orLength > 0 && _andLength > 0) {
+      this?.queries?.$match?.$or?.push({
+        $and: this?.queries?.$match?.$and,
+      });
+
+      delete this?.queries?.$match?.$and;
     }
 
-    if (this?.queries?.$match?.$or?.length === 0) {
-      delete this.queries.$match.$or;
+    if (_andLength === 0) {
+      delete this?.queries?.$match?.$and;
+    }
+
+    if (_orLength === 0) {
+      delete this?.queries?.$match?.$or;
     }
 
     return this;
