@@ -7,17 +7,11 @@
   "scripts": {
     "test": "jest",
     "build": "tsc",
-    "start": "ts-node index.ts",
+    "start": "ts-node src/index.ts",
     "prepublishOnly": "npm run build",
     "dev": "nodemon --exec ts-node sandbox.ts"
   },
-  "keywords": [
-    "mongodb",
-    "orm",
-    "typescript",
-    "jest",
-    "javasript"
-  ],
+  "keywords": ["mongodb", "orm", "typescript", "jest", "javasript"],
   "author": "@ajatdarojat45",
   "license": "MIT",
   "dependencies": {
