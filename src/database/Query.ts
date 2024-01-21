@@ -191,7 +191,7 @@ class Query extends Database {
     return this;
   }
 
-  protected static take(limit: number): Query {
+  static take<T extends typeof Query>(this: T, limit: number): T {
     this.limit = limit;
     return this;
   }
