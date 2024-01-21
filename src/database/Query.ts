@@ -268,6 +268,14 @@ class Query extends Database {
         $or: [],
       },
     };
+
+    this.fields = [
+      {
+        $project: {
+          document: "$$ROOT",
+        },
+      },
+    ];
   }
 }
 
