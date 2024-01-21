@@ -216,3 +216,5 @@ class Model extends Relation {
     }
   }
 }
+
+export default Model;
