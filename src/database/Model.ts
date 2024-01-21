@@ -15,7 +15,7 @@ interface PaginateInterface {
 }
 
 class Model extends Relation {
-  protected static async get(fields?: string | string[]): Promise<object[]> {
+  static async get(fields?: string | string[]): Promise<object[]> {
     try {
       if (fields) this.select(fields);
 
@@ -29,7 +29,7 @@ class Model extends Relation {
     }
   }
 
-  protected static async first(fields?: string | string[]): Promise<{} | null> {
+  static async first(fields?: string | string[]): Promise<{} | null> {
     try {
       if (fields) this.select(fields);
 
@@ -140,7 +140,7 @@ class Model extends Relation {
     }
   }
 
-  protected static async create(payload: object): Promise<object> {
+  static async create(payload: object): Promise<object> {
     try {
       const collection = await this.getCollection();
 
@@ -157,7 +157,7 @@ class Model extends Relation {
     }
   }
 
-  protected static async update(payload: object): Promise<object> {
+  static async update(payload: object): Promise<object> {
     try {
       const collection = await this.getCollection();
       const _payload = checkTimestamps(this.timestamps, payload);
@@ -184,7 +184,7 @@ class Model extends Relation {
     }
   }
 
-  protected static async delete(): Promise<object | null> {
+  static async delete(): Promise<object | null> {
     try {
       if (this.softDelete) {
         return await this.update({
@@ -199,7 +199,7 @@ class Model extends Relation {
     }
   }
 
-  protected static async forceDelete(): Promise<object | null> {
+  static async forceDelete(): Promise<object | null> {
     try {
       const collection = await this.getCollection();
 

@@ -8,9 +8,16 @@
     "test": "jest",
     "build": "tsc",
     "start": "ts-node index.ts",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "dev": "nodemon --exec ts-node sandbox.ts"
   },
-  "keywords": ["mongodb", "orm", "typescript", "jest", "javasript"],
+  "keywords": [
+    "mongodb",
+    "orm",
+    "typescript",
+    "jest",
+    "javasript"
+  ],
   "author": "@ajatdarojat45",
   "license": "MIT",
   "dependencies": {
@@ -22,6 +29,7 @@
     "@types/jest": "^29.5.11",
     "@types/node": "^20.11.5",
     "jest": "^29.7.0",
+    "nodemon": "^3.0.3",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
   },

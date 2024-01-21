@@ -96,11 +96,12 @@ class Query extends Database {
     return this;
   }
 
-  protected static where(
+  static where<T extends typeof Query>(
+    this: T,
     field: string,
     operator: string | number | ObjectId,
     value: string | number | ObjectId = ""
-  ): Query {
+  ): T {
     let _value = value;
     let _operator = operator;
 
@@ -117,7 +118,7 @@ class Query extends Database {
       },
     });
 
-    this.queries = JSON.parse(JSON.stringify(_queries));
+    this.queries = _queries;
 
     return this;
   }
