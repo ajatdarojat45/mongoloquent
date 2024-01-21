@@ -2,19 +2,35 @@
   "name": "mongoloquent",
   "version": "1.0.0",
   "description": "Mongoloquent is like a lightweight MongoDB ORM library for JavaScript",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "build": "tsc",
+    "start": "ts-node src/index.ts",
+    "prepublishOnly": "npm run build"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "mongodb",
+    "orm",
+    "typescript",
+    "jest",
+    "javasript"
+  ],
+  "author": "@ajatdarojat45",
+  "license": "MIT",
   "dependencies": {
     "dayjs": "^1.11.10",
     "dotenv": "^16.3.2",
     "mongodb": "^6.3.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@types/jest": "^29.5.11",
+    "@types/node": "^20.11.5",
+    "jest": "^29.7.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ajatdarojat45/mongoloquent.git"

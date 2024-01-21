@@ -1,6 +1,7 @@
 # Directories
 node_modules
 models
+dist
 
 # Files
 .DS_Store
