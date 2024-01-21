@@ -83,7 +83,7 @@ class Query extends Database {
         },
       };
 
-      this.fields[0] = _project;
+      this.fields[0] = JSON.parse(JSON.stringify(_project));
     } else if (typeof fields !== "string" && fields.length > 0) {
       let _project = {
         $project: {
@@ -101,7 +101,7 @@ class Query extends Database {
         };
       });
 
-      this.fields[0] = _project;
+      this.fields[0] = JSON.parse(JSON.stringify(_project));
     }
 
     return this;
@@ -181,13 +181,14 @@ class Query extends Database {
       _operator = "eq";
     }
 
-    _queries.$match.$or.push({
-      [field]: {
-        [`$${_operator}`]: _value,
-      },
-    });
+    if (_queries?.$match?.$or)
+      _queries.$match.$or.push({
+        [field]: {
+          [`$${_operator}`]: _value,
+        },
+      });
 
-    this.queries = JSON.parse(JSON.stringify(_queries));
+    this.queries = _queries;
     return this;
   }
 

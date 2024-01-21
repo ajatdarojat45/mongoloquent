@@ -42,10 +42,11 @@ interface GenerateHasManyThroughInterface extends GenerateBelongsToInterface {
 class Relation extends Query {
   protected static lookup: object[] = [];
 
-  protected static with(
+  static with<T extends typeof Relation>(
+    this: T,
     method: string,
     options: WithOptionsInterface = {}
-  ): Relation {
+  ): T {
     if (typeof (this as any)[method] === "function") {
       const model = (this as any)[method]();
 
@@ -81,29 +82,31 @@ class Relation extends Query {
     }
   }
 
-  protected static has(
+  protected static has<T extends typeof Relation>(
+    this: T,
     method: string,
     options: WithOptionsInterface = {}
-  ): Relation {
+  ): T {
     return this.with(method, options);
   }
 
   protected static belongsTo(
     collection: string,
     foreignKey: string,
-    localKey: string = "_id"
+    ownerKey: string = "_id"
   ): BelongsToInterface {
     return {
       collection: collection,
-      foreignKey: foreignKey,
-      localKey: localKey,
+      foreignKey: ownerKey,
+      localKey: foreignKey,
       type: "belongsTo",
     };
   }
 
-  protected static generateBelongsTo(
+  protected static generateBelongsTo<T extends typeof Relation>(
+    this: T,
     params: GenerateBelongsToInterface
-  ): Relation {
+  ): T {
     const { collection, foreignKey, localKey, alias } = params;
 
     this.lookup = JSON.parse(
@@ -134,7 +137,7 @@ class Relation extends Query {
     return this;
   }
 
-  protected static hasMany(
+  static hasMany(
     collection: string,
     foreignKey: string,
     localKey: string = "_id"
@@ -147,9 +150,10 @@ class Relation extends Query {
     };
   }
 
-  protected static generateHasMany(
+  protected static generateHasMany<T extends typeof Relation>(
+    this: T,
     params: GenerateBelongsToInterface
-  ): Relation {
+  ): T {
     const { collection, foreignKey, localKey, alias } = params;
 
     this.lookup = JSON.parse(
@@ -171,17 +175,17 @@ class Relation extends Query {
     return this;
   }
 
-  protected static belongsToMany(
+  static belongsToMany(
     collection: string,
     pivotCollection: string,
     foreignKey: string,
-    localKey = "_id"
+    foreignKeyTarget: string
   ): BelongsToManyInterface {
     return {
       collection,
       pivotCollection,
       foreignKey: foreignKey,
-      localKey: localKey,
+      localKey: foreignKeyTarget,
       type: "belongsToMany",
       attach: (ids: string[] = []) => this.attach(ids),
       detach: (ids: string[] = []) => this.detach(ids),
@@ -189,9 +193,10 @@ class Relation extends Query {
     };
   }
 
-  protected static generateBelongsToMany(
+  protected static generateBelongsToMany<T extends typeof Relation>(
+    this: T,
     params: GenerateBelongsToManyInterface
-  ): Relation {
+  ): T {
     const { collection, pivotCollection, foreignKey, localKey, alias } = params;
 
     this.lookup = JSON.parse(
@@ -225,7 +230,7 @@ class Relation extends Query {
     return this;
   }
 
-  protected static hasManyThrogh(
+  static hasManyThrogh(
     collection: string,
     throughCollection: string,
     foreignKey: string,
@@ -240,9 +245,10 @@ class Relation extends Query {
     };
   }
 
-  protected static generateHasManyThrough(
+  protected static generateHasManyThrough<T extends typeof Relation>(
+    this: T,
     params: GenerateHasManyThroughInterface
-  ): Relation {
+  ): T {
     const { collection, throughCollection, foreignKey, localKey, alias } =
       params;
 
