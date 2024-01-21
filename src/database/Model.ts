@@ -119,10 +119,13 @@ class Model extends Relation {
 
       if (
         Object.entries(
-          (this.fields as { $project?: Record<string, any> })?.$project || {}
-        ).length > 1
-      )
-        _pipeline.push(this.fields);
+          (this?.fields?.[0] as { $project?: Record<string, any> })?.$project ||
+            {}
+        ).length > 1 ||
+        this.fields.length > 1
+      ) {
+        _pipeline.push(...this.fields);
+      }
 
       if (this.lookup.length > 0) _pipeline.push(...this.lookup);
 
@@ -134,7 +137,7 @@ class Model extends Relation {
 
       if (this.limit > 0) _pipeline.push({ $limit: this.limit });
 
-      return await collection.aggregate(_pipeline);
+      return collection.aggregate([..._pipeline]);
     } catch (error) {
       throw error;
     }

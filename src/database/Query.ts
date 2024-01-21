@@ -37,13 +37,19 @@ class Query extends Database {
     },
   };
 
-  protected static fields: object = {
-    $project: {
-      document: "$$ROOT",
+  protected static fields: object[] = [
+    {
+      $project: {
+        document: "$$ROOT",
+      },
     },
-  };
+  ];
 
-  protected static orderBy(field: string, order: string): Query {
+  static orderBy<T extends typeof Query>(
+    this: T,
+    field: string,
+    order: string
+  ): T {
     const _field: string = field;
     const _order: number = order.toLowerCase() === "desc" ? -1 : 1;
 
@@ -58,39 +64,75 @@ class Query extends Database {
     return this;
   }
 
-  protected static select(fields: string | string[] = ""): Query {
+  static select<T extends typeof Query>(
+    this: T,
+    fields: string | string[] = ""
+  ): T {
     if (typeof fields === "string") {
-      const _fields = JSON.parse(JSON.stringify(this.fields));
-      _fields.$project[fields] = 1;
+      let _project = {
+        $project: {
+          document: "$$ROOT",
+        },
+      };
 
-      this.fields = JSON.parse(JSON.stringify(_fields));
+      _project = {
+        ..._project,
+        $project: {
+          ..._project.$project,
+          [fields]: 1,
+        },
+      };
+
+      this.fields[0] = _project;
     } else if (typeof fields !== "string" && fields.length > 0) {
-      const _fields = JSON.parse(JSON.stringify(this.fields));
+      let _project = {
+        $project: {
+          document: "$$ROOT",
+        },
+      };
 
       fields.forEach((field) => {
-        _fields.$project[field] = 1;
+        _project = {
+          ..._project,
+          $project: {
+            ..._project.$project,
+            [field]: 1,
+          },
+        };
       });
 
-      this.fields = JSON.parse(JSON.stringify(_fields));
+      this.fields[0] = _project;
     }
 
     return this;
   }
 
-  protected static exclude(fields: string | string[] = ""): Query {
+  static exclude<T extends typeof Query>(
+    this: T,
+    fields: string | string[] = ""
+  ): T {
     if (typeof fields === "string") {
-      const _fields = JSON.parse(JSON.stringify(this.fields));
-      _fields.$project[fields] = 0;
+      let _project = {};
+      _project = {
+        ..._project,
+        [fields]: 0,
+      };
 
-      this.fields = JSON.parse(JSON.stringify(_fields));
+      this.fields.push({
+        $project: _project,
+      });
     } else if (typeof fields !== "string" && fields.length > 0) {
-      const _fields = JSON.parse(JSON.stringify(this.fields));
-
+      let _project = {};
       fields.forEach((field) => {
-        _fields.$project[field] = 0;
+        _project = {
+          ..._project,
+          [field]: 0,
+        };
       });
 
-      this.fields = JSON.parse(JSON.stringify(_fields));
+      this.fields.push({
+        $project: _project,
+      });
     }
 
     return this;
@@ -213,10 +255,6 @@ class Query extends Database {
         $and: [],
         $or: [],
       },
-    };
-
-    this.fields = {
-      $project: {},
     };
   }
 }
