@@ -1,43 +1,13 @@
 import Query from "./Query";
-
-interface WithOptionsInterface {
-  exclude?: string[];
-  include?: string[];
-}
-
-interface BelongsToInterface {
-  collection: string;
-  foreignKey: string;
-  localKey: string;
-  type: string;
-}
-
-interface GenerateBelongsToInterface extends BelongsToInterface {
-  alias: string;
-  options: {
-    include?: string[];
-    exclude?: string[];
-  };
-}
-
-interface BelongsToManyInterface extends BelongsToInterface {
-  pivotCollection: string;
-  attach: (ids: string[]) => void;
-  detach: (ids: string[]) => void;
-  sync: (ids: string[]) => void;
-}
-
-interface GenerateBelongsToManyInterface extends GenerateBelongsToInterface {
-  pivotCollection: string;
-}
-
-interface HasManyThroughInterface extends BelongsToInterface {
-  throughCollection: string;
-}
-
-interface GenerateHasManyThroughInterface extends GenerateBelongsToInterface {
-  throughCollection: string;
-}
+import {
+  WithOptionsInterface,
+  BelongsToInterface,
+  GenerateBelongsToInterface,
+  BelongsToManyInterface,
+  GenerateBelongsToManyInterface,
+  HasManyThroughInterface,
+  GenerateHasManyThroughInterface,
+} from "../interfaces/RelationInterface";
 
 class Relation extends Query {
   protected static lookup: object[] = [];

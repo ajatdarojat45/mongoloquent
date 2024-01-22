@@ -3,16 +3,7 @@ import dayjs from "../utils/dayjs";
 import checkTimestamps from "../helpers/checkTimestaps";
 import checkSoftDelete from "../helpers/checkSoftDelete";
 import { ObjectId } from "mongodb";
-
-interface PaginateInterface {
-  data: object[];
-  meta: {
-    total: number;
-    page: number;
-    perPage: number;
-    lastPage: number;
-  };
-}
+import { PaginateInterface } from "../interfaces/ModelInterface";
 
 class Model extends Relation {
   static async get(fields?: string | string[]): Promise<object[]> {

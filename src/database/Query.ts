@@ -1,12 +1,6 @@
 import Database from "./Database";
 import { ObjectId } from "mongodb";
-
-interface QueriesInterface {
-  $match?: {
-    $and?: object[];
-    $or?: object[];
-  };
-}
+import { QueriesInterface } from "../interfaces/QueryInterface";
 
 class Query extends Database {
   protected static isWithTrashed: boolean = false;
