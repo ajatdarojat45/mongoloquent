@@ -39,6 +39,46 @@ class Query extends Database implements QueryInterface {
     },
   ];
 
+  private static comparationOperators = [
+    {
+      operator: "=",
+      mongoOperator: "eq",
+    },
+    {
+      operator: "!=",
+      mongoOperator: "ne",
+    },
+    {
+      operator: ">",
+      mongoOperator: "gt",
+    },
+    {
+      operator: "<",
+      mongoOperator: "lt",
+    },
+    {
+      operator: ">=",
+      mongoOperator: "gte",
+    },
+    {
+      operator: "<=",
+      mongoOperator: "lte",
+    },
+    {
+      operator: "in",
+      mongoOperator: "in",
+    },
+    {
+      operator: "notIn",
+      mongoOperator: "nin",
+    },
+    {
+      operator: "like",
+      mongoOperator: "regex",
+      options: "i",
+    },
+  ];
+
   static orderBy<T extends typeof Query>(
     this: T,
     field: string,
@@ -133,52 +173,22 @@ class Query extends Database implements QueryInterface {
     operator: any,
     value?: any
   ): T {
-    let _value = value;
-    let _operator = operator;
+    let _value = value || operator;
+    let _operator = value ? operator : "eq";
 
-    const _queries = JSON.parse(JSON.stringify(this.queries));
-
-    if (value === "") {
-      _value = operator;
-      _operator = "eq";
-    }
-
-    _queries.$match.$and.push({
-      [field]: {
-        [`$${_operator}`]: _value,
-      },
-    });
-
-    this.queries = _queries;
-
-    return this;
+    return this.whereGenerator(field, _operator, _value);
   }
 
   static orWhere<T extends typeof Query>(
     this: T,
     field: string,
-    operator: string | number,
-    value: string | number = ""
+    operator: any,
+    value?: any
   ): T {
-    let _value: string | number = value;
-    let _operator: string | number = operator;
+    let _value = value || operator;
+    let _operator = value ? operator : "eq";
 
-    const _queries = JSON.parse(JSON.stringify(this.queries));
-
-    if (value === "") {
-      _value = operator;
-      _operator = "eq";
-    }
-
-    if (_queries?.$match?.$or)
-      _queries.$match.$or.push({
-        [field]: {
-          [`$${_operator}`]: _value,
-        },
-      });
-
-    this.queries = _queries;
-    return this;
+    return this.whereGenerator(field, _operator, _value, true);
   }
 
   static whereIn<T extends typeof Query>(
@@ -186,16 +196,7 @@ class Query extends Database implements QueryInterface {
     field: string,
     values: any[]
   ): T {
-    const _queries = JSON.parse(JSON.stringify(this.queries));
-
-    _queries.$match.$and.push({
-      [field]: {
-        $in: values,
-      },
-    });
-
-    this.queries = _queries;
-    return this;
+    return this.whereGenerator(field, "in", values);
   }
 
   static orWhereIn<T extends typeof Query>(
@@ -203,15 +204,7 @@ class Query extends Database implements QueryInterface {
     field: string,
     values: any[]
   ): T {
-    const _queries = JSON.parse(JSON.stringify(this.queries));
-    _queries.$match.$or.push({
-      [field]: {
-        $in: values,
-      },
-    });
-
-    this.queries = _queries;
-    return this;
+    return this.whereGenerator(field, "in", values, true);
   }
 
   static whereNotIn<T extends typeof Query>(
@@ -219,15 +212,7 @@ class Query extends Database implements QueryInterface {
     field: string,
     values: any[]
   ): T {
-    const _queries = JSON.parse(JSON.stringify(this.queries));
-    _queries.$match.$and.push({
-      [field]: {
-        $nin: values,
-      },
-    });
-
-    this.queries = _queries;
-    return this;
+    return this.whereGenerator(field, "nin", values);
   }
 
   static orWhereNotIn<T extends typeof Query>(
@@ -235,19 +220,48 @@ class Query extends Database implements QueryInterface {
     field: string,
     values: any[]
   ): T {
-    const _queries = JSON.parse(JSON.stringify(this.queries));
-    _queries.$match.$or.push({
-      [field]: {
-        $nin: values,
-      },
-    });
-
-    this.queries = _queries;
-    return this;
+    return this.whereGenerator(field, "nin", values, true);
   }
 
   static take<T extends typeof Query>(this: T, limit: number): T {
     this.limit = limit;
+    return this;
+  }
+
+  static whereGenerator<T extends typeof Query>(
+    this: T,
+    field: string,
+    operator: string,
+    value: any,
+    isOr: boolean = false
+  ): T {
+    let _value = value;
+    let _operator = operator;
+    const _queries = JSON.parse(JSON.stringify(this.queries));
+    let q = {};
+    const _logicalOperator = isOr ? "$or" : "$and";
+
+    if (value) {
+      const _comparationOperator = this.comparationOperators.find(
+        (el) => el.operator === _operator || el.mongoOperator === _operator
+      );
+
+      if (_comparationOperator) {
+        _operator = _comparationOperator.mongoOperator;
+        if (_comparationOperator.mongoOperator === "regex")
+          q = { $options: "i" };
+      }
+    }
+
+    _queries.$match[_logicalOperator].push({
+      [field]: {
+        [`$${_operator}`]: _value,
+        ...q,
+      },
+    });
+
+    this.queries = _queries;
+
     return this;
   }
 
