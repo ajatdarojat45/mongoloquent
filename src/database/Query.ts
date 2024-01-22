@@ -69,14 +69,13 @@ class Query extends Database {
     fields: string | string[] = ""
   ): T {
     const _fields = JSON.parse(JSON.stringify(this.fields));
+    let _project = {
+      $project: {
+        document: "$$ROOT",
+      },
+    };
 
     if (typeof fields === "string") {
-      let _project = {
-        $project: {
-          document: "$$ROOT",
-        },
-      };
-
       _project = {
         ..._project,
         $project: {
@@ -84,16 +83,7 @@ class Query extends Database {
           [fields]: 1,
         },
       };
-
-      _fields[0] = _project;
-      this.fields = _fields;
     } else if (typeof fields !== "string" && fields.length > 0) {
-      let _project = {
-        $project: {
-          document: "$$ROOT",
-        },
-      };
-
       fields.forEach((field) => {
         _project = {
           ..._project,
@@ -103,11 +93,10 @@ class Query extends Database {
           },
         };
       });
-
-      _fields[0] = _project;
-      this.fields = _fields;
     }
 
+    _fields[0] = _project;
+    this.fields = _fields;
     return this;
   }
 
@@ -115,18 +104,19 @@ class Query extends Database {
     this: T,
     fields: string | string[] = ""
   ): T {
+    const _fields = JSON.parse(JSON.stringify(this.fields));
+    let _project = {};
+
     if (typeof fields === "string") {
-      let _project = {};
       _project = {
         ..._project,
         [fields]: 0,
       };
 
-      this.fields.push({
+      _fields.push({
         $project: _project,
       });
     } else if (typeof fields !== "string" && fields.length > 0) {
-      let _project = {};
       fields.forEach((field) => {
         _project = {
           ..._project,
@@ -134,11 +124,12 @@ class Query extends Database {
         };
       });
 
-      this.fields.push({
+      _fields.push({
         $project: _project,
       });
     }
 
+    this.fields = _fields;
     return this;
   }
 
