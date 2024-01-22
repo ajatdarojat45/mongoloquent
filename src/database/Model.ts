@@ -3,9 +3,12 @@ import dayjs from "../utils/dayjs";
 import checkTimestamps from "../helpers/checkTimestaps";
 import checkSoftDelete from "../helpers/checkSoftDelete";
 import { ObjectId } from "mongodb";
-import { PaginateInterface } from "../interfaces/ModelInterface";
+import {
+  PaginateInterface,
+  ModelInterface,
+} from "../interfaces/ModelInterface";
 
-class Model extends Relation {
+class Model extends Relation implements ModelInterface {
   static async get(fields?: string | string[]): Promise<object[]> {
     try {
       if (fields) this.select(fields);

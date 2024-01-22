@@ -1,3 +1,5 @@
+export interface ModelInterface {}
+
 export interface PaginateInterface {
   data: object[];
   meta: {

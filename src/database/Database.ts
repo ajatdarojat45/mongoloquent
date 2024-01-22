@@ -1,6 +1,7 @@
 import mongodb from "./connectors/mongodb";
+import { DatabaseInterface } from "../interfaces/DatabaseInterface";
 
-class Database {
+class Database implements DatabaseInterface {
   protected static collection: string = "collection";
   protected static softDelete: boolean = false;
   protected static timestamps: boolean = false;

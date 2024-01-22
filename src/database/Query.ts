@@ -1,8 +1,8 @@
 import Database from "./Database";
 import { ObjectId } from "mongodb";
-import { QueriesInterface } from "../interfaces/QueryInterface";
+import { QueriesInterface, QueryInterface } from "../interfaces/QueryInterface";
 
-class Query extends Database {
+class Query extends Database implements QueryInterface {
   protected static isWithTrashed: boolean = false;
   protected static isOnlyTrashed: boolean = false;
   protected static limit: number = 0;
@@ -186,7 +186,7 @@ class Query extends Database {
     return this;
   }
 
-  protected static generateQuery(): Query {
+  protected static generateQuery() {
     if (this.softDelete) {
       this?.queries?.$match?.$and?.push({
         isDeleted: {

@@ -1,3 +1,5 @@
+export interface RelationInterface {}
+
 export interface WithOptionsInterface {
   exclude?: string[];
   include?: string[];

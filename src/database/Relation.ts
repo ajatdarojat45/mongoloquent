@@ -1,5 +1,6 @@
 import Query from "./Query";
 import {
+  RelationInterface,
   WithOptionsInterface,
   BelongsToInterface,
   GenerateBelongsToInterface,
@@ -9,7 +10,7 @@ import {
   GenerateHasManyThroughInterface,
 } from "../interfaces/RelationInterface";
 
-class Relation extends Query {
+class Relation extends Query implements RelationInterface {
   protected static lookup: object[] = [];
 
   static with<T extends typeof Relation>(
@@ -253,7 +254,7 @@ class Relation extends Query {
     return this;
   }
 
-  protected static selectFields(params: GenerateBelongsToInterface): Relation {
+  protected static selectFields(params: GenerateBelongsToInterface) {
     const { alias, options } = params;
 
     if (options?.include && options?.include?.length > 0) {
@@ -310,22 +311,22 @@ class Relation extends Query {
     return this;
   }
 
-  protected static attach(ids: string[] = []): Relation {
+  protected static attach(ids: string[] = []) {
     console.log("attach", "<<<<");
     return this;
   }
 
-  protected static detach(ids: string[] = []): Relation {
+  protected static detach(ids: string[] = []) {
     console.log("detach", "<<<<");
     return this;
   }
 
-  protected static sync(ids: string[] = []): Relation {
+  protected static sync(ids: string[] = []) {
     console.log("sync", "<<<<");
     return this;
   }
 
-  protected static resetRelation(): Relation {
+  protected static resetRelation() {
     this.lookup = [];
     return this;
   }
