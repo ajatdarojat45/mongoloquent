@@ -130,8 +130,8 @@ class Query extends Database implements QueryInterface {
   static where<T extends typeof Query>(
     this: T,
     field: string,
-    operator: string | number | ObjectId,
-    value: string | number | ObjectId = ""
+    operator: any,
+    value?: any
   ): T {
     let _value = value;
     let _operator = operator;
@@ -176,6 +176,39 @@ class Query extends Database implements QueryInterface {
           [`$${_operator}`]: _value,
         },
       });
+
+    this.queries = _queries;
+    return this;
+  }
+
+  static whereIn<T extends typeof Query>(
+    this: T,
+    field: string,
+    values: any[]
+  ): T {
+    const _queries = JSON.parse(JSON.stringify(this.queries));
+
+    _queries.$match.$and.push({
+      [field]: {
+        $in: values,
+      },
+    });
+
+    this.queries = _queries;
+    return this;
+  }
+
+  static orWhereIn<T extends typeof Query>(
+    this: T,
+    field: string,
+    values: any[]
+  ): T {
+    const _queries = JSON.parse(JSON.stringify(this.queries));
+    _queries.$match.$or.push({
+      [field]: {
+        $in: values,
+      },
+    });
 
     this.queries = _queries;
     return this;
