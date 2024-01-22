@@ -214,6 +214,38 @@ class Query extends Database implements QueryInterface {
     return this;
   }
 
+  static whereNotIn<T extends typeof Query>(
+    this: T,
+    field: string,
+    values: any[]
+  ): T {
+    const _queries = JSON.parse(JSON.stringify(this.queries));
+    _queries.$match.$and.push({
+      [field]: {
+        $nin: values,
+      },
+    });
+
+    this.queries = _queries;
+    return this;
+  }
+
+  static orWhereNotIn<T extends typeof Query>(
+    this: T,
+    field: string,
+    values: any[]
+  ): T {
+    const _queries = JSON.parse(JSON.stringify(this.queries));
+    _queries.$match.$or.push({
+      [field]: {
+        $nin: values,
+      },
+    });
+
+    this.queries = _queries;
+    return this;
+  }
+
   static take<T extends typeof Query>(this: T, limit: number): T {
     this.limit = limit;
     return this;
