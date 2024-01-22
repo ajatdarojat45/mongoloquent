@@ -68,6 +68,8 @@ class Query extends Database {
     this: T,
     fields: string | string[] = ""
   ): T {
+    const _fields = JSON.parse(JSON.stringify(this.fields));
+
     if (typeof fields === "string") {
       let _project = {
         $project: {
@@ -83,7 +85,8 @@ class Query extends Database {
         },
       };
 
-      this.fields[0] = JSON.parse(JSON.stringify(_project));
+      _fields[0] = _project;
+      this.fields = _fields;
     } else if (typeof fields !== "string" && fields.length > 0) {
       let _project = {
         $project: {
@@ -101,7 +104,8 @@ class Query extends Database {
         };
       });
 
-      this.fields[0] = JSON.parse(JSON.stringify(_project));
+      _fields[0] = _project;
+      this.fields = _fields;
     }
 
     return this;
