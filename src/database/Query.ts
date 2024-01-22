@@ -223,6 +223,22 @@ class Query extends Database implements QueryInterface {
     return this.whereGenerator(field, "nin", values, true);
   }
 
+  static whereBetween<T extends typeof Query>(
+    this: T,
+    field: string,
+    values: any[]
+  ): T {
+    return this.whereGenerator(field, "between", values);
+  }
+
+  static orWhereBetween<T extends typeof Query>(
+    this: T,
+    field: string,
+    values: any[]
+  ): T {
+    return this.whereGenerator(field, "between", values, true);
+  }
+
   static take<T extends typeof Query>(this: T, limit: number): T {
     this.limit = limit;
     return this;
@@ -240,6 +256,22 @@ class Query extends Database implements QueryInterface {
     const _queries = JSON.parse(JSON.stringify(this.queries));
     let q = {};
     const _logicalOperator = isOr ? "$or" : "$and";
+
+    if (_operator === "between") {
+      if (value.length !== 2)
+        throw new Error("The between operator must have two values");
+
+      _queries.$match[_logicalOperator].push({
+        [field]: {
+          $gte: _value?.[0],
+          $lte: _value[1],
+        },
+      });
+
+      console.log(_queries.$match[_logicalOperator]);
+      this.queries = _queries;
+      return this;
+    }
 
     if (value) {
       const _comparationOperator = this.comparationOperators.find(
