@@ -24,6 +24,8 @@ class Query extends Database implements QueryInterface {
     },
   ];
 
+  protected static group: object[] = [];
+
   protected static queries: QueriesInterface = {
     $match: {
       $and: [],
@@ -95,6 +97,33 @@ class Query extends Database implements QueryInterface {
 
     this.sort = JSON.parse(JSON.stringify(_sort));
 
+    return this;
+  }
+
+  static groupBy<T extends typeof Query>(this: T, field: string): T {
+    const _field: string = field;
+    const _groups = JSON.parse(JSON.stringify(this.group));
+
+    if (_groups.length > 0) {
+      _groups[0].$group._id[`${_field}`] = `$${_field}`;
+    } else {
+      _groups.push({
+        $group: {
+          _id: {
+            [`${_field}`]: `$${_field}`,
+          },
+        },
+      });
+    }
+
+    const _fields = JSON.parse(JSON.stringify(this.fields));
+    console.log(_fields[0].$project);
+    for (let key in _fields[0].$project) {
+      if (key !== "document") {
+        _groups[0].$group._id[`${key}`] = `$${key}`;
+      }
+    }
+    this.group = _groups;
     return this;
   }
 

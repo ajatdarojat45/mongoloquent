@@ -121,6 +121,7 @@ class Model extends Relation implements ModelInterface {
         _pipeline.push(...this.fields);
       }
 
+      if (this.group.length > 0) _pipeline.push(...this.group);
       if (this.lookup.length > 0) _pipeline.push(...this.lookup);
 
       _pipeline.push({
