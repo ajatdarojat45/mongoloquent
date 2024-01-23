@@ -9,12 +9,9 @@ class Database implements DatabaseInterface {
   private static db: Db;
 
   protected static async getCollection(): Promise<Collection> {
-    console.log("getCollection", this.db);
     if (!this.db) {
       await this.connect();
     }
-
-    console.log("getCollection", this.db);
     return this.db.collection(this.collection);
   }
 

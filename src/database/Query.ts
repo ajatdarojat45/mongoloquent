@@ -228,6 +228,9 @@ class Query extends Database implements QueryInterface {
     field: string,
     values: any[]
   ): T {
+    if (values.length !== 2)
+      throw new Error("The between operator must have two values");
+
     return this.whereGenerator(field, "between", values);
   }
 
@@ -236,6 +239,9 @@ class Query extends Database implements QueryInterface {
     field: string,
     values: any[]
   ): T {
+    if (values.length !== 2)
+      throw new Error("The between operator must have two values");
+
     return this.whereGenerator(field, "between", values, true);
   }
 
@@ -244,7 +250,7 @@ class Query extends Database implements QueryInterface {
     return this;
   }
 
-  static whereGenerator<T extends typeof Query>(
+  private static whereGenerator<T extends typeof Query>(
     this: T,
     field: string,
     operator: string,
@@ -258,9 +264,6 @@ class Query extends Database implements QueryInterface {
     const _logicalOperator = isOr ? "$or" : "$and";
 
     if (_operator === "between") {
-      if (value.length !== 2)
-        throw new Error("The between operator must have two values");
-
       _queries.$match[_logicalOperator].push({
         [field]: {
           $gte: _value?.[0],
