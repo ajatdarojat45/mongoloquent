@@ -79,20 +79,19 @@ class Relation extends Query implements RelationInterface {
     params: GenerateBelongsToInterface
   ): T {
     const { collection, foreignKey, localKey, alias } = params;
+    const _lookup = JSON.parse(JSON.stringify(this.lookup));
 
-    this.lookup = JSON.parse(
-      JSON.stringify([
-        ...this.lookup,
-        {
-          $lookup: {
-            from: collection,
-            localField: `document.${foreignKey}`,
-            foreignField: localKey,
-            as: alias,
-          },
-        },
-      ])
-    );
+    const _foreignKey = this.fields.length > 0 ? foreignKey : localKey;
+    const _localKey = this.fields.length > 0 ? localKey : foreignKey;
+
+    _lookup.push({
+      $lookup: {
+        from: collection,
+        localField: `document.${_localKey}`,
+        foreignField: _foreignKey,
+        as: alias,
+      },
+    });
 
     const _unwind = {
       $unwind: {
@@ -101,8 +100,9 @@ class Relation extends Query implements RelationInterface {
       },
     };
 
-    this?.lookup?.push(_unwind);
+    _lookup.push(_unwind);
 
+    this.lookup = _lookup;
     this.selectFields(params);
 
     return this;
