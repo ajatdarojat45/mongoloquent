@@ -5,7 +5,8 @@ import { QueriesInterface, QueryInterface } from "../interfaces/QueryInterface";
 class Query extends Database implements QueryInterface {
   protected static isWithTrashed: boolean = false;
   protected static isOnlyTrashed: boolean = false;
-  protected static limit: number = 0;
+  protected static $limit: number = 0;
+  protected static $skip: number = 0;
   protected static perPage: number = 10;
 
   protected static sort: object[] = [
@@ -262,7 +263,22 @@ class Query extends Database implements QueryInterface {
   }
 
   static take<T extends typeof Query>(this: T, limit: number): T {
-    this.limit = limit;
+    this.$limit = limit;
+    return this;
+  }
+
+  static limit<T extends typeof Query>(this: T, limit: number): T {
+    this.$limit = limit;
+    return this;
+  }
+
+  static offset<T extends typeof Query>(this: T, skip: number): T {
+    this.$skip = skip;
+    return this;
+  }
+
+  static skip<T extends typeof Query>(this: T, skip: number): T {
+    this.$skip = skip;
     return this;
   }
 

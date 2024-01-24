@@ -98,9 +98,7 @@ class Model extends Relation implements ModelInterface {
   protected static async aggregate() {
     try {
       const collection = await this.getCollection();
-
       const _pipeline = [];
-
       this.generateQuery();
       _pipeline.push(this.queries);
 
@@ -126,11 +124,12 @@ class Model extends Relation implements ModelInterface {
 
       _pipeline.push({
         $project: {
-          documentq: 0,
+          document: 0,
         },
       });
 
-      if (this.limit > 0) _pipeline.push({ $limit: this.limit });
+      if (this.$skip > 0) _pipeline.push({ $skip: this.$skip });
+      if (this.$limit > 0) _pipeline.push({ $limit: this.$limit });
 
       return collection.aggregate([..._pipeline]);
     } catch (error) {
