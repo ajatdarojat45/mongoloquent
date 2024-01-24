@@ -204,6 +204,28 @@ class Model extends Relation implements ModelInterface {
     }
   }
 
+  static async sum(field: string): Promise<number> {
+    try {
+      const collection = await this.getCollection();
+      this.generateQuery();
+      const aggregate = await collection
+        .aggregate([
+          this.queries,
+          {
+            $group: {
+              _id: null,
+              sum: { $sum: `$${field}` },
+            },
+          },
+        ])
+        .next();
+
+      return aggregate?.sum || 0;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   static async create(payload: object): Promise<object> {
     try {
       const collection = await this.getCollection();
