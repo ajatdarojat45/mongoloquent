@@ -27,23 +27,18 @@ class Relation extends Query implements RelationInterface {
         options,
       };
 
-      if (model.type === "belongsTo") {
-        return this.generateBelongsTo(payload);
+      switch (model.type) {
+        case "belongsTo":
+          return this.generateBelongsTo(payload);
+        case "hasMany":
+          return this.generateHasMany(payload);
+        case "belongsToMany":
+          return this.generateBelongsToMany(payload);
+        case "hasManyThrough":
+          return this.generateHasManyThrough(payload);
+        default:
+          return this;
       }
-
-      if (model.type === "hasMany") {
-        return this.generateHasMany(payload);
-      }
-
-      if (model.type === "belongsToMany") {
-        return this.generateBelongsToMany(payload);
-      }
-
-      if (model.type === "hasManyThrough") {
-        return this.generateHasManyThrough(payload);
-      }
-
-      return this;
     } else {
       console.log(
         `The ${method} relation method does not exist in the ${this.name} model.`
@@ -126,21 +121,18 @@ class Relation extends Query implements RelationInterface {
     params: GenerateBelongsToInterface
   ): T {
     const { collection, foreignKey, localKey, alias } = params;
+    const _lookup = JSON.parse(JSON.stringify(this.lookup));
 
-    this.lookup = JSON.parse(
-      JSON.stringify([
-        ...this.lookup,
-        {
-          $lookup: {
-            from: collection,
-            localField: localKey,
-            foreignField: foreignKey,
-            as: alias,
-          },
-        },
-      ])
-    );
+    _lookup.push({
+      $lookup: {
+        from: collection,
+        localField: localKey,
+        foreignField: foreignKey,
+        as: alias,
+      },
+    });
 
+    this.lookup = _lookup;
     this.selectFields(params);
 
     return this;
@@ -169,34 +161,33 @@ class Relation extends Query implements RelationInterface {
     params: GenerateBelongsToManyInterface
   ): T {
     const { collection, pivotCollection, foreignKey, localKey, alias } = params;
+    const _lookup = JSON.parse(JSON.stringify(this.lookup));
 
-    this.lookup = JSON.parse(
-      JSON.stringify([
-        ...this.lookup,
-        {
-          $lookup: {
-            from: pivotCollection,
-            localField: "_id",
-            foreignField: foreignKey,
-            as: "pivot",
-          },
+    _lookup.push(
+      {
+        $lookup: {
+          from: pivotCollection,
+          localField: "_id",
+          foreignField: foreignKey,
+          as: "pivot",
         },
-        {
-          $lookup: {
-            from: collection,
-            localField: `pivot.${localKey}`,
-            foreignField: "_id",
-            as: alias,
-          },
+      },
+      {
+        $lookup: {
+          from: collection,
+          localField: `pivot.${localKey}`,
+          foreignField: "_id",
+          as: alias,
         },
-        {
-          $project: {
-            pivot: 0,
-          },
+      },
+      {
+        $project: {
+          pivot: 0,
         },
-      ])
+      }
     );
 
+    this.lookup = _lookup;
     this.selectFields(params);
     return this;
   }
@@ -222,34 +213,33 @@ class Relation extends Query implements RelationInterface {
   ): T {
     const { collection, throughCollection, foreignKey, localKey, alias } =
       params;
+    const _lookup = JSON.parse(JSON.stringify(this.lookup));
 
-    this.lookup = JSON.parse(
-      JSON.stringify([
-        ...this.lookup,
-        {
-          $lookup: {
-            from: throughCollection,
-            localField: "_id",
-            foreignField: localKey,
-            as: "pivot",
-          },
+    _lookup.push(
+      {
+        $lookup: {
+          from: throughCollection,
+          localField: "_id",
+          foreignField: localKey,
+          as: "pivot",
         },
-        {
-          $lookup: {
-            from: collection,
-            localField: "pivot._id",
-            foreignField: `${foreignKey}`,
-            as: alias,
-          },
+      },
+      {
+        $lookup: {
+          from: collection,
+          localField: "pivot._id",
+          foreignField: `${foreignKey}`,
+          as: alias,
         },
-        {
-          $project: {
-            pivot: 0,
-          },
+      },
+      {
+        $project: {
+          pivot: 0,
         },
-      ])
+      }
     );
 
+    this.lookup = _lookup;
     this.selectFields(params);
     return this;
   }
