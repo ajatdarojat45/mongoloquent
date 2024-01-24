@@ -276,6 +276,34 @@ class Model extends Relation implements ModelInterface {
     }
   }
 
+  static async pluck(field: string) {
+    try {
+      const collection = await this.getCollection();
+      const _pipeline = [];
+      this.generateQuery();
+
+      _pipeline.push(this.queries);
+
+      if (this.$skip > 0) _pipeline.push({ $skip: this.$skip });
+      if (this.$limit > 0) _pipeline.push({ $limit: this.$limit });
+
+      const aggregate = await collection
+        .aggregate([
+          ..._pipeline,
+          {
+            $project: {
+              [field]: 1,
+            },
+          },
+        ])
+        .toArray();
+
+      return aggregate.map((item) => item[field]);
+    } catch (error) {
+      throw error;
+    }
+  }
+
   static async create(payload: object): Promise<object> {
     try {
       const collection = await this.getCollection();
