@@ -33,13 +33,7 @@ class Query extends Database implements QueryInterface {
     },
   };
 
-  protected static fields: object[] = [
-    {
-      $project: {
-        document: "$$ROOT",
-      },
-    },
-  ];
+  protected static fields: object[] = [];
 
   private static comparationOperators = [
     {
@@ -102,7 +96,7 @@ class Query extends Database implements QueryInterface {
 
   static groupBy<T extends typeof Query>(this: T, field: string): T {
     const _field: string = field;
-    const _groups = JSON.parse(JSON.stringify(this.group));
+    const _groups = [...JSON.parse(JSON.stringify(this.group))];
 
     if (_groups.length > 0) {
       _groups[0].$group._id[`${_field}`] = `$${_field}`;
@@ -116,13 +110,6 @@ class Query extends Database implements QueryInterface {
       });
     }
 
-    const _fields = JSON.parse(JSON.stringify(this.fields));
-    console.log(_fields[0].$project);
-    for (let key in _fields[0].$project) {
-      if (key !== "document") {
-        _groups[0].$group._id[`${key}`] = `$${key}`;
-      }
-    }
     this.group = _groups;
     return this;
   }

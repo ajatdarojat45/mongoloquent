@@ -126,7 +126,7 @@ class Model extends Relation implements ModelInterface {
 
       _pipeline.push({
         $project: {
-          document: 0,
+          documentq: 0,
         },
       });
 
