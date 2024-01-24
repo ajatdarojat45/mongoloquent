@@ -138,6 +138,72 @@ class Model extends Relation implements ModelInterface {
     }
   }
 
+  static async max(field: string): Promise<number> {
+    try {
+      const collection = await this.getCollection();
+      this.generateQuery();
+      const aggregate = await collection
+        .aggregate([
+          this.queries,
+          {
+            $group: {
+              _id: null,
+              max: { $max: `$${field}` },
+            },
+          },
+        ])
+        .next();
+
+      return aggregate?.max || 0;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async min(field: string): Promise<number> {
+    try {
+      const collection = await this.getCollection();
+      this.generateQuery();
+      const aggregate = await collection
+        .aggregate([
+          this.queries,
+          {
+            $group: {
+              _id: null,
+              min: { $min: `$${field}` },
+            },
+          },
+        ])
+        .next();
+
+      return aggregate?.min || 0;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async avg(field: string): Promise<number> {
+    try {
+      const collection = await this.getCollection();
+      this.generateQuery();
+      const aggregate = await collection
+        .aggregate([
+          this.queries,
+          {
+            $group: {
+              _id: null,
+              avg: { $avg: `$${field}` },
+            },
+          },
+        ])
+        .next();
+
+      return aggregate?.avg || 0;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   static async create(payload: object): Promise<object> {
     try {
       const collection = await this.getCollection();
