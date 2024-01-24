@@ -140,10 +140,16 @@ class Model extends Relation implements ModelInterface {
   static async max(field: string): Promise<number> {
     try {
       const collection = await this.getCollection();
+      const _pipeline = [];
       this.generateQuery();
+      _pipeline.push(this.queries);
+
+      if (this.$skip > 0) _pipeline.push({ $skip: this.$skip });
+      if (this.$limit > 0) _pipeline.push({ $limit: this.$limit });
+
       const aggregate = await collection
         .aggregate([
-          this.queries,
+          ..._pipeline,
           {
             $group: {
               _id: null,
@@ -162,10 +168,17 @@ class Model extends Relation implements ModelInterface {
   static async min(field: string): Promise<number> {
     try {
       const collection = await this.getCollection();
+      const _pipeline = [];
+
       this.generateQuery();
+      _pipeline.push(this.queries);
+
+      if (this.$skip > 0) _pipeline.push({ $skip: this.$skip });
+      if (this.$limit > 0) _pipeline.push({ $limit: this.$limit });
+
       const aggregate = await collection
         .aggregate([
-          this.queries,
+          ..._pipeline,
           {
             $group: {
               _id: null,
@@ -184,10 +197,16 @@ class Model extends Relation implements ModelInterface {
   static async avg(field: string): Promise<number> {
     try {
       const collection = await this.getCollection();
+      const _pipeline = [];
       this.generateQuery();
+      _pipeline.push(this.queries);
+
+      if (this.$skip > 0) _pipeline.push({ $skip: this.$skip });
+      if (this.$limit > 0) _pipeline.push({ $limit: this.$limit });
+
       const aggregate = await collection
         .aggregate([
-          this.queries,
+          ..._pipeline,
           {
             $group: {
               _id: null,
@@ -206,10 +225,16 @@ class Model extends Relation implements ModelInterface {
   static async sum(field: string): Promise<number> {
     try {
       const collection = await this.getCollection();
+      const _pipeline = [];
       this.generateQuery();
+      _pipeline.push(this.queries);
+
+      if (this.$skip > 0) _pipeline.push({ $skip: this.$skip });
+      if (this.$limit > 0) _pipeline.push({ $limit: this.$limit });
+
       const aggregate = await collection
         .aggregate([
-          this.queries,
+          ..._pipeline,
           {
             $group: {
               _id: null,
@@ -220,6 +245,32 @@ class Model extends Relation implements ModelInterface {
         .next();
 
       return aggregate?.sum || 0;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async count(): Promise<number> {
+    try {
+      const collection = await this.getCollection();
+      const _pipeline = [];
+      this.generateQuery();
+
+      _pipeline.push(this.queries);
+
+      if (this.$skip > 0) _pipeline.push({ $skip: this.$skip });
+      if (this.$limit > 0) _pipeline.push({ $limit: this.$limit });
+
+      const aggregate = await collection
+        .aggregate([
+          ..._pipeline,
+          {
+            $count: "total",
+          },
+        ])
+        .next();
+
+      return aggregate?.total || 0;
     } catch (error) {
       throw error;
     }
