@@ -57,7 +57,7 @@ class Relation extends Query implements RelationInterface {
     return this.with(relation, options);
   }
 
-  protected static belongsTo(
+  public static belongsTo(
     model: typeof Model | string,
     foreignKey: string,
     ownerKey: string = "_id"
@@ -199,7 +199,7 @@ class Relation extends Query implements RelationInterface {
     return this;
   }
 
-  static hasManyThrogh(
+  static hasManyThrough(
     model: typeof Model | string,
     throughCollection: string,
     foreignKey: string,
