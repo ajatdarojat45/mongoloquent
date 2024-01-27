@@ -1,8 +1,8 @@
 export interface RelationInterface {}
 
 export interface WithOptionsInterface {
+  select?: string[];
   exclude?: string[];
-  include?: string[];
 }
 
 export interface BelongsToInterface {
@@ -15,7 +15,7 @@ export interface BelongsToInterface {
 export interface GenerateBelongsToInterface extends BelongsToInterface {
   alias: string;
   options: {
-    include?: string[];
+    select?: string[];
     exclude?: string[];
   };
 }

@@ -247,14 +247,14 @@ class Relation extends Query implements RelationInterface {
   protected static selectFields(params: GenerateBelongsToInterface) {
     const { alias, options } = params;
 
-    if (options?.include && options?.include?.length > 0) {
+    if (options?.select && options?.select?.length > 0) {
       let project = {
         $project: {
           document: "$$ROOT",
         },
       };
 
-      options?.include?.forEach((field) => {
+      options?.select?.forEach((field) => {
         project = {
           ...project,
           $project: {
