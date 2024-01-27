@@ -13,7 +13,7 @@ class Model extends Relation implements ModelInterface {
     try {
       if (fields) this.select(fields);
 
-      const aggregate = await this.aggregate();
+      const aggregate = this.aggregate();
       this.resetQuery();
       this.resetRelation();
 
@@ -27,7 +27,7 @@ class Model extends Relation implements ModelInterface {
     try {
       if (fields) this.select(fields);
 
-      const aggregate = await this.aggregate();
+      const aggregate = this.aggregate();
       this.resetQuery();
       this.resetRelation();
 
@@ -44,7 +44,7 @@ class Model extends Relation implements ModelInterface {
       if (typeof _id === "string") _id = new ObjectId(_id);
 
       this.where("_id", _id);
-      const aggregate = await this.aggregate();
+      const aggregate = this.aggregate();
       this.resetQuery();
       this.resetRelation();
 
@@ -59,8 +59,8 @@ class Model extends Relation implements ModelInterface {
     perPage: number = this.perPage
   ): Promise<PaginateInterface> {
     try {
-      const aggregate = await this.aggregate();
-      const collection = await this.getCollection();
+      const aggregate = this.aggregate();
+      const collection = this.getCollection();
       let totalResult = await collection
         .aggregate([
           this.queries,
@@ -95,19 +95,19 @@ class Model extends Relation implements ModelInterface {
     }
   }
 
-  protected static async aggregate() {
+  protected static aggregate() {
     try {
-      const collection = await this.getCollection();
+      const collection = this.getCollection();
       const _pipeline = [];
       this.generateQuery();
       _pipeline.push(this.queries);
 
       if (
         Object.entries(
-          (this?.sort?.[1] as { $sort?: Record<string, any> })?.$sort || {}
+          (this?.sorts?.[1] as { $sort?: Record<string, any> })?.$sort || {}
         ).length > 0
       )
-        _pipeline.push(...this.sort);
+        _pipeline.push(...this.sorts);
 
       if (
         Object.entries(
@@ -119,7 +119,7 @@ class Model extends Relation implements ModelInterface {
         _pipeline.push(...this.fields);
       }
 
-      if (this.group.length > 0) _pipeline.push(...this.group);
+      if (this.groups.length > 0) _pipeline.push(...this.groups);
       if (this.lookup.length > 0) _pipeline.push(...this.lookup);
 
       _pipeline.push({
@@ -139,7 +139,7 @@ class Model extends Relation implements ModelInterface {
 
   static async max(field: string): Promise<number> {
     try {
-      const collection = await this.getCollection();
+      const collection = this.getCollection();
       const _pipeline = [];
       this.generateQuery();
       _pipeline.push(this.queries);
@@ -167,7 +167,7 @@ class Model extends Relation implements ModelInterface {
 
   static async min(field: string): Promise<number> {
     try {
-      const collection = await this.getCollection();
+      const collection = this.getCollection();
       const _pipeline = [];
 
       this.generateQuery();
@@ -196,7 +196,7 @@ class Model extends Relation implements ModelInterface {
 
   static async avg(field: string): Promise<number> {
     try {
-      const collection = await this.getCollection();
+      const collection = this.getCollection();
       const _pipeline = [];
       this.generateQuery();
       _pipeline.push(this.queries);
@@ -224,7 +224,7 @@ class Model extends Relation implements ModelInterface {
 
   static async sum(field: string): Promise<number> {
     try {
-      const collection = await this.getCollection();
+      const collection = this.getCollection();
       const _pipeline = [];
       this.generateQuery();
       _pipeline.push(this.queries);
@@ -252,7 +252,7 @@ class Model extends Relation implements ModelInterface {
 
   static async count(): Promise<number> {
     try {
-      const collection = await this.getCollection();
+      const collection = this.getCollection();
       const _pipeline = [];
       this.generateQuery();
 
@@ -278,7 +278,7 @@ class Model extends Relation implements ModelInterface {
 
   static async pluck(field: string) {
     try {
-      const collection = await this.getCollection();
+      const collection = this.getCollection();
       const _pipeline = [];
       this.generateQuery();
 
@@ -306,7 +306,7 @@ class Model extends Relation implements ModelInterface {
 
   static async create(payload: object): Promise<object> {
     try {
-      const collection = await this.getCollection();
+      const collection = this.getCollection();
 
       let _payload: object = checkSoftDelete(this.softDelete, payload);
       _payload = checkTimestamps(this.timestamps, _payload);
@@ -323,7 +323,7 @@ class Model extends Relation implements ModelInterface {
 
   static async update(payload: object): Promise<object> {
     try {
-      const collection = await this.getCollection();
+      const collection = this.getCollection();
       const _payload = checkTimestamps(this.timestamps, payload);
 
       if ((_payload as any)?._id) delete (_payload as any)._id;
@@ -365,7 +365,7 @@ class Model extends Relation implements ModelInterface {
 
   static async forceDelete(): Promise<object | null> {
     try {
-      const collection = await this.getCollection();
+      const collection = this.getCollection();
 
       this.generateQuery();
 

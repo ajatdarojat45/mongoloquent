@@ -1,5 +1,4 @@
 import Database from "./Database";
-import { ObjectId } from "mongodb";
 import { QueriesInterface, QueryInterface } from "../interfaces/QueryInterface";
 
 class Query extends Database implements QueryInterface {
@@ -9,7 +8,7 @@ class Query extends Database implements QueryInterface {
   protected static $skip: number = 0;
   protected static perPage: number = 10;
 
-  protected static sort: object[] = [
+  protected static sorts: object[] = [
     {
       $project: {
         document: "$$ROOT",
@@ -25,7 +24,7 @@ class Query extends Database implements QueryInterface {
     },
   ];
 
-  protected static group: object[] = [];
+  protected static groups: object[] = [];
 
   protected static queries: QueriesInterface = {
     $match: {
@@ -84,20 +83,20 @@ class Query extends Database implements QueryInterface {
     const _field: string = field;
     const _order: number = order.toLowerCase() === "desc" ? -1 : 1;
 
-    const _sort = JSON.parse(JSON.stringify(this.sort));
+    const _sorts = JSON.parse(JSON.stringify(this.sorts));
 
-    _sort[0].$project[`${_field}`] = 1;
-    _sort[0].$project[`lowercase_${_field}`] = { $toLower: `$${_field}` };
-    _sort[1].$sort[`lowercase_${_field}`] = _order;
+    _sorts[0].$project[`${_field}`] = 1;
+    _sorts[0].$project[`lowercase_${_field}`] = { $toLower: `$${_field}` };
+    _sorts[1].$sort[`lowercase_${_field}`] = _order;
 
-    this.sort = JSON.parse(JSON.stringify(_sort));
+    this.sorts = JSON.parse(JSON.stringify(_sorts));
 
     return this;
   }
 
   static groupBy<T extends typeof Query>(this: T, field: string): T {
     const _field: string = field;
-    const _groups = [...JSON.parse(JSON.stringify(this.group))];
+    const _groups = [...JSON.parse(JSON.stringify(this.groups))];
 
     if (_groups.length > 0) {
       _groups[0].$group._id[`${_field}`] = `$${_field}`;
@@ -111,7 +110,7 @@ class Query extends Database implements QueryInterface {
       });
     }
 
-    this.group = _groups;
+    this.groups = _groups;
     return this;
   }
 
@@ -382,7 +381,7 @@ class Query extends Database implements QueryInterface {
   }
 
   protected static resetQuery() {
-    this.sort = [
+    this.sorts = [
       {
         $project: {
           document: "$$ROOT",
