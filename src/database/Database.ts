@@ -8,22 +8,22 @@ class Database implements DatabaseInterface {
   protected static timestamps: boolean = false;
   private static db: Db;
 
-  protected static async getCollection(): Promise<Collection> {
+  protected static getCollection(): Collection {
     if (!this.db) {
-      await this.connect();
+      this.connect();
     }
     return this.db.collection(this.collection);
   }
 
-  private static async connect(): Promise<void> {
+  private static connect(): void {
     try {
-      console.log("Connecting to database...");
-      await client.connect();
+      console.log("Mongoloquent trying to connect to database...");
+      client.connect();
       const db = client.db(MONGOLOQUENT_DATABASE);
-      console.log("Connected to database");
+      console.log("Mongoloquent connected to database...");
       this.db = db;
     } catch (error) {
-      throw new Error("Failed to connect to database");
+      throw new Error("Mongoloquent failed to connect to database...");
     }
   }
 }
