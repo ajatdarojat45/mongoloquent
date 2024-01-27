@@ -9,21 +9,22 @@ import {
   HasManyThroughInterface,
   GenerateHasManyThroughInterface,
 } from "../interfaces/RelationInterface";
+import Model from "./Model";
 
 class Relation extends Query implements RelationInterface {
   protected static lookups: object[] = [];
 
   static with<T extends typeof Relation>(
     this: T,
-    method: string,
+    relation: string,
     options: WithOptionsInterface = {}
   ): T {
-    if (typeof (this as any)[method] === "function") {
-      const model = (this as any)[method]();
+    if (typeof (this as any)[relation] === "function") {
+      const model = (this as any)[relation]();
 
       const payload = {
         ...model,
-        alias: method,
+        alias: relation,
         options,
       };
 
@@ -41,7 +42,7 @@ class Relation extends Query implements RelationInterface {
       }
     } else {
       console.log(
-        `The ${method} relation method does not exist in the ${this.name} model.`
+        `The ${relation} method does not exist in the ${this.name} model.`
       );
 
       return this;
@@ -50,19 +51,21 @@ class Relation extends Query implements RelationInterface {
 
   protected static has<T extends typeof Relation>(
     this: T,
-    method: string,
+    relation: string,
     options: WithOptionsInterface = {}
   ): T {
-    return this.with(method, options);
+    return this.with(relation, options);
   }
 
   protected static belongsTo(
-    collection: string,
+    model: typeof Model | string,
     foreignKey: string,
     ownerKey: string = "_id"
   ): BelongsToInterface {
+    const collection = typeof model === "string" ? model : model.collection;
+
     return {
-      collection: collection,
+      collection,
       foreignKey: ownerKey,
       localKey: foreignKey,
       type: "belongsTo",
@@ -104,10 +107,12 @@ class Relation extends Query implements RelationInterface {
   }
 
   static hasMany(
-    collection: string,
+    model: typeof Model | string,
     foreignKey: string,
     localKey: string = "_id"
   ): BelongsToInterface {
+    const collection = typeof model === "string" ? model : model.collection;
+
     return {
       collection,
       foreignKey: foreignKey,
@@ -139,11 +144,13 @@ class Relation extends Query implements RelationInterface {
   }
 
   static belongsToMany(
-    collection: string,
+    model: typeof Model | string,
     pivotCollection: string,
     foreignKey: string,
     foreignKeyTarget: string
   ): BelongsToManyInterface {
+    const collection = typeof model === "string" ? model : model.collection;
+
     return {
       collection,
       pivotCollection,
@@ -193,11 +200,13 @@ class Relation extends Query implements RelationInterface {
   }
 
   static hasManyThrogh(
-    collection: string,
+    model: typeof Model | string,
     throughCollection: string,
     foreignKey: string,
     foreignKeyThrough: string
   ): HasManyThroughInterface {
+    const collection = typeof model === "string" ? model : model.collection;
+
     return {
       collection,
       throughCollection,
