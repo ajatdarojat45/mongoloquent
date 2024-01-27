@@ -11,7 +11,7 @@ import {
 } from "../interfaces/RelationInterface";
 
 class Relation extends Query implements RelationInterface {
-  protected static lookup: object[] = [];
+  protected static lookups: object[] = [];
 
   static with<T extends typeof Relation>(
     this: T,
@@ -74,12 +74,12 @@ class Relation extends Query implements RelationInterface {
     params: GenerateBelongsToInterface
   ): T {
     const { collection, foreignKey, localKey, alias } = params;
-    const _lookup = JSON.parse(JSON.stringify(this.lookup));
+    const _lookups = JSON.parse(JSON.stringify(this.lookups));
 
     const _foreignKey = this.fields.length > 0 ? foreignKey : localKey;
     const _localKey = this.fields.length > 0 ? localKey : foreignKey;
 
-    _lookup.push({
+    _lookups.push({
       $lookup: {
         from: collection,
         localField: `document.${_localKey}`,
@@ -95,9 +95,9 @@ class Relation extends Query implements RelationInterface {
       },
     };
 
-    _lookup.push(_unwind);
+    _lookups.push(_unwind);
 
-    this.lookup = _lookup;
+    this.lookups = _lookups;
     this.selectFields(params);
 
     return this;
@@ -121,9 +121,9 @@ class Relation extends Query implements RelationInterface {
     params: GenerateBelongsToInterface
   ): T {
     const { collection, foreignKey, localKey, alias } = params;
-    const _lookup = JSON.parse(JSON.stringify(this.lookup));
+    const _lookups = JSON.parse(JSON.stringify(this.lookups));
 
-    _lookup.push({
+    _lookups.push({
       $lookup: {
         from: collection,
         localField: localKey,
@@ -132,7 +132,7 @@ class Relation extends Query implements RelationInterface {
       },
     });
 
-    this.lookup = _lookup;
+    this.lookups = _lookups;
     this.selectFields(params);
 
     return this;
@@ -161,9 +161,9 @@ class Relation extends Query implements RelationInterface {
     params: GenerateBelongsToManyInterface
   ): T {
     const { collection, pivotCollection, foreignKey, localKey, alias } = params;
-    const _lookup = JSON.parse(JSON.stringify(this.lookup));
+    const _lookups = JSON.parse(JSON.stringify(this.lookups));
 
-    _lookup.push(
+    _lookups.push(
       {
         $lookup: {
           from: pivotCollection,
@@ -187,7 +187,7 @@ class Relation extends Query implements RelationInterface {
       }
     );
 
-    this.lookup = _lookup;
+    this.lookups = _lookups;
     this.selectFields(params);
     return this;
   }
@@ -213,9 +213,9 @@ class Relation extends Query implements RelationInterface {
   ): T {
     const { collection, throughCollection, foreignKey, localKey, alias } =
       params;
-    const _lookup = JSON.parse(JSON.stringify(this.lookup));
+    const _lookups = JSON.parse(JSON.stringify(this.lookups));
 
-    _lookup.push(
+    _lookups.push(
       {
         $lookup: {
           from: throughCollection,
@@ -239,7 +239,7 @@ class Relation extends Query implements RelationInterface {
       }
     );
 
-    this.lookup = _lookup;
+    this.lookups = _lookups;
     this.selectFields(params);
     return this;
   }
@@ -277,7 +277,7 @@ class Relation extends Query implements RelationInterface {
         },
       ];
 
-      this.lookup.push(project, ...additionals);
+      this.lookups.push(project, ...additionals);
     }
 
     if (options?.exclude && options?.exclude?.length > 0) {
@@ -295,29 +295,29 @@ class Relation extends Query implements RelationInterface {
         };
       });
 
-      this.lookup.push(project);
+      this.lookups.push(project);
     }
 
     return this;
   }
 
   protected static attach(ids: string[] = []) {
-    console.log("attach", "<<<<");
+    console.log("attach", ids, "<<<<");
     return this;
   }
 
   protected static detach(ids: string[] = []) {
-    console.log("detach", "<<<<");
+    console.log("detach", ids, "<<<<");
     return this;
   }
 
   protected static sync(ids: string[] = []) {
-    console.log("sync", "<<<<");
+    console.log("sync", ids, "<<<<");
     return this;
   }
 
   protected static resetRelation() {
-    this.lookup = [];
+    this.lookups = [];
     return this;
   }
 }

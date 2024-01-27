@@ -7,6 +7,14 @@ class Query extends Database implements QueryInterface {
   protected static $limit: number = 0;
   protected static $skip: number = 0;
   protected static perPage: number = 10;
+  protected static groups: object[] = [];
+  protected static fields: object[] = [];
+  protected static queries: QueriesInterface = {
+    $match: {
+      $and: [],
+      $or: [],
+    },
+  };
 
   protected static sorts: object[] = [
     {
@@ -23,17 +31,6 @@ class Query extends Database implements QueryInterface {
       },
     },
   ];
-
-  protected static groups: object[] = [];
-
-  protected static queries: QueriesInterface = {
-    $match: {
-      $and: [],
-      $or: [],
-    },
-  };
-
-  protected static fields: object[] = [];
 
   private static comparationOperators = [
     {
