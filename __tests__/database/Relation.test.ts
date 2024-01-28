@@ -116,7 +116,7 @@ test("hasManyThrogh method should be return an object", () => {
   expect(result.type).toEqual("hasManyThrough");
 });
 
-test("with belongsTo method should be return this", () => {
+test("with method with belongsTo relation should be return this", () => {
   const result = Product.with("user");
 
   expect(result).toBe(Product);
@@ -136,7 +136,7 @@ test("with belongsTo method should be return this", () => {
   expect(unwind).toHaveProperty("$unwind");
 });
 
-test("with hasMany method should be return this", () => {
+test("with method with hasMany relation should be return this", () => {
   const result = User.with("products");
 
   expect(result).toBe(User);
@@ -152,7 +152,7 @@ test("with hasMany method should be return this", () => {
   expect(lookup).toHaveProperty("$lookup");
 });
 
-test("with belongsToMany method should be return this", () => {
+test("with method with belongsToMany relation should be return this", () => {
   const result = User.with("roles");
 
   expect(result).toBe(User);
@@ -169,7 +169,7 @@ test("with belongsToMany method should be return this", () => {
   expect(result.lookups[2]).toHaveProperty("$project");
 });
 
-test("with hasManyThrough method should be return this", () => {
+test("with method with hasManyThrough relation should be return this", () => {
   const result = Country.with("products");
 
   expect(result).toBe(Country);
@@ -184,4 +184,68 @@ test("with hasManyThrough method should be return this", () => {
 
   expect(result.lookups[2]).toEqual(expect.any(Object));
   expect(result.lookups[2]).toHaveProperty("$project");
+});
+
+test("with method with hasMany relation and select fields should be return this", () => {
+  const result = User.with("products", {
+    select: ["name", "price"],
+  });
+
+  expect(result).toBe(User);
+  expect(result).toEqual(expect.any(Function));
+  expect(result.lookups).toHaveLength(4);
+
+  expect(result.lookups[0]).toEqual(expect.any(Object));
+  expect(result.lookups[0]).toHaveProperty("$lookup");
+
+  expect(result.lookups[1]).toEqual(expect.any(Object));
+  expect(result.lookups[1]).toHaveProperty("$project");
+
+  expect(result.lookups[2]).toEqual(expect.any(Object));
+  expect(result.lookups[2]).toHaveProperty("$set");
+
+  expect(result.lookups[3]).toEqual(expect.any(Object));
+  expect(result.lookups[3]).toHaveProperty("$replaceRoot");
+});
+
+test("with method with hasMany relation and exclude fields should be return this", () => {
+  const result = User.with("products", {
+    exclude: ["name", "price"],
+  });
+
+  expect(result).toBe(User);
+  expect(result).toEqual(expect.any(Function));
+  expect(result.lookups).toHaveLength(2);
+
+  expect(result.lookups[0]).toEqual(expect.any(Object));
+  expect(result.lookups[0]).toHaveProperty("$lookup");
+
+  expect(result.lookups[1]).toEqual(expect.any(Object));
+  expect(result.lookups[1]).toHaveProperty("$project");
+});
+
+test("with method with hasMany relation and select and exclude fields should be return this", () => {
+  const result = User.with("products", {
+    select: ["name", "price"],
+    exclude: ["name"],
+  });
+
+  expect(result).toBe(User);
+  expect(result).toEqual(expect.any(Function));
+  expect(result.lookups).toHaveLength(5);
+
+  expect(result.lookups[0]).toEqual(expect.any(Object));
+  expect(result.lookups[0]).toHaveProperty("$lookup");
+
+  expect(result.lookups[1]).toEqual(expect.any(Object));
+  expect(result.lookups[1]).toHaveProperty("$project");
+
+  expect(result.lookups[2]).toEqual(expect.any(Object));
+  expect(result.lookups[2]).toHaveProperty("$set");
+
+  expect(result.lookups[3]).toEqual(expect.any(Object));
+  expect(result.lookups[3]).toHaveProperty("$replaceRoot");
+
+  expect(result.lookups[4]).toEqual(expect.any(Object));
+  expect(result.lookups[4]).toHaveProperty("$project");
 });
