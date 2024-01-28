@@ -201,11 +201,13 @@ class Relation extends Query implements RelationInterface {
 
   static hasManyThrough(
     model: typeof Model | string,
-    throughCollection: string,
+    throughModel: typeof Model | string,
     foreignKey: string,
     foreignKeyThrough: string
   ): HasManyThroughInterface {
     const collection = typeof model === "string" ? model : model.collection;
+    const throughCollection =
+      typeof throughModel === "string" ? throughModel : throughModel.collection;
 
     return {
       collection,
@@ -325,7 +327,7 @@ class Relation extends Query implements RelationInterface {
     return this;
   }
 
-  protected static resetRelation() {
+  public static resetRelation() {
     this.lookups = [];
     return this;
   }

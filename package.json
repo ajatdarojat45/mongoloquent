@@ -5,19 +5,13 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "test": "jest --watchAll --verbose --coverage",
+    "test": "jest --detectOpenHandles --runInBand --verbose  --forceExit --coverage --watchAll",
     "build": "tsc",
     "start": "ts-node src/index.ts",
     "prepublishOnly": "npm run build",
     "dev": "nodemon --exec ts-node sandbox.ts"
   },
-  "keywords": [
-    "mongodb",
-    "orm",
-    "typescript",
-    "jest",
-    "javasript"
-  ],
+  "keywords": ["mongodb", "orm", "typescript", "jest", "javasript"],
   "author": "@ajatdarojat45",
   "license": "MIT",
   "dependencies": {

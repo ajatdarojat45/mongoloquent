@@ -1,12 +1,23 @@
 import Relation from "../../src/database/Relation";
 import Model from "../../src/database/Model";
-import exp from "constants";
+
+class Country extends Model {
+  protected static collection: string = "countriesTest";
+
+  static products() {
+    return this.hasManyThrough(Product, User, "countryId", "userId");
+  }
+}
 
 class User extends Model {
   protected static collection: string = "usersTest";
 
   static products() {
     return this.hasMany(Product, "userId", "_id");
+  }
+
+  static roles() {
+    return this.belongsToMany(Role, "userRoles", "userId", "roleId");
   }
 }
 
@@ -17,6 +28,17 @@ class Product extends Model {
     return this.belongsTo(User, "userId", "_id");
   }
 }
+
+class Role extends Model {
+  protected static collection: string = "roles";
+}
+
+beforeEach(() => {
+  User.resetRelation();
+  Product.resetRelation();
+  Country.resetRelation();
+  Role.resetRelation();
+});
 
 test("belongsTo method should be return an object", () => {
   const result = Relation.belongsTo("users", "userId", "_id");
@@ -128,4 +150,38 @@ test("with hasMany method should be return this", () => {
   const lookup = lookups[0];
   expect(lookup).toEqual(expect.any(Object));
   expect(lookup).toHaveProperty("$lookup");
+});
+
+test("with belongsToMany method should be return this", () => {
+  const result = User.with("roles");
+
+  expect(result).toBe(User);
+  expect(result).toEqual(expect.any(Function));
+  expect(result.lookups).toHaveLength(3);
+
+  expect(result.lookups[0]).toEqual(expect.any(Object));
+  expect(result.lookups[0]).toHaveProperty("$lookup");
+
+  expect(result.lookups[1]).toEqual(expect.any(Object));
+  expect(result.lookups[1]).toHaveProperty("$lookup");
+
+  expect(result.lookups[2]).toEqual(expect.any(Object));
+  expect(result.lookups[2]).toHaveProperty("$project");
+});
+
+test("with hasManyThrough method should be return this", () => {
+  const result = Country.with("products");
+
+  expect(result).toBe(Country);
+  expect(result).toEqual(expect.any(Function));
+  expect(result.lookups).toHaveLength(3);
+
+  expect(result.lookups[0]).toEqual(expect.any(Object));
+  expect(result.lookups[0]).toHaveProperty("$lookup");
+
+  expect(result.lookups[1]).toEqual(expect.any(Object));
+  expect(result.lookups[1]).toHaveProperty("$lookup");
+
+  expect(result.lookups[2]).toEqual(expect.any(Object));
+  expect(result.lookups[2]).toHaveProperty("$project");
 });
