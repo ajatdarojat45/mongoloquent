@@ -1,4 +1,22 @@
 import Relation from "../../src/database/Relation";
+import Model from "../../src/database/Model";
+import exp from "constants";
+
+class User extends Model {
+  protected static collection: string = "usersTest";
+
+  static products() {
+    return this.hasMany(Product, "userId", "_id");
+  }
+}
+
+class Product extends Model {
+  protected static collection: string = "productsTest";
+
+  static user() {
+    return this.belongsTo(User, "userId", "_id");
+  }
+}
 
 test("belongsTo method should be return an object", () => {
   const result = Relation.belongsTo("users", "userId", "_id");
@@ -74,4 +92,40 @@ test("hasManyThrogh method should be return an object", () => {
   expect(result.localKey).toEqual("countryId");
   expect(result).toHaveProperty("type");
   expect(result.type).toEqual("hasManyThrough");
+});
+
+test("with belongsTo method should be return this", () => {
+  const result = Product.with("user");
+
+  expect(result).toBe(Product);
+  expect(result).toEqual(expect.any(Function));
+  expect(result).toHaveProperty("lookups");
+
+  const lookups = result.lookups;
+  expect(lookups).toEqual(expect.any(Array));
+  expect(lookups).toHaveLength(2);
+
+  const lookup = lookups[0];
+  expect(lookup).toEqual(expect.any(Object));
+  expect(lookup).toHaveProperty("$lookup");
+
+  const unwind = lookups[1];
+  expect(unwind).toEqual(expect.any(Object));
+  expect(unwind).toHaveProperty("$unwind");
+});
+
+test("with hasMany method should be return this", () => {
+  const result = User.with("products");
+
+  expect(result).toBe(User);
+  expect(result).toEqual(expect.any(Function));
+  expect(result).toHaveProperty("lookups");
+
+  const lookups = result.lookups;
+  expect(lookups).toEqual(expect.any(Array));
+  expect(lookups).toHaveLength(1);
+
+  const lookup = lookups[0];
+  expect(lookup).toEqual(expect.any(Object));
+  expect(lookup).toHaveProperty("$lookup");
 });
