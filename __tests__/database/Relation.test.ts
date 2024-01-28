@@ -225,7 +225,7 @@ test("with method with hasMany relation and exclude fields should be return this
 });
 
 test("with method with hasMany relation and select and exclude fields should be return this", () => {
-  const result = User.with("products", {
+  const result = User.has("products", {
     select: ["name", "price"],
     exclude: ["name"],
   });

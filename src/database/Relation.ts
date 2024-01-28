@@ -49,7 +49,7 @@ class Relation extends Query implements RelationInterface {
     }
   }
 
-  protected static has<T extends typeof Relation>(
+  public static has<T extends typeof Relation>(
     this: T,
     relation: string,
     options: WithOptionsInterface = {}
