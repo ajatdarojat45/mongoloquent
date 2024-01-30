@@ -87,12 +87,6 @@ test("belongsToMany method should be return an object", () => {
   expect(result.localKey).toEqual("roleId");
   expect(result).toHaveProperty("type");
   expect(result.type).toEqual("belongsToMany");
-  expect(result).toHaveProperty("attach");
-  expect(result.attach).toEqual(expect.any(Function));
-  expect(result).toHaveProperty("detach");
-  expect(result.detach).toEqual(expect.any(Function));
-  expect(result).toHaveProperty("sync");
-  expect(result.sync).toEqual(expect.any(Function));
 });
 
 test("hasManyThrogh method should be return an object", () => {

@@ -157,9 +157,6 @@ class Relation extends Query implements RelationInterface {
       foreignKey: foreignKey,
       localKey: foreignKeyTarget,
       type: "belongsToMany",
-      attach: (ids: string[] = []) => this.attach(ids),
-      detach: (ids: string[] = []) => this.detach(ids),
-      sync: (ids: string[] = []) => this.sync(ids),
     };
   }
 
@@ -309,21 +306,6 @@ class Relation extends Query implements RelationInterface {
       this.lookups.push(project);
     }
 
-    return this;
-  }
-
-  protected static attach(ids: string[] = []) {
-    console.log("attach", ids, "<<<<");
-    return this;
-  }
-
-  protected static detach(ids: string[] = []) {
-    console.log("detach", ids, "<<<<");
-    return this;
-  }
-
-  protected static sync(ids: string[] = []) {
-    console.log("sync", ids, "<<<<");
     return this;
   }
 

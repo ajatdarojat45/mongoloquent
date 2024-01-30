@@ -22,9 +22,6 @@ export interface GenerateBelongsToInterface extends BelongsToInterface {
 
 export interface BelongsToManyInterface extends BelongsToInterface {
   pivotCollection: string;
-  attach: (ids: string[]) => void;
-  detach: (ids: string[]) => void;
-  sync: (ids: string[]) => void;
 }
 
 export interface GenerateBelongsToManyInterface
