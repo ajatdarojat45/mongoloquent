@@ -243,3 +243,14 @@ test("with method with hasMany relation and select and exclude fields should be 
   expect(result.lookups[4]).toEqual(expect.any(Object));
   expect(result.lookups[4]).toHaveProperty("$project");
 });
+
+test("with method with does not exist method should return this", () => {
+  const consoleSpy = jest.spyOn(console, "log");
+
+  User.with("countries");
+
+  expect(consoleSpy).toHaveBeenCalled();
+  expect(consoleSpy).toHaveBeenCalledWith(
+    `The countries method does not exist in the ${User.name} model.`
+  );
+});
