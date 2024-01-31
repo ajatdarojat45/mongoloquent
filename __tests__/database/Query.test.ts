@@ -53,3 +53,29 @@ describe("Query - groupBy method", () => {
     expect(groups[0]).toHaveProperty("$group");
   });
 });
+
+describe("Query - select method", () => {
+  test("single select should return this", () => {
+    const result = Query.select("name");
+
+    expect(result).toBe(Query);
+
+    const fields = result["fields"];
+    expect(fields).toEqual(expect.any(Array));
+    expect(fields).toHaveLength(1);
+    expect(fields[0]).toEqual(expect.any(Object));
+    expect(fields[0]).toHaveProperty("$project");
+  });
+
+  test("multiple select should return this", () => {
+    const result = Query.select(["name", "age"]);
+
+    expect(result).toBe(Query);
+
+    const fields = result["fields"];
+    expect(fields).toEqual(expect.any(Array));
+    expect(fields).toHaveLength(1);
+    expect(fields[0]).toEqual(expect.any(Object));
+    expect(fields[0]).toHaveProperty("$project");
+  });
+});
