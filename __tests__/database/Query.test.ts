@@ -238,3 +238,48 @@ describe("Query - whereIn method", () => {
     expect(match?.["$or"]).toHaveLength(0);
   });
 });
+
+describe("Query - orWhereIn method", () => {
+  test("single orWhereIn should return this", () => {
+    const result = Query.orWhereIn("name", ["John", "Doe"]);
+
+    expect(result).toBe(Query);
+    expect(result["queries"]).toEqual(expect.any(Object));
+    expect(result["queries"]).toHaveProperty("$match");
+
+    const match = result["queries"]["$match"];
+    expect(match).toEqual(expect.any(Object));
+    expect(match).toHaveProperty("$or");
+    expect(match?.["$or"]).toEqual(expect.any(Array));
+    expect(match?.["$or"]).toHaveLength(1);
+    expect(match?.["$or"]?.[0]).toEqual(expect.any(Object));
+    expect(match?.["$or"]?.[0]).toHaveProperty("name");
+
+    expect(match?.["$and"]).toEqual(expect.any(Array));
+    expect(match?.["$and"]).toHaveLength(0);
+  });
+
+  test("multiple orWhereIn should return this", () => {
+    const result = Query.orWhereIn("name", ["John", "Doe"]).orWhereIn(
+      "age",
+      [12, 20]
+    );
+
+    expect(result).toBe(Query);
+    expect(result["queries"]).toEqual(expect.any(Object));
+    expect(result["queries"]).toHaveProperty("$match");
+
+    const match = result["queries"]["$match"];
+    expect(match).toEqual(expect.any(Object));
+    expect(match).toHaveProperty("$or");
+    expect(match?.["$or"]).toEqual(expect.any(Array));
+    expect(match?.["$or"]).toHaveLength(2);
+    expect(match?.["$or"]?.[0]).toEqual(expect.any(Object));
+    expect(match?.["$or"]?.[0]).toHaveProperty("name");
+    expect(match?.["$or"]?.[1]).toEqual(expect.any(Object));
+    expect(match?.["$or"]?.[1]).toHaveProperty("age");
+
+    expect(match?.["$and"]).toEqual(expect.any(Array));
+    expect(match?.["$and"]).toHaveLength(0);
+  });
+});
