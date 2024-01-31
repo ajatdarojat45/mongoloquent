@@ -79,3 +79,33 @@ describe("Query - select method", () => {
     expect(fields[0]).toHaveProperty("$project");
   });
 });
+
+describe("Query - exclude method", () => {
+  test("single exclude should return this", () => {
+    const result = Query.exclude("name");
+
+    expect(result).toBe(Query);
+
+    const fields = result["fields"];
+    expect(fields).toEqual(expect.any(Array));
+    expect(fields).toHaveLength(2);
+    expect(fields[0]).toEqual(expect.any(Object));
+    expect(fields[0]).toHaveProperty("$project");
+    expect(fields[1]).toEqual(expect.any(Object));
+    expect(fields[1]).toHaveProperty("$project");
+  });
+
+  test("multiple exclude should return this", () => {
+    const result = Query.exclude(["name", "age"]);
+
+    expect(result).toBe(Query);
+
+    const fields = result["fields"];
+    expect(fields).toEqual(expect.any(Array));
+    expect(fields).toHaveLength(2);
+    expect(fields[0]).toEqual(expect.any(Object));
+    expect(fields[0]).toHaveProperty("$project");
+    expect(fields[1]).toEqual(expect.any(Object));
+    expect(fields[1]).toHaveProperty("$project");
+  });
+});
