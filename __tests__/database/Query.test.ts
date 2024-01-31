@@ -109,3 +109,43 @@ describe("Query - exclude method", () => {
     expect(fields[1]).toHaveProperty("$project");
   });
 });
+
+describe("Query - where method", () => {
+  test("single where should return this", () => {
+    const result = Query.where("name", "John");
+
+    expect(result).toBe(Query);
+
+    const queries = result["queries"];
+    expect(queries).toEqual(expect.any(Object));
+    expect(queries).toHaveProperty("$match");
+
+    const match = queries["$match"];
+    expect(match).toEqual(expect.any(Object));
+    expect(match).toHaveProperty("$and");
+    expect(match?.["$and"]).toEqual(expect.any(Array));
+    expect(match?.["$and"]).toHaveLength(1);
+    expect(match?.["$and"]?.[0]).toEqual(expect.any(Object));
+    expect(match?.["$and"]?.[0]).toHaveProperty("name");
+  });
+
+  test("multiple where should return this", () => {
+    const result = Query.where("name", "John").where("age", 20);
+
+    expect(result).toBe(Query);
+
+    const queries = result["queries"];
+    expect(queries).toEqual(expect.any(Object));
+    expect(queries).toHaveProperty("$match");
+
+    const match = queries["$match"];
+    expect(match).toEqual(expect.any(Object));
+    expect(match).toHaveProperty("$and");
+    expect(match?.["$and"]).toEqual(expect.any(Array));
+    expect(match?.["$and"]).toHaveLength(2);
+    expect(match?.["$and"]?.[0]).toEqual(expect.any(Object));
+    expect(match?.["$and"]?.[0]).toHaveProperty("name");
+    expect(match?.["$and"]?.[1]).toEqual(expect.any(Object));
+    expect(match?.["$and"]?.[1]).toHaveProperty("age");
+  });
+});
