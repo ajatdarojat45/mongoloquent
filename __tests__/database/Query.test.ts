@@ -127,6 +127,9 @@ describe("Query - where method", () => {
     expect(match?.["$and"]).toHaveLength(1);
     expect(match?.["$and"]?.[0]).toEqual(expect.any(Object));
     expect(match?.["$and"]?.[0]).toHaveProperty("name");
+
+    expect(match?.["$or"]).toEqual(expect.any(Array));
+    expect(match?.["$or"]).toHaveLength(0);
   });
 
   test("multiple where should return this", () => {
@@ -147,6 +150,9 @@ describe("Query - where method", () => {
     expect(match?.["$and"]?.[0]).toHaveProperty("name");
     expect(match?.["$and"]?.[1]).toEqual(expect.any(Object));
     expect(match?.["$and"]?.[1]).toHaveProperty("age");
+
+    expect(match?.["$or"]).toEqual(expect.any(Array));
+    expect(match?.["$or"]).toHaveLength(0);
   });
 });
 
@@ -167,6 +173,9 @@ describe("Query - orWhere method", () => {
     expect(match?.["$or"]).toHaveLength(1);
     expect(match?.["$or"]?.[0]).toEqual(expect.any(Object));
     expect(match?.["$or"]?.[0]).toHaveProperty("name");
+
+    expect(match?.["$and"]).toEqual(expect.any(Array));
+    expect(match?.["$and"]).toHaveLength(0);
   });
 
   test("multiple orWhere should return this", () => {
@@ -187,6 +196,9 @@ describe("Query - orWhere method", () => {
     expect(match?.["$or"]?.[0]).toHaveProperty("name");
     expect(match?.["$or"]?.[1]).toEqual(expect.any(Object));
     expect(match?.["$or"]?.[1]).toHaveProperty("age");
+
+    expect(match?.["$and"]).toEqual(expect.any(Array));
+    expect(match?.["$and"]).toHaveLength(0);
   });
 });
 
