@@ -241,8 +241,10 @@ class Query extends Database implements QueryInterface {
     field: string,
     values: any[]
   ): T {
-    if (values.length !== 2)
-      throw new Error("The between operator must have two values");
+    if (values.length !== 2) {
+      console.error("The between operator must have two values");
+      return this;
+    }
 
     return this.whereGenerator(field, "between", values);
   }
@@ -252,8 +254,10 @@ class Query extends Database implements QueryInterface {
     field: string,
     values: any[]
   ): T {
-    if (values.length !== 2)
-      throw new Error("The between operator must have two values");
+    if (values.length !== 2) {
+      console.error("The between operator must have two values");
+      return this;
+    }
 
     return this.whereGenerator(field, "between", values, true);
   }

@@ -441,6 +441,24 @@ describe("Query - whereBetween method", () => {
     expect(match?.["$or"]).toEqual(expect.any(Array));
     expect(match?.["$or"]).toHaveLength(0);
   });
+
+  test("with single value should return this", () => {
+    Query.whereBetween("age", [12]);
+
+    const queries = Query["queries"];
+
+    expect(queries).toEqual(expect.any(Object));
+    expect(queries).toHaveProperty("$match");
+
+    const match = queries["$match"];
+    expect(match).toEqual(expect.any(Object));
+    expect(match).toHaveProperty("$and");
+    expect(match?.["$and"]).toEqual(expect.any(Array));
+    expect(match?.["$and"]).toHaveLength(0);
+
+    expect(match?.["$or"]).toEqual(expect.any(Array));
+    expect(match?.["$or"]).toHaveLength(0);
+  });
 });
 
 describe("Query - orWhereBetween method", () => {
@@ -482,6 +500,24 @@ describe("Query - orWhereBetween method", () => {
     expect(match?.["$or"]?.[0]).toHaveProperty("age");
     expect(match?.["$or"]?.[1]).toEqual(expect.any(Object));
     expect(match?.["$or"]?.[1]).toHaveProperty("height");
+
+    expect(match?.["$and"]).toEqual(expect.any(Array));
+    expect(match?.["$and"]).toHaveLength(0);
+  });
+
+  test("with single value should return this", () => {
+    Query.orWhereBetween("age", [12]);
+
+    const queries = Query["queries"];
+
+    expect(queries).toEqual(expect.any(Object));
+    expect(queries).toHaveProperty("$match");
+
+    const match = queries["$match"];
+    expect(match).toEqual(expect.any(Object));
+    expect(match).toHaveProperty("$or");
+    expect(match?.["$or"]).toEqual(expect.any(Array));
+    expect(match?.["$or"]).toHaveLength(0);
 
     expect(match?.["$and"]).toEqual(expect.any(Array));
     expect(match?.["$and"]).toHaveLength(0);
@@ -563,5 +599,37 @@ describe("Query - generateQuery method", () => {
     expect(Query["queries"]).toHaveProperty("$match");
     expect(Query["queries"]["$match"]).toHaveProperty("$and");
     expect(Query["queries"]["$match"]?.["$and"]).toHaveLength(1);
+  });
+});
+
+describe("Query - take method", () => {
+  test("should return this", () => {
+    Query.take(10);
+    expect(Query["$limit"]).toEqual(expect.any(Number));
+    expect(Query["$limit"]).toBe(10);
+  });
+});
+
+describe("Query - limit method", () => {
+  test("should return this", () => {
+    Query.limit(10);
+    expect(Query["$limit"]).toEqual(expect.any(Number));
+    expect(Query["$limit"]).toBe(10);
+  });
+});
+
+describe("Query - offset method", () => {
+  test("should return this", () => {
+    Query.offset(10);
+    expect(Query["$skip"]).toEqual(expect.any(Number));
+    expect(Query["$skip"]).toBe(10);
+  });
+});
+
+describe("Query - skip method", () => {
+  test("should return this", () => {
+    Query.skip(10);
+    expect(Query["$skip"]).toEqual(expect.any(Number));
+    expect(Query["$skip"]).toBe(10);
   });
 });
