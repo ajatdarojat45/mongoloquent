@@ -451,8 +451,6 @@ describe("Query - orWhereBetween method", () => {
     expect(result["queries"]).toEqual(expect.any(Object));
     expect(result["queries"]).toHaveProperty("$match");
 
-    console.log(JSON.stringify(result["queries"], null, 2));
-
     const match = result["queries"]["$match"];
     expect(match).toEqual(expect.any(Object));
     expect(match).toHaveProperty("$or");
