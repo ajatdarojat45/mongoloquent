@@ -487,3 +487,81 @@ describe("Query - orWhereBetween method", () => {
     expect(match?.["$and"]).toHaveLength(0);
   });
 });
+
+describe("Query - generateQuery method", () => {
+  test("with softDelete", () => {
+    Query["softDelete"] = true;
+    Query["generateQuery"]();
+
+    expect(Query["queries"]).toEqual(expect.any(Object));
+    expect(Query["queries"]).toHaveProperty("$match");
+    expect(Query["queries"]["$match"]).toHaveProperty("$and");
+    expect(Query["queries"]["$match"]?.["$and"]).toHaveLength(1);
+    expect(Query["queries"]["$match"]?.["$and"]?.[0]).toEqual(
+      expect.any(Object)
+    );
+    expect(Query["queries"]["$match"]?.["$and"]?.[0]).toHaveProperty(
+      "isDeleted"
+    );
+  });
+
+  test("without queries", () => {
+    Query["queries"] = {};
+    Query["generateQuery"]();
+
+    expect(Query["queries"]).toEqual(expect.any(Object));
+    expect(Query["queries"]).not.toHaveProperty("$match");
+  });
+
+  test("with where and orWhere", () => {
+    Query.where("name", "John").orWhere("age", 20);
+    Query["generateQuery"]();
+
+    expect(Query["queries"]).toEqual(expect.any(Object));
+    expect(Query["queries"]).toHaveProperty("$match");
+    expect(Query["queries"]["$match"]).toHaveProperty("$or");
+    expect(Query["queries"]["$match"]?.["$or"]).toHaveLength(2);
+    expect(Query["queries"]["$match"]?.["$or"]?.[0]).toEqual(
+      expect.any(Object)
+    );
+    expect(Query["queries"]["$match"]?.["$or"]?.[0]).toHaveProperty("age");
+    expect(Query["queries"]["$match"]?.["$or"]?.[1]).toEqual(
+      expect.any(Object)
+    );
+    expect(Query["queries"]["$match"]?.["$or"]?.[1]).toHaveProperty("$and");
+    expect(Query["queries"]["$match"]).not.toHaveProperty("$and");
+  });
+
+  test("with isOnlyTrashed", () => {
+    Query["isOnlyTrashed"] = true;
+    Query["generateQuery"]();
+
+    expect(Query["queries"]).toEqual(expect.any(Object));
+    expect(Query["queries"]).toHaveProperty("$match");
+    expect(Query["queries"]["$match"]).toHaveProperty("$and");
+    expect(Query["queries"]["$match"]?.["$and"]).toHaveLength(2);
+    expect(Query["queries"]["$match"]?.["$and"]?.[0]).toEqual(
+      expect.any(Object)
+    );
+    expect(Query["queries"]["$match"]?.["$and"]?.[0]).toHaveProperty(
+      "isDeleted"
+    );
+    expect(Query["queries"]["$match"]?.["$and"]?.[1]).toEqual(
+      expect.any(Object)
+    );
+    expect(Query["queries"]["$match"]?.["$and"]?.[1]).toHaveProperty(
+      "isDeleted"
+    );
+  });
+
+  test("with isWithTrashed", () => {
+    Query["isWithTrashed"] = true;
+    Query.where("name", "like", "John");
+    Query["generateQuery"]();
+
+    expect(Query["queries"]).toEqual(expect.any(Object));
+    expect(Query["queries"]).toHaveProperty("$match");
+    expect(Query["queries"]["$match"]).toHaveProperty("$and");
+    expect(Query["queries"]["$match"]?.["$and"]).toHaveLength(1);
+  });
+});
