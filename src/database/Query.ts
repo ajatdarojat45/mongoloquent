@@ -299,7 +299,6 @@ class Query extends Database implements QueryInterface {
         },
       });
 
-      console.log(_queries.$match[_logicalOperator]);
       this.queries = _queries;
       return this;
     }

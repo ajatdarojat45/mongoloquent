@@ -355,8 +355,6 @@ describe("Query - orWhereNotIn method", () => {
     expect(result["queries"]).toEqual(expect.any(Object));
     expect(result["queries"]).toHaveProperty("$match");
 
-    console.log(JSON.stringify(result["queries"], null, 2));
-
     const match = result["queries"]["$match"];
     expect(match).toEqual(expect.any(Object));
     expect(match).toHaveProperty("$or");
@@ -391,5 +389,56 @@ describe("Query - orWhereNotIn method", () => {
 
     expect(match?.["$and"]).toEqual(expect.any(Array));
     expect(match?.["$and"]).toHaveLength(0);
+  });
+});
+
+describe("Query - whereBetween method", () => {
+  test("single whereBetween should return this", () => {
+    const result = Query.whereBetween("age", [12, 20]);
+
+    expect(result).toBe(Query);
+
+    const queries = result["queries"];
+
+    expect(queries).toEqual(expect.any(Object));
+    expect(queries).toHaveProperty("$match");
+
+    const match = queries["$match"];
+    expect(match).toEqual(expect.any(Object));
+    expect(match).toHaveProperty("$and");
+    expect(match?.["$and"]).toEqual(expect.any(Array));
+    expect(match?.["$and"]).toHaveLength(1);
+    expect(match?.["$and"]?.[0]).toEqual(expect.any(Object));
+    expect(match?.["$and"]?.[0]).toHaveProperty("age");
+
+    expect(match?.["$or"]).toEqual(expect.any(Array));
+    expect(match?.["$or"]).toHaveLength(0);
+  });
+
+  test("multiple whereBetween should return this", () => {
+    const result = Query.whereBetween("age", [12, 20]).whereBetween(
+      "height",
+      [4, 6]
+    );
+
+    expect(result).toBe(Query);
+
+    const queries = result["queries"];
+
+    expect(queries).toEqual(expect.any(Object));
+    expect(queries).toHaveProperty("$match");
+
+    const match = queries["$match"];
+    expect(match).toEqual(expect.any(Object));
+    expect(match).toHaveProperty("$and");
+    expect(match?.["$and"]).toEqual(expect.any(Array));
+    expect(match?.["$and"]).toHaveLength(2);
+    expect(match?.["$and"]?.[0]).toEqual(expect.any(Object));
+    expect(match?.["$and"]?.[0]).toHaveProperty("age");
+    expect(match?.["$and"]?.[1]).toEqual(expect.any(Object));
+    expect(match?.["$and"]?.[1]).toHaveProperty("height");
+
+    expect(match?.["$or"]).toEqual(expect.any(Array));
+    expect(match?.["$or"]).toHaveLength(0);
   });
 });
