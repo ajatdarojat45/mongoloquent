@@ -12,9 +12,9 @@ import {
 import Model from "./Model";
 
 class Relation extends Query implements RelationInterface {
-  public static lookups: object[] = [];
+  private static lookups: object[] = [];
 
-  static with<T extends typeof Relation>(
+  protected static with<T extends typeof Relation>(
     this: T,
     relation: string,
     options: WithOptionsInterface = {}
@@ -49,7 +49,7 @@ class Relation extends Query implements RelationInterface {
     }
   }
 
-  public static has<T extends typeof Relation>(
+  protected static has<T extends typeof Relation>(
     this: T,
     relation: string,
     options: WithOptionsInterface = {}
@@ -57,7 +57,7 @@ class Relation extends Query implements RelationInterface {
     return this.with(relation, options);
   }
 
-  public static belongsTo(
+  protected static belongsTo(
     model: typeof Model | string,
     foreignKey: string,
     ownerKey: string = "_id"
@@ -106,7 +106,7 @@ class Relation extends Query implements RelationInterface {
     return this;
   }
 
-  static hasMany(
+  protected static hasMany(
     model: typeof Model | string,
     foreignKey: string,
     localKey: string = "_id"
@@ -143,7 +143,7 @@ class Relation extends Query implements RelationInterface {
     return this;
   }
 
-  static belongsToMany(
+  protected static belongsToMany(
     model: typeof Model | string,
     pivotCollection: string,
     foreignKey: string,
@@ -196,7 +196,7 @@ class Relation extends Query implements RelationInterface {
     return this;
   }
 
-  static hasManyThrough(
+  protected static hasManyThrough(
     model: typeof Model | string,
     throughModel: typeof Model | string,
     foreignKey: string,
