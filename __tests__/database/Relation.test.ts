@@ -74,6 +74,15 @@ describe("Relation - with method", () => {
   });
 });
 
+describe("Relation - has method", () => {
+  test("hasMany should return this", () => {
+    const result = User["has"]("products");
+
+    expect(result).toBe(User);
+    expect(result).toEqual(expect.any(Function));
+  });
+});
+
 describe("Relation - belongsTo method", () => {
   test("should return an object with the collection, foreignKey, localKey and type properties", () => {
     const result = Relation["belongsTo"]("User", "userId");
