@@ -37,16 +37,14 @@ class Relation extends Query implements RelationInterface {
           return this.generateBelongsToMany(payload);
         case "hasManyThrough":
           return this.generateHasManyThrough(payload);
-        default:
-          return this;
       }
     } else {
       console.log(
         `The ${relation} method does not exist in the ${this.name} model.`
       );
-
-      return this;
     }
+
+    return this;
   }
 
   protected static has<T extends typeof Relation>(

@@ -118,6 +118,31 @@ describe("Relation - generateBelongsTo should return this", () => {
     expect(lookups[1]).toEqual(expect.any(Object));
     expect(lookups[1]).toHaveProperty("$unwind");
   });
+
+  test("with select fields options should return this", () => {
+    Relation["fields"] = [{}];
+
+    const result = Relation["generateBelongsTo"]({
+      collection: "users",
+      foreignKey: "userId",
+      localKey: "_id",
+      type: "belongsTo",
+      alias: "user",
+      options: {},
+    });
+
+    expect(result).toEqual(expect.any(Function));
+
+    const lookups = Relation["lookups"];
+
+    expect(lookups).toEqual(expect.any(Array));
+    expect(lookups).toHaveLength(2);
+    expect(lookups[0]).toEqual(expect.any(Object));
+    expect(lookups[0]).toHaveProperty("$lookup");
+
+    expect(lookups[1]).toEqual(expect.any(Object));
+    expect(lookups[1]).toHaveProperty("$unwind");
+  });
 });
 
 describe("Relation - hasMany method", () => {
