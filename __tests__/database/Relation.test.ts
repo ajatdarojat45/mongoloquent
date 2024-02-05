@@ -237,3 +237,55 @@ describe("Relation - generateHasManyThrough should return this", () => {
     expect(lookups[2]).toHaveProperty("$project");
   });
 });
+
+describe("Relation - selectFields method", () => {
+  test("select fields in options should return this", () => {
+    const result = Relation["selectFields"]({
+      collection: "products",
+      foreignKey: "userId",
+      localKey: "_id",
+      type: "hasMany",
+      alias: "products",
+      options: {
+        select: ["name", "price"],
+      },
+    });
+
+    expect(result).toEqual(expect.any(Function));
+
+    const lookups = Relation["lookups"];
+    expect(lookups).toEqual(expect.any(Array));
+    expect(lookups).toHaveLength(3);
+
+    expect(lookups[0]).toEqual(expect.any(Object));
+    expect(lookups[0]).toHaveProperty("$project");
+
+    expect(lookups[1]).toEqual(expect.any(Object));
+    expect(lookups[1]).toHaveProperty("$set");
+
+    expect(lookups[2]).toEqual(expect.any(Object));
+    expect(lookups[2]).toHaveProperty("$replaceRoot");
+  });
+
+  test("exclude fields in options should return this", () => {
+    const result = Relation["selectFields"]({
+      collection: "products",
+      foreignKey: "userId",
+      localKey: "_id",
+      type: "hasMany",
+      alias: "products",
+      options: {
+        exclude: ["name", "price"],
+      },
+    });
+
+    expect(result).toEqual(expect.any(Function));
+
+    const lookups = Relation["lookups"];
+    expect(lookups).toEqual(expect.any(Array));
+    expect(lookups).toHaveLength(1);
+
+    expect(lookups[0]).toEqual(expect.any(Object));
+    expect(lookups[0]).toHaveProperty("$project");
+  });
+});
