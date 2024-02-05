@@ -12,7 +12,7 @@ import {
 import Model from "./Model";
 
 class Relation extends Query implements RelationInterface {
-  private static lookups: object[] = [];
+  protected static lookups: object[] = [];
 
   protected static with<T extends typeof Relation>(
     this: T,
