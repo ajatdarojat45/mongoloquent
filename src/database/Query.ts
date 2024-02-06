@@ -296,6 +296,9 @@ class Query extends Database implements QueryInterface {
     const _logicalOperator = isOr ? "$or" : "$and";
 
     if (_operator === "between") {
+      if (!_queries.$match[_logicalOperator])
+        _queries.$match[_logicalOperator] = [];
+
       _queries.$match[_logicalOperator].push({
         [field]: {
           $gte: _value?.[0],
