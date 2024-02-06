@@ -211,7 +211,7 @@ class Model extends Relation implements ModelInterface {
           {
             $group: {
               _id: null,
-              avg: { $avg: `$${field}` },
+              avg: { $avg: { $avg: `$${field}` } },
             },
           },
         ])
@@ -239,7 +239,7 @@ class Model extends Relation implements ModelInterface {
           {
             $group: {
               _id: null,
-              sum: { $sum: `$${field}` },
+              sum: { $sum: { $sum: `$${field}` } },
             },
           },
         ])
