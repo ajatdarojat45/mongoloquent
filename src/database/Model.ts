@@ -330,8 +330,12 @@ class Model extends Relation implements ModelInterface {
 
       if ((_payload as any)?._createdAt) delete (_payload as any).createdAt;
 
+      this.generateQuery();
+
+      const queries = this.queries?.$match || {};
+
       const data = await collection.findOneAndUpdate(
-        this.queries,
+        queries,
         {
           $set: {
             ..._payload,
@@ -342,6 +346,7 @@ class Model extends Relation implements ModelInterface {
         }
       );
 
+      this.resetQuery();
       return data || {};
     } catch (error) {
       throw error;
