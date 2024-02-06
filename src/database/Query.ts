@@ -319,6 +319,9 @@ class Query extends Database implements QueryInterface {
       }
     }
 
+    if (!_queries.$match[_logicalOperator])
+      _queries.$match[_logicalOperator] = [];
+
     _queries.$match[_logicalOperator].push({
       [field]: {
         [`$${_operator}`]: _value,
