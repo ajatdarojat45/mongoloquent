@@ -14,7 +14,7 @@ import Model from "./Model";
 class Relation extends Query implements RelationInterface {
   protected static lookups: object[] = [];
 
-  protected static with<T extends typeof Relation>(
+  public static with<T extends typeof Relation>(
     this: T,
     relation: string,
     options: WithOptionsInterface = {}
@@ -47,7 +47,7 @@ class Relation extends Query implements RelationInterface {
     return this;
   }
 
-  protected static has<T extends typeof Relation>(
+  public static has<T extends typeof Relation>(
     this: T,
     relation: string,
     options: WithOptionsInterface = {}
@@ -77,14 +77,18 @@ class Relation extends Query implements RelationInterface {
     const { collection, foreignKey, localKey, alias } = params;
     const _lookups = JSON.parse(JSON.stringify(this.lookups));
 
-    const _foreignKey = this.fields.length > 0 ? foreignKey : localKey;
-    const _localKey = this.fields.length > 0 ? localKey : foreignKey;
+    let _foreignKey = foreignKey;
+    let _localKey = localKey;
+
+    if (this.fields.length > 0) {
+      _localKey = `document.${_localKey}`;
+    }
 
     _lookups.push({
       $lookup: {
         from: collection,
-        localField: `document.${_localKey}`,
-        foreignField: _foreignKey,
+        localField: `${_localKey}`,
+        foreignField: `${_foreignKey}`,
         as: alias,
       },
     });
