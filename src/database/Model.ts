@@ -376,9 +376,12 @@ class Model extends Relation implements ModelInterface {
 
       if (Object.keys(this?.queries?.$match || {}).length > 0) {
         const q = this?.queries?.$match || {};
+
+        this.resetQuery();
         return await collection.findOneAndDelete(q);
       }
 
+      this.resetQuery();
       return null;
     } catch (error) {
       throw error;

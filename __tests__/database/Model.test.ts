@@ -267,3 +267,48 @@ describe("Model - create method", () => {
     (Model as any)["create"].mockRestore();
   });
 });
+
+describe("Model - update method", () => {
+  test("should return an object", async () => {
+    const result = await Model["update"]({ age: 26 });
+
+    expect(result).toEqual(expect.any(Object));
+  });
+
+  test("should throw an error", async () => {
+    jest.spyOn(Model as any, "update").mockImplementation(() => {
+      throw new Error("Mongoloquent failed to get data...");
+    });
+
+    expect(() => Model["update"]({ age: 26 })).toThrowError(
+      "Mongoloquent failed to get data..."
+    );
+
+    (Model as any)["update"].mockRestore();
+  });
+});
+
+describe("Model - delete method", () => {
+  test("should return an object", async () => {
+    const result = await Model.delete();
+    expect(result).toEqual(expect.any(Object));
+  });
+
+  test("with conditions should return an object", async () => {
+    const result = await Model.where("age", 26).delete();
+
+    expect(result).toEqual(expect.any(Object));
+  });
+
+  test("should throw an error", async () => {
+    jest.spyOn(Model as any, "delete").mockImplementation(() => {
+      throw new Error("Mongoloquent failed to get data...");
+    });
+
+    expect(() => Model["delete"]()).toThrowError(
+      "Mongoloquent failed to get data..."
+    );
+
+    (Model as any)["delete"].mockRestore();
+  });
+});
