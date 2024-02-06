@@ -75,7 +75,8 @@ class Query extends Database implements QueryInterface {
   static orderBy<T extends typeof Query>(
     this: T,
     field: string,
-    order: string
+    order: string,
+    insensitive: boolean = false
   ): T {
     const _field: string = field;
     const _order: number = order.toLowerCase() === "desc" ? -1 : 1;
@@ -83,10 +84,15 @@ class Query extends Database implements QueryInterface {
     const _sorts = JSON.parse(JSON.stringify(this.sorts));
 
     _sorts[0].$project[`${_field}`] = 1;
-    _sorts[0].$project[`lowercase_${_field}`] = { $toLower: `$${_field}` };
-    _sorts[1].$sort[`lowercase_${_field}`] = _order;
 
-    this.sorts = JSON.parse(JSON.stringify(_sorts));
+    if (insensitive) {
+      _sorts[0].$project[`lowercase_${_field}`] = { $toLower: `$${_field}` };
+      _sorts[1].$sort[`lowercase_${_field}`] = _order;
+    } else {
+      _sorts[1].$sort[`${_field}`] = _order;
+    }
+
+    this.sorts = _sorts;
 
     return this;
   }
