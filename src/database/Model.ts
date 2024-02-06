@@ -120,7 +120,8 @@ class Model extends Relation implements ModelInterface {
       }
 
       if (this.groups.length > 0) _pipeline.push(...this.groups);
-      if (this.lookups.length > 0) _pipeline.push(...this.lookups);
+      if (this.groups.length === 0 && this.lookups.length > 0)
+        _pipeline.push(...this.lookups);
 
       _pipeline.push({
         $project: {
