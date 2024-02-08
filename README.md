@@ -470,6 +470,78 @@ import Product from "./yourPath/Product";
 const products = await Product.where("price", ">=", 10000).count();
 ```
 
+<h3 id="with">with(relation, options?)</h3>
+
+The `with` method is used to perform eager loading of a specified relationship. it takes two parameters: `relation: str` and `options: obj`.
+
+Before use this method make sure you have set relationship in your `Model`. For more detail you can see about relationship [here](#relationships).
+
+```js
+import mongoloquent from "mongoloquent";
+import user from "./yourpath/user";
+
+class post extends mongoloquent {
+    static collection = "posts";
+
+    static user() {
+        return this.belongsto(user, "userid", "_id");
+    }
+}
+
+// usage
+const posts = await post.where("ispublish", true).with("user").get();
+```
+
+Also, you can pass an option to select some columns of the relation result.
+
+```js
+import mongoloquent from "mongoloquent";
+import user from "./yourpath/user";
+
+class post extends mongoloquent {
+    static collection = "posts";
+
+    static user() {
+        return this.belongsto(user, "userid", "_id");
+    }
+}
+
+// usage
+const posts = await post
+    .where("ispublish", true)
+    .with("user", {
+        select: ["username", "email"],
+    })
+    .get();
+```
+
+Or, exclude some columns of the relation result.
+
+```js
+import mongoloquent from "mongoloquent";
+import user from "./yourpath/user";
+
+class post extends mongoloquent {
+    static collection = "posts";
+
+    static user() {
+        return this.belongsto(user, "userid", "_id");
+    }
+}
+
+// usage
+const posts = await post
+    .where("ispublish", true)
+    .with("user", {
+        exclude: ["password", "email"],
+    })
+    .get();
+```
+
+<h3 id="has">has(relation, options?)</h3>
+
+`has` method is an alias for the [`with`](#with) method.
+
 ## Relationships
 
 <h3 id="hasmany">hasMany(Model, foreignKey, localKey)</h3>
@@ -747,6 +819,8 @@ const project = await Project.where("_id", "65ab7e3d05d58a1ad246ee87")
 | [`sum(column)`](<#sum(column)>)                           | Calculate the sum of values in a specific column.                   | `column: str`                                        |
 | [`avg(column)`](<#avg(column)>)                           | Calculate the average value of a specific column.                   | `column: str`                                        |
 | [`count()`](<#count()>)                                   | Count the number of documents matching the query criteria.          | -                                                    |
+| [`with(relation, options?)`](#with)                       | To perform eager loading of specified relationship.                 | `relation: str`, `options: ob`                       |
+| [`has(relation, options?)`](#has)                         | Alias for the `with` method.                                        | `relation: str`, `options: ob`                       |
 
 ### Relationships methods
 
