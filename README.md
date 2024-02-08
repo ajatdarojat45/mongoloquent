@@ -160,7 +160,7 @@ import User from "./yourPath/User";
 const users = await User.get(["name", "age"]);
 ```
 
-### paginate(page, limit)
+<h3 id="paginate">paginate(page, limit)</h3>
 
 You can use the `paginate` method to paginate the query results. It takes two parameters: `page: int` and `limit: int`.
 
@@ -286,7 +286,7 @@ import User from "./yourPath/User";
 const users = await User.skip(10).limit(10).get();
 ```
 
-### where(column, operator, value)
+<h3 id="where">where(column, operator, value)</h3>
 
 Add a WHERE clause to the query.
 
@@ -314,7 +314,7 @@ import User from "./yourPath/User";
 const users = await User.where("age", 17).get();
 ```
 
-### orWhere(column, operator, value)
+<h3 id="orwhere">orWhere(column, operator, value)</h3>
 
 Add an `OR WHERE` clause to the query. You can combine this method with the `where` method.
 
@@ -324,7 +324,7 @@ import User from "./yourPath/User";
 const users = await User.where("age", 17).orWhere("name", "like", "udin").get();
 ```
 
-### whereIn(column, values)
+<h3 id="wherein">whereIn(column, values)</h3>
 
 Add a `WHERE IN` clause to the query. The `whereIn` method takes two parameters: `column: str`, and `values: any[]`.
 
@@ -334,7 +334,7 @@ import User from "./yourPath/User";
 const users = await User.whereIn("age", [17, 20]).get();
 ```
 
-### orWhereIn(column, values)
+<h3 id="orwherein">orWhereIn(column, values)</h3>
 
 Add an `OR WHERE IN` clause to the query. You can combine this method with the `whereIn` method.
 
@@ -346,7 +346,7 @@ const users = await User.whereIn("age", [17, 20])
     .get();
 ```
 
-### whereNotIn(column, values)
+<h3 id="wherenotin">whereNotIn(column, values)</h3>
 
 Add an `WHERE NOT IN` clause to the query. The `whereNotIn` method takes two parameters: `column: str`, and `values: any[]`.
 
@@ -356,7 +356,7 @@ import User from "./yourPath/User";
 const users = await User.whereNotIn("age", [17, 20]).get();
 ```
 
-### orWhereNotIn(column, values)
+<h3 id="orwherenotin">orWhereNotIn(column, values)</h3>
 
 Add an `OR WHERE NOT IN` clause to the query. You can combine this method with the `whereNotIn` method.
 
@@ -368,7 +368,7 @@ const users = await User.whereNotIn("age", [17, 20])
     .get();
 ```
 
-### whereBetween(column, values)
+<h3 id="wherebetween">whereBetween(column, values)</h3>
 
 Add a `WHERE BETWEEN` clause to the query. The `whereBetween` method takes two parameters: `column: str` and `values: int[]`.
 
@@ -378,7 +378,7 @@ import User from "./yourPath/User";
 const users = await User.whereBetween("age", [17, 20]).get();
 ```
 
-### orWhereBetween(column, values)
+<h3 id="orwherebetween">orWhereBetween(column, values)</h3>
 
 Add an `OR WHERE BETWEEN` clause to the query. You can combine this method with the `whereBetween` method.
 
@@ -390,7 +390,7 @@ const users = await User.whereBetween("age", [15, 20])
     .get();
 ```
 
-### orderBy(column, direction?, isSensitive?)
+<h3 id="orderby">orderBy(column, direction?, isSensitive?)</h3>
 
 Sort the query results by a specific column. The `orderBy` method takes three parameters: `column: str`, `direction: str`, and `isSensitive: bool`.
 
@@ -472,7 +472,7 @@ const products = await Product.where("price", ">=", 10000).count();
 
 ## Relationships
 
-### hasMany(Model, foreignKey, localKey)
+<h3 id="hasmany">hasMany(Model, foreignKey, localKey)</h3>
 
 A one-to-many relationship is used to define relationships where a single model is the parent to one or more child models. For example, a blog post may have an infinite number of comments. Like all other `Mongoloquent` relationships, one-to-many relationships are defined by defining a method on your `Mongoloquent` model.
 
@@ -513,7 +513,7 @@ const post = await Post.where("_id", "65ab7e3d05d58a1ad246ee87")
     .first();
 ```
 
-### belongsTo(Model, foreignKey, ownerKey)
+<h3 id="belongsto">belongsTo(Model, foreignKey, ownerKey)</h3>
 
 Now that we can access all of a post's comments, let's define a relationship to allow a comment to access its parent post. To define the inverse of a `hasMany` relationship, define a relationship method on the child model which calls the `belongsTo` method:
 
@@ -554,7 +554,7 @@ const comments = await Comment.where("_id", "65ab7e3d05d58a1ad246ee87")
     .get();
 ```
 
-### belongsToMany(Model, pivotCollection, foreignKey, foreignKeyTarget)
+<h3 id="belongstomany">belongsToMany(Model, pivotCollection, foreignKey, foreignKeyTarget)</h3>
 
 Many-to-many relations are slightly more complicated than hasOne and hasMany relationships. An example of a many-to-many relationship is a user that has many roles and those roles are also shared by other users in the application. For example, a user may be assigned the role of "Author" and "Editor"; however, those roles may also be assigned to other users as well. So, a user has many roles and a role has many users.
 
@@ -572,6 +572,7 @@ roles
     name - string
 
 roleUser
+    _id - id
     userId - id
     roleId - id
 ```
@@ -617,7 +618,7 @@ const user = await User.where("_id", "65ab7e3d05d58a1ad246ee87")
     .first();
 ```
 
-### hasManyThrough(Model, throughModel, foreignKey, throughForeignKey)
+<h3 id="hasmanythrough">hasManyThrough(Model, throughModel, foreignKey, throughForeignKey)</h3>
 
 The "has-many-through" relationship provides a convenient way to access distant relations via an intermediate relation. For example, let's assume we are building a deployment platform. A `Project` model might access many `Deployment` models through an intermediate `Environment` model. Using this example, you could easily gather all deployments for a given project. Let's look at the tables required to define this relationship:
 
@@ -658,7 +659,7 @@ class Project extends Mongoloquent {
 }
 
 // usage
-const project = Project.where("_id", "65ab7e3d05d58a1ad246ee87")
+const project = await Project.where("_id", "65ab7e3d05d58a1ad246ee87")
     .with("deployments")
     .first();
 ```
@@ -684,7 +685,7 @@ class Project extends Mongoloquent {
 }
 
 // usage
-const project = Project.where("_id", "65ab7e3d05d58a1ad246ee87")
+const project = await Project.where("_id", "65ab7e3d05d58a1ad246ee87")
     .with("deployments")
     .first();
 ```
@@ -715,47 +716,43 @@ const project = Project.where("_id", "65ab7e3d05d58a1ad246ee87")
 
 ### Query methods
 
-| Method                                                    | Description                                                         | Parameters                                     |
-| --------------------------------------------------------- | ------------------------------------------------------------------- | ---------------------------------------------- |
-| [`create(data)`](#create)                                 | Create a new document with the provided data.                       | data: obj                                      |
-| [`update(data)`](#update)                                 | Update documents matching the query criteria.                       | data: obj                                      |
-| [`delete()`](#delete)                                     | Delete documents matching the query criteria.                       | -                                              |
-| [`select(columns)`](#select)                              | Select specific columns to be displayed in the query results.       | columns: str or str[]                          |
-| [`exclude(columns)`](#exclude)                            | Exclude specific columns from being displayed in the query results. | columns: str or str[]                          |
-| [`get(columns)`](#get)                                    | Get the documents matching the query criteria.                      | columns: str or str[]                          |
-| [`paginate(page, limit)`](#paginate)                      | Paginate the query results.                                         | page: int, limit: int                          |
-| [`first(columns)`](#first)                                | Get the first document matching the query criteria.                 | columns: str or str[]                          |
-| [`find(id)`](#find)                                       | Find a document by its ID.                                          | id: str or ObjectId                            |
-| [`pluck(column)`](#pluck)                                 | Retrieve the values of a specific column from the query results.    | column: str                                    |
-| [`limit(value)`](#limit)                                  | Limit the number of documents to be returned by the query.          | value: int                                     |
-| [`take(value)`](#take)                                    | Alias for the `limit` method.                                       | value: int                                     |
-| [`offset(value)`](#offset)                                | Set an offset for the query results.                                | value: int                                     |
-| [`skip(value)`](#skip)                                    | Skip a specified number of documents in the query results.          | value: int                                     |
-| [`where(column, operator, value)`](#where)                | Add a WHERE clause to the query.                                    | column: str, operator: str, value: any         |
-| [`orWhere(column, operator, value)`](#orwhere)            | Add an OR WHERE clause to the query.                                | column: str, operator: str, value: any         |
-| [`whereIn(column, values)`](#wherein)                     | Add a WHERE IN clause to the query.                                 | column: str, values: any[]                     |
-| [`orWhereIn(column, values)`](#orwherein)                 | Add an OR WHERE IN clause to the query.                             | column: str, values: any[]                     |
-| [`whereNotIn(column, values)`](#wherenotin)               | Add a WHERE NOT IN clause to the query.                             | column: str, values: any[]                     |
-| [`orWhereNotIn(column, values)`](#orwherenotin)           | Add an OR WHERE NOT IN clause to the query.                         | column: str, values: any[]                     |
-| [`whereBetween(column, values)`](#wherebetween)           | Add a WHERE BETWEEN clause to the query.                            | column: str, values: int[]                     |
-| [`orWhereBetween(column, array values)`](#orwherebetween) | Add an OR WHERE BETWEEN clause to the query.                        | column: str, values: int[]                     |
-| [`orderBy(column, direction, isSensitive?)`](#orderby)    | Sort the query results by a specific column.                        | column: str, direction: str, isSensitive: bool |
-| [`groupBy(column)`](#groupby)                             | Group the query results by specific columns.                        | column: str                                    |
-| [`min(column)`](#min)                                     | Retrieve the minimum value of a specific column.                    | column: str                                    |
-| [`max(column)`](#max)                                     | Retrieve the maximum value of a specific column.                    | column: str                                    |
-| [`sum(column)`](#sum)                                     | Calculate the sum of values in a specific column.                   | column: str                                    |
-| [`avg(column)`](#avg)                                     | Calculate the average value of a specific column.                   | column: str                                    |
-| [`count()`](#count)                                       | Count the number of documents matching the query criteria.          | -                                              |
+| Method                                                    | Description                                                         | Parameters                                           |
+| --------------------------------------------------------- | ------------------------------------------------------------------- | ---------------------------------------------------- |
+| [`create(data)`](<#create(data)>)                         | Create a new document with the provided data.                       | `data: obj`                                          |
+| [`update(data)`](<#update(data)>)                         | Update documents matching the query criteria.                       | `data: obj`                                          |
+| [`delete()`](<#delete()>)                                 | Delete documents matching the query criteria.                       | -                                                    |
+| [`select(columns)`](<#select(columns)>)                   | Select specific columns to be displayed in the query results.       | `columns: str or str[]`                              |
+| [`exclude(columns)`](<#exclude(columns)>)                 | Exclude specific columns from being displayed in the query results. | `columns: str or str[]`                              |
+| [`get(columns)`](<#get(columns)>)                         | Get the documents matching the query criteria.                      | `columns: str or str[]`                              |
+| [`paginate(page, limit)`](#paginate)                      | Paginate the query results.                                         | `page: int, limit: int`                              |
+| [`first(columns)`](<#first(columns)>)                     | Get the first document matching the query criteria.                 | `columns: str or str[]`                              |
+| [`find(id)`](<#find(id)>)                                 | Find a document by its ID.                                          | `id: str or ObjectId`                                |
+| [`pluck(column)`](<#pluck(column)>)                       | Retrieve the values of a specific column from the query results.    | `column: str`                                        |
+| [`limit(value)`](<#limit(value)>)                         | Limit the number of documents to be returned by the query.          | `value: int`                                         |
+| [`take(value)`](<#take(value)>)                           | Alias for the `limit` method.                                       | `value: int`                                         |
+| [`offset(value)`](<#offset(value)>)                       | Set an offset for the query results.                                | `value: int`                                         |
+| [`skip(value)`](<#skip(value)>)                           | Skip a specified number of documents in the query results.          | `value: int`                                         |
+| [`where(column, operator, value)`](#where)                | Add a WHERE clause to the query.                                    | `column: str`, `operator: str`, `value: any`         |
+| [`orWhere(column, operator, value)`](#orwhere)            | Add an OR WHERE clause to the query.                                | `column: str`, `operator: str`, `value: any`         |
+| [`whereIn(column, values)`](#wherein)                     | Add a WHERE IN clause to the query.                                 | `column: str`, `values: any[]`                       |
+| [`orWhereIn(column, values)`](#orwherein)                 | Add an OR WHERE IN clause to the query.                             | `column: str,` `values: any[]`                       |
+| [`whereNotIn(column, values)`](#wherenotin)               | Add a WHERE NOT IN clause to the query.                             | `column: str`, `values: any[]`                       |
+| [`orWhereNotIn(column, values)`](#orwherenotin)           | Add an OR WHERE NOT IN clause to the query.                         | `column: str`, `values: any[]`                       |
+| [`whereBetween(column, values)`](#wherebetween)           | Add a WHERE BETWEEN clause to the query.                            | `column: str`, `values: int[]`                       |
+| [`orWhereBetween(column, array values)`](#orwherebetween) | Add an OR WHERE BETWEEN clause to the query.                        | `column: str`, `values: int[]`                       |
+| [`orderBy(column, direction, isSensitive?)`](#orderby)    | Sort the query results by a specific column.                        | `column: str`, `direction: str`, `isSensitive: bool` |
+| [`groupBy(column)`](<#groupby(column)>)                   | Group the query results by specific columns.                        | `column: str`                                        |
+| [`min(column)`](<#min(column)>)                           | Retrieve the minimum value of a specific column.                    | `column: str`                                        |
+| [`max(column)`](<#max(column)>)                           | Retrieve the maximum value of a specific column.                    | `column: str`                                        |
+| [`sum(column)`](<#sum(column)>)                           | Calculate the sum of values in a specific column.                   | `column: str`                                        |
+| [`avg(column)`](<#avg(column)>)                           | Calculate the average value of a specific column.                   | `column: str`                                        |
+| [`count()`](<#count()>)                                   | Count the number of documents matching the query criteria.          | -                                                    |
 
 ### Relationships methods
 
 | Relation Method                                                                         | Description                                                                                                         | Parameters                                                                                       |
 | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| [`belongsTo(Model, foreignKey, ownerKey)`](#belongsto)                                  | Define a "belongs to" relationship between the current model and the related model.                                 | `Model: Model or str`, `foreignKey: str`, `ownerKey: str`                                        |
 | [`hasMany(Model, foreignKey, localKey)`](#hasmany)                                      | Define a "has many" relationship between the current model and the related model.                                   | `related: Model or str`, `foreignKey: str`, `localKey: str`                                      |
+| [`belongsTo(Model, foreignKey, ownerKey)`](#belongsto)                                  | Define a "belongs to" relationship between the current model and the related model.                                 | `Model: Model or str`, `foreignKey: str`, `ownerKey: str`                                        |
 | [`belongsToMany(Model, pivotCollection, foreignKey, foreignKeyTarget)`](#belongstomany) | Define a "belongs to many" relationship between the current model and the related model through a pivot collection. | `Model: Model or str`, `pivotCollection: str`, `foreignKey: str`, `foreignKeyTarget: str`        |
 | [`hasManyThrough(Model, throughModel, foreignKey, throughForeignKey)`](#hasmanythrough) | Define a "has many through" relationship between the current model and the related model through a pivot Model.     | `Model: Model or str`, `throughModel: Model or str`, `foreignKey: str`, `throughForeignKey: str` |
-
-```
-
-```
