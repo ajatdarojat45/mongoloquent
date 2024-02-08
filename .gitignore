@@ -1,8 +1,10 @@
 # Directories
 node_modules
 models
+dist
+coverage
 
 # Files
 .DS_Store
 .env
-app.js
+sandbox*.*
