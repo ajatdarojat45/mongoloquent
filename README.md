@@ -478,37 +478,44 @@ Before use this method make sure you have set relationship in your `Model`. For 
 
 ```js
 import mongoloquent from "mongoloquent";
-import user from "./yourpath/user";
+import User from "./yourpath/User";
+import Comment from "./yourPath/Comment";
 
-class post extends mongoloquent {
+class Post extends mongoloquent {
     static collection = "posts";
 
     static user() {
-        return this.belongsto(user, "userid", "_id");
+        return this.belongsto(User, "userid", "_id");
+    }
+
+    static comments() {
+        return this.hasmany(Comment, "postId", "_id");
     }
 }
 
 // usage
-const posts = await post.where("ispublish", true).with("user").get();
+const post = await Post.where("_id", "65ab7e3d05d58a1ad246ee87")
+    .with("user")
+    .with("comments")
+    .first();
 ```
 
 Also, you can pass an option to select some columns of the relation result.
 
 ```js
 import mongoloquent from "mongoloquent";
-import user from "./yourpath/user";
+import User from "./yourpath/User";
 
-class post extends mongoloquent {
+class Post extends mongoloquent {
     static collection = "posts";
 
     static user() {
-        return this.belongsto(user, "userid", "_id");
+        return this.belongsto(User, "userid", "_id");
     }
 }
 
 // usage
-const posts = await post
-    .where("ispublish", true)
+const posts = await Post.where("ispublish", true)
     .with("user", {
         select: ["username", "email"],
     })
@@ -519,19 +526,18 @@ Or, exclude some columns of the relation result.
 
 ```js
 import mongoloquent from "mongoloquent";
-import user from "./yourpath/user";
+import User from "./yourpath/User";
 
-class post extends mongoloquent {
+class Post extends mongoloquent {
     static collection = "posts";
 
     static user() {
-        return this.belongsto(user, "userid", "_id");
+        return this.belongsto(User, "userid", "_id");
     }
 }
 
 // usage
-const posts = await post
-    .where("ispublish", true)
+const posts = await Post.where("ispublish", true)
     .with("user", {
         exclude: ["password", "email"],
     })
