@@ -1,6 +1,6 @@
 # Mongoloquent
 
-Mongoloquent is like a lightweight MongoDB ORM library for JavaScript, inspired by the simplicity of Laravel Eloquent. It provides an intuitive and expressive syntax for working with MongoDB databases, making it easy to interact with your data in a Node.js environment.
+Mongoloquent is like a MongoDB ORM library for JavaScript, inspired by the simplicity of Laravel Eloquent. It provides an intuitive and expressive syntax for working with MongoDB databases, making it easy to interact with your data in a Node.js environment.
 
 ## Table of content
 
@@ -38,7 +38,7 @@ MONGOLOQUENT_TIMEZONE=
 
 ```js
 // with ES6
-import Mongoloquent from "mongoloquent";
+import { Mongoloquent } from "mongoloquent";
 
 class User extends Mongoloquent {
 	static collection = "users";
@@ -49,7 +49,7 @@ class User extends Mongoloquent {
 
 ```js
 // with CommonJS
-const Mongoloquent = require("mongoloquent");
+const { Mongoloquent } = require("mongoloquent");
 
 class User extends Mongoloquent {
 	static collection = "users";
@@ -298,7 +298,7 @@ import User from "./yourPath/User";
 const users = await User.where("age", "eq", 17).get();
 ```
 
-Also, you can use SQL's comparation operators. For more detail, you can see the comparison operator table.
+Also, you can use SQL’s comparation operators. For more detail, you can see it in the [comparison operator table](#comparation-operators).
 
 ```js
 import User from "./yourPath/User";
@@ -477,11 +477,11 @@ The `with` method is used to perform eager loading of a specified relationship. 
 Before use this method make sure you have set relationship in your `Model`. For more detail you can see about relationship [here](#relationships).
 
 ```js
-import mongoloquent from "mongoloquent";
+import { Mongoloquent } from "mongoloquent";
 import User from "./yourpath/User";
 import Comment from "./yourPath/Comment";
 
-class Post extends mongoloquent {
+class Post extends Mongoloquent {
 	static collection = "posts";
 
 	static user() {
@@ -503,10 +503,10 @@ const post = await Post.where("_id", "65ab7e3d05d58a1ad246ee87")
 Also, you can pass an option to select some columns of the relation result.
 
 ```js
-import mongoloquent from "mongoloquent";
+import { Mongoloquent } from "mongoloquent";
 import User from "./yourpath/User";
 
-class Post extends mongoloquent {
+class Post extends Mongoloquent {
 	static collection = "posts";
 
 	static user() {
@@ -525,10 +525,10 @@ const posts = await Post.where("ispublish", true)
 Or, exclude some columns of the relation result.
 
 ```js
-import mongoloquent from "mongoloquent";
+import { Mongoloquent } from "mongoloquent";
 import User from "./yourpath/User";
 
-class Post extends mongoloquent {
+class Post extends Mongoloquent {
 	static collection = "posts";
 
 	static user() {
@@ -555,7 +555,7 @@ const posts = await Post.where("ispublish", true)
 A one-to-many relationship is used to define relationships where a single model is the parent to one or more child models. For example, a blog post may have an infinite number of comments. Like all other `Mongoloquent` relationships, one-to-many relationships are defined by defining a method on your `Mongoloquent` model.
 
 ```js
-import Mongoloquent from "mongoloquent";
+import { Mongoloquent } from "mongoloquent";
 import Comment from "./yourPath/Comment";
 
 class Post extends Mongoloquent {
@@ -575,7 +575,7 @@ const post = await Post.where("_id", "65ab7e3d05d58a1ad246ee87")
 Also, you can pass collection name as a Model.
 
 ```js
-import Mongoloquent from "mongoloquent";
+import { Mongoloquent } from "mongoloquent";
 
 class Post extends Mongoloquent {
 	static collection = "posts";
@@ -596,7 +596,7 @@ const post = await Post.where("_id", "65ab7e3d05d58a1ad246ee87")
 Now that we can access all of a post's comments, let's define a relationship to allow a comment to access its parent post. To define the inverse of a `hasMany` relationship, define a relationship method on the child model which calls the `belongsTo` method:
 
 ```js
-import Mongoloquent from "mongoloquent";
+import { Mongoloquent } from "mongoloquent";
 import Post from "./yourPath/Post";
 
 class Comment extends Mongoloquent {
@@ -616,7 +616,7 @@ const comments = await Comment.where("_id", "65ab7e3d05d58a1ad246ee87")
 Also, you can pass collection name as a Model.
 
 ```js
-import Mongoloquent from "mongoloquent";
+import { Mongoloquent } from "mongoloquent";
 
 class Comment extends Mongoloquent {
 	static collection = "comments";
@@ -660,7 +660,7 @@ roleUser
 Many-to-many relationships are defined by writing a method that returns the result of the belongsToMany method. For example, let's define a `roles` method on our `User` model. The first argument passed to this method is the name of the related model class:
 
 ```js
-import Mongoloquent from "mongoloquent";
+import { Mongoloquent } from "mongoloquent";
 import Role from "./yourPath/Role";
 
 class User extends Mongoloquent {
@@ -680,7 +680,7 @@ const user = await User.where("_id", "65ab7e3d05d58a1ad246ee87")
 Also, you can pass collection name as a Model.
 
 ```js
-import Mongoloquent from "mongoloquent";
+import { Mongoloquent } from "mongoloquent";
 
 class User extends Mongoloquent {
     static collection = "users"
@@ -719,7 +719,7 @@ deployments
 Now that we have examined the collection structure for the relationship, let's define the relationship on the `Project` model:
 
 ```js
-import Mongoloquent from "mongoloquent";
+import { Mongoloquent } from "mongoloquent";
 import Environment from "./yourPath/Environment";
 import Deployment from "./yourPath/Deployment";
 
@@ -745,7 +745,7 @@ const project = await Project.where("_id", "65ab7e3d05d58a1ad246ee87")
 Also, you can pass collection name as a Model.
 
 ```js
-import Mongoloquent from "mongoloquent";
+import { Mongoloquent } from "mongoloquent";
 import Environment from "./yourPath/Environment";
 import Deployment from "./yourPath/Deployment";
 
