@@ -472,11 +472,246 @@ const products = await Product.where("price", ">=", 10000).count();
 
 ## Relationships
 
+### hasMany(Model, foreignKey, localKey)
+
+A one-to-many relationship is used to define relationships where a single model is the parent to one or more child models. For example, a blog post may have an infinite number of comments. Like all other `Mongoloquent` relationships, one-to-many relationships are defined by defining a method on your `Mongoloquent` model.
+
+```js
+import Mongoloquent from "mongoloquent";
+import Comment from "./yourPath/Comment";
+
+class Post extends Mongoloquent {
+    static collection = "posts";
+
+    static comments() {
+        return this.hasMany(Comment, "postId", "_id");
+    }
+}
+
+// usage
+const post = await Post.where("_id", "65ab7e3d05d58a1ad246ee87")
+    .with("comments")
+    .first();
+```
+
+Also, you can pass collection name as a Model.
+
+```js
+import Mongoloquent from "mongoloquent";
+
+class Post extends Mongoloquent {
+    static collection = "posts";
+
+    static comments() {
+        return this.hasMany("comments", "postId", "_id");
+    }
+}
+
+// usage
+const post = await Post.where("_id", "65ab7e3d05d58a1ad246ee87")
+    .with("comments")
+    .first();
+```
+
+### belongsTo(Model, foreignKey, ownerKey)
+
+Now that we can access all of a post's comments, let's define a relationship to allow a comment to access its parent post. To define the inverse of a `hasMany` relationship, define a relationship method on the child model which calls the `belongsTo` method:
+
+```js
+import Mongoloquent from "mongoloquent";
+import Post from "./yourPath/Post";
+
+class Comment extends Mongoloquent {
+    static collection = "comments";
+
+    static post() {
+        return this.belongsTo(Post, "postId", "_id");
+    }
+}
+
+// usage
+const comments = await Comment.where("_id", "65ab7e3d05d58a1ad246ee87")
+    .with("post")
+    .get();
+```
+
+Also, you can pass collection name as a Model.
+
+```js
+import Mongoloquent from "mongoloquent";
+
+class Comment extends Mongoloquent {
+    static collection = "comments";
+
+    static post() {
+        return this.hasMany("posts", "postId", "_id");
+    }
+}
+
+// usage
+const comments = await Comment.where("_id", "65ab7e3d05d58a1ad246ee87")
+    .with("post")
+    .get();
+```
+
+### belongsToMany(Model, pivotCollection, foreignKey, foreignKeyTarget)
+
+Many-to-many relations are slightly more complicated than hasOne and hasMany relationships. An example of a many-to-many relationship is a user that has many roles and those roles are also shared by other users in the application. For example, a user may be assigned the role of "Author" and "Editor"; however, those roles may also be assigned to other users as well. So, a user has many roles and a role has many users.
+
+#### Collection structure
+
+To define this relationship, three database collections are needed: `users`, `roles`, and `roleUser`. The `roleUser` collection is derived from the alphabetical order of the related model names and contains `userId` and `roleId` columns. This collection is used as an intermediate collection linking the `users` and `roles`.
+
+```
+users
+    _id - id
+    name - string
+
+roles
+    _id - id
+    name - string
+
+roleUser
+    userId - id
+    roleId - id
+```
+
+#### Model structure
+
+Many-to-many relationships are defined by writing a method that returns the result of the belongsToMany method. For example, let's define a `roles` method on our `User` model. The first argument passed to this method is the name of the related model class:
+
+```js
+import Mongoloquent from "mongoloquent";
+import Role from "./yourPath/Role";
+
+class User extends Mongoloquent {
+    static collection = "users"
+
+    static roles() {
+        return this.belongsToMany(Role, 'roleUser' "userId", "roleId");
+    }
+}
+
+// usage
+const user = await User.where("_id", "65ab7e3d05d58a1ad246ee87")
+    .with("roles")
+    .first();
+```
+
+Also, you can pass collection name as a Model.
+
+```js
+import Mongoloquent from "mongoloquent";
+
+class User extends Mongoloquent {
+    static collection = "users"
+
+    static roles() {
+        return this.belongsToMany("roles", "roleUser" "userId", "roleId");
+    }
+}
+
+// usage
+const user = await User.where("_id", "65ab7e3d05d58a1ad246ee87")
+    .with("roles")
+    .first();
+```
+
+### hasManyThrough(Model, throughModel, foreignKey, throughForeignKey)
+
+The "has-many-through" relationship provides a convenient way to access distant relations via an intermediate relation. For example, let's assume we are building a deployment platform. A `Project` model might access many `Deployment` models through an intermediate `Environment` model. Using this example, you could easily gather all deployments for a given project. Let's look at the tables required to define this relationship:
+
+```
+projects
+    _id - id
+    name - string
+
+environments
+    _id - id
+    projectId - id
+    name - string
+
+deployments
+    _id - id
+    environmentId - id
+    commitHash - string
+```
+
+Now that we have examined the collection structure for the relationship, let's define the relationship on the `Project` model:
+
+```js
+import Mongoloquent from "mongoloquent";
+import Environment from "./yourPath/Environment";
+import Deployment from "./yourPath/Deployment";
+
+class Project extends Mongoloquent {
+    static collection = "projects";
+
+    static deployments() {
+        return this.hasManyThrough(
+            Deployment,
+            Environment,
+            "projectId",
+            "environmentId"
+        );
+    }
+}
+
+// usage
+const project = Project.where("_id", "65ab7e3d05d58a1ad246ee87")
+    .with("deployments")
+    .first();
+```
+
+Also, you can pass collection name as a Model.
+
+```js
+import Mongoloquent from "mongoloquent";
+import Environment from "./yourPath/Environment";
+import Deployment from "./yourPath/Deployment";
+
+class Project extends Mongoloquent {
+    static collection = "projects";
+
+    static deployments() {
+        return this.hasManyThrough(
+            "deployments",
+            "environments",
+            "projectId",
+            "environmentId"
+        );
+    }
+}
+
+// usage
+const project = Project.where("_id", "65ab7e3d05d58a1ad246ee87")
+    .with("deployments")
+    .first();
+```
+
 ## API References
 
 ### Properties
 
+| Property   | Type | Description                                                        |
+| ---------- | ---- | ------------------------------------------------------------------ |
+| collection | str  | The name of the MongoDB collection used by the model.              |
+| softDelete | bool | Indicates whether the model supports soft deletion.                |
+| timestamps | bool | Indicates whether the model stores creation and update timestamps. |
+
 ### Comparation operators
+
+| Operator | Mongo Operator | Description                         |
+| -------- | -------------- | ----------------------------------- |
+| =        | eq             | Equals                              |
+| !=       | ne             | Not equals                          |
+| >        | gt             | Greater than                        |
+| <        | lt             | Less than                           |
+| >=       | gte            | Greater than or equal to            |
+| <=       | lte            | Less than or equal to               |
+| in       | in             | In                                  |
+| notIn    | nin            | Not in                              |
+| like     | regex          | Like (case-insensitive) using regex |
 
 ### Query methods
 
@@ -513,3 +748,14 @@ const products = await Product.where("price", ">=", 10000).count();
 | [`count()`](#count)                                       | Count the number of documents matching the query criteria.          | -                                              |
 
 ### Relationships methods
+
+| Relation Method                                                                         | Description                                                                                                         | Parameters                                                                                       |
+| --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| [`belongsTo(Model, foreignKey, ownerKey)`](#belongsto)                                  | Define a "belongs to" relationship between the current model and the related model.                                 | `Model: Model or str`, `foreignKey: str`, `ownerKey: str`                                        |
+| [`hasMany(Model, foreignKey, localKey)`](#hasmany)                                      | Define a "has many" relationship between the current model and the related model.                                   | `related: Model or str`, `foreignKey: str`, `localKey: str`                                      |
+| [`belongsToMany(Model, pivotCollection, foreignKey, foreignKeyTarget)`](#belongstomany) | Define a "belongs to many" relationship between the current model and the related model through a pivot collection. | `Model: Model or str`, `pivotCollection: str`, `foreignKey: str`, `foreignKeyTarget: str`        |
+| [`hasManyThrough(Model, throughModel, foreignKey, throughForeignKey)`](#hasmanythrough) | Define a "has many through" relationship between the current model and the related model through a pivot Model.     | `Model: Model or str`, `throughModel: Model or str`, `foreignKey: str`, `throughForeignKey: str` |
+
+```
+
+```
