@@ -1,5 +1,6 @@
 import Database from "./Database";
 import { QueriesInterface, QueryInterface } from "../interfaces/QueryInterface";
+import { ObjectId } from "mongodb";
 
 class Query extends Database implements QueryInterface {
   protected static isWithTrashed: boolean = false;
@@ -300,6 +301,10 @@ class Query extends Database implements QueryInterface {
     const _queries = JSON.parse(JSON.stringify(this.queries));
     let q = {};
     const _logicalOperator = isOr ? "$or" : "$and";
+
+    if (field === "_id" && typeof value === "string") {
+      _value = new ObjectId(value);
+    }
 
     if (_operator === "between") {
       if (!_queries.$match[_logicalOperator])
