@@ -12,13 +12,20 @@
     "prepublishOnly": "npm run build",
     "dev": "nodemon --exec ts-node sandbox.ts"
   },
-  "keywords": ["mongodb", "orm", "typescript", "jest", "javasript"],
+  "keywords": [
+    "javasript",
+    "typescript",
+    "database",
+    "mongodb",
+    "orm",
+    "mongoloquent"
+  ],
   "author": {
     "name": "Ajat Darojat",
     "email": "ajatdarojat45@gmail.com",
     "url": "https://ajatdarojat45.id"
   },
-  "license": "UNLICENSED",
+  "license": "MIT",
   "dependencies": {
     "dayjs": "^1.11.10",
     "dotenv": "^16.3.2",
@@ -35,6 +42,10 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ajatdarojat45/mongoloquent.git"
+  },
+  "funding": {
+    "type": "opencollective",
+    "url": "https://opencollective.com/mongoloquent"
   },
   "bugs": {
     "url": "https://github.com/ajatdarojat45/mongoloquent/issues",
