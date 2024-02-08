@@ -1,9 +1,9 @@
 {
   "name": "mongoloquent",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Mongoloquent is like a lightweight MongoDB ORM library for JavaScript",
-  "main": "index.js",
-  "types": "index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "files": ["dist"],
   "scripts": {
     "test": "jest --detectOpenHandles --runInBand --verbose  --forceExit --coverage --watchAll",
