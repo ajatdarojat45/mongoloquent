@@ -620,7 +620,7 @@ const user = await User.where("_id", "65ab7e3d05d58a1ad246ee87")
 
 <h3 id="hasmanythrough">hasManyThrough(Model, throughModel, foreignKey, throughForeignKey)</h3>
 
-The "has-many-through" relationship provides a convenient way to access distant relations via an intermediate relation. For example, let's assume we are building a deployment platform. A `Project` model might access many `Deployment` models through an intermediate `Environment` model. Using this example, you could easily gather all deployments for a given project. Let's look at the tables required to define this relationship:
+The "has-many-through" relationship provides a convenient way to access distant relations via an intermediate relation. For example, let's assume we are building a deployment platform. A `Project` model might access many `Deployment` models through an intermediate `Environment` model. Using this example, you could easily gather all deployments for a given project. Let's look at the collections required to define this relationship:
 
 ```
 projects
