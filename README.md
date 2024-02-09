@@ -574,6 +574,8 @@ const post = await Post.where("_id", "65ab7e3d05d58a1ad246ee87")
 
 Also, you can pass collection name as a Model.
 
+> The softDelete is disabled in the target model when you pass the collection name as a model.
+
 ```js
 import { Mongoloquent } from "mongoloquent";
 
@@ -615,6 +617,8 @@ const comments = await Comment.where("_id", "65ab7e3d05d58a1ad246ee87")
 
 Also, you can pass collection name as a Model.
 
+> The softDelete is disabled in the target model when you pass the collection name as a model.
+
 ```js
 import { Mongoloquent } from "mongoloquent";
 
@@ -632,7 +636,7 @@ const comments = await Comment.where("_id", "65ab7e3d05d58a1ad246ee87")
     .get();
 ```
 
-<h3 id="belongstomany">belongsToMany(Model, pivotCollection, foreignKey, foreignKeyTarget)</h3>
+<h3 id="belongstomany">belongsToMany(Model, pivotModel, foreignKey, foreignKeyTarget)</h3>
 
 Many-to-many relations are slightly more complicated than hasOne and hasMany relationships. An example of a many-to-many relationship is a user that has many roles and those roles are also shared by other users in the application. For example, a user may be assigned the role of "Author" and "Editor"; however, those roles may also be assigned to other users as well. So, a user has many roles and a role has many users.
 
@@ -662,12 +666,13 @@ Many-to-many relationships are defined by writing a method that returns the resu
 ```js
 import { Mongoloquent } from "mongoloquent";
 import Role from "./yourPath/Role";
+import RoleUser from "./yourPath/RoleUser";
 
 class User extends Mongoloquent {
-    static collection = "users"
+    static collection = "users";
 
     static roles() {
-        return this.belongsToMany(Role, 'roleUser' "userId", "roleId");
+        return this.belongsToMany(Role, RoleUser, "userId", "roleId");
     }
 }
 
@@ -679,14 +684,16 @@ const user = await User.where("_id", "65ab7e3d05d58a1ad246ee87")
 
 Also, you can pass collection name as a Model.
 
+> The softDelete is disabled in the target model when you pass the collection name as a model.
+
 ```js
 import { Mongoloquent } from "mongoloquent";
 
 class User extends Mongoloquent {
-    static collection = "users"
+    static collection = "users";
 
     static roles() {
-        return this.belongsToMany("roles", "roleUser" "userId", "roleId");
+        return this.belongsToMany("roles", "roleUser", "userId", "roleId");
     }
 }
 
@@ -743,6 +750,8 @@ const project = await Project.where("_id", "65ab7e3d05d58a1ad246ee87")
 ```
 
 Also, you can pass collection name as a Model.
+
+> The softDelete is disabled in the target model when you pass the collection name as a model.
 
 ```js
 import { Mongoloquent } from "mongoloquent";
@@ -834,5 +843,5 @@ const project = await Project.where("_id", "65ab7e3d05d58a1ad246ee87")
 | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
 | [`hasMany(Model, foreignKey, localKey)`](#hasmany)                                      | Define a "has many" relationship between the current model and the related model.                                   | `related: Model or str`, `foreignKey: str`, `localKey: str`                                      |
 | [`belongsTo(Model, foreignKey, ownerKey)`](#belongsto)                                  | Define a "belongs to" relationship between the current model and the related model.                                 | `Model: Model or str`, `foreignKey: str`, `ownerKey: str`                                        |
-| [`belongsToMany(Model, pivotCollection, foreignKey, foreignKeyTarget)`](#belongstomany) | Define a "belongs to many" relationship between the current model and the related model through a pivot collection. | `Model: Model or str`, `pivotCollection: str`, `foreignKey: str`, `foreignKeyTarget: str`        |
+| [`belongsToMany(Model, pivotModel, foreignKey, foreignKeyTarget)`](#belongstomany)      | Define a "belongs to many" relationship between the current model and the related model through a pivot collection. | `Model: Model or str`, `pivotModel: Model or str`, `foreignKey: str`, `foreignKeyTarget: str`    |
 | [`hasManyThrough(Model, throughModel, foreignKey, throughForeignKey)`](#hasmanythrough) | Define a "has many through" relationship between the current model and the related model through a pivot Model.     | `Model: Model or str`, `throughModel: Model or str`, `foreignKey: str`, `throughForeignKey: str` |
