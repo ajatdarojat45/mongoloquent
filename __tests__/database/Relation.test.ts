@@ -104,6 +104,7 @@ describe("Relation - generateBelongsTo should return this", () => {
       type: "belongsTo",
       alias: "user",
       options: {},
+      model: "users",
     });
 
     expect(result).toEqual(expect.any(Function));
@@ -129,6 +130,7 @@ describe("Relation - generateBelongsTo should return this", () => {
       type: "belongsTo",
       alias: "user",
       options: {},
+      model: "users",
     });
 
     expect(result).toEqual(expect.any(Function));
@@ -166,6 +168,7 @@ describe("Relation - generateHasMany should return this", () => {
       type: "hasMany",
       alias: "products",
       options: {},
+      model: "products",
     });
 
     expect(result).toEqual(expect.any(Function));
@@ -206,6 +209,7 @@ describe("Relation - generateBelongsToMany should return this", () => {
       type: "belongsToMany",
       alias: "products",
       options: {},
+      model: "products",
     });
 
     expect(result).toEqual(expect.any(Function));
@@ -253,6 +257,7 @@ describe("Relation - generateHasManyThrough should return this", () => {
       type: "hasManyThrough",
       alias: "roles",
       options: {},
+      model: "roles",
     });
 
     expect(result).toEqual(expect.any(Function));
@@ -283,6 +288,7 @@ describe("Relation - selectFields method", () => {
       options: {
         select: ["name", "price"],
       },
+      model: "products",
     });
 
     expect(result).toEqual(expect.any(Function));
@@ -311,6 +317,7 @@ describe("Relation - selectFields method", () => {
       options: {
         exclude: ["name", "price"],
       },
+      model: "products",
     });
 
     expect(result).toEqual(expect.any(Function));
