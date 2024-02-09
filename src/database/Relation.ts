@@ -67,6 +67,7 @@ class Relation extends Query implements RelationInterface {
       foreignKey: ownerKey,
       localKey: foreignKey,
       type: "belongsTo",
+      model: model,
     };
   }
 
@@ -74,7 +75,7 @@ class Relation extends Query implements RelationInterface {
     this: T,
     params: GenerateBelongsToInterface
   ): T {
-    const { collection, foreignKey, localKey, alias } = params;
+    const { collection, foreignKey, localKey, alias, model } = params;
     const _lookups = JSON.parse(JSON.stringify(this.lookups));
 
     let _foreignKey = foreignKey;
@@ -84,13 +85,35 @@ class Relation extends Query implements RelationInterface {
       _localKey = `document.${_localKey}`;
     }
 
+    let isSoftDelete = false;
+    let pipeline: any[] = [];
+
+    if (typeof model !== "string") {
+      isSoftDelete = model?.softDelete || false;
+    }
+
+    if (isSoftDelete) {
+      pipeline = [
+        {
+          $match: {
+            $expr: {
+              $and: [{ $eq: ["$isDeleted", false] }],
+            },
+          },
+        },
+      ];
+    }
+
+    const lookup = {
+      from: collection,
+      localField: `${_localKey}`,
+      foreignField: `${_foreignKey}`,
+      as: alias,
+      pipeline: pipeline,
+    };
+
     _lookups.push({
-      $lookup: {
-        from: collection,
-        localField: `${_localKey}`,
-        foreignField: `${_foreignKey}`,
-        as: alias,
-      },
+      $lookup: lookup,
     });
 
     const _unwind = {
@@ -114,12 +137,12 @@ class Relation extends Query implements RelationInterface {
     localKey: string = "_id"
   ): BelongsToInterface {
     const collection = typeof model === "string" ? model : model.collection;
-
     return {
       collection,
       foreignKey: foreignKey,
       localKey: localKey,
       type: "hasMany",
+      model: model,
     };
   }
 
@@ -127,17 +150,37 @@ class Relation extends Query implements RelationInterface {
     this: T,
     params: GenerateBelongsToInterface
   ): T {
-    const { collection, foreignKey, localKey, alias } = params;
+    const { collection, foreignKey, localKey, alias, model } = params;
     const _lookups = JSON.parse(JSON.stringify(this.lookups));
 
-    _lookups.push({
-      $lookup: {
-        from: collection,
-        localField: localKey,
-        foreignField: foreignKey,
-        as: alias,
-      },
-    });
+    let isSoftDelete = false;
+    let pipeline: any[] = [];
+
+    if (typeof model !== "string") {
+      isSoftDelete = model?.softDelete || false;
+    }
+
+    if (isSoftDelete) {
+      pipeline = [
+        {
+          $match: {
+            $expr: {
+              $and: [{ $eq: ["$isDeleted", false] }],
+            },
+          },
+        },
+      ];
+    }
+
+    const lookup = {
+      from: collection,
+      localField: localKey,
+      foreignField: foreignKey,
+      as: alias,
+      pipeline: pipeline,
+    };
+
+    _lookups.push({ $lookup: lookup });
 
     this.lookups = _lookups;
     this.selectFields(params);
@@ -147,11 +190,13 @@ class Relation extends Query implements RelationInterface {
 
   protected static belongsToMany(
     model: typeof Model | string,
-    pivotCollection: string,
+    pivotModel: typeof Model | string,
     foreignKey: string,
     foreignKeyTarget: string
   ): BelongsToManyInterface {
     const collection = typeof model === "string" ? model : model.collection;
+    const pivotCollection =
+      typeof pivotModel === "string" ? pivotModel : pivotModel.collection;
 
     return {
       collection,
@@ -159,6 +204,7 @@ class Relation extends Query implements RelationInterface {
       foreignKey: foreignKey,
       localKey: foreignKeyTarget,
       type: "belongsToMany",
+      model,
     };
   }
 
@@ -166,8 +212,28 @@ class Relation extends Query implements RelationInterface {
     this: T,
     params: GenerateBelongsToManyInterface
   ): T {
-    const { collection, pivotCollection, foreignKey, localKey, alias } = params;
+    const { collection, pivotCollection, foreignKey, localKey, alias, model } =
+      params;
     const _lookups = JSON.parse(JSON.stringify(this.lookups));
+
+    let isSoftDelete = false;
+    let pipeline: any[] = [];
+
+    if (typeof model !== "string") {
+      isSoftDelete = model?.softDelete || false;
+    }
+
+    if (isSoftDelete) {
+      pipeline = [
+        {
+          $match: {
+            $expr: {
+              $and: [{ $eq: ["$isDeleted", false] }],
+            },
+          },
+        },
+      ];
+    }
 
     _lookups.push(
       {
@@ -184,6 +250,7 @@ class Relation extends Query implements RelationInterface {
           localField: `pivot.${localKey}`,
           foreignField: "_id",
           as: alias,
+          pipeline,
         },
       },
       {
@@ -214,6 +281,7 @@ class Relation extends Query implements RelationInterface {
       foreignKey: foreignKeyThrough,
       localKey: foreignKey,
       type: "hasManyThrough",
+      model: model,
     };
   }
 
@@ -221,9 +289,34 @@ class Relation extends Query implements RelationInterface {
     this: T,
     params: GenerateHasManyThroughInterface
   ): T {
-    const { collection, throughCollection, foreignKey, localKey, alias } =
-      params;
+    const {
+      collection,
+      throughCollection,
+      foreignKey,
+      localKey,
+      alias,
+      model,
+    } = params;
     const _lookups = JSON.parse(JSON.stringify(this.lookups));
+
+    let isSoftDelete = false;
+    let pipeline: any[] = [];
+
+    if (typeof model !== "string") {
+      isSoftDelete = model?.softDelete || false;
+    }
+
+    if (isSoftDelete) {
+      pipeline = [
+        {
+          $match: {
+            $expr: {
+              $and: [{ $eq: ["$isDeleted", false] }],
+            },
+          },
+        },
+      ];
+    }
 
     _lookups.push(
       {
@@ -240,6 +333,7 @@ class Relation extends Query implements RelationInterface {
           localField: "pivot._id",
           foreignField: `${foreignKey}`,
           as: alias,
+          pipeline,
         },
       },
       {

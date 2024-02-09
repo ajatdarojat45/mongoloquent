@@ -1,3 +1,5 @@
+import Model from "../database/Model";
+
 export interface RelationInterface {}
 
 export interface WithOptionsInterface {
@@ -10,6 +12,7 @@ export interface BelongsToInterface {
   foreignKey: string;
   localKey: string;
   type: string;
+  model: typeof Model | string;
 }
 
 export interface GenerateBelongsToInterface extends BelongsToInterface {
