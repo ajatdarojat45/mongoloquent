@@ -306,6 +306,16 @@ class Query extends Database implements QueryInterface {
       _value = new ObjectId(value);
     }
 
+    const inOperators = ["in", "nin", "notIn"];
+
+    if (
+      field === "_id" &&
+      inOperators.includes(_operator) &&
+      Array.isArray(_value)
+    ) {
+      _value = _value.map((el) => new ObjectId(el));
+    }
+
     if (_operator === "between") {
       if (!_queries.$match[_logicalOperator])
         _queries.$match[_logicalOperator] = [];
