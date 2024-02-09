@@ -257,6 +257,7 @@ class Relation extends Query implements RelationInterface {
       foreignKey: foreignKeyThrough,
       localKey: foreignKey,
       type: "hasManyThrough",
+      model: model,
     };
   }
 
@@ -264,9 +265,34 @@ class Relation extends Query implements RelationInterface {
     this: T,
     params: GenerateHasManyThroughInterface
   ): T {
-    const { collection, throughCollection, foreignKey, localKey, alias } =
-      params;
+    const {
+      collection,
+      throughCollection,
+      foreignKey,
+      localKey,
+      alias,
+      model,
+    } = params;
     const _lookups = JSON.parse(JSON.stringify(this.lookups));
+
+    let isSoftDelete = false;
+    let pipeline: any[] = [];
+
+    if (typeof model !== "string") {
+      isSoftDelete = model?.softDelete || false;
+    }
+
+    if (isSoftDelete) {
+      pipeline = [
+        {
+          $match: {
+            $expr: {
+              $and: [{ $eq: ["$isDeleted", false] }],
+            },
+          },
+        },
+      ];
+    }
 
     _lookups.push(
       {
@@ -283,6 +309,7 @@ class Relation extends Query implements RelationInterface {
           localField: "pivot._id",
           foreignField: `${foreignKey}`,
           as: alias,
+          pipeline,
         },
       },
       {
