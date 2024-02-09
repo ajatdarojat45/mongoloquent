@@ -190,11 +190,13 @@ class Relation extends Query implements RelationInterface {
 
   protected static belongsToMany(
     model: typeof Model | string,
-    pivotCollection: string,
+    pivotModel: typeof Model | string,
     foreignKey: string,
     foreignKeyTarget: string
   ): BelongsToManyInterface {
     const collection = typeof model === "string" ? model : model.collection;
+    const pivotCollection =
+      typeof pivotModel === "string" ? pivotModel : pivotModel.collection;
 
     return {
       collection,
@@ -202,6 +204,7 @@ class Relation extends Query implements RelationInterface {
       foreignKey: foreignKey,
       localKey: foreignKeyTarget,
       type: "belongsToMany",
+      model,
     };
   }
 
@@ -209,8 +212,28 @@ class Relation extends Query implements RelationInterface {
     this: T,
     params: GenerateBelongsToManyInterface
   ): T {
-    const { collection, pivotCollection, foreignKey, localKey, alias } = params;
+    const { collection, pivotCollection, foreignKey, localKey, alias, model } =
+      params;
     const _lookups = JSON.parse(JSON.stringify(this.lookups));
+
+    let isSoftDelete = false;
+    let pipeline: any[] = [];
+
+    if (typeof model !== "string") {
+      isSoftDelete = model?.softDelete || false;
+    }
+
+    if (isSoftDelete) {
+      pipeline = [
+        {
+          $match: {
+            $expr: {
+              $and: [{ $eq: ["$isDeleted", false] }],
+            },
+          },
+        },
+      ];
+    }
 
     _lookups.push(
       {
@@ -227,6 +250,7 @@ class Relation extends Query implements RelationInterface {
           localField: `pivot.${localKey}`,
           foreignField: "_id",
           as: alias,
+          pipeline,
         },
       },
       {

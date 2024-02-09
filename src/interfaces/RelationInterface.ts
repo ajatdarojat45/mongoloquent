@@ -12,7 +12,7 @@ export interface BelongsToInterface {
   foreignKey: string;
   localKey: string;
   type: string;
-  model?: typeof Model | string;
+  model: typeof Model | string;
 }
 
 export interface GenerateBelongsToInterface extends BelongsToInterface {
