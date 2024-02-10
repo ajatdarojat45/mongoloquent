@@ -575,17 +575,12 @@ describe("Query - generateQuery method", () => {
     expect(Query["queries"]).toEqual(expect.any(Object));
     expect(Query["queries"]).toHaveProperty("$match");
     expect(Query["queries"]["$match"]).toHaveProperty("$and");
-    expect(Query["queries"]["$match"]?.["$and"]).toHaveLength(2);
+
+    expect(Query["queries"]["$match"]?.["$and"]).toHaveLength(1);
     expect(Query["queries"]["$match"]?.["$and"]?.[0]).toEqual(
       expect.any(Object)
     );
     expect(Query["queries"]["$match"]?.["$and"]?.[0]).toHaveProperty(
-      "isDeleted"
-    );
-    expect(Query["queries"]["$match"]?.["$and"]?.[1]).toEqual(
-      expect.any(Object)
-    );
-    expect(Query["queries"]["$match"]?.["$and"]?.[1]).toHaveProperty(
       "isDeleted"
     );
   });
