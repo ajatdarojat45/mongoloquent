@@ -793,6 +793,24 @@ class User extends Mongoloquent {
 
 > The static property softDelete will automatically add the isDeleted and deletedAt attributes to your model.
 
+<h3 id="restore">restore()</h3>
+
+Sometimes you may wish to "un-delete" a soft deleted model. To restore a soft deleted model, you may call the `restore` method on a model. The `restore` method will set the model's `deletedAt` column to `null` and `isDeleted` column to `false`.
+
+```js
+import User from "./yourPath/User";
+
+await User.withTrashed().restore();
+```
+
+You may also combine the `restore` method with query methods to restore multiple models/data.
+
+```js
+import User from "./yourPath/User";
+
+await User.withTrashed().where("age", ">=", 50).restore();
+```
+
 <h3 id="withtrashed">withTrashed()</h3>
 
 As noted above, soft deleted models will automatically be excluded from query results. However, you may force soft deleted models to be included in a query's results by calling the withTrashed method on the query.
@@ -886,5 +904,6 @@ const users = await User.onlyTrashed().where("age", "gte" 50).get()
 
 | Method                          | Description                                                                                                  | Parameters |
 | ------------------------------- | ------------------------------------------------------------------------------------------------------------ | ---------- |
+| [`restore()`](#restore)         | The `onlyTrashed` method will retrieve only soft deleted models                                              | -          |
 | [`withTrashed()`](#withtrashed) | The `withTrashed` method will force soft deleted models to be included soft delete data in a query's results | -          |
 | [`onlyTrashed()`](#onlytrashed) | The `onlyTrashed` method will retrieve only soft deleted models                                              | -          |
