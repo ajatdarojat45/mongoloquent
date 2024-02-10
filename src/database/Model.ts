@@ -9,6 +9,20 @@ import {
 } from "../interfaces/ModelInterface";
 
 class Model extends Relation implements ModelInterface {
+  static async all(): Promise<object[]> {
+    try {
+      const collection = this.getCollection();
+
+      let q = {};
+
+      if (this.softDelete) q = { isDeleted: false };
+
+      return await collection.find(q).toArray();
+    } catch (error) {
+      throw error;
+    }
+  }
+
   static async get(fields?: string | string[]): Promise<object[]> {
     try {
       if (fields) this.select(fields);
@@ -160,6 +174,9 @@ class Model extends Relation implements ModelInterface {
         ])
         .next();
 
+      this.resetQuery();
+      this.resetRelation();
+
       return aggregate?.max || 0;
     } catch (error) {
       throw error;
@@ -189,6 +206,9 @@ class Model extends Relation implements ModelInterface {
         ])
         .next();
 
+      this.resetQuery();
+      this.resetRelation();
+
       return aggregate?.min || 0;
     } catch (error) {
       throw error;
@@ -216,6 +236,9 @@ class Model extends Relation implements ModelInterface {
           },
         ])
         .next();
+
+      this.resetQuery();
+      this.resetRelation();
 
       return aggregate?.avg || 0;
     } catch (error) {
@@ -245,6 +268,9 @@ class Model extends Relation implements ModelInterface {
         ])
         .next();
 
+      this.resetQuery();
+      this.resetRelation();
+
       return aggregate?.sum || 0;
     } catch (error) {
       throw error;
@@ -270,6 +296,9 @@ class Model extends Relation implements ModelInterface {
           },
         ])
         .next();
+
+      this.resetQuery();
+      this.resetRelation();
 
       return aggregate?.total || 0;
     } catch (error) {
@@ -299,13 +328,15 @@ class Model extends Relation implements ModelInterface {
         ])
         .toArray();
 
+      this.resetQuery();
+      this.resetRelation();
       return aggregate.map((item) => item[field]);
     } catch (error) {
       throw error;
     }
   }
 
-  static async create(payload: object): Promise<object> {
+  static async insert(payload: object): Promise<object> {
     try {
       const collection = this.getCollection();
 
@@ -316,20 +347,46 @@ class Model extends Relation implements ModelInterface {
         ..._payload,
       });
 
-      return { _id: data.insertedId, ...payload };
+      return { _id: data.insertedId, ..._payload };
     } catch (error) {
       throw error;
     }
   }
 
-  static async update(payload: object): Promise<object> {
+  static async create(payload: object): Promise<object> {
+    try {
+      return await this.insert(payload);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async insertMany(payload: object[]): Promise<object> {
+    try {
+      const collection = this.getCollection();
+
+      const _payload = payload.map((item) => {
+        let _item: object = checkSoftDelete(this.softDelete, item);
+        _item = checkTimestamps(this.timestamps, _item);
+        return _item;
+      });
+
+      const data = await collection.insertMany(_payload);
+
+      return data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async update(payload: object): Promise<object | null> {
     try {
       const collection = this.getCollection();
       const _payload = checkTimestamps(this.timestamps, payload);
 
       if ((_payload as any)?._id) delete (_payload as any)._id;
 
-      if ((_payload as any)?._createdAt) delete (_payload as any).createdAt;
+      if ((_payload as any)?.createdAt) delete (_payload as any).createdAt;
 
       this.generateQuery();
 
@@ -348,7 +405,37 @@ class Model extends Relation implements ModelInterface {
       );
 
       this.resetQuery();
-      return data || {};
+      this.resetRelation();
+      return data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async updateMany(payload: object): Promise<object> {
+    try {
+      const collection = this.getCollection();
+      const _payload = checkTimestamps(this.timestamps, payload);
+
+      if ((_payload as any)?._id) delete (_payload as any)._id;
+
+      if ((_payload as any)?.createdAt) delete (_payload as any).createdAt;
+
+      this.generateQuery();
+
+      const queries = this.queries?.$match || {};
+
+      const data = await collection.updateMany(queries, {
+        $set: {
+          ..._payload,
+        },
+      });
+
+      this.resetQuery();
+      this.resetRelation();
+      return {
+        modifiedCount: data.modifiedCount,
+      };
     } catch (error) {
       throw error;
     }
@@ -356,34 +443,121 @@ class Model extends Relation implements ModelInterface {
 
   static async delete(): Promise<object | null> {
     try {
+      const collection = this.getCollection();
+      this.generateQuery();
+      const q = this?.queries?.$match || {};
+
       if (this.softDelete) {
-        return await this.update({
-          isDeleted: true,
-          deletedAt: dayjs().toDate(),
-        });
+        const _data = await collection.findOneAndUpdate(
+          q,
+          {
+            $set: {
+              isDeleted: true,
+              deletedAt: dayjs().toDate(),
+            },
+          },
+          {
+            returnDocument: "after",
+          }
+        );
+
+        this.resetQuery();
+        this.resetRelation();
+        return _data;
       }
 
-      return await this.forceDelete();
+      this.resetQuery();
+      this.resetRelation();
+      const _data = await collection.findOneAndDelete(q);
+
+      return _data || null;
     } catch (error) {
       throw error;
     }
   }
 
-  static async forceDelete(): Promise<object | null> {
+  static async deleteMany(): Promise<object> {
     try {
       const collection = this.getCollection();
-
       this.generateQuery();
+      const q = this?.queries?.$match || {};
 
-      if (Object.keys(this?.queries?.$match || {}).length > 0) {
-        const q = this?.queries?.$match || {};
+      if (this.softDelete) {
+        const _data = await collection.updateMany(q, {
+          $set: {
+            isDeleted: true,
+            deletedAt: dayjs().toDate(),
+          },
+        });
 
         this.resetQuery();
-        return await collection.findOneAndDelete(q);
+        this.resetRelation();
+
+        return {
+          deletedCount: _data.modifiedCount,
+        };
       }
 
       this.resetQuery();
-      return null;
+      this.resetRelation();
+
+      const _data = await collection.deleteMany(q);
+
+      return {
+        deletedCount: _data.deletedCount,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async forceDelete(): Promise<object> {
+    try {
+      const collection = this.getCollection();
+
+      this.onlyTrashed();
+      this.generateQuery();
+
+      const q = this?.queries?.$match || {};
+
+      this.resetQuery();
+      this.resetRelation();
+
+      const _data = await collection.deleteMany(q);
+
+      return {
+        deletedCount: _data.deletedCount,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async restore(): Promise<object> {
+    try {
+      this.onlyTrashed();
+      this.generateQuery();
+
+      const collection = this.getCollection();
+
+      const q = this?.queries?.$match || {};
+      const _payload = checkTimestamps(this.timestamps, {
+        isDeleted: false,
+        deletedAt: null,
+      });
+
+      if ((_payload as any)?.createdAt) delete (_payload as any).createdAt;
+
+      const data = await collection.updateMany(q, {
+        $set: _payload,
+      });
+
+      this.resetQuery();
+      this.resetRelation();
+
+      return {
+        modifiedCount: data.modifiedCount,
+      };
     } catch (error) {
       throw error;
     }

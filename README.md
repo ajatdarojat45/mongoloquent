@@ -4,11 +4,12 @@ Mongoloquent is a lightweight MongoDB ORM library for JavaScript, inspired by th
 
 ## Table of content
 
-- [Installation](#installation)
-- [Usage](#usage)
-- [Queries](#queries)
-- [Relationships](#relationships)
-- [API References](#api-references)
+-   [Installation](#installation)
+-   [Usage](#usage)
+-   [Queries](#queries)
+-   [Relationships](#relationships)
+-   [Soft Delete](#soft-delete)
+-   [API References](#api-references)
 
 ## Installation
 
@@ -29,6 +30,10 @@ MONGOLOQUENT_URI=
 
 # default: mongoloquent
 MONGOLOQUENT_DATABASE=
+
+# used for the test environment or when the NODE_ENV environment variable value = test
+# default: MONGOLOQUENT_DATABASE + "_test"
+MONGOLOQUENT_DATABASE_TEST=
 
 # default: Asia/Jakarta
 MONGOLOQUENT_TIMEZONE=
@@ -60,7 +65,7 @@ class User extends Mongoloquent {
 
 ## Queries
 
-### create(data)
+### insert(data)
 
 Create a new document with the provided data.
 
@@ -73,12 +78,39 @@ const data = {
 	email: "udin@mail.com",
 };
 
-const user = await User.create(data);
+const user = await User.insert(data);
+```
+
+### create(data)
+
+The `create` method is an alias for the `insert` method.
+
+### insertMany(data)
+
+The `insertMany` method used to insert multiple documents into the database collection.
+
+```js
+import User from "./yourPath/User";
+
+const data = [
+    {
+        name: "Udin",
+        age: 17,
+        email: "udin@mail.com",
+    },
+    {
+        name: "Kosasih",
+        age: 20,
+        email: "kosasih@mail.com",
+    },
+];
+
+const user = await User.insertMany(data);
 ```
 
 ### update(data)
 
-Update documents matching the query criteria.
+Update a single document that matches a given query.
 
 ```js
 import User from "./yourPath/User";
@@ -88,15 +120,41 @@ const data = { name: "Udin Edited" };
 const user = await User.where("_id", "65ab7e3d05d58a1ad246ee87").update(data);
 ```
 
+### updateMany(data)
+
+Update multiple documents that matches a given query.
+
+```js
+import Flight from "./yourPath/Flight";
+
+await Flight.where("isActive", true)
+    .where("destination", "Bogor")
+    .updateMany({ delayed: true });
+```
+
+The `updateMany` method returns the number of affected documents.
+
 ### delete()
 
-Delete documents matching the query criteria.
+Delete a single document that matches a given query.
 
 ```js
 import User from "./yourPath/User";
 
 const user = await User.where("_id", "65ab7e3d05d58a1ad246ee87").delete();
 ```
+
+### deleteMany()
+
+Delete multiple documents that matches a given query.
+
+```js
+import Flight from "./yourPath/Flight";
+
+await Flight.where("isActive", false).deleteMany();
+```
+
+The `deleteMany` method returns the number of affected documents.
 
 ### select(columns)
 
@@ -132,6 +190,16 @@ Also, you can pass a list of column names to exclude some columns.
 import User from "./yourPath/User";
 
 const users = await User.exclude(["name", "age"]).get();
+```
+
+### all()
+
+The `all` method will retrieve all of the documents from the model's associated database collection.
+
+```js
+import User from "./yourPath/User";
+
+const users = await User.all();
 ```
 
 ### get(columns)
@@ -777,6 +845,155 @@ const project = await Project.where("_id", "65ab7e3d05d58a1ad246ee87")
 	.first();
 ```
 
+<h3 id="with">with(relation, options?)</h3>
+
+The `with` method is used to perform eager loading of a specified relationship. it takes two parameters: `relation: str` and `options: obj`.
+
+Before use this method make sure you have set relationship in your `Model`. For more detail you can see about relationship [here](#relationships).
+
+```js
+import { Mongoloquent } from "mongoloquent";
+import User from "./yourpath/User";
+import Comment from "./yourPath/Comment";
+
+class Post extends Mongoloquent {
+    static collection = "posts";
+
+    static user() {
+        return this.belongsto(User, "userid", "_id");
+    }
+
+    static comments() {
+        return this.hasmany(Comment, "postId", "_id");
+    }
+}
+
+// usage
+const post = await Post.where("_id", "65ab7e3d05d58a1ad246ee87")
+    .with("user")
+    .with("comments")
+    .first();
+```
+
+Also, you can pass an option to select some columns of the relation result.
+
+```js
+import { Mongoloquent } from "mongoloquent";
+import User from "./yourpath/User";
+
+class Post extends Mongoloquent {
+    static collection = "posts";
+
+    static user() {
+        return this.belongsto(User, "userid", "_id");
+    }
+}
+
+// usage
+const posts = await Post.where("ispublish", true)
+    .with("user", {
+        select: ["username", "email"],
+    })
+    .get();
+```
+
+Or, exclude some columns of the relation result.
+
+```js
+import { Mongoloquent } from "mongoloquent";
+import User from "./yourpath/User";
+
+class Post extends Mongoloquent {
+    static collection = "posts";
+
+    static user() {
+        return this.belongsto(User, "userid", "_id");
+    }
+}
+
+// usage
+const posts = await Post.where("ispublish", true)
+    .with("user", {
+        exclude: ["password", "email"],
+    })
+    .get();
+```
+
+<h3 id="has">has(relation, options?)</h3>
+
+`has` method is an alias for the [`with`](#with) method.
+
+## Soft Delete
+
+In addition to actually removing records from your database, `Mongoloquent` can also `soft delete` models. When models are soft deleted, they are not actually removed from your database. Instead, a `isDeleted` and `deletedAt` attribute is set on the model indicating the date and time at which the model was "deleted". To enable soft deletes for a model, add the static property `softDelete` to the model.
+
+```js
+import { Mongoloquent } from "mongoloquent";
+
+class User extends Mongoloquent {
+    static collection = "users";
+    static softDelete = true;
+}
+```
+
+> The static property softDelete will automatically add the isDeleted and deletedAt attributes to your model.
+
+<h3 id="restore">restore()</h3>
+
+Sometimes you may wish to "un-delete" a soft deleted model. To restore a soft deleted model, you may call the `restore` method on a model. The `restore` method will set the model's `deletedAt` column to `null` and `isDeleted` column to `false`.
+
+```js
+import User from "./yourPath/User";
+
+await User.withTrashed().restore();
+```
+
+You may also combine the `restore` method with query methods to restore multiple models/data.
+
+```js
+import User from "./yourPath/User";
+
+await User.withTrashed().where("age", ">=", 50).restore();
+```
+
+<h3 id="forcedelete">forceDelete()</h3>
+
+Sometimes you may need to truly remove a model from your database. You may use the `forceDelete` method to permanently remove a soft deleted model from the database collection.
+
+```js
+import User from "./yourPath/User";
+
+await User.forceDelete();
+```
+
+You may also combine the `forceDelete` method with query methods to permanently delete some specific soft deleted models/data.
+
+```js
+import User from "./yourPath/User";
+
+await User.where("age", 50).forceDelete();
+```
+
+<h3 id="withtrashed">withTrashed()</h3>
+
+As noted above, soft deleted models will automatically be excluded from query results. However, you may force soft deleted models to be included in a query's results by calling the withTrashed method on the query.
+
+```js
+import User from "./yourPath/User";
+
+const users = await User.withTrashed().where("age", ">=" 50).get()
+```
+
+<h3 id="onlytrashed">onlyTrashed()</h3>
+
+The `onlyTrashed` method will retrieve only soft deleted models.
+
+```js
+import User from "./yourPath/User";
+
+const users = await User.onlyTrashed().where("age", "gte" 50).get()
+```
+
 ## API References
 
 ### Properties
@@ -803,39 +1020,42 @@ const project = await Project.where("_id", "65ab7e3d05d58a1ad246ee87")
 
 ### Query methods
 
-| Method                                                    | Description                                                         | Parameters                                           |
-| --------------------------------------------------------- | ------------------------------------------------------------------- | ---------------------------------------------------- |
-| [`create(data)`](<#create(data)>)                         | Create a new document with the provided data.                       | `data: obj`                                          |
-| [`update(data)`](<#update(data)>)                         | Update documents matching the query criteria.                       | `data: obj`                                          |
-| [`delete()`](<#delete()>)                                 | Delete documents matching the query criteria.                       | -                                                    |
-| [`select(columns)`](<#select(columns)>)                   | Select specific columns to be displayed in the query results.       | `columns: str or str[]`                              |
-| [`exclude(columns)`](<#exclude(columns)>)                 | Exclude specific columns from being displayed in the query results. | `columns: str or str[]`                              |
-| [`get(columns)`](<#get(columns)>)                         | Get the documents matching the query criteria.                      | `columns: str or str[]`                              |
-| [`paginate(page, limit)`](#paginate)                      | Paginate the query results.                                         | `page: int, limit: int`                              |
-| [`first(columns)`](<#first(columns)>)                     | Get the first document matching the query criteria.                 | `columns: str or str[]`                              |
-| [`find(id)`](<#find(id)>)                                 | Find a document by its ID.                                          | `id: str or ObjectId`                                |
-| [`pluck(column)`](<#pluck(column)>)                       | Retrieve the values of a specific column from the query results.    | `column: str`                                        |
-| [`limit(value)`](<#limit(value)>)                         | Limit the number of documents to be returned by the query.          | `value: int`                                         |
-| [`take(value)`](<#take(value)>)                           | Alias for the `limit` method.                                       | `value: int`                                         |
-| [`offset(value)`](<#offset(value)>)                       | Set an offset for the query results.                                | `value: int`                                         |
-| [`skip(value)`](<#skip(value)>)                           | Skip a specified number of documents in the query results.          | `value: int`                                         |
-| [`where(column, operator, value)`](#where)                | Add a WHERE clause to the query.                                    | `column: str`, `operator: str`, `value: any`         |
-| [`orWhere(column, operator, value)`](#orwhere)            | Add an OR WHERE clause to the query.                                | `column: str`, `operator: str`, `value: any`         |
-| [`whereIn(column, values)`](#wherein)                     | Add a WHERE IN clause to the query.                                 | `column: str`, `values: any[]`                       |
-| [`orWhereIn(column, values)`](#orwherein)                 | Add an OR WHERE IN clause to the query.                             | `column: str,` `values: any[]`                       |
-| [`whereNotIn(column, values)`](#wherenotin)               | Add a WHERE NOT IN clause to the query.                             | `column: str`, `values: any[]`                       |
-| [`orWhereNotIn(column, values)`](#orwherenotin)           | Add an OR WHERE NOT IN clause to the query.                         | `column: str`, `values: any[]`                       |
-| [`whereBetween(column, values)`](#wherebetween)           | Add a WHERE BETWEEN clause to the query.                            | `column: str`, `values: int[]`                       |
-| [`orWhereBetween(column, array values)`](#orwherebetween) | Add an OR WHERE BETWEEN clause to the query.                        | `column: str`, `values: int[]`                       |
-| [`orderBy(column, direction, isSensitive?)`](#orderby)    | Sort the query results by a specific column.                        | `column: str`, `direction: str`, `isSensitive: bool` |
-| [`groupBy(column)`](<#groupby(column)>)                   | Group the query results by specific columns.                        | `column: str`                                        |
-| [`min(column)`](<#min(column)>)                           | Retrieve the minimum value of a specific column.                    | `column: str`                                        |
-| [`max(column)`](<#max(column)>)                           | Retrieve the maximum value of a specific column.                    | `column: str`                                        |
-| [`sum(column)`](<#sum(column)>)                           | Calculate the sum of values in a specific column.                   | `column: str`                                        |
-| [`avg(column)`](<#avg(column)>)                           | Calculate the average value of a specific column.                   | `column: str`                                        |
-| [`count()`](<#count()>)                                   | Count the number of documents matching the query criteria.          | -                                                    |
-| [`with(relation, options?)`](#with)                       | To perform eager loading of specified relationship.                 | `relation: str`, `options: ob`                       |
-| [`has(relation, options?)`](#has)                         | Alias for the `with` method.                                        | `relation: str`, `options: ob`                       |
+| Method                                                    | Description                                                                  | Parameters                                           |
+| --------------------------------------------------------- | ---------------------------------------------------------------------------- | ---------------------------------------------------- |
+| [`insert(data)`](<#insert(data)>)                         | Create a new document with the provided data.                                | `data: obj`                                          |
+| [`create(data)`](<#create(data)>)                         | Alias for the `insert` method.                                               | `data: obj`                                          |
+| [`insertMany(data)`](<#insertmany(data)>)                 | `insertMany` method used to insert documents into the database collection.   | `data: obj[]`                                        |
+| [`update(data)`](<#update(data)>)                         | Update a single document that matches a given query.                         | `data: obj`                                          |
+| [`updateMany(data)`](<#updatemany(data)>)                 | Update multiple documents that match a given query.                          | `data: obj`                                          |
+| [`delete()`](<#delete()>)                                 | Delete a single document that matches a given query.                         | -                                                    |
+| [`deleteMany()`](<#deletemany()>)                         | Delete multiple documents that matches a given query.                        | -                                                    |
+| [`select(columns)`](<#select(columns)>)                   | Select specific columns to be displayed in the query results.                | `columns: str or str[]`                              |
+| [`exclude(columns)`](<#exclude(columns)>)                 | Exclude specific columns from being displayed in the query results.          | `columns: str or str[]`                              |
+| [`all()`](<#all()>)                                       | Retrieve all of the records from the model's associated database collection. | -                                                    |
+| [`get(columns)`](<#get(columns)>)                         | Get the documents matching the query criteria.                               | `columns: str or str[]`                              |
+| [`paginate(page, limit)`](#paginate)                      | Paginate the query results.                                                  | `page: int, limit: int`                              |
+| [`first(columns)`](<#first(columns)>)                     | Get the first document matching the query criteria.                          | `columns: str or str[]`                              |
+| [`find(id)`](<#find(id)>)                                 | Find a document by its ID.                                                   | `id: str or ObjectId`                                |
+| [`pluck(column)`](<#pluck(column)>)                       | Retrieve the values of a specific column from the query results.             | `column: str`                                        |
+| [`limit(value)`](<#limit(value)>)                         | Limit the number of documents to be returned by the query.                   | `value: int`                                         |
+| [`take(value)`](<#take(value)>)                           | Alias for the `limit` method.                                                | `value: int`                                         |
+| [`offset(value)`](<#offset(value)>)                       | Set an offset for the query results.                                         | `value: int`                                         |
+| [`skip(value)`](<#skip(value)>)                           | Skip a specified number of documents in the query results.                   | `value: int`                                         |
+| [`where(column, operator, value)`](#where)                | Add a WHERE clause to the query.                                             | `column: str`, `operator: str`, `value: any`         |
+| [`orWhere(column, operator, value)`](#orwhere)            | Add an OR WHERE clause to the query.                                         | `column: str`, `operator: str`, `value: any`         |
+| [`whereIn(column, values)`](#wherein)                     | Add a WHERE IN clause to the query.                                          | `column: str`, `values: any[]`                       |
+| [`orWhereIn(column, values)`](#orwherein)                 | Add an OR WHERE IN clause to the query.                                      | `column: str,` `values: any[]`                       |
+| [`whereNotIn(column, values)`](#wherenotin)               | Add a WHERE NOT IN clause to the query.                                      | `column: str`, `values: any[]`                       |
+| [`orWhereNotIn(column, values)`](#orwherenotin)           | Add an OR WHERE NOT IN clause to the query.                                  | `column: str`, `values: any[]`                       |
+| [`whereBetween(column, values)`](#wherebetween)           | Add a WHERE BETWEEN clause to the query.                                     | `column: str`, `values: int[]`                       |
+| [`orWhereBetween(column, array values)`](#orwherebetween) | Add an OR WHERE BETWEEN clause to the query.                                 | `column: str`, `values: int[]`                       |
+| [`orderBy(column, direction, isSensitive?)`](#orderby)    | Sort the query results by a specific column.                                 | `column: str`, `direction: str`, `isSensitive: bool` |
+| [`groupBy(column)`](<#groupby(column)>)                   | Group the query results by specific columns.                                 | `column: str`                                        |
+| [`min(column)`](<#min(column)>)                           | Retrieve the minimum value of a specific column.                             | `column: str`                                        |
+| [`max(column)`](<#max(column)>)                           | Retrieve the maximum value of a specific column.                             | `column: str`                                        |
+| [`sum(column)`](<#sum(column)>)                           | Calculate the sum of values in a specific column.                            | `column: str`                                        |
+| [`avg(column)`](<#avg(column)>)                           | Calculate the average value of a specific column.                            | `column: str`                                        |
+| [`count()`](<#count()>)                                   | Count the number of documents matching the query criteria.                   | -                                                    |
 
 ### Relationships methods
 
@@ -845,3 +1065,14 @@ const project = await Project.where("_id", "65ab7e3d05d58a1ad246ee87")
 | [`belongsTo(Model, foreignKey, ownerKey)`](#belongsto)                                  | Define a "belongs to" relationship between the current model and the related model.                                 | `Model: Model or str`, `foreignKey: str`, `ownerKey: str`                                        |
 | [`belongsToMany(Model, pivotModel, foreignKey, foreignKeyTarget)`](#belongstomany)      | Define a "belongs to many" relationship between the current model and the related model through a pivot collection. | `Model: Model or str`, `pivotModel: Model or str`, `foreignKey: str`, `foreignKeyTarget: str`    |
 | [`hasManyThrough(Model, throughModel, foreignKey, throughForeignKey)`](#hasmanythrough) | Define a "has many through" relationship between the current model and the related model through a pivot Model.     | `Model: Model or str`, `throughModel: Model or str`, `foreignKey: str`, `throughForeignKey: str` |
+| [`with(relation, options?)`](#with)                                                     | To perform eager loading of specified relationship.                                                                 | `relation: str`, `options: obj`                                                                  |
+| [`has(relation, options?)`](#has)                                                       | Alias for the `with` method.                                                                                        | `relation: str`, `options: obj`                                                                  |
+
+### Soft delete methods
+
+| Method                          | Description                                                                                                   | Parameters |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------- | ---------- |
+| [`restore()`](#restore)         | The `onlyTrashed` method will retrieve only soft deleted models.                                              | -          |
+| [`forceDelete()`](#forcedelete) | The `forceDelete` method to permanently remove a soft deleted model from the database collection.             | -          |
+| [`withTrashed()`](#withtrashed) | The `withTrashed` method will force soft deleted models to be included soft delete data in a query's results. | -          |
+| [`onlyTrashed()`](#onlytrashed) | The `onlyTrashed` method will retrieve only soft deleted models.                                              | -          |
