@@ -319,7 +319,7 @@ class Model extends Relation implements ModelInterface {
     }
   }
 
-  static async create(payload: object): Promise<object> {
+  static async insert(payload: object): Promise<object> {
     try {
       const collection = this.getCollection();
 
@@ -330,13 +330,39 @@ class Model extends Relation implements ModelInterface {
         ..._payload,
       });
 
-      return { _id: data.insertedId, ...payload };
+      return { _id: data.insertedId, ..._payload };
     } catch (error) {
       throw error;
     }
   }
 
-  static async update(payload: object): Promise<object> {
+  static async create(payload: object): Promise<object> {
+    try {
+      return await this.insert(payload);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async insertMany(payload: object[]): Promise<object> {
+    try {
+      const collection = this.getCollection();
+
+      const _payload = payload.map((item) => {
+        let _item: object = checkSoftDelete(this.softDelete, item);
+        _item = checkTimestamps(this.timestamps, _item);
+        return _item;
+      });
+
+      const data = await collection.insertMany(_payload);
+
+      return data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async update(payload: object): Promise<object | null> {
     try {
       const collection = this.getCollection();
       const _payload = checkTimestamps(this.timestamps, payload);
@@ -362,13 +388,73 @@ class Model extends Relation implements ModelInterface {
       );
 
       this.resetQuery();
-      return data || {};
+      return data;
     } catch (error) {
       throw error;
     }
   }
 
-  static async delete(): Promise<object> {
+  static async updateMany(payload: object): Promise<object> {
+    try {
+      const collection = this.getCollection();
+      const _payload = checkTimestamps(this.timestamps, payload);
+
+      if ((_payload as any)?._id) delete (_payload as any)._id;
+
+      if ((_payload as any)?.createdAt) delete (_payload as any).createdAt;
+
+      this.generateQuery();
+
+      const queries = this.queries?.$match || {};
+
+      const data = await collection.updateMany(queries, {
+        $set: {
+          ..._payload,
+        },
+      });
+
+      this.resetQuery();
+      return {
+        modifiedCount: data.modifiedCount,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async delete(): Promise<object | null> {
+    try {
+      const collection = this.getCollection();
+      this.generateQuery();
+      const q = this?.queries?.$match || {};
+
+      if (this.softDelete) {
+        const _data = await collection.findOneAndUpdate(
+          q,
+          {
+            $set: {
+              isDeleted: true,
+              deletedAt: dayjs().toDate(),
+            },
+          },
+          {
+            returnDocument: "after",
+          }
+        );
+
+        return _data;
+      }
+
+      this.resetQuery();
+      const _data = await collection.findOneAndDelete(q);
+
+      return _data || null;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async deleteMany(): Promise<object> {
     try {
       const collection = this.getCollection();
       this.generateQuery();
