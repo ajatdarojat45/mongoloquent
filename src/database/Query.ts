@@ -377,6 +377,16 @@ class Query extends Database implements QueryInterface {
       });
     }
 
+    if (this.isWithTrashed) {
+      const _and = this?.queries?.$match?.$and?.filter(
+        (item) => item.hasOwnProperty("isDeleted") === false
+      );
+
+      if (this?.queries?.$match?.$and) {
+        this.queries.$match.$and = _and;
+      }
+    }
+
     if (this.isOnlyTrashed) {
       const _and = this?.queries?.$match?.$and?.filter(
         (item) => item.hasOwnProperty("isDeleted") === false
@@ -387,16 +397,6 @@ class Query extends Database implements QueryInterface {
           $eq: true,
         },
       });
-
-      if (this?.queries?.$match?.$and) {
-        this.queries.$match.$and = _and;
-      }
-    }
-
-    if (this.isWithTrashed) {
-      const _and = this?.queries?.$match?.$and?.filter(
-        (item) => item.hasOwnProperty("isDeleted") === false
-      );
 
       if (this?.queries?.$match?.$and) {
         this.queries.$match.$and = _and;

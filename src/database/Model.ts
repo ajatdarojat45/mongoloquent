@@ -329,7 +329,7 @@ class Model extends Relation implements ModelInterface {
 
       if ((_payload as any)?._id) delete (_payload as any)._id;
 
-      if ((_payload as any)?._createdAt) delete (_payload as any).createdAt;
+      if ((_payload as any)?.createdAt) delete (_payload as any).createdAt;
 
       this.generateQuery();
 
@@ -384,6 +384,32 @@ class Model extends Relation implements ModelInterface {
 
       this.resetQuery();
       return null;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async restore(): Promise<object> {
+    try {
+      this.onlyTrashed();
+      this.generateQuery();
+
+      const collection = this.getCollection();
+
+      const q = this?.queries?.$match || {};
+      const _payload = checkTimestamps(this.timestamps, {
+        isDeleted: false,
+        deletedAt: null,
+      });
+
+      if ((_payload as any)?.createdAt) delete (_payload as any).createdAt;
+
+      const data = await collection.updateMany(q, {
+        $set: _payload,
+      });
+
+      this.resetQuery();
+      return data;
     } catch (error) {
       throw error;
     }
