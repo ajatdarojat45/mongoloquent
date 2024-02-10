@@ -811,6 +811,24 @@ import User from "./yourPath/User";
 await User.withTrashed().where("age", ">=", 50).restore();
 ```
 
+<h3 id="forcedelete">forceDelete()</h3>
+
+Sometimes you may need to truly remove a model from your database. You may use the `forceDelete` method to permanently remove a soft deleted model from the database collection.
+
+```js
+import User from "./yourPath/User";
+
+await User.forceDelete();
+```
+
+You may also combine the `forceDelete` method with query methods to permanently delete some specific soft deleted models/data.
+
+```js
+import User from "./yourPath/User";
+
+await User.where("age", 50).forceDelete();
+```
+
 <h3 id="withtrashed">withTrashed()</h3>
 
 As noted above, soft deleted models will automatically be excluded from query results. However, you may force soft deleted models to be included in a query's results by calling the withTrashed method on the query.
@@ -902,8 +920,9 @@ const users = await User.onlyTrashed().where("age", "gte" 50).get()
 
 ### Soft delete methods
 
-| Method                          | Description                                                                                                  | Parameters |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------ | ---------- |
-| [`restore()`](#restore)         | The `onlyTrashed` method will retrieve only soft deleted models                                              | -          |
-| [`withTrashed()`](#withtrashed) | The `withTrashed` method will force soft deleted models to be included soft delete data in a query's results | -          |
-| [`onlyTrashed()`](#onlytrashed) | The `onlyTrashed` method will retrieve only soft deleted models                                              | -          |
+| Method                          | Description                                                                                                   | Parameters |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------- | ---------- |
+| [`restore()`](#restore)         | The `onlyTrashed` method will retrieve only soft deleted models.                                              | -          |
+| [`forceDelete()`](#forcedelete) | The `forceDelete` method to permanently remove a soft deleted model from the database collection.             | -          |
+| [`withTrashed()`](#withtrashed) | The `withTrashed` method will force soft deleted models to be included soft delete data in a query's results. | -          |
+| [`onlyTrashed()`](#onlytrashed) | The `onlyTrashed` method will retrieve only soft deleted models.                                              | -          |
