@@ -289,6 +289,16 @@ class Query extends Database implements QueryInterface {
     return this;
   }
 
+  static withTrashed<T extends typeof Query>(this: T): T {
+    this.isWithTrashed = true;
+    return this;
+  }
+
+  static onlyTrashed<T extends typeof Query>(this: T): T {
+    this.isOnlyTrashed = true;
+    return this;
+  }
+
   private static whereGenerator<T extends typeof Query>(
     this: T,
     field: string,
@@ -368,11 +378,19 @@ class Query extends Database implements QueryInterface {
     }
 
     if (this.isOnlyTrashed) {
-      this?.queries?.$match?.$and?.push({
+      const _and = this?.queries?.$match?.$and?.filter(
+        (item) => item.hasOwnProperty("isDeleted") === false
+      );
+
+      _and?.push({
         isDeleted: {
           $eq: true,
         },
       });
+
+      if (this?.queries?.$match?.$and) {
+        this.queries.$match.$and = _and;
+      }
     }
 
     if (this.isWithTrashed) {
@@ -408,6 +426,14 @@ class Query extends Database implements QueryInterface {
   }
 
   protected static resetQuery() {
+    this.isWithTrashed = false;
+    this.isOnlyTrashed = false;
+    this.$limit = 0;
+    this.$skip = 0;
+    this.perPage = 10;
+    this.groups = [];
+    this.fields = [];
+
     this.sorts = [
       {
         $project: {

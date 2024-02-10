@@ -8,6 +8,7 @@ Mongoloquent is a lightweight MongoDB ORM library for JavaScript, inspired by th
 -   [Usage](#usage)
 -   [Queries](#queries)
 -   [Relationships](#relationships)
+-   [Soft Delete](#soft-delete)
 -   [API References](#api-references)
 
 ## Installation
@@ -470,84 +471,6 @@ import Product from "./yourPath/Product";
 const products = await Product.where("price", ">=", 10000).count();
 ```
 
-<h3 id="with">with(relation, options?)</h3>
-
-The `with` method is used to perform eager loading of a specified relationship. it takes two parameters: `relation: str` and `options: obj`.
-
-Before use this method make sure you have set relationship in your `Model`. For more detail you can see about relationship [here](#relationships).
-
-```js
-import { Mongoloquent } from "mongoloquent";
-import User from "./yourpath/User";
-import Comment from "./yourPath/Comment";
-
-class Post extends Mongoloquent {
-    static collection = "posts";
-
-    static user() {
-        return this.belongsto(User, "userid", "_id");
-    }
-
-    static comments() {
-        return this.hasmany(Comment, "postId", "_id");
-    }
-}
-
-// usage
-const post = await Post.where("_id", "65ab7e3d05d58a1ad246ee87")
-    .with("user")
-    .with("comments")
-    .first();
-```
-
-Also, you can pass an option to select some columns of the relation result.
-
-```js
-import { Mongoloquent } from "mongoloquent";
-import User from "./yourpath/User";
-
-class Post extends Mongoloquent {
-    static collection = "posts";
-
-    static user() {
-        return this.belongsto(User, "userid", "_id");
-    }
-}
-
-// usage
-const posts = await Post.where("ispublish", true)
-    .with("user", {
-        select: ["username", "email"],
-    })
-    .get();
-```
-
-Or, exclude some columns of the relation result.
-
-```js
-import { Mongoloquent } from "mongoloquent";
-import User from "./yourpath/User";
-
-class Post extends Mongoloquent {
-    static collection = "posts";
-
-    static user() {
-        return this.belongsto(User, "userid", "_id");
-    }
-}
-
-// usage
-const posts = await Post.where("ispublish", true)
-    .with("user", {
-        exclude: ["password", "email"],
-    })
-    .get();
-```
-
-<h3 id="has">has(relation, options?)</h3>
-
-`has` method is an alias for the [`with`](#with) method.
-
 ## Relationships
 
 <h3 id="hasmany">hasMany(Model, foreignKey, localKey)</h3>
@@ -777,6 +700,119 @@ const project = await Project.where("_id", "65ab7e3d05d58a1ad246ee87")
     .first();
 ```
 
+<h3 id="with">with(relation, options?)</h3>
+
+The `with` method is used to perform eager loading of a specified relationship. it takes two parameters: `relation: str` and `options: obj`.
+
+Before use this method make sure you have set relationship in your `Model`. For more detail you can see about relationship [here](#relationships).
+
+```js
+import { Mongoloquent } from "mongoloquent";
+import User from "./yourpath/User";
+import Comment from "./yourPath/Comment";
+
+class Post extends Mongoloquent {
+    static collection = "posts";
+
+    static user() {
+        return this.belongsto(User, "userid", "_id");
+    }
+
+    static comments() {
+        return this.hasmany(Comment, "postId", "_id");
+    }
+}
+
+// usage
+const post = await Post.where("_id", "65ab7e3d05d58a1ad246ee87")
+    .with("user")
+    .with("comments")
+    .first();
+```
+
+Also, you can pass an option to select some columns of the relation result.
+
+```js
+import { Mongoloquent } from "mongoloquent";
+import User from "./yourpath/User";
+
+class Post extends Mongoloquent {
+    static collection = "posts";
+
+    static user() {
+        return this.belongsto(User, "userid", "_id");
+    }
+}
+
+// usage
+const posts = await Post.where("ispublish", true)
+    .with("user", {
+        select: ["username", "email"],
+    })
+    .get();
+```
+
+Or, exclude some columns of the relation result.
+
+```js
+import { Mongoloquent } from "mongoloquent";
+import User from "./yourpath/User";
+
+class Post extends Mongoloquent {
+    static collection = "posts";
+
+    static user() {
+        return this.belongsto(User, "userid", "_id");
+    }
+}
+
+// usage
+const posts = await Post.where("ispublish", true)
+    .with("user", {
+        exclude: ["password", "email"],
+    })
+    .get();
+```
+
+<h3 id="has">has(relation, options?)</h3>
+
+`has` method is an alias for the [`with`](#with) method.
+
+## Soft Delete
+
+In addition to actually removing records from your database, `Mongoloquent` can also `soft delete` models. When models are soft deleted, they are not actually removed from your database. Instead, a `isDeleted` and `deletedAt` attribute is set on the model indicating the date and time at which the model was "deleted". To enable soft deletes for a model, add the `softDelete` static property to the model.
+
+```js
+import { Mongoloquent } from "mongoloquent";
+
+class User extends Mongoloquent {
+    static collection = "users";
+    static softDelete = true;
+}
+```
+
+> The SoftDelete static property will automatically add the isDeleted and deletedAt attributes to your model.
+
+<h3 id="withtrashed">withTrashed()</h3>
+
+As noted above, soft deleted models will automatically be excluded from query results. However, you may force soft deleted models to be included in a query's results by calling the withTrashed method on the query.
+
+```js
+import User from "./yourPath/User";
+
+const users = await User.withTrashed().where("age", ">=" 50).get()
+```
+
+<h3 id="onlytrashed">onlyTrashed()</h3>
+
+The `onlyTrashed` method will retrieve only soft deleted models.
+
+```js
+import User from "./yourPath/User";
+
+const users = await User.onlyTrashed().where("age", "gte" 50).get()
+```
+
 ## API References
 
 ### Properties
@@ -834,8 +870,6 @@ const project = await Project.where("_id", "65ab7e3d05d58a1ad246ee87")
 | [`sum(column)`](<#sum(column)>)                           | Calculate the sum of values in a specific column.                   | `column: str`                                        |
 | [`avg(column)`](<#avg(column)>)                           | Calculate the average value of a specific column.                   | `column: str`                                        |
 | [`count()`](<#count()>)                                   | Count the number of documents matching the query criteria.          | -                                                    |
-| [`with(relation, options?)`](#with)                       | To perform eager loading of specified relationship.                 | `relation: str`, `options: ob`                       |
-| [`has(relation, options?)`](#has)                         | Alias for the `with` method.                                        | `relation: str`, `options: ob`                       |
 
 ### Relationships methods
 
@@ -845,3 +879,12 @@ const project = await Project.where("_id", "65ab7e3d05d58a1ad246ee87")
 | [`belongsTo(Model, foreignKey, ownerKey)`](#belongsto)                                  | Define a "belongs to" relationship between the current model and the related model.                                 | `Model: Model or str`, `foreignKey: str`, `ownerKey: str`                                        |
 | [`belongsToMany(Model, pivotModel, foreignKey, foreignKeyTarget)`](#belongstomany)      | Define a "belongs to many" relationship between the current model and the related model through a pivot collection. | `Model: Model or str`, `pivotModel: Model or str`, `foreignKey: str`, `foreignKeyTarget: str`    |
 | [`hasManyThrough(Model, throughModel, foreignKey, throughForeignKey)`](#hasmanythrough) | Define a "has many through" relationship between the current model and the related model through a pivot Model.     | `Model: Model or str`, `throughModel: Model or str`, `foreignKey: str`, `throughForeignKey: str` |
+| [`with(relation, options?)`](#with)                                                     | To perform eager loading of specified relationship.                                                                 | `relation: str`, `options: obj`                                                                  |
+| [`has(relation, options?)`](#has)                                                       | Alias for the `with` method.                                                                                        | `relation: str`, `options: obj`                                                                  |
+
+### Soft delete methods
+
+| Method                          | Description                                                                                                  | Parameters |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------ | ---------- |
+| [`withTrashed()`](#withtrashed) | The `withTrashed` method will force soft deleted models to be included soft delete data in a query's results | -          |
+| [`onlyTrashed()`](#onlytrashed) | The `onlyTrashed` method will retrieve only soft deleted models                                              | -          |
