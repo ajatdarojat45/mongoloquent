@@ -780,7 +780,7 @@ const posts = await Post.where("ispublish", true)
 
 ## Soft Delete
 
-In addition to actually removing records from your database, `Mongoloquent` can also `soft delete` models. When models are soft deleted, they are not actually removed from your database. Instead, a `isDeleted` and `deletedAt` attribute is set on the model indicating the date and time at which the model was "deleted". To enable soft deletes for a model, add the `softDelete` static property to the model.
+In addition to actually removing records from your database, `Mongoloquent` can also `soft delete` models. When models are soft deleted, they are not actually removed from your database. Instead, a `isDeleted` and `deletedAt` attribute is set on the model indicating the date and time at which the model was "deleted". To enable soft deletes for a model, add the static property `softDelete` to the model.
 
 ```js
 import { Mongoloquent } from "mongoloquent";
@@ -791,7 +791,7 @@ class User extends Mongoloquent {
 }
 ```
 
-> The SoftDelete static property will automatically add the isDeleted and deletedAt attributes to your model.
+> The static property softDelete will automatically add the isDeleted and deletedAt attributes to your model.
 
 <h3 id="withtrashed">withTrashed()</h3>
 
