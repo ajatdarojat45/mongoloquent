@@ -1,8 +1,12 @@
 import { MongoClient, ServerApiVersion } from "mongodb";
+import "dotenv/config";
 
 let databaseName: string = process.env.MONGOLOQUENT_DATABASE || "mongoloquent";
 
-if (process.env.NODE_ENV === "test") databaseName = databaseName + "_test";
+if (process.env.NODE_ENV === "test") {
+  databaseName =
+    process.env.MONGOLOQUENT_DATABASE_TEST || databaseName + "_test";
+}
 
 export const MONGOLOQUENT_DATABASE: string = databaseName;
 

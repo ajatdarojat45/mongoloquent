@@ -31,6 +31,10 @@ MONGOLOQUENT_URI=
 # default: mongoloquent
 MONGOLOQUENT_DATABASE=
 
+# used for the test environment or when the NODE_ENV environment variable value = test
+# default: MONGOLOQUENT_DATABASE + "_test"
+MONGOLOQUENT_DATABASE_TEST=
+
 # default: Asia/Jakarta
 MONGOLOQUENT_TIMEZONE=
 ```
