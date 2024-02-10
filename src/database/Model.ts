@@ -354,36 +354,52 @@ class Model extends Relation implements ModelInterface {
     }
   }
 
-  static async delete(): Promise<object | null> {
+  static async delete(): Promise<object> {
     try {
+      const collection = this.getCollection();
+      this.generateQuery();
+      const q = this?.queries?.$match || {};
+
       if (this.softDelete) {
-        return await this.update({
-          isDeleted: true,
-          deletedAt: dayjs().toDate(),
+        const _data = await collection.updateMany(q, {
+          $set: {
+            isDeleted: true,
+            deletedAt: dayjs().toDate(),
+          },
         });
+
+        return {
+          deletedCount: _data.modifiedCount,
+        };
       }
 
-      return await this.forceDelete();
+      this.resetQuery();
+      const _data = await collection.deleteMany(q);
+
+      return {
+        deletedCount: _data.deletedCount,
+      };
     } catch (error) {
       throw error;
     }
   }
 
-  static async forceDelete(): Promise<object | null> {
+  static async forceDelete(): Promise<object> {
     try {
       const collection = this.getCollection();
 
+      this.onlyTrashed();
       this.generateQuery();
 
-      if (Object.keys(this?.queries?.$match || {}).length > 0) {
-        const q = this?.queries?.$match || {};
-
-        this.resetQuery();
-        return await collection.findOneAndDelete(q);
-      }
+      const q = this?.queries?.$match || {};
 
       this.resetQuery();
-      return null;
+
+      const _data = await collection.deleteMany(q);
+
+      return {
+        deletedCount: _data.deletedCount,
+      };
     } catch (error) {
       throw error;
     }
