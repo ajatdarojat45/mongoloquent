@@ -174,6 +174,9 @@ class Model extends Relation implements ModelInterface {
         ])
         .next();
 
+      this.resetQuery();
+      this.resetRelation();
+
       return aggregate?.max || 0;
     } catch (error) {
       throw error;
@@ -203,6 +206,9 @@ class Model extends Relation implements ModelInterface {
         ])
         .next();
 
+      this.resetQuery();
+      this.resetRelation();
+
       return aggregate?.min || 0;
     } catch (error) {
       throw error;
@@ -230,6 +236,9 @@ class Model extends Relation implements ModelInterface {
           },
         ])
         .next();
+
+      this.resetQuery();
+      this.resetRelation();
 
       return aggregate?.avg || 0;
     } catch (error) {
@@ -259,6 +268,9 @@ class Model extends Relation implements ModelInterface {
         ])
         .next();
 
+      this.resetQuery();
+      this.resetRelation();
+
       return aggregate?.sum || 0;
     } catch (error) {
       throw error;
@@ -284,6 +296,9 @@ class Model extends Relation implements ModelInterface {
           },
         ])
         .next();
+
+      this.resetQuery();
+      this.resetRelation();
 
       return aggregate?.total || 0;
     } catch (error) {
@@ -313,6 +328,8 @@ class Model extends Relation implements ModelInterface {
         ])
         .toArray();
 
+      this.resetQuery();
+      this.resetRelation();
       return aggregate.map((item) => item[field]);
     } catch (error) {
       throw error;
@@ -388,6 +405,7 @@ class Model extends Relation implements ModelInterface {
       );
 
       this.resetQuery();
+      this.resetRelation();
       return data;
     } catch (error) {
       throw error;
@@ -414,6 +432,7 @@ class Model extends Relation implements ModelInterface {
       });
 
       this.resetQuery();
+      this.resetRelation();
       return {
         modifiedCount: data.modifiedCount,
       };
@@ -442,10 +461,13 @@ class Model extends Relation implements ModelInterface {
           }
         );
 
+        this.resetQuery();
+        this.resetRelation();
         return _data;
       }
 
       this.resetQuery();
+      this.resetRelation();
       const _data = await collection.findOneAndDelete(q);
 
       return _data || null;
@@ -468,12 +490,17 @@ class Model extends Relation implements ModelInterface {
           },
         });
 
+        this.resetQuery();
+        this.resetRelation();
+
         return {
           deletedCount: _data.modifiedCount,
         };
       }
 
       this.resetQuery();
+      this.resetRelation();
+
       const _data = await collection.deleteMany(q);
 
       return {
@@ -494,6 +521,7 @@ class Model extends Relation implements ModelInterface {
       const q = this?.queries?.$match || {};
 
       this.resetQuery();
+      this.resetRelation();
 
       const _data = await collection.deleteMany(q);
 
@@ -525,7 +553,11 @@ class Model extends Relation implements ModelInterface {
       });
 
       this.resetQuery();
-      return data;
+      this.resetRelation();
+
+      return {
+        modifiedCount: data.modifiedCount,
+      };
     } catch (error) {
       throw error;
     }

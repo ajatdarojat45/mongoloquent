@@ -1,6 +1,22 @@
 import { ObjectId } from "mongodb";
 import Model from "../../src/database/Model";
 
+beforeEach(async () => {
+  jest.restoreAllMocks();
+
+  const collection = Model["getCollection"]();
+
+  await collection.deleteMany({});
+});
+
+describe("Model - all method", () => {
+  test("should return an array", async () => {
+    const result = await Model.all();
+
+    expect(result).toEqual(expect.any(Array));
+  });
+});
+
 describe("Model - get method", () => {
   test("should return an array", async () => {
     const result = await Model["get"]();
@@ -12,18 +28,6 @@ describe("Model - get method", () => {
     const result = await Model["get"](["name", "email"]);
 
     expect(result).toEqual(expect.any(Array));
-  });
-
-  test("should throw an error", async () => {
-    jest.spyOn(Model as any, "get").mockImplementation(() => {
-      throw new Error("Mongoloquent failed to get data...");
-    });
-
-    expect(() => Model["get"]()).toThrowError(
-      "Mongoloquent failed to get data..."
-    );
-
-    (Model as any)["get"].mockRestore();
   });
 });
 
@@ -38,18 +42,6 @@ describe("Model - first method", () => {
     const result = await Model["first"](["name", "email"]);
 
     expect(result).toEqual(expect.any(Object));
-  });
-
-  test("should throw an error", async () => {
-    jest.spyOn(Model as any, "first").mockImplementation(() => {
-      throw new Error("Mongoloquent failed to get data...");
-    });
-
-    expect(() => Model["first"]()).toThrowError(
-      "Mongoloquent failed to get data..."
-    );
-
-    (Model as any)["first"].mockRestore();
   });
 });
 
@@ -67,18 +59,6 @@ describe("Model - find method", () => {
 
     expect(result).toEqual(expect.any(Object));
   });
-
-  test("should throw an error", async () => {
-    jest.spyOn(Model as any, "find").mockImplementation(() => {
-      throw new Error("Mongoloquent failed to get data...");
-    });
-
-    expect(() => Model["find"]("5f0f5d8f5c5e7d4e0b0e3f0b")).toThrowError(
-      "Mongoloquent failed to get data..."
-    );
-
-    (Model as any)["find"].mockRestore();
-  });
 });
 
 describe("Model - paginate method", () => {
@@ -94,18 +74,6 @@ describe("Model - paginate method", () => {
     expect(result.meta).toHaveProperty("perPage");
     expect(result.meta).toHaveProperty("lastPage");
   });
-
-  test("should throw an error", async () => {
-    jest.spyOn(Model as any, "paginate").mockImplementation(() => {
-      throw new Error("Mongoloquent failed to get data...");
-    });
-
-    expect(() => Model["paginate"]()).toThrowError(
-      "Mongoloquent failed to get data..."
-    );
-
-    (Model as any)["paginate"].mockRestore();
-  });
 });
 
 describe("Model - aggregate method", () => {
@@ -114,16 +82,34 @@ describe("Model - aggregate method", () => {
     expect(result).toEqual(expect.any(Object));
   });
 
-  test("should throw an error", () => {
-    jest.spyOn(Model as any, "aggregate").mockImplementation(() => {
-      throw new Error("Mongoloquent failed to get data...");
-    });
+  test("with sort should return an aggregate cursor", () => {
+    const result = Model["orderBy"]("age", "asc")["aggregate"]();
 
-    expect(() => Model["aggregate"]()).toThrowError(
-      "Mongoloquent failed to get data..."
-    );
+    expect(result).toEqual(expect.any(Object));
+  });
 
-    (Model as any)["aggregate"].mockRestore();
+  test("with selected fields should return an aggregate cursor", () => {
+    const result = Model["select"](["name", "email"])["aggregate"]();
+
+    expect(result).toEqual(expect.any(Object));
+  });
+
+  test("with groupBy should return an aggregate cursor", () => {
+    const result = Model["groupBy"]("age")["aggregate"]();
+
+    expect(result).toEqual(expect.any(Object));
+  });
+
+  test("with $skip should return an aggregate cursor", () => {
+    const result = Model.skip(1)["aggregate"]();
+
+    expect(result).toEqual(expect.any(Object));
+  });
+
+  test("with $limit should return an aggregate cursor", () => {
+    const result = Model.limit(1)["aggregate"]();
+
+    expect(result).toEqual(expect.any(Object));
   });
 });
 
@@ -133,16 +119,26 @@ describe("Model - max method", () => {
     expect(result).toEqual(expect.any(Number));
   });
 
-  test("should throw an error", async () => {
-    jest.spyOn(Model as any, "max").mockImplementation(() => {
-      throw new Error("Mongoloquent failed to get data...");
-    });
+  test("with $skip should return a number", async () => {
+    Model["$skip"] = 1;
+    const result = await Model["max"]("age");
 
-    expect(() => Model["max"]("age")).toThrowError(
-      "Mongoloquent failed to get data..."
-    );
+    expect(result).toEqual(expect.any(Number));
+  });
 
-    (Model as any)["max"].mockRestore();
+  test("with $limit should return a number", async () => {
+    Model["$limit"] = 1;
+    const result = await Model["max"]("age");
+
+    expect(result).toEqual(expect.any(Number));
+  });
+
+  test("with $skip and $limit should return a number", async () => {
+    Model["$skip"] = 1;
+    Model["$limit"] = 1;
+    const result = await Model["max"]("age");
+
+    expect(result).toEqual(expect.any(Number));
   });
 });
 
@@ -152,16 +148,26 @@ describe("Model - min method", () => {
     expect(result).toEqual(expect.any(Number));
   });
 
-  test("should throw an error", async () => {
-    jest.spyOn(Model as any, "min").mockImplementation(() => {
-      throw new Error("Mongoloquent failed to get data...");
-    });
+  test("with $skip should return a number", async () => {
+    Model["$skip"] = 1;
+    const result = await Model["min"]("age");
 
-    expect(() => Model["min"]("age")).toThrowError(
-      "Mongoloquent failed to get data..."
-    );
+    expect(result).toEqual(expect.any(Number));
+  });
 
-    (Model as any)["min"].mockRestore();
+  test("with $limit should return a number", async () => {
+    Model["$limit"] = 1;
+    const result = await Model["min"]("age");
+
+    expect(result).toEqual(expect.any(Number));
+  });
+
+  test("with $skip and $limit should return a number", async () => {
+    Model["$skip"] = 1;
+    Model["$limit"] = 1;
+    const result = await Model["min"]("age");
+
+    expect(result).toEqual(expect.any(Number));
   });
 });
 
@@ -171,16 +177,26 @@ describe("Model - avg method", () => {
     expect(result).toEqual(expect.any(Number));
   });
 
-  test("should throw an error", async () => {
-    jest.spyOn(Model as any, "avg").mockImplementation(() => {
-      throw new Error("Mongoloquent failed to get data...");
-    });
+  test("with $skip should return a number", async () => {
+    Model["$skip"] = 1;
+    const result = await Model["avg"]("age");
 
-    expect(() => Model["avg"]("age")).toThrowError(
-      "Mongoloquent failed to get data..."
-    );
+    expect(result).toEqual(expect.any(Number));
+  });
 
-    (Model as any)["avg"].mockRestore();
+  test("with $limit should return a number", async () => {
+    Model["$limit"] = 1;
+    const result = await Model["avg"]("age");
+
+    expect(result).toEqual(expect.any(Number));
+  });
+
+  test("with $skip and $limit should return a number", async () => {
+    Model["$skip"] = 1;
+    Model["$limit"] = 1;
+    const result = await Model["avg"]("age");
+
+    expect(result).toEqual(expect.any(Number));
   });
 });
 
@@ -190,16 +206,26 @@ describe("Model - sum method", () => {
     expect(result).toEqual(expect.any(Number));
   });
 
-  test("should throw an error", async () => {
-    jest.spyOn(Model as any, "sum").mockImplementation(() => {
-      throw new Error("Mongoloquent failed to get data...");
-    });
+  test("with $skip should return a number", async () => {
+    Model["$skip"] = 1;
+    const result = await Model["sum"]("age");
 
-    expect(() => Model["sum"]("age")).toThrowError(
-      "Mongoloquent failed to get data..."
-    );
+    expect(result).toEqual(expect.any(Number));
+  });
 
-    (Model as any)["sum"].mockRestore();
+  test("with $limit should return a number", async () => {
+    Model["$limit"] = 1;
+    const result = await Model["sum"]("age");
+
+    expect(result).toEqual(expect.any(Number));
+  });
+
+  test("with $skip and $limit should return a number", async () => {
+    Model["$skip"] = 1;
+    Model["$limit"] = 1;
+    const result = await Model["sum"]("age");
+
+    expect(result).toEqual(expect.any(Number));
   });
 });
 
@@ -209,16 +235,26 @@ describe("Model - count method", () => {
     expect(result).toEqual(expect.any(Number));
   });
 
-  test("should throw an error", async () => {
-    jest.spyOn(Model as any, "count").mockImplementation(() => {
-      throw new Error("Mongoloquent failed to get data...");
-    });
+  test("with $skip should return a number", async () => {
+    Model["$skip"] = 1;
+    const result = await Model["count"]();
 
-    expect(() => Model["count"]()).toThrowError(
-      "Mongoloquent failed to get data..."
-    );
+    expect(result).toEqual(expect.any(Number));
+  });
 
-    (Model as any)["count"].mockRestore();
+  test("with $limit should return a number", async () => {
+    Model["$limit"] = 1;
+    const result = await Model["count"]();
+
+    expect(result).toEqual(expect.any(Number));
+  });
+
+  test("with $skip and $limit should return a number", async () => {
+    Model["$skip"] = 1;
+    Model["$limit"] = 1;
+    const result = await Model["count"]();
+
+    expect(result).toEqual(expect.any(Number));
   });
 });
 
@@ -228,16 +264,26 @@ describe("Model - pluck method", () => {
     expect(result).toEqual(expect.any(Array));
   });
 
-  test("should throw an error", async () => {
-    jest.spyOn(Model as any, "pluck").mockImplementation(() => {
-      throw new Error("Mongoloquent failed to get data...");
-    });
+  test("with $skip should return an array", async () => {
+    Model["$skip"] = 1;
+    const result = await Model["pluck"]("name");
 
-    expect(() => Model["pluck"]("name")).toThrowError(
-      "Mongoloquent failed to get data..."
-    );
+    expect(result).toEqual(expect.any(Array));
+  });
 
-    (Model as any)["pluck"].mockRestore();
+  test("with $limit should return an array", async () => {
+    Model["$limit"] = 1;
+    const result = await Model["pluck"]("name");
+
+    expect(result).toEqual(expect.any(Array));
+  });
+
+  test("with $skip and $limit should return an array", async () => {
+    Model["$skip"] = 1;
+    Model["$limit"] = 1;
+    const result = await Model["pluck"]("name");
+
+    expect(result).toEqual(expect.any(Array));
   });
 });
 
@@ -251,20 +297,35 @@ describe("Model - create method", () => {
     expect(result).toEqual(expect.any(Object));
     expect(result).toHaveProperty("_id");
   });
+});
 
-  test("should throw an error", async () => {
-    jest.spyOn(Model as any, "create").mockImplementation(() => {
-      throw new Error("Mongoloquent failed to get data...");
+describe("Model - insert method", () => {
+  test("should return an object", async () => {
+    const result = await Model["insert"]({
+      name: "John Doe",
+      age: 25,
     });
 
-    expect(() =>
-      Model["create"]({
+    expect(result).toEqual(expect.any(Object));
+    expect(result).toHaveProperty("_id");
+  });
+});
+
+describe("Model - insertMany method", () => {
+  test("should return an object", async () => {
+    const result = await Model["insertMany"]([
+      {
         name: "John Doe",
         age: 25,
-      })
-    ).toThrowError("Mongoloquent failed to get data...");
+      },
+      {
+        name: "Jane Doe",
+        age: 26,
+      },
+    ]);
 
-    (Model as any)["create"].mockRestore();
+    expect(result).toEqual(expect.any(Object));
+    expect(result).toHaveProperty("insertedCount");
   });
 });
 
@@ -275,40 +336,98 @@ describe("Model - update method", () => {
     expect(result).toEqual(expect.any(Object));
   });
 
-  test("should throw an error", async () => {
-    jest.spyOn(Model as any, "update").mockImplementation(() => {
-      throw new Error("Mongoloquent failed to get data...");
+  test("with send property _id should return an object", async () => {
+    const result = await Model["update"]({
+      age: 27,
+      _id: "5f0f5d8f5c5e7d4e0b0e3f0b",
     });
 
-    expect(() => Model["update"]({ age: 26 })).toThrowError(
-      "Mongoloquent failed to get data..."
-    );
+    expect(result).toEqual(expect.any(Object));
+  });
 
-    (Model as any)["update"].mockRestore();
+  test("with send property createdAt should return an object", async () => {
+    const result = await Model["update"]({
+      age: 27,
+      createdAt: new Date(),
+    });
+
+    expect(result).toEqual(expect.any(Object));
+  });
+});
+
+describe("Model - updateMany method", () => {
+  test("should return an object", async () => {
+    const result = await Model.where("age", 26).updateMany({ age: 27 });
+
+    expect(result).toEqual(expect.any(Object));
+    expect(result).toHaveProperty("modifiedCount");
+  });
+
+  test("with send property _id should return an object", async () => {
+    const result = await Model.where("age", 26).updateMany({
+      age: 27,
+      _id: "5f0f5d8f5c5e7d4e0b0e3f0b",
+    });
+
+    expect(result).toEqual(expect.any(Object));
+    expect(result).toHaveProperty("modifiedCount");
+  });
+
+  test("with send property createdAt should return an object", async () => {
+    const result = await Model.where("age", 26).updateMany({
+      age: 27,
+      createdAt: new Date(),
+    });
+
+    expect(result).toEqual(expect.any(Object));
+    expect(result).toHaveProperty("modifiedCount");
   });
 });
 
 describe("Model - delete method", () => {
   test("should return an object", async () => {
+    Model["softDelete"] = false;
     const result = await Model.delete();
     expect(result).toEqual(expect.any(Object));
   });
 
-  test("with conditions should return an object", async () => {
-    const result = await Model.where("age", 26).delete();
-
+  test("with softDelete should return an object", async () => {
+    Model["softDelete"] = true;
+    const result = await Model.delete();
     expect(result).toEqual(expect.any(Object));
   });
+});
 
-  test("should throw an error", async () => {
-    jest.spyOn(Model as any, "delete").mockImplementation(() => {
-      throw new Error("Mongoloquent failed to get data...");
-    });
+describe("Model - deleteMany method", () => {
+  test("return an object", async () => {
+    Model["softDelete"] = false;
+    const result = await Model.where("age", 26).deleteMany();
 
-    expect(() => Model["delete"]()).toThrowError(
-      "Mongoloquent failed to get data..."
-    );
+    expect(result).toEqual(expect.any(Object));
+    expect(result).toHaveProperty("deletedCount");
+  });
 
-    (Model as any)["delete"].mockRestore();
+  test("with softDelete should return an object", async () => {
+    Model["softDelete"] = true;
+    const result = await Model.where("age", 26).deleteMany();
+
+    expect(result).toEqual(expect.any(Object));
+    expect(result).toHaveProperty("deletedCount");
+  });
+});
+
+describe("Model - forceDelete method", () => {
+  test("should return an object", async () => {
+    const result = await Model.forceDelete();
+    expect(result).toEqual(expect.any(Object));
+    expect(result).toHaveProperty("deletedCount");
+  });
+});
+
+describe("Model - restore method", () => {
+  test("should return an object", async () => {
+    const result = await Model.restore();
+    expect(result).toEqual(expect.any(Object));
+    expect(result).toHaveProperty("modifiedCount");
   });
 });
