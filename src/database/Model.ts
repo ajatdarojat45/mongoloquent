@@ -9,6 +9,20 @@ import {
 } from "../interfaces/ModelInterface";
 
 class Model extends Relation implements ModelInterface {
+  static async all(): Promise<object[]> {
+    try {
+      const collection = this.getCollection();
+
+      let q = {};
+
+      if (this.softDelete) q = { isDeleted: false };
+
+      return await collection.find(q).toArray();
+    } catch (error) {
+      throw error;
+    }
+  }
+
   static async get(fields?: string | string[]): Promise<object[]> {
     try {
       if (fields) this.select(fields);
