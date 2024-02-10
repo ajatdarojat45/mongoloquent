@@ -1,7 +1,10 @@
-import { MongoClient, ServerApiVersion, Db } from "mongodb";
+import { MongoClient, ServerApiVersion } from "mongodb";
 
-export const MONGOLOQUENT_DATABASE: string =
-  process.env.MONGOLOQUENT_DATABASE || "mongoloquent";
+let databaseName: string = process.env.MONGOLOQUENT_DATABASE || "mongoloquent";
+
+if (process.env.NODE_ENV === "test") databaseName = databaseName + "_test";
+
+export const MONGOLOQUENT_DATABASE: string = databaseName;
 
 export const MONGOLOQUENT_URI: string =
   process.env.MONGOLOQUENT_URI || "mongodb://localhost:27017";
