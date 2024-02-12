@@ -177,7 +177,8 @@ class Model extends Relation implements ModelInterface {
       this.resetQuery();
       this.resetRelation();
 
-      return aggregate?.max || 0;
+      if (typeof aggregate?.max === "number") return aggregate?.max;
+      else return 0;
     } catch (error) {
       throw error;
     }
@@ -209,7 +210,8 @@ class Model extends Relation implements ModelInterface {
       this.resetQuery();
       this.resetRelation();
 
-      return aggregate?.min || 0;
+      if (typeof aggregate?.min === "number") return aggregate?.min;
+      else return 0;
     } catch (error) {
       throw error;
     }
@@ -361,7 +363,7 @@ class Model extends Relation implements ModelInterface {
     }
   }
 
-  static async insertMany(payload: object[]): Promise<object> {
+  static async insertMany(payload: object[]): Promise<ObjectId[]> {
     try {
       const collection = this.getCollection();
 
@@ -373,7 +375,13 @@ class Model extends Relation implements ModelInterface {
 
       const data = await collection.insertMany(_payload);
 
-      return data;
+      const result: ObjectId[] = [];
+
+      for (var key in data.insertedIds) {
+        result.push(data.insertedIds[key]);
+      }
+
+      return result;
     } catch (error) {
       throw error;
     }
