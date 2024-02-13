@@ -242,6 +242,7 @@ class Relation extends Query implements RelationInterface {
           localField: "_id",
           foreignField: foreignKey,
           as: "pivot",
+          pipeline,
         },
       },
       {
@@ -250,7 +251,7 @@ class Relation extends Query implements RelationInterface {
           localField: `pivot.${localKey}`,
           foreignField: "_id",
           as: alias,
-          pipeline,
+          //         pipeline,
         },
       },
       {

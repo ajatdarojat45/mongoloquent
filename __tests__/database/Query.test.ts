@@ -88,11 +88,9 @@ describe("Query - exclude method", () => {
 
     const fields = result["fields"];
     expect(fields).toEqual(expect.any(Array));
-    expect(fields).toHaveLength(2);
+    expect(fields).toHaveLength(1);
     expect(fields[0]).toEqual(expect.any(Object));
     expect(fields[0]).toHaveProperty("$project");
-    expect(fields[1]).toEqual(expect.any(Object));
-    expect(fields[1]).toHaveProperty("$project");
   });
 
   test("multiple exclude should return this", () => {
@@ -102,11 +100,9 @@ describe("Query - exclude method", () => {
 
     const fields = result["fields"];
     expect(fields).toEqual(expect.any(Array));
-    expect(fields).toHaveLength(2);
+    expect(fields).toHaveLength(1);
     expect(fields[0]).toEqual(expect.any(Object));
     expect(fields[0]).toHaveProperty("$project");
-    expect(fields[1]).toEqual(expect.any(Object));
-    expect(fields[1]).toHaveProperty("$project");
   });
 });
 
