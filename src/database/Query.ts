@@ -433,6 +433,12 @@ class Query extends Database implements QueryInterface {
     this.perPage = 10;
     this.groups = [];
     this.fields = [];
+    this.queries = {
+      $match: {
+        $and: [],
+        $or: [],
+      },
+    };
 
     this.sorts = [
       {
@@ -446,21 +452,6 @@ class Query extends Database implements QueryInterface {
       {
         $replaceRoot: {
           newRoot: "$document",
-        },
-      },
-    ];
-
-    this.queries = {
-      $match: {
-        $and: [],
-        $or: [],
-      },
-    };
-
-    this.fields = [
-      {
-        $project: {
-          document: "$$ROOT",
         },
       },
     ];
