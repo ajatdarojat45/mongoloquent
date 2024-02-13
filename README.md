@@ -46,9 +46,9 @@ MONGOLOQUENT_TIMEZONE=
 import { Mongoloquent } from "mongoloquent";
 
 class User extends Mongoloquent {
-	static collection = "users";
-	static timestamps = true; // default false
-	static softDelete = true; // default false
+    static collection = "users";
+    static timestamps = true; // default false
+    static softDelete = true; // default false
 }
 ```
 
@@ -57,9 +57,9 @@ class User extends Mongoloquent {
 const { Mongoloquent } = require("mongoloquent");
 
 class User extends Mongoloquent {
-	static collection = "users";
-	static timestamps = true; // default false
-	static softDelete = true; // default false
+    static collection = "users";
+    static timestamps = true; // default false
+    static softDelete = true; // default false
 }
 ```
 
@@ -73,9 +73,9 @@ Create a new document with the provided data.
 import User from "./yourPath/User";
 
 const data = {
-	name: "Udin",
-	age: 17,
-	email: "udin@mail.com",
+    name: "Udin",
+    age: 17,
+    email: "udin@mail.com",
 };
 
 const user = await User.insert(data);
@@ -264,8 +264,8 @@ Or pass list a column names to select some columns.
 import User from "./yourPath/User";
 
 const user = await User.where("_id", "65ab7e3d05d58a1ad246ee87").first([
-	"name",
-	"age",
+    "name",
+    "age",
 ]);
 ```
 
@@ -410,8 +410,8 @@ Add an `OR WHERE IN` clause to the query. You can combine this method with the `
 import User from "./yourPath/User";
 
 const users = await User.whereIn("age", [17, 20])
-	.orWhereIn("name", ["Udin", "Kosasih"])
-	.get();
+    .orWhereIn("name", ["Udin", "Kosasih"])
+    .get();
 ```
 
 <h3 id="wherenotin">whereNotIn(column, values)</h3>
@@ -432,8 +432,8 @@ Add an `OR WHERE NOT IN` clause to the query. You can combine this method with t
 import User from "./yourPath/User";
 
 const users = await User.whereNotIn("age", [17, 20])
-	.orWhereNotIn("name", ["Udin", "Kosasih"])
-	.get();
+    .orWhereNotIn("name", ["Udin", "Kosasih"])
+    .get();
 ```
 
 <h3 id="wherebetween">whereBetween(column, values)</h3>
@@ -454,8 +454,8 @@ Add an `OR WHERE BETWEEN` clause to the query. You can combine this method with 
 import User from "./yourPath/User";
 
 const users = await User.whereBetween("age", [15, 20])
-	.orWhereBetween("age", [50, 70])
-	.get();
+    .orWhereBetween("age", [50, 70])
+    .get();
 ```
 
 <h3 id="orderby">orderBy(column, direction?, isSensitive?)</h3>
@@ -538,84 +538,6 @@ import Product from "./yourPath/Product";
 const products = await Product.where("price", ">=", 10000).count();
 ```
 
-<h3 id="with">with(relation, options?)</h3>
-
-The `with` method is used to perform eager loading of a specified relationship. it takes two parameters: `relation: str` and `options: obj`.
-
-Before use this method make sure you have set relationship in your `Model`. For more detail you can see about relationship [here](#relationships).
-
-```js
-import { Mongoloquent } from "mongoloquent";
-import User from "./yourpath/User";
-import Comment from "./yourPath/Comment";
-
-class Post extends Mongoloquent {
-	static collection = "posts";
-
-	static user() {
-		return this.belongsto(User, "userid", "_id");
-	}
-
-	static comments() {
-		return this.hasmany(Comment, "postId", "_id");
-	}
-}
-
-// usage
-const post = await Post.where("_id", "65ab7e3d05d58a1ad246ee87")
-	.with("user")
-	.with("comments")
-	.first();
-```
-
-Also, you can pass an option to select some columns of the relation result.
-
-```js
-import { Mongoloquent } from "mongoloquent";
-import User from "./yourpath/User";
-
-class Post extends Mongoloquent {
-	static collection = "posts";
-
-	static user() {
-		return this.belongsto(User, "userid", "_id");
-	}
-}
-
-// usage
-const posts = await Post.where("ispublish", true)
-	.with("user", {
-		select: ["username", "email"],
-	})
-	.get();
-```
-
-Or, exclude some columns of the relation result.
-
-```js
-import { Mongoloquent } from "mongoloquent";
-import User from "./yourpath/User";
-
-class Post extends Mongoloquent {
-	static collection = "posts";
-
-	static user() {
-		return this.belongsto(User, "userid", "_id");
-	}
-}
-
-// usage
-const posts = await Post.where("ispublish", true)
-	.with("user", {
-		exclude: ["password", "email"],
-	})
-	.get();
-```
-
-<h3 id="has">has(relation, options?)</h3>
-
-`has` method is an alias for the [`with`](#with) method.
-
 ## Relationships
 
 <h3 id="hasmany">hasMany(Model, foreignKey, localKey)</h3>
@@ -627,17 +549,17 @@ import { Mongoloquent } from "mongoloquent";
 import Comment from "./yourPath/Comment";
 
 class Post extends Mongoloquent {
-	static collection = "posts";
+    static collection = "posts";
 
-	static comments() {
-		return this.hasMany(Comment, "postId", "_id");
-	}
+    static comments() {
+        return this.hasMany(Comment, "postId", "_id");
+    }
 }
 
 // usage
 const post = await Post.where("_id", "65ab7e3d05d58a1ad246ee87")
-	.with("comments")
-	.first();
+    .with("comments")
+    .first();
 ```
 
 Also, you can pass collection name as a Model.
@@ -648,17 +570,17 @@ Also, you can pass collection name as a Model.
 import { Mongoloquent } from "mongoloquent";
 
 class Post extends Mongoloquent {
-	static collection = "posts";
+    static collection = "posts";
 
-	static comments() {
-		return this.hasMany("comments", "postId", "_id");
-	}
+    static comments() {
+        return this.hasMany("comments", "postId", "_id");
+    }
 }
 
 // usage
 const post = await Post.where("_id", "65ab7e3d05d58a1ad246ee87")
-	.with("comments")
-	.first();
+    .with("comments")
+    .first();
 ```
 
 <h3 id="belongsto">belongsTo(Model, foreignKey, ownerKey)</h3>
@@ -670,17 +592,17 @@ import { Mongoloquent } from "mongoloquent";
 import Post from "./yourPath/Post";
 
 class Comment extends Mongoloquent {
-	static collection = "comments";
+    static collection = "comments";
 
-	static post() {
-		return this.belongsTo(Post, "postId", "_id");
-	}
+    static post() {
+        return this.belongsTo(Post, "postId", "_id");
+    }
 }
 
 // usage
 const comments = await Comment.where("_id", "65ab7e3d05d58a1ad246ee87")
-	.with("post")
-	.get();
+    .with("post")
+    .get();
 ```
 
 Also, you can pass collection name as a Model.
@@ -691,17 +613,17 @@ Also, you can pass collection name as a Model.
 import { Mongoloquent } from "mongoloquent";
 
 class Comment extends Mongoloquent {
-	static collection = "comments";
+    static collection = "comments";
 
-	static post() {
-		return this.hasMany("posts", "postId", "_id");
-	}
+    static post() {
+        return this.hasMany("posts", "postId", "_id");
+    }
 }
 
 // usage
 const comments = await Comment.where("_id", "65ab7e3d05d58a1ad246ee87")
-	.with("post")
-	.get();
+    .with("post")
+    .get();
 ```
 
 <h3 id="belongstomany">belongsToMany(Model, pivotModel, foreignKey, foreignKeyTarget)</h3>
@@ -799,22 +721,22 @@ import Environment from "./yourPath/Environment";
 import Deployment from "./yourPath/Deployment";
 
 class Project extends Mongoloquent {
-	static collection = "projects";
+    static collection = "projects";
 
-	static deployments() {
-		return this.hasManyThrough(
-			Deployment,
-			Environment,
-			"projectId",
-			"environmentId"
-		);
-	}
+    static deployments() {
+        return this.hasManyThrough(
+            Deployment,
+            Environment,
+            "projectId",
+            "environmentId"
+        );
+    }
 }
 
 // usage
 const project = await Project.where("_id", "65ab7e3d05d58a1ad246ee87")
-	.with("deployments")
-	.first();
+    .with("deployments")
+    .first();
 ```
 
 Also, you can pass collection name as a Model.
@@ -827,22 +749,22 @@ import Environment from "./yourPath/Environment";
 import Deployment from "./yourPath/Deployment";
 
 class Project extends Mongoloquent {
-	static collection = "projects";
+    static collection = "projects";
 
-	static deployments() {
-		return this.hasManyThrough(
-			"deployments",
-			"environments",
-			"projectId",
-			"environmentId"
-		);
-	}
+    static deployments() {
+        return this.hasManyThrough(
+            "deployments",
+            "environments",
+            "projectId",
+            "environmentId"
+        );
+    }
 }
 
 // usage
 const project = await Project.where("_id", "65ab7e3d05d58a1ad246ee87")
-	.with("deployments")
-	.first();
+    .with("deployments")
+    .first();
 ```
 
 <h3 id="with">with(relation, options?)</h3>
@@ -860,11 +782,11 @@ class Post extends Mongoloquent {
     static collection = "posts";
 
     static user() {
-        return this.belongsto(User, "userid", "_id");
+        return this.belongsTo(User, "userid", "_id");
     }
 
     static comments() {
-        return this.hasmany(Comment, "postId", "_id");
+        return this.hasMany(Comment, "postId", "_id");
     }
 }
 
@@ -885,7 +807,7 @@ class Post extends Mongoloquent {
     static collection = "posts";
 
     static user() {
-        return this.belongsto(User, "userid", "_id");
+        return this.belongsTo(User, "userid", "_id");
     }
 }
 
@@ -907,7 +829,7 @@ class Post extends Mongoloquent {
     static collection = "posts";
 
     static user() {
-        return this.belongsto(User, "userid", "_id");
+        return this.belongsTo(User, "userid", "_id");
     }
 }
 
