@@ -76,7 +76,7 @@ class Query extends Database implements QueryInterface {
   static orderBy<T extends typeof Query>(
     this: T,
     field: string,
-    order: string,
+    order: string = "asc",
     insensitive: boolean = false
   ): T {
     const _field: string = field;
