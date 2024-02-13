@@ -43,7 +43,7 @@ beforeAll(async () => {
       email: "joko@mail.com",
       age: 45,
       balance: 500,
-      isDeleted: false,
+      isDeleted: true,
     },
   ]);
 });
@@ -110,5 +110,21 @@ describe("QueryResult - orderBy method", () => {
     expect(result).toHaveLength(5);
     expect(result[0].age).toBe(5);
     expect(result[0].balance).toBe(500);
+  });
+});
+
+describe("QueryResult - groupBy method", () => {
+  it("with single groupBy", async () => {
+    const result: any[] = await User.groupBy("age").get();
+
+    expect(result).toEqual(expect.any(Array));
+    expect(result).toHaveLength(4);
+  });
+
+  it("with multiple groupBy", async () => {
+    const result: any[] = await User.groupBy("age").groupBy("name").get();
+
+    expect(result).toEqual(expect.any(Array));
+    expect(result).toHaveLength(5);
   });
 });
