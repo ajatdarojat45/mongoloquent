@@ -600,9 +600,7 @@ class Comment extends Mongoloquent {
 }
 
 // usage
-const comments = await Comment.where("_id", "65ab7e3d05d58a1ad246ee87")
-    .with("post")
-    .get();
+const comments = await Comment.with("post").get();
 ```
 
 Also, you can pass collection name as a Model.
@@ -621,9 +619,7 @@ class Comment extends Mongoloquent {
 }
 
 // usage
-const comments = await Comment.where("_id", "65ab7e3d05d58a1ad246ee87")
-    .with("post")
-    .get();
+const comments = await Comment.with("post").get();
 ```
 
 <h3 id="belongstomany">belongsToMany(Model, pivotModel, foreignKey, foreignKeyTarget)</h3>
