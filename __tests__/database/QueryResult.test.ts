@@ -1279,6 +1279,13 @@ describe("QueryResult - whereBetween method", () => {
 
     User["softDelete"] = false;
   });
+
+  it("whereBetween with values less than 2", async () => {
+    jest.spyOn(console, "error");
+    await User.whereBetween("age", [5]).get();
+
+    expect(console.error).toBeCalled();
+  });
 });
 
 describe("QueryResult - whereNotBetween method", () => {
@@ -1440,5 +1447,13 @@ describe("QueryResult - whereNotBetween method", () => {
     expect(result).toHaveLength(1);
 
     User["softDelete"] = false;
+  });
+
+  it("orWhereBetween with values length < 2", async () => {
+    jest.spyOn(console, "error");
+
+    await User.whereBetween("age", [5]).get();
+
+    expect(console.error).toBeCalled();
   });
 });
