@@ -114,7 +114,9 @@ class Model extends Relation implements ModelInterface {
       const collection = this.getCollection();
       const _pipeline = [];
       this.generateQuery();
-      _pipeline.push(this.queries);
+      this.$queries.forEach((query) => {
+        _pipeline.push(query);
+      });
 
       if (
         Object.entries(

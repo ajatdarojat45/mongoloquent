@@ -10,6 +10,7 @@ class Query extends Database implements QueryInterface {
   protected static perPage: number = 10;
   protected static groups: object[] = [];
   protected static fields: object[] = [];
+  protected static $queries: any[] = [];
   protected static queries: QueriesInterface = {
     $match: {
       $and: [],
@@ -436,6 +437,18 @@ class Query extends Database implements QueryInterface {
       delete this?.queries?.$match?.$or;
     }
 
+    if (_orLength > 0 && this.softDelete) {
+      this.$queries.push({
+        $match: {
+          isDeleted: {
+            $eq: false,
+          },
+        },
+      });
+    }
+
+    this.$queries.push(this.queries);
+
     return this;
   }
 
@@ -447,6 +460,7 @@ class Query extends Database implements QueryInterface {
     this.perPage = 10;
     this.groups = [];
     this.fields = [];
+    this.$queries = [];
     this.queries = {
       $match: {
         $and: [],
