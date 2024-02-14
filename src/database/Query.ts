@@ -123,11 +123,18 @@ class Query extends Database implements QueryInterface {
     fields: string | string[] = ""
   ): T {
     const _fields = JSON.parse(JSON.stringify(this.fields));
+    const isNotEmpty = _fields.length > 0;
     let _project = {
       $project: {
         document: "$$ROOT",
       },
     };
+
+    if (isNotEmpty) {
+      _project = {
+        ..._fields[0],
+      };
+    }
 
     if (typeof fields === "string") {
       _project = {
@@ -137,7 +144,7 @@ class Query extends Database implements QueryInterface {
           [fields]: 1,
         },
       };
-    } else if (typeof fields !== "string" && fields.length > 0) {
+    } else if (Array.isArray(fields) && fields.length > 0) {
       fields.forEach((field) => {
         _project = {
           ..._project,

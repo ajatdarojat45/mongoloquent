@@ -128,3 +128,40 @@ describe("QueryResult - groupBy method", () => {
     expect(result).toHaveLength(5);
   });
 });
+
+describe("QueryResult - select method", () => {
+  it("single select with string", async () => {
+    const result: any = await User.select("name").first();
+
+    expect(result).toEqual(expect.any(Object));
+    expect(result.name).toBeDefined();
+    expect(result.email).toBeUndefined();
+    expect(result.age).toBeUndefined();
+    expect(result.balance).toBeUndefined();
+    expect(result.isDeleted).toBeUndefined();
+  });
+
+  it("single select with array", async () => {
+    const result: any = await User.select(["name", "age"]).first();
+
+    expect(result).toEqual(expect.any(Object));
+    expect(result.name).toBeDefined();
+    expect(result.email).toBeUndefined();
+    expect(result.age).toBeDefined();
+    expect(result.balance).toBeUndefined();
+    expect(result.isDeleted).toBeUndefined();
+  });
+
+  it("multiple select", async () => {
+    const result: any = await User.select("name")
+      .select(["age", "email"])
+      .first();
+
+    expect(result).toEqual(expect.any(Object));
+    expect(result.name).toBeDefined();
+    expect(result.email).toBeDefined();
+    expect(result.age).toBeDefined();
+    expect(result.balance).toBeUndefined();
+    expect(result.isDeleted).toBeUndefined();
+  });
+});
