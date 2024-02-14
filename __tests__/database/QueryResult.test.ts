@@ -314,3 +314,43 @@ describe("QueryResult - whereIn method", () => {
     User["softDelete"] = false;
   });
 });
+
+describe("QueryResult - orWhereIn method", () => {
+  it("orWhereIn with single condition", async () => {
+    const result: any[] = await User.orWhereIn("balance", [500, 200]).get();
+
+    expect(result).toEqual(expect.any(Array));
+    expect(result).toHaveLength(3);
+  });
+
+  it("orWhereIn with whereIn", async () => {
+    const result: any[] = await User.whereIn("balance", [500, 200])
+      .orWhereIn("name", ["Kosasih"])
+      .get();
+
+    expect(result).toEqual(expect.any(Array));
+    expect(result).toHaveLength(4);
+  });
+
+  it("orWhereIn with where", async () => {
+    const result: any[] = await User.where("name", "doe")
+      .orWhereIn("balance", [500, 200])
+      .get();
+
+    expect(result).toEqual(expect.any(Array));
+    expect(result).toHaveLength(3);
+  });
+
+  it("orWhereIn with soft delete", async () => {
+    User["softDelete"] = true;
+
+    const result: any[] = await User.whereIn("balance", [500, 200])
+      .orWhereIn("name", ["Kosasih"])
+      .get();
+
+    expect(result).toEqual(expect.any(Array));
+    expect(result).toHaveLength(3);
+
+    User["softDelete"] = false;
+  });
+});
