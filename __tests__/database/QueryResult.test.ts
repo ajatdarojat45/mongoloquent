@@ -354,3 +354,47 @@ describe("QueryResult - orWhereIn method", () => {
     User["softDelete"] = false;
   });
 });
+
+describe("QueryResult - whereNotIn method", () => {
+  it("whereNotIn with single condition", async () => {
+    const result: any[] = await User.whereNotIn("balance", [500, 200]).get();
+
+    console.log(result);
+    expect(result).toEqual(expect.any(Array));
+    expect(result).toHaveLength(2);
+  });
+
+  it("whereNotIn with multiple condition", async () => {
+    const result: any[] = await User.whereNotIn("balance", [500, 200])
+      .whereNotIn("age", [5])
+      .get();
+
+    console.log(result);
+    expect(result).toEqual(expect.any(Array));
+    expect(result).toHaveLength(1);
+  });
+
+  it("whereNotIn and where condition", async () => {
+    const result: any[] = await User.where("balance", 500)
+      .whereNotIn("age", [45])
+      .get();
+
+    expect(result).toEqual(expect.any(Array));
+    expect(result).toHaveLength(1);
+  });
+
+  it("whereNotIn with softDelete ", async () => {
+    User["softDelete"] = true;
+
+    const result: any[] = await User.whereNotIn("name", [
+      "John",
+      "doe",
+      "Kosasih",
+    ]).get();
+
+    expect(result).toEqual(expect.any(Array));
+    expect(result).toHaveLength(1);
+
+    User["softDelete"] = false;
+  });
+});
