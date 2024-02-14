@@ -166,7 +166,14 @@ class Query extends Database implements QueryInterface {
     fields: string | string[] = ""
   ): T {
     const _fields = JSON.parse(JSON.stringify(this.fields));
+    const isNotEmpty = _fields.length > 0;
     let _project = {};
+
+    if (isNotEmpty) {
+      _project = {
+        ..._fields[0].$project,
+      };
+    }
 
     if (typeof fields === "string") {
       _project = {

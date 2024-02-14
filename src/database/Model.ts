@@ -123,13 +123,7 @@ class Model extends Relation implements ModelInterface {
       )
         _pipeline.push(...this.sorts);
 
-      if (
-        Object.entries(
-          (this?.fields?.[0] as { $project?: Record<string, any> })?.$project ||
-            {}
-        ).length > 1 ||
-        this.fields.length > 1
-      ) {
+      if (this.fields.length > 0) {
         _pipeline.push(...this.fields);
       }
 

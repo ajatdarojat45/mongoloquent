@@ -165,3 +165,40 @@ describe("QueryResult - select method", () => {
     expect(result.isDeleted).toBeUndefined();
   });
 });
+
+describe("QueryResult - exclude method", () => {
+  it("single exclude with string", async () => {
+    const result: any = await User.exclude("name").first();
+
+    expect(result).toEqual(expect.any(Object));
+    expect(result.name).toBeUndefined();
+    expect(result.email).toBeDefined();
+    expect(result.age).toBeDefined();
+    expect(result.balance).toBeDefined();
+    expect(result.isDeleted).toBeDefined();
+  });
+
+  it("single exclude with array", async () => {
+    const result: any = await User.exclude(["name", "age"]).first();
+
+    expect(result).toEqual(expect.any(Object));
+    expect(result.name).toBeUndefined();
+    expect(result.email).toBeDefined();
+    expect(result.age).toBeUndefined();
+    expect(result.balance).toBeDefined();
+    expect(result.isDeleted).toBeDefined();
+  });
+
+  it("multiple exclude", async () => {
+    const result: any = await User.exclude("name")
+      .exclude(["age", "email"])
+      .first();
+
+    expect(result).toEqual(expect.any(Object));
+    expect(result.name).toBeUndefined();
+    expect(result.email).toBeUndefined();
+    expect(result.age).toBeUndefined();
+    expect(result.balance).toBeDefined();
+    expect(result.isDeleted).toBeDefined();
+  });
+});
