@@ -437,7 +437,14 @@ class Query extends Database implements QueryInterface {
       delete this?.queries?.$match?.$or;
     }
 
-    if (_orLength > 0 && this.softDelete) {
+    this.$queries.push(this.queries);
+
+    if (
+      _orLength > 0 &&
+      this.softDelete &&
+      !this.isWithTrashed &&
+      !this.isOnlyTrashed
+    ) {
       this.$queries.push({
         $match: {
           isDeleted: {
@@ -447,7 +454,15 @@ class Query extends Database implements QueryInterface {
       });
     }
 
-    this.$queries.push(this.queries);
+    if (_orLength > 0 && this.softDelete && this.isOnlyTrashed) {
+      this.$queries.push({
+        $match: {
+          isDeleted: {
+            $eq: true,
+          },
+        },
+      });
+    }
 
     return this;
   }
