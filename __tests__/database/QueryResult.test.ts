@@ -285,3 +285,32 @@ describe("QueryResult - orWhere method", () => {
     User["softDelete"] = false;
   });
 });
+
+describe("QueryResult - whereIn method", () => {
+  it("whereIn with single condition", async () => {
+    const result: any[] = await User.whereIn("balance", [500, 200]).get();
+
+    expect(result).toEqual(expect.any(Array));
+    expect(result).toHaveLength(3);
+  });
+
+  it("whereIn with multiple condition", async () => {
+    const result: any[] = await User.whereIn("balance", [500, 200])
+      .orWhereIn("name", ["Kosasih"])
+      .get();
+
+    expect(result).toEqual(expect.any(Array));
+    expect(result).toHaveLength(4);
+  });
+
+  it("whereIn with soft delete", async () => {
+    User["softDelete"] = true;
+
+    const result: any[] = await User.whereIn("balance", [500, 200]).get();
+
+    expect(result).toEqual(expect.any(Array));
+    expect(result).toHaveLength(2);
+
+    User["softDelete"] = false;
+  });
+});
