@@ -202,3 +202,39 @@ describe("QueryResult - exclude method", () => {
     expect(result.isDeleted).toBeDefined();
   });
 });
+
+describe("QueryResult - where method", () => {
+  it("where with single condition and without operator", async () => {
+    const result: any[] = await User.where("balance", 500).get();
+
+    expect(result).toEqual(expect.any(Array));
+    expect(result).toHaveLength(2);
+  });
+
+  it("where with single condition and equal operator", async () => {
+    const result: any[] = await User.where("balance", "=", 500).get();
+
+    expect(result).toEqual(expect.any(Array));
+    expect(result).toHaveLength(2);
+  });
+
+  it("where with soft delete", async () => {
+    User["softDelete"] = true;
+
+    const result: any[] = await User.where("balance", 500).get();
+
+    expect(result).toEqual(expect.any(Array));
+    expect(result).toHaveLength(1);
+
+    User["softDelete"] = false;
+  });
+
+  it("where with multiple condition", async () => {
+    const result: any[] = await User.where("balance", 500)
+      .where("age", 5)
+      .get();
+
+    expect(result).toEqual(expect.any(Array));
+    expect(result).toHaveLength(1);
+  });
+});
