@@ -1280,3 +1280,165 @@ describe("QueryResult - whereBetween method", () => {
     User["softDelete"] = false;
   });
 });
+
+describe("QueryResult - whereNotBetween method", () => {
+  it("orWhereBetween with single condition", async () => {
+    const result: any[] = await User.orWhereBetween(
+      "balance",
+      [400, 500]
+    ).get();
+
+    expect(result).toEqual(expect.any(Array));
+    expect(result).toHaveLength(3);
+  });
+
+  it("orWhereBetween with and condition", async () => {
+    const result: any[] = await User.orWhereBetween("age", [5, 10])
+      .orWhereBetween("balance", [400, 500])
+      .get();
+
+    expect(result).toEqual(expect.any(Array));
+    expect(result).toHaveLength(4);
+  });
+
+  it("orWhereBetween with or condition", async () => {
+    const result: any[] = await User.orWhereBetween("age", [5, 10])
+      .orWhereBetween("balance", [400, 500])
+      .get();
+
+    expect(result).toEqual(expect.any(Array));
+    expect(result).toHaveLength(4);
+  });
+
+  it("orWhereBetween with and & or condition", async () => {
+    const result: any[] = await User.orWhere("age", 5)
+      .orWhereBetween("balance", [400, 500])
+      .orWhere("name", "doe")
+      .get();
+
+    expect(result).toEqual(expect.any(Array));
+    expect(result).toHaveLength(4);
+  });
+
+  it("orWhereBetween with whereBetween", async () => {
+    const result: any[] = await User.whereBetween("age", [5, 10])
+      .orWhereBetween("balance", [400, 500])
+      .get();
+
+    expect(result).toEqual(expect.any(Array));
+    expect(result).toHaveLength(4);
+  });
+
+  it("orWhereBetween with soft delete", async () => {
+    User["softDelete"] = true;
+    const result: any[] = await User.orWhereBetween(
+      "balance",
+      [400, 500]
+    ).get();
+
+    expect(result).toEqual(expect.any(Array));
+    expect(result).toHaveLength(4);
+
+    User["softDelete"] = false;
+  });
+
+  it("orWhereBetween with soft delete & and condition", async () => {
+    User["softDelete"] = true;
+    const result: any[] = await User.orWhereBetween("age", [5, 10])
+      .orWhereBetween("balance", [400, 500])
+      .get();
+
+    expect(result).toEqual(expect.any(Array));
+    expect(result).toHaveLength(4);
+
+    User["softDelete"] = false;
+  });
+
+  it("orWhereBetween with soft delete & or condition", async () => {
+    User["softDelete"] = true;
+    const result: any[] = await User.whereBetween("age", [5, 10])
+      .orWhereBetween("balance", [400, 500])
+      .get();
+
+    expect(result).toEqual(expect.any(Array));
+    expect(result).toHaveLength(3);
+
+    User["softDelete"] = false;
+  });
+
+  it("orWhereBetween with soft delete & withTrashed", async () => {
+    User["softDelete"] = true;
+    const result: any[] = await User.orWhereBetween("age", [5, 10])
+      .withTrashed()
+      .get();
+
+    expect(result).toEqual(expect.any(Array));
+    expect(result).toHaveLength(3);
+
+    User["softDelete"] = false;
+  });
+
+  it("orWhereBetween with soft delete, withTrashed & and condition", async () => {
+    User["softDelete"] = true;
+    const result: any[] = await User.where("age", 5)
+      .orWhereBetween("balance", [400, 500])
+      .withTrashed()
+      .get();
+
+    expect(result).toEqual(expect.any(Array));
+    expect(result).toHaveLength(3);
+
+    User["softDelete"] = false;
+  });
+
+  it("orWhereBetween with soft delete, withTrashed & or condition", async () => {
+    User["softDelete"] = true;
+    const result: any[] = await User.whereBetween("age", [5, 10])
+      .orWhereBetween("balance", [400, 500])
+      .withTrashed()
+      .get();
+
+    expect(result).toEqual(expect.any(Array));
+    expect(result).toHaveLength(4);
+
+    User["softDelete"] = false;
+  });
+
+  it("orWhereBetween with soft delete, onlyTrashed", async () => {
+    User["softDelete"] = true;
+    const result: any[] = await User.whereBetween("age", [5, 50])
+      .onlyTrashed()
+      .get();
+
+    expect(result).toEqual(expect.any(Array));
+    expect(result).toHaveLength(1);
+
+    User["softDelete"] = false;
+  });
+
+  it("orWhereBetween with soft delete, onlyTrashed & and condition", async () => {
+    User["softDelete"] = true;
+    const result: any[] = await User.where("age", 5)
+      .orWhereBetween("balance", [400, 500])
+      .onlyTrashed()
+      .get();
+
+    expect(result).toEqual(expect.any(Array));
+    expect(result).toHaveLength(1);
+
+    User["softDelete"] = false;
+  });
+
+  it("orWhereBetween with soft delete, onlyTrashed & or condition", async () => {
+    User["softDelete"] = true;
+    const result: any[] = await User.whereBetween("age", [5, 10])
+      .orWhereBetween("balance", [200, 500])
+      .onlyTrashed()
+      .get();
+
+    expect(result).toEqual(expect.any(Array));
+    expect(result).toHaveLength(1);
+
+    User["softDelete"] = false;
+  });
+});
