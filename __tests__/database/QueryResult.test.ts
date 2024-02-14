@@ -203,7 +203,7 @@ describe("QueryResult - exclude method", () => {
   });
 });
 
-describe.only("QueryResult - where method", () => {
+describe("QueryResult - where method", () => {
   it("single condition with operator", async () => {
     const result: any[] = await User.where("balance", ">=", 500).get();
 
@@ -269,6 +269,16 @@ describe.only("QueryResult - where method", () => {
     expect(result).toHaveLength(2);
 
     User["softDelete"] = false;
+  });
+
+  it("with soft delete & and condition", async () => {
+    User["softDelete"] = true;
+    const result: any[] = await User.where("balance", 500)
+      .where("age", 5)
+      .get();
+
+    expect(result).toEqual(expect.any(Array));
+    expect(result).toHaveLength(1);
   });
 
   it("with soft delete & withTrashed", async () => {
@@ -345,47 +355,155 @@ describe.only("QueryResult - where method", () => {
 });
 
 describe("QueryResult - orWhere method", () => {
-  it("orWhere with single condition and without operator", async () => {
-    const result: any[] = await User.orWhere("balance", 500).get();
-
-    expect(result).toEqual(expect.any(Array));
-    expect(result).toHaveLength(2);
-  });
-
-  it("orWhere with single condition and with operator", async () => {
+  it("single condition with operator", async () => {
     const result: any[] = await User.orWhere("balance", ">=", 500).get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(2);
   });
 
-  it("orWhere with multiple condition", async () => {
+  it("single condition without operator", async () => {
+    const result: any[] = await User.orWhere("balance", 500).get();
+
+    expect(result).toEqual(expect.any(Array));
+    expect(result).toHaveLength(2);
+  });
+
+  it("with and condition", async () => {
     const result: any[] = await User.orWhere("balance", 500)
-      .orWhere("age", 5)
+      .orWhere("age", "<=", 10)
       .get();
 
     expect(result).toEqual(expect.any(Array));
-    expect(result).toHaveLength(3);
+    expect(result).toHaveLength(4);
   });
 
-  it("orWhere with with where", async () => {
-    const result: any[] = await User.where("name", "doe")
-      .orWhere("balance", 500)
-      .get();
-
-    expect(result).toEqual(expect.any(Array));
-    expect(result).toHaveLength(3);
-  });
-
-  it("orWhere with soft delete", async () => {
-    User["softDelete"] = true;
-
+  it("with or condition", async () => {
     const result: any[] = await User.where("balance", 500)
-      .orWhere("name", "doe")
+      .orWhere("name", "Kosasih")
+      .get();
+
+    expect(result).toEqual(expect.any(Array));
+    expect(result).toHaveLength(3);
+  });
+
+  it("with and & or condition", async () => {
+    const result: any[] = await User.where("balance", 500)
+      .where("age", 5)
+      .orWhere("name", "Kosasih")
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(2);
+  });
+
+  it("with soft delete", async () => {
+    User["softDelete"] = true;
+    const result: any[] = await User.where("name", "Kosasih")
+      .orWhere("balance", 500)
+      .get();
+
+    expect(result).toEqual(expect.any(Array));
+    expect(result).toHaveLength(2);
+
+    User["softDelete"] = false;
+  });
+
+  it("with soft delete & or condition", async () => {
+    User["softDelete"] = true;
+    const result: any[] = await User.where("balance", 500)
+      .orWhere("name", "Kosasih")
+      .get();
+
+    expect(result).toEqual(expect.any(Array));
+    expect(result).toHaveLength(2);
+
+    User["softDelete"] = false;
+  });
+
+  it("with soft delete & and condition", async () => {
+    User["softDelete"] = true;
+    const result: any[] = await User.where("balance", 500)
+      .where("age", 45)
+      .orWhere("name", "Kosasih")
+      .get();
+
+    expect(result).toEqual(expect.any(Array));
+    expect(result).toHaveLength(1);
+
+    User["softDelete"] = false;
+  });
+
+  it("with soft delete & withTrashed", async () => {
+    User["softDelete"] = true;
+    const result: any[] = await User.where("balance", 500).withTrashed().get();
+
+    expect(result).toEqual(expect.any(Array));
+    expect(result).toHaveLength(2);
+
+    User["softDelete"] = false;
+  });
+
+  it("with soft delete, withTrashed & or condition", async () => {
+    User["softDelete"] = true;
+    const result: any[] = await User.where("balance", 500)
+      .orWhere("name", "Kosasih")
+      .withTrashed()
+      .get();
+
+    expect(result).toEqual(expect.any(Array));
+    expect(result).toHaveLength(3);
+
+    User["softDelete"] = false;
+  });
+
+  it("with soft delete, withTrashed & and condition", async () => {
+    User["softDelete"] = true;
+    const result: any[] = await User.where("balance", 500)
+      .where("age", 5)
+      .orWhere("name", "Joko")
+      .withTrashed()
+      .get();
+
+    expect(result).toEqual(expect.any(Array));
+    expect(result).toHaveLength(2);
+
+    User["softDelete"] = false;
+  });
+
+  it("with soft delete & onlyTrashed", async () => {
+    User["softDelete"] = true;
+    const result: any[] = await User.onlyTrashed().get();
+
+    expect(result).toEqual(expect.any(Array));
+    expect(result).toHaveLength(1);
+
+    User["softDelete"] = false;
+  });
+
+  it("with soft delete, onlyTrashed & or condition", async () => {
+    User["softDelete"] = true;
+    const result: any[] = await User.where("balance", 500)
+      .orWhere("name", "Kosasih")
+      .onlyTrashed()
+      .get();
+
+    expect(result).toEqual(expect.any(Array));
+    expect(result).toHaveLength(1);
+
+    User["softDelete"] = false;
+  });
+
+  it("with soft delete, onlyTrashed & and condition", async () => {
+    User["softDelete"] = true;
+    const result: any[] = await User.where("balance", 500)
+      .where("age", 100)
+      .orWhere("name", "Kosasih")
+      .onlyTrashed()
+      .get();
+
+    expect(result).toEqual(expect.any(Array));
+    expect(result).toHaveLength(0);
 
     User["softDelete"] = false;
   });
