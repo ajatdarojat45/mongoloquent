@@ -437,7 +437,9 @@ class Query extends Database implements QueryInterface {
       delete this?.queries?.$match?.$or;
     }
 
-    this.$queries.push(this.queries);
+    if (_orLength > 0 && this.softDelete) {
+      this.$queries.push(JSON.parse(JSON.stringify(this.queries)));
+    }
 
     if (
       _orLength > 0 &&
@@ -445,23 +447,31 @@ class Query extends Database implements QueryInterface {
       !this.isWithTrashed &&
       !this.isOnlyTrashed
     ) {
-      this.$queries.push({
+      const _$queries = JSON.parse(JSON.stringify(this.$queries));
+
+      _$queries.push({
         $match: {
           isDeleted: {
             $eq: false,
           },
         },
       });
+
+      this.$queries = _$queries;
     }
 
     if (_orLength > 0 && this.softDelete && this.isOnlyTrashed) {
-      this.$queries.push({
+      const _$queries = JSON.parse(JSON.stringify(this.$queries));
+
+      _$queries.push({
         $match: {
           isDeleted: {
             $eq: true,
           },
         },
       });
+
+      this.$queries = _$queries;
     }
 
     return this;
@@ -475,7 +485,7 @@ class Query extends Database implements QueryInterface {
     this.perPage = 10;
     this.groups = [];
     this.fields = [];
-    this.$queries = [];
+    this.$queries = JSON.parse(JSON.stringify([]));
     this.queries = {
       $match: {
         $and: [],
