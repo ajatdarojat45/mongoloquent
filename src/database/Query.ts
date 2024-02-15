@@ -10,6 +10,7 @@ class Query extends Database implements QueryInterface {
   protected static perPage: number = 10;
   protected static groups: object[] = [];
   protected static fields: object[] = [];
+  protected static $queries: any[] = [];
   protected static queries: QueriesInterface = {
     $match: {
       $and: [],
@@ -76,7 +77,7 @@ class Query extends Database implements QueryInterface {
   static orderBy<T extends typeof Query>(
     this: T,
     field: string,
-    order: string,
+    order: string = "asc",
     insensitive: boolean = false
   ): T {
     const _field: string = field;
@@ -123,11 +124,18 @@ class Query extends Database implements QueryInterface {
     fields: string | string[] = ""
   ): T {
     const _fields = JSON.parse(JSON.stringify(this.fields));
+    const isNotEmpty = _fields.length > 0;
     let _project = {
       $project: {
         document: "$$ROOT",
       },
     };
+
+    if (isNotEmpty) {
+      _project = {
+        ..._fields[0],
+      };
+    }
 
     if (typeof fields === "string") {
       _project = {
@@ -137,7 +145,7 @@ class Query extends Database implements QueryInterface {
           [fields]: 1,
         },
       };
-    } else if (typeof fields !== "string" && fields.length > 0) {
+    } else if (Array.isArray(fields) && fields.length > 0) {
       fields.forEach((field) => {
         _project = {
           ..._project,
@@ -159,7 +167,14 @@ class Query extends Database implements QueryInterface {
     fields: string | string[] = ""
   ): T {
     const _fields = JSON.parse(JSON.stringify(this.fields));
+    const isNotEmpty = _fields.length > 0;
     let _project = {};
+
+    if (isNotEmpty) {
+      _project = {
+        ..._fields[0].$project,
+      };
+    }
 
     if (typeof fields === "string") {
       _project = {
@@ -422,6 +437,43 @@ class Query extends Database implements QueryInterface {
       delete this?.queries?.$match?.$or;
     }
 
+    if (_orLength > 0 && this.softDelete) {
+      this.$queries.push(JSON.parse(JSON.stringify(this.queries)));
+    }
+
+    if (
+      _orLength > 0 &&
+      this.softDelete &&
+      !this.isWithTrashed &&
+      !this.isOnlyTrashed
+    ) {
+      const _$queries = JSON.parse(JSON.stringify(this.$queries));
+
+      _$queries.push({
+        $match: {
+          isDeleted: {
+            $eq: false,
+          },
+        },
+      });
+
+      this.$queries = _$queries;
+    }
+
+    if (_orLength > 0 && this.softDelete && this.isOnlyTrashed) {
+      const _$queries = JSON.parse(JSON.stringify(this.$queries));
+
+      _$queries.push({
+        $match: {
+          isDeleted: {
+            $eq: true,
+          },
+        },
+      });
+
+      this.$queries = _$queries;
+    }
+
     return this;
   }
 
@@ -433,6 +485,7 @@ class Query extends Database implements QueryInterface {
     this.perPage = 10;
     this.groups = [];
     this.fields = [];
+    this.$queries = JSON.parse(JSON.stringify([]));
     this.queries = {
       $match: {
         $and: [],

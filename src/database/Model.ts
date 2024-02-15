@@ -114,7 +114,14 @@ class Model extends Relation implements ModelInterface {
       const collection = this.getCollection();
       const _pipeline = [];
       this.generateQuery();
-      _pipeline.push(this.queries);
+
+      if (this.$queries.length > 0) {
+        this.$queries.forEach((query) => {
+          _pipeline.push(query);
+        });
+      } else {
+        _pipeline.push(this.queries);
+      }
 
       if (
         Object.entries(
@@ -123,13 +130,7 @@ class Model extends Relation implements ModelInterface {
       )
         _pipeline.push(...this.sorts);
 
-      if (
-        Object.entries(
-          (this?.fields?.[0] as { $project?: Record<string, any> })?.$project ||
-            {}
-        ).length > 1 ||
-        this.fields.length > 1
-      ) {
+      if (this.fields.length > 0) {
         _pipeline.push(...this.fields);
       }
 
