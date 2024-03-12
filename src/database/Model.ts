@@ -520,6 +520,53 @@ class Model extends Relation implements ModelInterface {
     }
   }
 
+  static async destroy(
+    id: string | string[] | ObjectId | ObjectId[]
+  ): Promise<object> {
+    try {
+      const collection = this.getCollection();
+      let q: ObjectId[] = [];
+
+      if (!Array.isArray(id)) {
+        q = [new ObjectId(id)];
+      } else {
+        q = id.map((el) => new ObjectId(el));
+      }
+
+      if (this.softDelete) {
+        const _data = await collection.updateMany(
+          {
+            _id: {
+              $in: q,
+            },
+          },
+          {
+            $set: {
+              isDeleted: true,
+              deletedAt: dayjs().toDate(),
+            },
+          }
+        );
+
+        return {
+          deletedCount: _data.modifiedCount,
+        };
+      }
+
+      const _data = await collection.deleteMany({
+        _id: {
+          $in: q,
+        },
+      });
+
+      return {
+        deletedCount: _data.deletedCount,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
   static async forceDelete(): Promise<object> {
     try {
       const collection = this.getCollection();
