@@ -37,6 +37,8 @@ class Relation extends Query implements RelationInterface {
           return this.generateBelongsToMany(payload);
         case "hasManyThrough":
           return this.generateHasManyThrough(payload);
+        case "morphMany":
+          return this.generateMorphMany(payload);
       }
     } else {
       console.log(
@@ -346,6 +348,79 @@ class Relation extends Query implements RelationInterface {
 
     this.lookups = _lookups;
     this.selectFields(params);
+    return this;
+  }
+
+  protected static morphMany(model: typeof Model, relation: string) {
+    const collection = model.collection;
+
+    return {
+      collection,
+      relationId: `${relation}Id`,
+      relationType: `${relation}Type`,
+      type: "morphMany",
+      model: model,
+    };
+  }
+
+  protected static generateMorphMany<T extends typeof Relation>(
+    this: T,
+    params: any
+  ): T {
+    const { collection, relationId, relationType, alias, model } = params;
+    const _lookups = JSON.parse(JSON.stringify(this.lookups));
+
+    let isSoftDelete = false;
+    let pipeline: any[] = [];
+
+    if (typeof model !== "string") {
+      isSoftDelete = model?.softDelete || false;
+    }
+
+    if (isSoftDelete) {
+      pipeline = [
+        {
+          $match: {
+            $expr: {
+              $and: [
+                { $eq: ["$isDeleted", false] },
+                {
+                  $eq: [`$${relationType}`, this.name],
+                },
+              ],
+            },
+          },
+        },
+      ];
+    } else {
+      pipeline = [
+        {
+          $match: {
+            $expr: {
+              $and: [
+                {
+                  $eq: [`$${relationType}`, this.name],
+                },
+              ],
+            },
+          },
+        },
+      ];
+    }
+
+    const lookup = {
+      from: collection,
+      localField: "_id",
+      foreignField: relationId,
+      as: alias,
+      pipeline: pipeline,
+    };
+
+    _lookups.push({ $lookup: lookup });
+
+    this.lookups = _lookups;
+    this.selectFields(params);
+
     return this;
   }
 
