@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://mongoloquent.com/" target="blank"><img src="https://cdn.discordapp.com/attachments/973422761944952883/1208054844154454088/Mongolo.jpg?ex=65e1e3bf&is=65cf6ebf&hm=3158b932d6f76d023323ce920b88ec4a96e0011152a55f6a99570d004682c06c&" width="300" alt="Mongoloquent Logo" /></a>
+    <img src="./assets/logo.jpeg"/>
 </p>
 
 <p align="center">
@@ -20,10 +20,10 @@ Mongoloquent is a lightweight [MongoDB](https://www.mongodb.com) ORM library for
 
 ## Features
 
-- Easy to use
-- Intuitive and expressive syntax
-- Support several relationship types
-- Support the test environment
+-   Easy to use
+-   Intuitive and expressive syntax
+-   Support several relationship types
+-   Support the test environment
 
 ## Getting started
 
@@ -41,5 +41,5 @@ Mongoloquent is an MIT-licensed open source project. It can grow thanks to the s
 
 ## Stay in touch
 
-- Author - [Ajat Darojat](https://linkedin.com/in/ajatdarojat45)
-- Website - https://mongoloquent.com
+-   Author - [Ajat Darojat](https://linkedin.com/in/ajatdarojat45)
+-   Website - https://mongoloquent.com
