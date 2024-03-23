@@ -37,6 +37,8 @@ class Relation extends Query implements RelationInterface {
           return this.generateBelongsToMany(payload);
         case "hasManyThrough":
           return this.generateHasManyThrough(payload);
+        case "morphTo":
+          return this.generateMorphTo(payload);
         case "morphMany":
           return this.generateMorphMany(payload);
       }
@@ -351,8 +353,87 @@ class Relation extends Query implements RelationInterface {
     return this;
   }
 
+  protected static morphTo(model: typeof Model, relation: string) {
+    const collection: string = model.collection;
+
+    return {
+      collection,
+      relationId: `${relation}Id`,
+      relationType: `${relation}Type`,
+      type: "morphTo",
+      model: model,
+    };
+  }
+
+  protected static generateMorphTo<T extends typeof Relation>(
+    this: T,
+    params: any
+  ): T {
+    const { collection, relationId, relationType, alias, model } = params;
+    const _lookups = JSON.parse(JSON.stringify(this.lookups));
+
+    let isSoftDelete = false;
+    let pipeline: any[] = [];
+
+    if (typeof model !== "string") {
+      isSoftDelete = model?.softDelete || false;
+    }
+
+    if (isSoftDelete) {
+      pipeline = [
+        {
+          $match: {
+            $expr: {
+              $and: [
+                { $eq: ["$isDeleted", false] },
+                {
+                  $eq: [`$${relationType}`, this.name],
+                },
+              ],
+            },
+          },
+        },
+      ];
+    } else {
+      pipeline = [
+        {
+          $match: {
+            $expr: {
+              $and: [
+                {
+                  $eq: [`$${relationType}`, this.name],
+                },
+              ],
+            },
+          },
+        },
+      ];
+    }
+
+    const lookup = {
+      from: collection,
+      localField: "_id",
+      foreignField: relationId,
+      as: alias,
+      pipeline: pipeline,
+    };
+
+    _lookups.push({ $lookup: lookup });
+    _lookups.push({
+      $unwind: {
+        path: `$${alias}`,
+        preserveNullAndEmptyArrays: true,
+      },
+    });
+
+    this.lookups = _lookups;
+    this.selectFields(params);
+
+    return this;
+  }
+
   protected static morphMany(model: typeof Model, relation: string) {
-    const collection = model.collection;
+    const collection: string = model.collection;
 
     return {
       collection,
