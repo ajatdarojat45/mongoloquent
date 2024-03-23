@@ -31,6 +31,8 @@ class Relation extends Query implements RelationInterface {
       switch (model.type) {
         case "belongsTo":
           return this.generateBelongsTo(payload);
+        case "hasOne":
+          return this.generateHasOne(payload);
         case "hasMany":
           return this.generateHasMany(payload);
         case "belongsToMany":
@@ -130,6 +132,69 @@ class Relation extends Query implements RelationInterface {
     };
 
     _lookups.push(_unwind);
+
+    this.lookups = _lookups;
+    this.selectFields(params);
+
+    return this;
+  }
+
+  protected static hasOne(
+    model: typeof Model | string,
+    foreignKey: string,
+    localKey: string = "_id"
+  ): BelongsToInterface {
+    const collection = typeof model === "string" ? model : model.collection;
+    return {
+      collection,
+      foreignKey: foreignKey,
+      localKey: localKey,
+      type: "hasOne",
+      model: model,
+    };
+  }
+
+  protected static generateHasOne<T extends typeof Relation>(
+    this: T,
+    params: GenerateBelongsToInterface
+  ): T {
+    const { collection, foreignKey, localKey, alias, model } = params;
+    const _lookups = JSON.parse(JSON.stringify(this.lookups));
+
+    let isSoftDelete = false;
+    let pipeline: any[] = [];
+
+    if (typeof model !== "string") {
+      isSoftDelete = model?.softDelete || false;
+    }
+
+    if (isSoftDelete) {
+      pipeline = [
+        {
+          $match: {
+            $expr: {
+              $and: [{ $eq: ["$isDeleted", false] }],
+            },
+          },
+        },
+      ];
+    }
+
+    const lookup = {
+      from: collection,
+      localField: localKey,
+      foreignField: foreignKey,
+      as: alias,
+      pipeline: pipeline,
+    };
+
+    _lookups.push({ $lookup: lookup });
+    _lookups.push({
+      $unwind: {
+        path: `$${alias}`,
+        preserveNullAndEmptyArrays: true,
+      },
+    });
 
     this.lookups = _lookups;
     this.selectFields(params);
