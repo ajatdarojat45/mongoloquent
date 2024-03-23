@@ -45,6 +45,8 @@ class Relation extends Query implements RelationInterface {
           return this.generateMorphMany(payload);
         case "morphToMany":
           return this.generateMorphToMany(payload);
+        case "morphedByMany":
+          return this.generateMorphedByMany(payload);
       }
     } else {
       console.log(
@@ -574,8 +576,8 @@ class Relation extends Query implements RelationInterface {
 
   protected static morphToMany(model: typeof Model, relation: string) {
     return {
-      collection: `${relation}s`,
-      pivotCollection: model.collection,
+      collection: model.collection,
+      pivotCollection: `${relation}s`,
       foreignKey: `${model.name.toLowerCase()}Id`,
       relationId: `${relation}Id`,
       relationType: `${relation}Type`,
@@ -621,7 +623,7 @@ class Relation extends Query implements RelationInterface {
     _lookups.push(
       {
         $lookup: {
-          from: collection,
+          from: pivotCollection,
           localField: "_id",
           foreignField: `${relationId}`,
           as: "pivot",
@@ -642,7 +644,7 @@ class Relation extends Query implements RelationInterface {
       },
       {
         $lookup: {
-          from: pivotCollection,
+          from: collection,
           localField: `pivot.${foreignKey}`,
           foreignField: "_id",
           as: alias,
@@ -664,12 +666,93 @@ class Relation extends Query implements RelationInterface {
 
   protected static morphedByMany(model: typeof Model, relation: string) {
     return {
-      collection: `${relation}s`,
+      collection: model.collection,
+      pivotCollection: `${relation}s`,
+      foreignKey: `${this.name.toLowerCase()}Id`,
       relationId: `${relation}Id`,
       relationType: `${relation}Type`,
-      type: "morphToMany",
+      type: "morphedByMany",
       model: model,
     };
+  }
+
+  protected static generateMorphedByMany<T extends typeof Relation>(
+    this: T,
+    params: any
+  ): T {
+    const {
+      collection,
+      pivotCollection,
+      foreignKey,
+      relationId,
+      relationType,
+      alias,
+      model,
+    } = params;
+    const _lookups = JSON.parse(JSON.stringify(this.lookups));
+
+    let isSoftDelete = false;
+    let pipeline: any[] = [];
+
+    if (typeof model !== "string") {
+      isSoftDelete = model?.softDelete || false;
+    }
+
+    if (isSoftDelete) {
+      pipeline = [
+        {
+          $match: {
+            $expr: {
+              $and: [{ $eq: ["$isDeleted", false] }],
+            },
+          },
+        },
+      ];
+    }
+
+    console.log(pivotCollection, foreignKey, model.name, "<<<< ");
+    _lookups.push(
+      {
+        $lookup: {
+          from: pivotCollection,
+          localField: "_id",
+          foreignField: `${foreignKey}`,
+          as: "pivot",
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    {
+                      $eq: [`$${relationType}`, model.name],
+                    },
+                  ],
+                },
+              },
+            },
+          ],
+        },
+      },
+      {
+        $lookup: {
+          from: collection,
+          localField: `pivot.${relationId}`,
+          foreignField: "_id",
+          as: alias,
+          pipeline,
+        },
+      },
+      {
+        $project: {
+          pivot: 0,
+        },
+      }
+    );
+
+    this.lookups = _lookups;
+    this.selectFields(params);
+
+    return this;
   }
 
   protected static selectFields(params: GenerateBelongsToInterface) {
