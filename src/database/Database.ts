@@ -15,6 +15,10 @@ class Database implements DatabaseInterface {
     return this.db.collection(this.collection);
   }
 
+  protected static getDb(): Db {
+    return this.db;
+  }
+
   private static connect(): void {
     try {
       console.log("Mongoloquent trying to connect to database...");

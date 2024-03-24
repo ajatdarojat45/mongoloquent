@@ -59,8 +59,8 @@ class Relation extends Query implements RelationInterface {
   }
 
   protected static generateBelongsTo<T extends typeof Relation>(this: T): T {
-    const { collection, foreignKey, localKey, alias, model } = this
-      .relation as any;
+    const { collection, foreignKey, localKey, model } = this.relation as any;
+    const alias = this.alias;
     const _lookups = JSON.parse(JSON.stringify(this.lookups));
 
     let _foreignKey = foreignKey;
@@ -136,8 +136,8 @@ class Relation extends Query implements RelationInterface {
   }
 
   protected static generateHasOne<T extends typeof Relation>(this: T): T {
-    const { collection, foreignKey, localKey, alias, model } = this
-      .relation as any;
+    const { collection, foreignKey, localKey, model } = this.relation as any;
+    const alias = this.alias;
     const _lookups = JSON.parse(JSON.stringify(this.lookups));
 
     let isSoftDelete = false;
@@ -201,8 +201,8 @@ class Relation extends Query implements RelationInterface {
   }
 
   protected static generateHasMany<T extends typeof Relation>(this: T): T {
-    const { collection, foreignKey, localKey, alias, model } = this
-      .relation as any;
+    const { collection, foreignKey, localKey, model } = this.relation as any;
+    const alias = this.alias;
     const _lookups = JSON.parse(JSON.stringify(this.lookups));
 
     let isSoftDelete = false;
@@ -267,8 +267,10 @@ class Relation extends Query implements RelationInterface {
   protected static generateBelongsToMany<T extends typeof Relation>(
     this: T
   ): T {
-    const { collection, pivotCollection, foreignKey, localKey, alias, model } =
-      this.relation as any;
+    const { collection, pivotCollection, foreignKey, localKey, model } = this
+      .relation as any;
+    const alias = this.alias;
+
     const _lookups = JSON.parse(JSON.stringify(this.lookups));
 
     let isSoftDelete = false;
@@ -297,7 +299,7 @@ class Relation extends Query implements RelationInterface {
           localField: "_id",
           foreignField: foreignKey,
           as: "pivot",
-          pipeline,
+          //pipeline,
         },
       },
       {
@@ -306,7 +308,7 @@ class Relation extends Query implements RelationInterface {
           localField: `pivot.${localKey}`,
           foreignField: "_id",
           as: alias,
-          //         pipeline,
+          pipeline,
         },
       },
       {
@@ -348,14 +350,9 @@ class Relation extends Query implements RelationInterface {
   protected static generateHasManyThrough<T extends typeof Relation>(
     this: T
   ): T {
-    const {
-      collection,
-      throughCollection,
-      foreignKey,
-      localKey,
-      alias,
-      model,
-    } = this.relation as any;
+    const { collection, throughCollection, foreignKey, localKey, model } = this
+      .relation as any;
+    const alias = this.alias;
     const _lookups = JSON.parse(JSON.stringify(this.lookups));
 
     let isSoftDelete = false;
@@ -427,8 +424,9 @@ class Relation extends Query implements RelationInterface {
   }
 
   protected static generateMorphTo<T extends typeof Relation>(this: T): T {
-    const { collection, relationId, relationType, alias, model } = this
+    const { collection, relationId, relationType, model } = this
       .relation as any;
+    const alias = this.alias;
     const _lookups = JSON.parse(JSON.stringify(this.lookups));
 
     let isSoftDelete = false;
@@ -511,8 +509,9 @@ class Relation extends Query implements RelationInterface {
   }
 
   protected static generateMorphMany<T extends typeof Relation>(this: T): T {
-    const { collection, relationId, relationType, alias, model } = this
+    const { collection, relationId, relationType, model } = this
       .relation as any;
+    const alias = this.alias;
     const _lookups = JSON.parse(JSON.stringify(this.lookups));
 
     let isSoftDelete = false;
@@ -690,9 +689,9 @@ class Relation extends Query implements RelationInterface {
       foreignKey,
       relationId,
       relationType,
-      alias,
       model,
     } = this.relation as any;
+    const alias = this.alias;
     const _lookups = JSON.parse(JSON.stringify(this.lookups));
 
     let isSoftDelete = false;
@@ -758,12 +757,48 @@ class Relation extends Query implements RelationInterface {
     return this;
   }
 
-  protected static async attach<T extends typeof Relation>(
-    this: T,
-    payload: string | string[] | ObjectId | ObjectId[],
-    relation: object
-  ): Promise<T> {
-    return this;
+  public static async attach(
+    payload: string | string[] | ObjectId | ObjectId[]
+  ): Promise<ObjectId[]> {
+    const data = (this as any).data;
+    const relation: any = this.relation;
+    let ids: ObjectId[] = [];
+
+    if (!Array.isArray(payload)) {
+      ids = [new ObjectId(payload)];
+    } else {
+      ids = payload.map((el) => new ObjectId(el));
+    }
+
+    const db = this.getDb();
+    const collection = db.collection(relation.pivotCollection);
+    const _payload: object[] = [];
+
+    if ((relation as any).type === "belongsToMany") {
+      ids.forEach((id) =>
+        _payload.push({
+          [relation.foreignKey]: data._id,
+          [relation.localKey]: id,
+        })
+      );
+    } else if ((relation as any).type === "morphToMany") {
+      ids.forEach((id) =>
+        _payload.push({
+          [relation.foreignKey]: id,
+          [relation.relationId]: data._id,
+          [relation.relationType]: this.name,
+        })
+      );
+    }
+
+    const _data = await collection.insertMany(_payload);
+    const result: ObjectId[] = [];
+
+    for (var key in _data.insertedIds) {
+      result.push(_data.insertedIds[key]);
+    }
+
+    return [];
   }
 
   protected static detach() {}
