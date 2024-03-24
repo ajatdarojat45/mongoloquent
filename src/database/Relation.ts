@@ -111,7 +111,7 @@ class Relation extends Query implements RelationInterface {
     _lookups.push(_unwind);
 
     this.lookups = _lookups;
-    this.selectFields(this.relation);
+    this.selectFields();
 
     return this;
   }
@@ -176,7 +176,7 @@ class Relation extends Query implements RelationInterface {
     });
 
     this.lookups = _lookups;
-    this.selectFields(this.relation);
+    this.selectFields();
 
     return this;
   }
@@ -235,7 +235,7 @@ class Relation extends Query implements RelationInterface {
     _lookups.push({ $lookup: lookup });
 
     this.lookups = _lookups;
-    this.selectFields(this.relation);
+    this.selectFields();
 
     return this;
   }
@@ -317,7 +317,7 @@ class Relation extends Query implements RelationInterface {
     );
 
     this.lookups = _lookups;
-    this.selectFields(this.relation);
+    this.selectFields();
     return this;
   }
 
@@ -403,7 +403,7 @@ class Relation extends Query implements RelationInterface {
     );
 
     this.lookups = _lookups;
-    this.selectFields(this.relation);
+    this.selectFields();
     return this;
   }
 
@@ -486,7 +486,7 @@ class Relation extends Query implements RelationInterface {
     });
 
     this.lookups = _lookups;
-    this.selectFields(this.relation);
+    this.selectFields();
 
     return this;
   }
@@ -564,7 +564,7 @@ class Relation extends Query implements RelationInterface {
     _lookups.push({ $lookup: lookup });
 
     this.lookups = _lookups;
-    this.selectFields(this.relation);
+    this.selectFields();
 
     return this;
   }
@@ -658,7 +658,7 @@ class Relation extends Query implements RelationInterface {
     );
 
     this.lookups = _lookups;
-    this.selectFields(this.relation);
+    this.selectFields();
 
     return this;
   }
@@ -753,7 +753,7 @@ class Relation extends Query implements RelationInterface {
     );
 
     this.lookups = _lookups;
-    this.selectFields(this.relation);
+    this.selectFields();
 
     return this;
   }
@@ -770,7 +770,7 @@ class Relation extends Query implements RelationInterface {
 
   protected static sync() {}
 
-  protected static selectFields(params: any) {
+  protected static selectFields() {
     const alias = this.alias as any;
     const options = this.options as any;
 
