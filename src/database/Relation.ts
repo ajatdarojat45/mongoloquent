@@ -759,10 +759,12 @@ class Relation extends Query implements RelationInterface {
 
   public static async attach(
     payload: string | string[] | ObjectId | ObjectId[]
-  ): Promise<ObjectId[]> {
+  ): Promise<object> {
     const data = (this as any).data;
     const relation: any = this.relation;
     let ids: ObjectId[] = [];
+    let qFind = {};
+    let key = "";
 
     if (!Array.isArray(payload)) {
       ids = [new ObjectId(payload)];
@@ -775,6 +777,15 @@ class Relation extends Query implements RelationInterface {
     const _payload: object[] = [];
 
     if ((relation as any).type === "belongsToMany") {
+      key = relation.localKey;
+
+      qFind = {
+        [relation.localKey]: {
+          $in: ids,
+        },
+        [relation.foreignKey]: data._id,
+      };
+
       ids.forEach((id) =>
         _payload.push({
           [relation.foreignKey]: data._id,
@@ -782,6 +793,14 @@ class Relation extends Query implements RelationInterface {
         })
       );
     } else if ((relation as any).type === "morphToMany") {
+      key = relation.foreignKey;
+
+      qFind = {
+        [relation.foreignKey]: { $in: ids },
+        [relation.relationId]: data._id,
+        [relation.relationType]: this.name,
+      };
+
       ids.forEach((id) =>
         _payload.push({
           [relation.foreignKey]: id,
@@ -791,15 +810,25 @@ class Relation extends Query implements RelationInterface {
       );
     }
 
-    const _data = await collection.insertMany(_payload);
-    const result: ObjectId[] = [];
+    // find data
+    const existingData = await collection.find(qFind).toArray();
 
-    for (var key in _data.insertedIds) {
-      result.push(_data.insertedIds[key]);
+    // check data
+    for (let i = 0; i < ids.length; i++) {
+      const existingItem = existingData.find((item: any) => {
+        return JSON.stringify(item[key]) === JSON.stringify(ids[i]);
+      });
+
+      // insert if data does not exist
+      if (!existingItem) {
+        await collection.insertOne(_payload[i]);
+      }
     }
 
     this.resetRelation();
-    return result;
+    return {
+      message: "Attach successfully",
+    };
   }
 
   public static async detach(
@@ -834,16 +863,104 @@ class Relation extends Query implements RelationInterface {
       };
     }
 
-    console.log(JSON.stringify(q, null, 2), "<<<<<<");
-    const _data = await collection.deleteMany(q);
+    await collection.deleteMany(q);
     this.resetRelation();
 
     return {
-      deletedCount: _data.deletedCount,
+      message: "Detach successfully",
     };
   }
 
-  protected static sync() {}
+  public static async sync(
+    payload: string | string[] | ObjectId | ObjectId[]
+  ): Promise<object> {
+    const data = (this as any).data;
+    const relation: any = this.relation;
+    let ids: ObjectId[] = [];
+
+    if (!Array.isArray(payload)) {
+      ids = [new ObjectId(payload)];
+    } else {
+      ids = payload.map((el) => new ObjectId(el));
+    }
+
+    const db = this.getDb();
+    const collection = db.collection(relation.pivotCollection);
+    const _payload: object[] = [];
+    let qFind = {};
+    let qDelete = {};
+    let key = "";
+
+    if ((relation as any).type === "belongsToMany") {
+      key = relation.localKey;
+
+      qFind = {
+        [relation.localKey]: {
+          $in: ids,
+        },
+        [relation.foreignKey]: data._id,
+      };
+
+      qDelete = {
+        [relation.localKey]: {
+          $nin: ids,
+        },
+        [relation.foreignKey]: data._id,
+      };
+
+      ids.forEach((id) =>
+        _payload.push({
+          [relation.foreignKey]: data._id,
+          [relation.localKey]: id,
+        })
+      );
+    } else if ((relation as any).type === "morphToMany") {
+      key = relation.foreignKey;
+
+      qFind = {
+        [relation.foreignKey]: { $in: ids },
+        [relation.relationId]: data._id,
+        [relation.relationType]: this.name,
+      };
+
+      qDelete = {
+        [relation.foreignKey]: { $nin: ids },
+        [relation.relationId]: data._id,
+        [relation.relationType]: this.name,
+      };
+
+      ids.forEach((id) =>
+        _payload.push({
+          [relation.foreignKey]: id,
+          [relation.relationId]: data._id,
+          [relation.relationType]: this.name,
+        })
+      );
+    }
+
+    // find data
+    const existingData = await collection.find(qFind).toArray();
+
+    // check data
+    for (let i = 0; i < ids.length; i++) {
+      const existingItem = existingData.find(
+        (item: any) => JSON.stringify(item[key]) === JSON.stringify(ids[i])
+      );
+
+      // insert if data does not exist
+      if (!existingItem) {
+        await collection.insertOne(_payload[i]);
+      }
+    }
+
+    // delete data
+    await collection.deleteMany(qDelete);
+    this.resetRelation();
+
+    return {
+      message: "Sync successfully",
+    };
+  }
 
   protected static selectFields() {
     const alias = this.alias as any;
