@@ -9,6 +9,8 @@ import {
 } from "../interfaces/ModelInterface";
 
 class Model extends Relation implements ModelInterface {
+  public static data: object | null = null;
+
   static async all(): Promise<object[]> {
     try {
       const collection = this.getCollection();
