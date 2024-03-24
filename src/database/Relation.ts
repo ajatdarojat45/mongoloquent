@@ -798,10 +798,50 @@ class Relation extends Query implements RelationInterface {
       result.push(_data.insertedIds[key]);
     }
 
-    return [];
+    this.resetRelation();
+    return result;
   }
 
-  protected static detach() {}
+  public static async detach(
+    payload: string | string[] | ObjectId | ObjectId[]
+  ): Promise<object> {
+    const data = (this as any).data;
+    const relation: any = this.relation;
+    let ids: ObjectId[] = [];
+
+    if (!Array.isArray(payload)) {
+      ids = [new ObjectId(payload)];
+    } else {
+      ids = payload.map((el) => new ObjectId(el));
+    }
+
+    const db = this.getDb();
+    const collection = db.collection(relation.pivotCollection);
+    let q = {};
+
+    if ((relation as any).type === "belongsToMany") {
+      q = {
+        [relation.localKey]: {
+          $in: ids,
+        },
+        [relation.foreignKey]: data._id,
+      };
+    } else if ((relation as any).type === "morphToMany") {
+      q = {
+        [relation.foreignKey]: { $in: ids },
+        [relation.relationId]: data._id,
+        [relation.relationType]: this.name,
+      };
+    }
+
+    console.log(JSON.stringify(q, null, 2), "<<<<<<");
+    const _data = await collection.deleteMany(q);
+    this.resetRelation();
+
+    return {
+      deletedCount: _data.deletedCount,
+    };
+  }
 
   protected static sync() {}
 
