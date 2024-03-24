@@ -2,17 +2,15 @@ import Query from "./Query";
 import {
   RelationInterface,
   WithOptionsInterface,
-  BelongsToInterface,
-  GenerateBelongsToInterface,
-  BelongsToManyInterface,
-  GenerateBelongsToManyInterface,
-  HasManyThroughInterface,
-  GenerateHasManyThroughInterface,
 } from "../interfaces/RelationInterface";
 import Model from "./Model";
+import { ObjectId } from "mongodb";
 
 class Relation extends Query implements RelationInterface {
   protected static lookups: object[] = [];
+  protected static relation: object = {};
+  protected static alias: string = "";
+  protected static options: object = {};
 
   public static with<T extends typeof Relation>(
     this: T,
@@ -20,34 +18,9 @@ class Relation extends Query implements RelationInterface {
     options: WithOptionsInterface = {}
   ): T {
     if (typeof (this as any)[relation] === "function") {
-      const model = (this as any)[relation]();
-
-      const payload = {
-        ...model,
-        alias: relation,
-        options,
-      };
-
-      switch (model.type) {
-        case "belongsTo":
-          return this.generateBelongsTo(payload);
-        case "hasOne":
-          return this.generateHasOne(payload);
-        case "hasMany":
-          return this.generateHasMany(payload);
-        case "belongsToMany":
-          return this.generateBelongsToMany(payload);
-        case "hasManyThrough":
-          return this.generateHasManyThrough(payload);
-        case "morphTo":
-          return this.generateMorphTo(payload);
-        case "morphMany":
-          return this.generateMorphMany(payload);
-        case "morphToMany":
-          return this.generateMorphToMany(payload);
-        case "morphedByMany":
-          return this.generateMorphedByMany(payload);
-      }
+      this.alias = relation;
+      this.options = options;
+      (this as any)[relation]();
     } else {
       console.log(
         `The ${relation} method does not exist in the ${this.name} model.`
@@ -65,27 +38,29 @@ class Relation extends Query implements RelationInterface {
     return this.with(relation, options);
   }
 
-  protected static belongsTo(
+  protected static belongsTo<T extends typeof Relation>(
+    this: T,
     model: typeof Model | string,
     foreignKey: string,
     ownerKey: string = "_id"
-  ): BelongsToInterface {
+  ): T {
     const collection = typeof model === "string" ? model : model.collection;
 
-    return {
+    this.relation = {
       collection,
       foreignKey: ownerKey,
       localKey: foreignKey,
       type: "belongsTo",
       model: model,
     };
+
+    this.generateBelongsTo();
+    return this;
   }
 
-  protected static generateBelongsTo<T extends typeof Relation>(
-    this: T,
-    params: GenerateBelongsToInterface
-  ): T {
-    const { collection, foreignKey, localKey, alias, model } = params;
+  protected static generateBelongsTo<T extends typeof Relation>(this: T): T {
+    const { collection, foreignKey, localKey, alias, model } = this
+      .relation as any;
     const _lookups = JSON.parse(JSON.stringify(this.lookups));
 
     let _foreignKey = foreignKey;
@@ -136,31 +111,33 @@ class Relation extends Query implements RelationInterface {
     _lookups.push(_unwind);
 
     this.lookups = _lookups;
-    this.selectFields(params);
+    this.selectFields(this.relation);
 
     return this;
   }
 
-  protected static hasOne(
+  protected static hasOne<T extends typeof Relation>(
+    this: T,
     model: typeof Model | string,
     foreignKey: string,
     localKey: string = "_id"
-  ): BelongsToInterface {
+  ): T {
     const collection = typeof model === "string" ? model : model.collection;
-    return {
+    this.relation = {
       collection,
       foreignKey: foreignKey,
       localKey: localKey,
       type: "hasOne",
       model: model,
     };
+
+    this.generateHasOne();
+    return this;
   }
 
-  protected static generateHasOne<T extends typeof Relation>(
-    this: T,
-    params: GenerateBelongsToInterface
-  ): T {
-    const { collection, foreignKey, localKey, alias, model } = params;
+  protected static generateHasOne<T extends typeof Relation>(this: T): T {
+    const { collection, foreignKey, localKey, alias, model } = this
+      .relation as any;
     const _lookups = JSON.parse(JSON.stringify(this.lookups));
 
     let isSoftDelete = false;
@@ -199,31 +176,33 @@ class Relation extends Query implements RelationInterface {
     });
 
     this.lookups = _lookups;
-    this.selectFields(params);
+    this.selectFields(this.relation);
 
     return this;
   }
 
-  protected static hasMany(
+  protected static hasMany<T extends typeof Relation>(
+    this: T,
     model: typeof Model | string,
     foreignKey: string,
     localKey: string = "_id"
-  ): BelongsToInterface {
+  ): T {
     const collection = typeof model === "string" ? model : model.collection;
-    return {
+    this.relation = {
       collection,
       foreignKey: foreignKey,
       localKey: localKey,
       type: "hasMany",
       model: model,
     };
+
+    this.generateHasMany();
+    return this;
   }
 
-  protected static generateHasMany<T extends typeof Relation>(
-    this: T,
-    params: GenerateBelongsToInterface
-  ): T {
-    const { collection, foreignKey, localKey, alias, model } = params;
+  protected static generateHasMany<T extends typeof Relation>(this: T): T {
+    const { collection, foreignKey, localKey, alias, model } = this
+      .relation as any;
     const _lookups = JSON.parse(JSON.stringify(this.lookups));
 
     let isSoftDelete = false;
@@ -256,22 +235,23 @@ class Relation extends Query implements RelationInterface {
     _lookups.push({ $lookup: lookup });
 
     this.lookups = _lookups;
-    this.selectFields(params);
+    this.selectFields(this.relation);
 
     return this;
   }
 
-  protected static belongsToMany(
+  protected static belongsToMany<T extends typeof Relation>(
+    this: T,
     model: typeof Model | string,
     pivotModel: typeof Model | string,
     foreignKey: string,
     foreignKeyTarget: string
-  ): BelongsToManyInterface {
+  ): T {
     const collection = typeof model === "string" ? model : model.collection;
     const pivotCollection =
       typeof pivotModel === "string" ? pivotModel : pivotModel.collection;
 
-    return {
+    this.relation = {
       collection,
       pivotCollection,
       foreignKey: foreignKey,
@@ -279,14 +259,16 @@ class Relation extends Query implements RelationInterface {
       type: "belongsToMany",
       model,
     };
+
+    this.generateBelongsToMany();
+    return this;
   }
 
   protected static generateBelongsToMany<T extends typeof Relation>(
-    this: T,
-    params: GenerateBelongsToManyInterface
+    this: T
   ): T {
     const { collection, pivotCollection, foreignKey, localKey, alias, model } =
-      params;
+      this.relation as any;
     const _lookups = JSON.parse(JSON.stringify(this.lookups));
 
     let isSoftDelete = false;
@@ -335,21 +317,22 @@ class Relation extends Query implements RelationInterface {
     );
 
     this.lookups = _lookups;
-    this.selectFields(params);
+    this.selectFields(this.relation);
     return this;
   }
 
-  protected static hasManyThrough(
+  protected static hasManyThrough<T extends typeof Relation>(
+    this: T,
     model: typeof Model | string,
     throughModel: typeof Model | string,
     foreignKey: string,
     foreignKeyThrough: string
-  ): HasManyThroughInterface {
+  ): T {
     const collection = typeof model === "string" ? model : model.collection;
     const throughCollection =
       typeof throughModel === "string" ? throughModel : throughModel.collection;
 
-    return {
+    this.relation = {
       collection,
       throughCollection,
       foreignKey: foreignKeyThrough,
@@ -357,11 +340,13 @@ class Relation extends Query implements RelationInterface {
       type: "hasManyThrough",
       model: model,
     };
+
+    this.generateHasManyThrough();
+    return this;
   }
 
   protected static generateHasManyThrough<T extends typeof Relation>(
-    this: T,
-    params: GenerateHasManyThroughInterface
+    this: T
   ): T {
     const {
       collection,
@@ -370,7 +355,7 @@ class Relation extends Query implements RelationInterface {
       localKey,
       alias,
       model,
-    } = params;
+    } = this.relation as any;
     const _lookups = JSON.parse(JSON.stringify(this.lookups));
 
     let isSoftDelete = false;
@@ -418,27 +403,32 @@ class Relation extends Query implements RelationInterface {
     );
 
     this.lookups = _lookups;
-    this.selectFields(params);
+    this.selectFields(this.relation);
     return this;
   }
 
-  protected static morphTo(model: typeof Model, relation: string) {
+  protected static morphTo<T extends typeof Relation>(
+    this: T,
+    model: typeof Model,
+    relation: string
+  ): T {
     const collection: string = model.collection;
 
-    return {
+    this.relation = {
       collection,
       relationId: `${relation}Id`,
       relationType: `${relation}Type`,
       type: "morphTo",
       model: model,
     };
+
+    this.generateMorphTo();
+    return this;
   }
 
-  protected static generateMorphTo<T extends typeof Relation>(
-    this: T,
-    params: any
-  ): T {
-    const { collection, relationId, relationType, alias, model } = params;
+  protected static generateMorphTo<T extends typeof Relation>(this: T): T {
+    const { collection, relationId, relationType, alias, model } = this
+      .relation as any;
     const _lookups = JSON.parse(JSON.stringify(this.lookups));
 
     let isSoftDelete = false;
@@ -496,28 +486,33 @@ class Relation extends Query implements RelationInterface {
     });
 
     this.lookups = _lookups;
-    this.selectFields(params);
+    this.selectFields(this.relation);
 
     return this;
   }
 
-  protected static morphMany(model: typeof Model, relation: string) {
+  protected static morphMany<T extends typeof Relation>(
+    this: T,
+    model: typeof Model,
+    relation: string
+  ): T {
     const collection: string = model.collection;
 
-    return {
+    this.relation = {
       collection,
       relationId: `${relation}Id`,
       relationType: `${relation}Type`,
       type: "morphMany",
       model: model,
     };
+
+    this.generateMorphMany();
+    return this;
   }
 
-  protected static generateMorphMany<T extends typeof Relation>(
-    this: T,
-    params: any
-  ): T {
-    const { collection, relationId, relationType, alias, model } = params;
+  protected static generateMorphMany<T extends typeof Relation>(this: T): T {
+    const { collection, relationId, relationType, alias, model } = this
+      .relation as any;
     const _lookups = JSON.parse(JSON.stringify(this.lookups));
 
     let isSoftDelete = false;
@@ -569,13 +564,17 @@ class Relation extends Query implements RelationInterface {
     _lookups.push({ $lookup: lookup });
 
     this.lookups = _lookups;
-    this.selectFields(params);
+    this.selectFields(this.relation);
 
     return this;
   }
 
-  protected static morphToMany(model: typeof Model, relation: string) {
-    return {
+  protected static morphToMany<T extends typeof Relation>(
+    this: T,
+    model: typeof Model,
+    relation: string
+  ): T {
+    this.relation = {
       collection: model.collection,
       pivotCollection: `${relation}s`,
       foreignKey: `${model.name.toLowerCase()}Id`,
@@ -584,21 +583,21 @@ class Relation extends Query implements RelationInterface {
       type: "morphToMany",
       model: model,
     };
+
+    this.generateMorphToMany();
+    return this;
   }
 
-  protected static generateMorphToMany<T extends typeof Relation>(
-    this: T,
-    params: any
-  ): T {
+  protected static generateMorphToMany<T extends typeof Relation>(this: T): T {
     const {
       collection,
       pivotCollection,
       foreignKey,
       relationId,
       relationType,
-      alias,
       model,
-    } = params;
+    } = this.relation as any;
+    const alias = this.alias;
     const _lookups = JSON.parse(JSON.stringify(this.lookups));
 
     let isSoftDelete = false;
@@ -659,13 +658,17 @@ class Relation extends Query implements RelationInterface {
     );
 
     this.lookups = _lookups;
-    this.selectFields(params);
+    this.selectFields(this.relation);
 
     return this;
   }
 
-  protected static morphedByMany(model: typeof Model, relation: string) {
-    return {
+  protected static morphedByMany<T extends typeof Relation>(
+    this: T,
+    model: typeof Model,
+    relation: string
+  ): T {
+    this.relation = {
       collection: model.collection,
       pivotCollection: `${relation}s`,
       foreignKey: `${this.name.toLowerCase()}Id`,
@@ -674,11 +677,12 @@ class Relation extends Query implements RelationInterface {
       type: "morphedByMany",
       model: model,
     };
+
+    return this;
   }
 
   protected static generateMorphedByMany<T extends typeof Relation>(
-    this: T,
-    params: any
+    this: T
   ): T {
     const {
       collection,
@@ -688,7 +692,7 @@ class Relation extends Query implements RelationInterface {
       relationType,
       alias,
       model,
-    } = params;
+    } = this.relation as any;
     const _lookups = JSON.parse(JSON.stringify(this.lookups));
 
     let isSoftDelete = false;
@@ -710,7 +714,6 @@ class Relation extends Query implements RelationInterface {
       ];
     }
 
-    console.log(pivotCollection, foreignKey, model.name, "<<<< ");
     _lookups.push(
       {
         $lookup: {
@@ -750,13 +753,26 @@ class Relation extends Query implements RelationInterface {
     );
 
     this.lookups = _lookups;
-    this.selectFields(params);
+    this.selectFields(this.relation);
 
     return this;
   }
 
-  protected static selectFields(params: GenerateBelongsToInterface) {
-    const { alias, options } = params;
+  protected static async attach<T extends typeof Relation>(
+    this: T,
+    payload: string | string[] | ObjectId | ObjectId[],
+    relation: object
+  ): Promise<T> {
+    return this;
+  }
+
+  protected static detach() {}
+
+  protected static sync() {}
+
+  protected static selectFields(params: any) {
+    const alias = this.alias as any;
+    const options = this.options as any;
 
     if (options?.select && options?.select?.length > 0) {
       let project = {
@@ -765,7 +781,7 @@ class Relation extends Query implements RelationInterface {
         },
       };
 
-      options?.select?.forEach((field) => {
+      options?.select?.forEach((field: any) => {
         project = {
           ...project,
           $project: {
@@ -796,7 +812,7 @@ class Relation extends Query implements RelationInterface {
         $project: {},
       };
 
-      options?.exclude?.forEach((field) => {
+      options?.exclude?.forEach((field: any) => {
         project = {
           ...project,
           $project: {
@@ -814,6 +830,9 @@ class Relation extends Query implements RelationInterface {
 
   public static resetRelation() {
     this.lookups = [];
+    this.relation = {};
+    this.alias = "";
+    this.options = {};
     return this;
   }
 }

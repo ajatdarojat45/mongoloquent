@@ -37,7 +37,10 @@ class Model extends Relation implements ModelInterface {
     }
   }
 
-  static async first(fields?: string | string[]): Promise<{} | null> {
+  static async first<T extends typeof Model>(
+    this: T,
+    fields?: string | string[]
+  ): Promise<T> {
     try {
       if (fields) this.select(fields);
 
@@ -45,13 +48,17 @@ class Model extends Relation implements ModelInterface {
       this.resetQuery();
       this.resetRelation();
 
-      return await aggregate.next();
+      (this as any).data = await aggregate.next();
+      return this;
     } catch (error) {
       throw error;
     }
   }
 
-  static async find(id: string | ObjectId): Promise<{} | null> {
+  static async find<T extends typeof Model>(
+    this: T,
+    id: string | ObjectId
+  ): Promise<T> {
     try {
       let _id = id;
 
@@ -62,7 +69,8 @@ class Model extends Relation implements ModelInterface {
       this.resetQuery();
       this.resetRelation();
 
-      return await aggregate.next();
+      (this as any).data = await aggregate.next();
+      return this;
     } catch (error) {
       throw error;
     }
