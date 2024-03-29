@@ -175,7 +175,6 @@ describe("sync method", () => {
 
     const tagIds = await Tag.pluck("_id");
 
-    console.log(tagIds);
     await post.tags().sync(tagIds[2].toString());
 
     const { data: result }: any = await Post.with("tags").find(post.data._id);
