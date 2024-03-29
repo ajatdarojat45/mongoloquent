@@ -162,7 +162,7 @@ describe("Model - first method", () => {
 
   it("should return first user", async () => {
     User["softDelete"] = false;
-    const result = await User.where("name", "Kosasih").first();
+    const { data: result } = await User.where("name", "Kosasih").first();
 
     expect(result).toEqual(expect.any(Object));
     expect(result).toHaveProperty("name", "Kosasih");
@@ -170,7 +170,7 @@ describe("Model - first method", () => {
 
   it("should return first user with selected field", async () => {
     User["softDelete"] = false;
-    const result = await User.where("name", "Kosasih").first("name");
+    const { data: result } = await User.where("name", "Kosasih").first("name");
 
     expect(result).toEqual(expect.any(Object));
     expect(result).toHaveProperty("name", "Kosasih");
@@ -180,7 +180,10 @@ describe("Model - first method", () => {
 
   it("should return first user with selected fields", async () => {
     User["softDelete"] = false;
-    const result = await User.where("name", "Kosasih").first(["name", "age"]);
+    const { data: result } = await User.where("name", "Kosasih").first([
+      "name",
+      "age",
+    ]);
 
     expect(result).toEqual(expect.any(Object));
     expect(result).toHaveProperty("name", "Kosasih");
@@ -190,14 +193,14 @@ describe("Model - first method", () => {
 
   it("should return first user with non exist data", async () => {
     User["softDelete"] = false;
-    const result = await User.where("name", "Kosasih1").first();
+    const { data: result } = await User.where("name", "Kosasih1").first();
 
     expect(result).toEqual(null);
   });
 
   it("should return first user with soft delete data", async () => {
     User["softDelete"] = true;
-    const result = await User.where("name", "Kosasih").first();
+    const { data: result } = await User.where("name", "Kosasih").first();
 
     expect(result).toEqual(null);
   });
@@ -226,7 +229,7 @@ describe("Model - find method", () => {
 
   it("should return user with ObjectId", async () => {
     User["softDelete"] = false;
-    const result = await User.find(userIds[2]);
+    const { data: result } = await User.find(userIds[2]);
 
     expect(result).toEqual(expect.any(Object));
     expect(result).toHaveProperty("_id", userIds[2]);
@@ -234,7 +237,7 @@ describe("Model - find method", () => {
 
   it("should return user with string ObjectId", async () => {
     User["softDelete"] = false;
-    const result = await User.find(userIds[2].toString());
+    const { data: result } = await User.find(userIds[2].toString());
 
     expect(result).toEqual(expect.any(Object));
     expect(result).toHaveProperty("_id", userIds[2]);
@@ -242,7 +245,7 @@ describe("Model - find method", () => {
 
   it("should return user soft delete", async () => {
     User["softDelete"] = true;
-    const result = await User.find(userIds[2]);
+    const { data: result } = await User.find(userIds[2]);
 
     expect(result).toEqual(null);
   });
@@ -1257,7 +1260,7 @@ describe("Model - delete method", () => {
     });
 
     const result = await User.where("name", "Udin").delete();
-    const user = await User.where("name", "Udin").first();
+    const { data: user } = await User.where("name", "Udin").first();
 
     expect(result).toEqual(expect.any(Object));
     expect(result).toHaveProperty("_id");
@@ -1569,7 +1572,9 @@ describe("Model - forceDelete method", () => {
     ]);
 
     const result = await User.where("name", "Udin").forceDelete();
-    const user = await User.where("name", "Udin").withTrashed().first();
+    const { data: user } = await User.where("name", "Udin")
+      .withTrashed()
+      .first();
 
     expect(result).toEqual(expect.any(Object));
     expect(result).toHaveProperty("deletedCount", 1);
@@ -1655,7 +1660,7 @@ describe("Model - restore method", () => {
     ]);
 
     const result = await User.where("name", "Udin").restore();
-    const user = await User.where("name", "Udin").first();
+    const { data: user } = await User.where("name", "Udin").first();
 
     expect(result).toEqual(expect.any(Object));
     expect(result).toHaveProperty("modifiedCount", 1);
