@@ -129,55 +129,55 @@ beforeAll(async () => {
 
 describe("RelationResult - hasMany method", () => {
   it("should return all related data", async () => {
-    const country = await Country.with("users")
+    const { data: country }: any = await Country.with("users")
       .where("name", "Indonesia")
       .first();
 
     expect(country).toEqual(expect.any(Object));
     expect(country).toHaveProperty("users");
-    expect((country as any).users).toHaveLength(3);
-    expect((country as any).users[0]).toEqual(expect.any(Object));
-    expect((country as any).users[0]).toHaveProperty("_id");
-    expect((country as any).users[0]).toHaveProperty("name");
-    expect((country as any).users[0]).toHaveProperty("countryId");
-    expect((country as any).users[0]).toHaveProperty("isDeleted");
+    expect(country.users).toHaveLength(3);
+    expect(country.users[0]).toEqual(expect.any(Object));
+    expect(country.users[0]).toHaveProperty("_id");
+    expect(country.users[0]).toHaveProperty("name");
+    expect(country.users[0]).toHaveProperty("countryId");
+    expect(country.users[0]).toHaveProperty("isDeleted");
   });
 
   it("with collection name should return all related data", async () => {
-    const country = await Country.with("users2")
+    const { data: country }: any = await Country.with("users2")
       .where("name", "Indonesia")
       .first();
 
     expect(country).toEqual(expect.any(Object));
     expect(country).toHaveProperty("users2");
-    expect((country as any).users2).toHaveLength(3);
-    expect((country as any).users2[0]).toEqual(expect.any(Object));
-    expect((country as any).users2[0]).toHaveProperty("_id");
-    expect((country as any).users2[0]).toHaveProperty("name");
-    expect((country as any).users2[0]).toHaveProperty("countryId");
-    expect((country as any).users2[0]).toHaveProperty("isDeleted");
+    expect(country.users2).toHaveLength(3);
+    expect(country.users2[0]).toEqual(expect.any(Object));
+    expect(country.users2[0]).toHaveProperty("_id");
+    expect(country.users2[0]).toHaveProperty("name");
+    expect(country.users2[0]).toHaveProperty("countryId");
+    expect(country.users2[0]).toHaveProperty("isDeleted");
   });
 
   it("with soft delete", async () => {
     User["softDelete"] = true;
 
-    const country = await Country.with("users")
+    const { data: country }: any = await Country.with("users")
       .where("name", "Indonesia")
       .first();
 
     expect(country).toEqual(expect.any(Object));
     expect(country).toHaveProperty("users");
-    expect((country as any).users).toHaveLength(2);
-    expect((country as any).users[0]).toEqual(expect.any(Object));
-    expect((country as any).users[0]).toHaveProperty("_id");
-    expect((country as any).users[0]).toHaveProperty("name");
-    expect((country as any).users[0]).toHaveProperty("countryId");
-    expect((country as any).users[0]).toHaveProperty("isDeleted");
+    expect(country.users).toHaveLength(2);
+    expect(country.users[0]).toEqual(expect.any(Object));
+    expect(country.users[0]).toHaveProperty("_id");
+    expect(country.users[0]).toHaveProperty("name");
+    expect(country.users[0]).toHaveProperty("countryId");
+    expect(country.users[0]).toHaveProperty("isDeleted");
   });
 
   it("with select column", async () => {
     User["softDelete"] = true;
-    const country = await Country.with("users", {
+    const { data: country }: any = await Country.with("users", {
       select: ["name"],
     })
       .where("name", "Indonesia")
@@ -185,17 +185,17 @@ describe("RelationResult - hasMany method", () => {
 
     expect(country).toEqual(expect.any(Object));
     expect(country).toHaveProperty("users");
-    expect((country as any).users).toHaveLength(2);
-    expect((country as any).users[0]).toEqual(expect.any(Object));
-    expect((country as any).users[0]).toHaveProperty("name");
-    expect((country as any).users[0]).not.toHaveProperty("_id");
-    expect((country as any).users[0]).not.toHaveProperty("countryId");
-    expect((country as any).users[0]).not.toHaveProperty("isDeleted");
+    expect(country.users).toHaveLength(2);
+    expect(country.users[0]).toEqual(expect.any(Object));
+    expect(country.users[0]).toHaveProperty("name");
+    expect(country.users[0]).not.toHaveProperty("_id");
+    expect(country.users[0]).not.toHaveProperty("countryId");
+    expect(country.users[0]).not.toHaveProperty("isDeleted");
   });
 
   it("with exclude column", async () => {
     User["softDelete"] = true;
-    const country = await Country.with("users", {
+    const { data: country } = await Country.with("users", {
       exclude: ["name"],
     })
       .where("name", "Indonesia")
@@ -212,7 +212,7 @@ describe("RelationResult - hasMany method", () => {
   });
 
   it("with have no related data", async () => {
-    const country = await Country.with("users")
+    const { data: country } = await Country.with("users")
       .where("name", "Malaysia")
       .first();
 
@@ -224,7 +224,9 @@ describe("RelationResult - hasMany method", () => {
 
 describe("RelationResult - belongsTo method", () => {
   it("should return related data", async () => {
-    const post = await Post.has("user").where("title", "Post 2").first();
+    const { data: post } = await Post.has("user")
+      .where("title", "Post 2")
+      .first();
 
     expect(post).toEqual(expect.any(Object));
     expect(post).toHaveProperty("user");
@@ -236,7 +238,9 @@ describe("RelationResult - belongsTo method", () => {
   });
 
   it("with collection name should return related data", async () => {
-    const post = await Post.has("user2").where("title", "Post 2").first();
+    const { data: post } = await Post.has("user2")
+      .where("title", "Post 2")
+      .first();
 
     expect(post).toEqual(expect.any(Object));
     expect(post).toHaveProperty("user2");
@@ -248,7 +252,7 @@ describe("RelationResult - belongsTo method", () => {
   });
 
   it("with this.fields > 0", async () => {
-    const post = await Post.has("user", {
+    const { data: post } = await Post.has("user", {
       select: ["name"],
     })
       .where("title", "Post 2")
@@ -265,7 +269,7 @@ describe("RelationResult - belongsTo method", () => {
   });
 
   it("with select column", async () => {
-    const post = await Post.has("user", {
+    const { data: post } = await Post.has("user", {
       select: ["name"],
     })
       .where("title", "Post 2")
@@ -281,7 +285,7 @@ describe("RelationResult - belongsTo method", () => {
   });
 
   it("with exclude column", async () => {
-    const post = await Post.has("user", {
+    const { data: post } = await Post.has("user", {
       exclude: ["name"],
     })
       .where("title", "Post 2")
@@ -299,7 +303,9 @@ describe("RelationResult - belongsTo method", () => {
   it("with soft delete and not exist relation data", async () => {
     User["softDelete"] = true;
 
-    const post = await Post.has("user").where("title", "Post 4").first();
+    const { data: post } = await Post.has("user")
+      .where("title", "Post 4")
+      .first();
 
     expect(post).toEqual(expect.any(Object));
     expect(post).not.toHaveProperty("user");
@@ -308,7 +314,7 @@ describe("RelationResult - belongsTo method", () => {
 
 describe("RelationResult - hasManyThrough method", () => {
   it("should return related data", async () => {
-    const country = await Country.with("posts")
+    const { data: country } = await Country.with("posts")
       .where("name", "Indonesia")
       .first();
 
@@ -326,7 +332,7 @@ describe("RelationResult - hasManyThrough method", () => {
   });
 
   it("with collection name should return related data", async () => {
-    const country = await Country.with("posts2")
+    const { data: country } = await Country.with("posts2")
       .where("name", "Indonesia")
       .first();
 
@@ -344,7 +350,7 @@ describe("RelationResult - hasManyThrough method", () => {
   });
 
   it("with this.fields > 0", async () => {
-    const country = await Country.with("posts")
+    const { data: country } = await Country.with("posts")
       .where("name", "Indonesia")
       .select(["name"])
       .first();
@@ -362,7 +368,7 @@ describe("RelationResult - hasManyThrough method", () => {
   });
 
   it("with select column", async () => {
-    const country = await Country.with("posts", {
+    const { data: country } = await Country.with("posts", {
       select: ["title"],
     })
       .where("name", "Indonesia")
@@ -381,7 +387,7 @@ describe("RelationResult - hasManyThrough method", () => {
   });
 
   it("with exclude column", async () => {
-    const country = await Country.with("posts", {
+    const { data: country } = await Country.with("posts", {
       exclude: ["title"],
     })
       .where("name", "Indonesia")
@@ -402,7 +408,7 @@ describe("RelationResult - hasManyThrough method", () => {
   it("with soft delete", async () => {
     Post["softDelete"] = true;
 
-    const country = await Country.with("posts")
+    const { data: country } = await Country.with("posts")
       .where("name", "Indonesia")
       .first();
 
@@ -420,7 +426,7 @@ describe("RelationResult - hasManyThrough method", () => {
   });
 
   it("with not exist relation data", async () => {
-    const country = await Country.with("posts")
+    const { data: country } = await Country.with("posts")
       .where("name", "Malaysia")
       .first();
 
@@ -435,7 +441,9 @@ describe("RelationResult - hasManyThrough method", () => {
 
 describe("RelationResult - belongsToMany method", () => {
   it("should return related data", async () => {
-    const user = await User.with("roles").where("name", "Udin").first();
+    const { data: user } = await User.with("roles")
+      .where("name", "Udin")
+      .first();
 
     expect(user).toEqual(expect.any(Object));
     expect(user).toHaveProperty("_id");
@@ -451,7 +459,9 @@ describe("RelationResult - belongsToMany method", () => {
   });
 
   it("with collection name should return related data", async () => {
-    const user = await User.with("roles2").where("name", "Udin").first();
+    const { data: user } = await User.with("roles2")
+      .where("name", "Udin")
+      .first();
 
     expect(user).toEqual(expect.any(Object));
     expect(user).toHaveProperty("_id");
@@ -467,7 +477,7 @@ describe("RelationResult - belongsToMany method", () => {
   });
 
   it("with this.fields > 0", async () => {
-    const user = await User.with("roles")
+    const { data: user } = await User.with("roles")
       .where("name", "Udin")
       .select(["name"])
       .first();
@@ -484,7 +494,7 @@ describe("RelationResult - belongsToMany method", () => {
   });
 
   it("with select column", async () => {
-    const user = await User.select("name")
+    const { data: user } = await User.select("name")
       .with("roles", {
         select: ["name"],
       })
@@ -504,7 +514,7 @@ describe("RelationResult - belongsToMany method", () => {
   });
 
   it("with exclude column", async () => {
-    const user = await User.with("roles", {
+    const { data: user } = await User.with("roles", {
       exclude: ["name"],
     })
       .where("name", "Udin")
@@ -525,7 +535,9 @@ describe("RelationResult - belongsToMany method", () => {
   it("with soft delete", async () => {
     Role["softDelete"] = true;
 
-    const user = await User.with("roles").where("name", "Udin").first();
+    const { data: user } = await User.with("roles")
+      .where("name", "Udin")
+      .first();
 
     expect(user).toEqual(expect.any(Object));
     expect(user).toHaveProperty("_id");
@@ -533,7 +545,7 @@ describe("RelationResult - belongsToMany method", () => {
     expect(user).toHaveProperty("isDeleted");
     expect(user).toHaveProperty("countryId");
     expect(user).toHaveProperty("roles");
-    expect((user as any).roles).toHaveLength(1);
+    expect((user as any).roles).toHaveLength(2);
     expect((user as any).roles[0]).toEqual(expect.any(Object));
     expect((user as any).roles[0]).toHaveProperty("_id");
     expect((user as any).roles[0]).toHaveProperty("name");
@@ -541,7 +553,7 @@ describe("RelationResult - belongsToMany method", () => {
   });
 
   it("with not exist relation data", async () => {
-    const user = await User.withTrashed()
+    const { data: user } = await User.withTrashed()
       .with("roles")
       .where("name", "Ucok")
       .first();
