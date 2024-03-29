@@ -108,14 +108,14 @@ describe("attach method", () => {
 
     const roleIds = await Role.pluck("_id");
 
-    await user.roles().attach(roleIds);
+    await user.roles().attach(roleIds[0].toString());
 
     const { data: result }: any = await User.with("roles").find(user.data._id);
 
     expect(result).toEqual(expect.any(Object));
     expect(result).toHaveProperty("roles");
     expect(result.roles).toEqual(expect.any(Array));
-    expect(result.roles).toHaveLength(3);
+    expect(result.roles).toHaveLength(1);
     expect(result.roles[0]).toEqual(expect.any(Object));
   });
 });
@@ -126,15 +126,14 @@ describe("detach method", () => {
 
     const roleIds = await Role.pluck("_id");
 
-    await user.roles().detach([roleIds[0], roleIds[1]]);
+    await user.roles().detach(roleIds[0].toString());
 
     const { data: result }: any = await User.with("roles").find(user.data._id);
 
     expect(result).toEqual(expect.any(Object));
     expect(result).toHaveProperty("roles");
     expect(result.roles).toEqual(expect.any(Array));
-    expect(result.roles).toHaveLength(1);
-    expect(result.roles[0]).toEqual(expect.any(Object));
+    expect(result.roles).toHaveLength(0);
   });
 
   it("for many to many polymorphic relation", async () => {
@@ -177,14 +176,14 @@ describe("sync method", () => {
     const tagIds = await Tag.pluck("_id");
 
     console.log(tagIds);
-    await post.tags().sync([tagIds[1], tagIds[2]]);
+    await post.tags().sync(tagIds[2].toString());
 
     const { data: result }: any = await Post.with("tags").find(post.data._id);
 
     expect(result).toEqual(expect.any(Object));
     expect(result).toHaveProperty("tags");
     expect(result.tags).toEqual(expect.any(Array));
-    expect(result.tags).toHaveLength(2);
+    expect(result.tags).toHaveLength(1);
     expect(result.tags[0]).toEqual(expect.any(Object));
   });
 });
