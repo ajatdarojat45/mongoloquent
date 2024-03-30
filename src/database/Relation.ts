@@ -404,11 +404,7 @@ class Relation extends Query implements RelationInterface {
     return this;
   }
 
-  protected static morphTo<T extends typeof Relation>(
-    this: T,
-    model: typeof Model,
-    relation: string
-  ): T {
+  protected static morphTo(model: typeof Model, relation: string): Model {
     const collection: string = model.collection;
 
     this.relation = {
@@ -420,13 +416,28 @@ class Relation extends Query implements RelationInterface {
     };
 
     this.generateMorphTo();
-    return this;
+
+    const {
+      model: _model,
+      collection: _collection,
+      ...rest
+    } = this.relation as any;
+
+    model.relation = {
+      ...rest,
+      relationModel: this,
+    };
+
+    return model;
   }
 
   protected static generateMorphTo<T extends typeof Relation>(this: T): T {
     const { collection, relationId, relationType, model } = this
       .relation as any;
     const alias = this.alias;
+
+    if (alias === "") return this;
+
     const _lookups = JSON.parse(JSON.stringify(this.lookups));
 
     let isSoftDelete = false;
@@ -489,11 +500,7 @@ class Relation extends Query implements RelationInterface {
     return this;
   }
 
-  protected static morphMany<T extends typeof Relation>(
-    this: T,
-    model: typeof Model,
-    relation: string
-  ): T {
+  protected static morphMany(model: typeof Model, relation: string): Model {
     const collection: string = model.collection;
 
     this.relation = {
@@ -505,13 +512,26 @@ class Relation extends Query implements RelationInterface {
     };
 
     this.generateMorphMany();
-    return this;
+
+    const {
+      model: _model,
+      collection: _collection,
+      ...rest
+    } = this.relation as any;
+    model.relation = {
+      ...rest,
+      relationModel: this,
+    };
+    return model;
   }
 
   protected static generateMorphMany<T extends typeof Relation>(this: T): T {
     const { collection, relationId, relationType, model } = this
       .relation as any;
     const alias = this.alias;
+
+    if (alias === "") return this;
+
     const _lookups = JSON.parse(JSON.stringify(this.lookups));
 
     let isSoftDelete = false;
@@ -677,6 +697,7 @@ class Relation extends Query implements RelationInterface {
       model: model,
     };
 
+    this.generateMorphedByMany();
     return this;
   }
 

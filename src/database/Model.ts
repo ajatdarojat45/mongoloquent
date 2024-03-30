@@ -356,10 +356,23 @@ class Model extends Relation implements ModelInterface {
       let _payload: object = checkSoftDelete(this.softDelete, payload);
       _payload = checkTimestamps(this.timestamps, _payload);
 
+      const relationTypes = ["morphTo", "morphMany"];
+
+      const _relation: any = this.relation;
+      if (relationTypes.includes(_relation.type)) {
+        _payload = {
+          ..._payload,
+          [_relation.relationType]: _relation.relationModel.name,
+          [_relation.relationId]: _relation.relationModel.data._id,
+        };
+      }
+
       const data = await collection.insertOne({
         ..._payload,
       });
 
+      this.resetQuery();
+      this.resetRelation();
       return { _id: data.insertedId, ..._payload };
     } catch (error) {
       throw error;
@@ -374,6 +387,14 @@ class Model extends Relation implements ModelInterface {
     }
   }
 
+  static async save(payload: object): Promise<object> {
+    try {
+      return await this.insert(payload);
+    } catch (error) {
+      throw error;
+    }
+  }
+
   static async insertMany(payload: object[]): Promise<ObjectId[]> {
     try {
       const collection = this.getCollection();
@@ -381,6 +402,18 @@ class Model extends Relation implements ModelInterface {
       const _payload = payload.map((item) => {
         let _item: object = checkSoftDelete(this.softDelete, item);
         _item = checkTimestamps(this.timestamps, _item);
+
+        const relationTypes = ["morphTo", "morphMany"];
+
+        const _relation: any = this.relation;
+        if (relationTypes.includes(_relation.type)) {
+          _item = {
+            ..._item,
+            [_relation.relationType]: _relation.relationModel.name,
+            [_relation.relationId]: _relation.relationModel.data._id,
+          };
+        }
+
         return _item;
       });
 
