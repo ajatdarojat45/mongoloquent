@@ -3,6 +3,10 @@ import Model from "../../src/database/Model";
 class Country extends Model {
   static collection = "countries";
 
+  static user() {
+    return this.hasOne(User, "countryId", "_id");
+  }
+
   static users() {
     return this.hasMany(User, "countryId", "_id");
   }
@@ -127,6 +131,65 @@ beforeAll(async () => {
   await roleUserCollection.insertMany(roleUser);
 });
 
+describe("RelationResult - hasOne method", () => {
+  it("should return all related data", async () => {
+    const { data: country }: any = await Country.with("user")
+      .where("name", "Indonesia")
+      .first();
+
+    expect(country).toEqual(expect.any(Object));
+    expect(country).toHaveProperty("user");
+    expect(country.user).toEqual(expect.any(Object));
+    expect(country.user).toHaveProperty("_id");
+    expect(country.user).toHaveProperty("name");
+    expect(country.user).toHaveProperty("countryId");
+    expect(country.user).toHaveProperty("isDeleted");
+  });
+
+  it("with select column", async () => {
+    User["softDelete"] = true;
+    const { data: country }: any = await Country.with("user", {
+      select: ["name"],
+    })
+      .where("name", "Indonesia")
+      .first();
+
+    expect(country).toEqual(expect.any(Object));
+    expect(country).toHaveProperty("user");
+    expect(country.user).toEqual(expect.any(Object));
+    expect(country.user).toHaveProperty("name");
+    expect(country.user).not.toHaveProperty("_id");
+    expect(country.user).not.toHaveProperty("countryId");
+    expect(country.user).not.toHaveProperty("isDeleted");
+  });
+
+  it("with exclude column", async () => {
+    User["softDelete"] = true;
+    const { data: country }: any = await Country.with("user", {
+      exclude: ["name"],
+    })
+      .where("name", "Indonesia")
+      .first();
+
+    expect(country).toEqual(expect.any(Object));
+    expect(country).toHaveProperty("user");
+    expect(country).toEqual(expect.any(Object));
+    expect(country.user).not.toHaveProperty("name");
+    expect(country.user).toHaveProperty("_id");
+    expect(country.user).toHaveProperty("countryId");
+    expect(country.user).toHaveProperty("isDeleted");
+  });
+
+  it("with have no related data", async () => {
+    const { data: country }: any = await Country.with("users")
+      .where("name", "Malaysia")
+      .first();
+
+    expect(country).toEqual(expect.any(Object));
+    expect(country).not.toHaveProperty("user");
+  });
+});
+
 describe("RelationResult - hasMany method", () => {
   it("should return all related data", async () => {
     const { data: country }: any = await Country.with("users")
@@ -135,7 +198,7 @@ describe("RelationResult - hasMany method", () => {
 
     expect(country).toEqual(expect.any(Object));
     expect(country).toHaveProperty("users");
-    expect(country.users).toHaveLength(3);
+    expect(country.users).toHaveLength(2);
     expect(country.users[0]).toEqual(expect.any(Object));
     expect(country.users[0]).toHaveProperty("_id");
     expect(country.users[0]).toHaveProperty("name");
