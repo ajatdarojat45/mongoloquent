@@ -29,7 +29,7 @@ class Model extends Relation implements ModelInterface {
     try {
       if (fields) this.select(fields);
 
-      const aggregate = this.aggregate();
+      const aggregate = await this.aggregate();
       this.resetQuery();
       this.resetRelation();
 
@@ -46,7 +46,7 @@ class Model extends Relation implements ModelInterface {
     try {
       if (fields) this.select(fields);
 
-      const aggregate = this.aggregate();
+      const aggregate = await this.aggregate();
       this.resetQuery();
       this.resetRelation();
 
@@ -67,7 +67,7 @@ class Model extends Relation implements ModelInterface {
       if (typeof _id === "string") _id = new ObjectId(_id);
 
       this.where("_id", _id);
-      const aggregate = this.aggregate();
+      const aggregate = await this.aggregate();
       this.resetQuery();
       this.resetRelation();
 
@@ -83,7 +83,7 @@ class Model extends Relation implements ModelInterface {
     perPage: number = this.perPage
   ): Promise<PaginateInterface> {
     try {
-      const aggregate = this.aggregate();
+      const aggregate = await this.aggregate();
       const collection = this.getCollection();
       let totalResult = await collection
         .aggregate([
@@ -119,7 +119,7 @@ class Model extends Relation implements ModelInterface {
     }
   }
 
-  protected static aggregate() {
+  protected static async aggregate() {
     try {
       const _relation: any = this.relation;
 
@@ -130,6 +130,18 @@ class Model extends Relation implements ModelInterface {
           _relation.relationId,
           _relation.relationModel?.data?._id
         );
+      } else if (_relation.type === "morphToMany") {
+        const _collection = this.getCollection(_relation.pivotCollection);
+
+        const ids = await _collection
+          .find({
+            [_relation.relationType]: _relation.relationModel.name,
+            [_relation.relationId]: _relation.relationModel?.data._id,
+          })
+          .map((el) => el[_relation.foreignKey])
+          .toArray();
+
+        this.whereIn("_id", ids);
       }
 
       const collection = this.getCollection();

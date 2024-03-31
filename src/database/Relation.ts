@@ -605,11 +605,7 @@ class Relation extends Query implements RelationInterface {
     return this;
   }
 
-  protected static morphToMany<T extends typeof Relation>(
-    this: T,
-    model: typeof Model,
-    relation: string
-  ): T {
+  protected static morphToMany(model: typeof Model, relation: string): Model {
     this.relation = {
       collection: model.collection,
       pivotCollection: `${relation}s`,
@@ -621,7 +617,21 @@ class Relation extends Query implements RelationInterface {
     };
 
     this.generateMorphToMany();
-    return this;
+
+    const {
+      model: _model,
+      collection: _collection,
+      ...rest
+    } = this.relation as any;
+
+    model.relation = {
+      ...rest,
+      relationModel: this,
+    };
+
+    this.relation = {};
+
+    return model;
   }
 
   protected static generateMorphToMany<T extends typeof Relation>(this: T): T {
