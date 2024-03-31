@@ -964,8 +964,8 @@ class Relation extends Query implements RelationInterface {
   public static async sync(
     payload: string | string[] | ObjectId | ObjectId[]
   ): Promise<object> {
-    const data = (this as any).data;
     const relation: any = this.relation;
+    const data = relation.relationModel?.data;
     let ids: ObjectId[] = [];
 
     if (!Array.isArray(payload)) {
@@ -1010,20 +1010,20 @@ class Relation extends Query implements RelationInterface {
       qFind = {
         [relation.foreignKey]: { $in: ids },
         [relation.relationId]: data._id,
-        [relation.relationType]: this.name,
+        [relation.relationType]: relation.relationModel?.name,
       };
 
       qDelete = {
         [relation.foreignKey]: { $nin: ids },
         [relation.relationId]: data._id,
-        [relation.relationType]: this.name,
+        [relation.relationType]: relation.relationModel?.name,
       };
 
       ids.forEach((id) =>
         _payload.push({
           [relation.foreignKey]: id,
           [relation.relationId]: data._id,
-          [relation.relationType]: this.name,
+          [relation.relationType]: relation.relationModel?.name,
         })
       );
     }
@@ -1045,8 +1045,6 @@ class Relation extends Query implements RelationInterface {
 
     // delete data
     await collection.deleteMany(qDelete);
-    this.resetRelation();
-
     return {
       message: "Sync successfully",
     };
