@@ -138,8 +138,6 @@ describe("hasMany Relation", () => {
       .where("title", "Post 1")
       .first();
 
-    const _comments = await Comment.where("postId", post._id).get();
-
     expect(post).toEqual(expect.any(Object));
     expect(post).toHaveProperty("comments");
 
@@ -147,11 +145,11 @@ describe("hasMany Relation", () => {
     expect(comments).toEqual(expect.any(Array));
     expect(comments).toHaveLength(2);
 
-    const __comments = await Comment.withTrashed()
+    const _comments = await Comment.withTrashed()
       .where("postId", post._id)
       .get();
 
-    expect(__comments).toEqual(expect.any(Array));
-    expect(__comments).toHaveLength(3);
+    expect(_comments).toEqual(expect.any(Array));
+    expect(_comments).toHaveLength(3);
   });
 });

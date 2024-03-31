@@ -5,6 +5,7 @@ import {
 } from "../interfaces/RelationInterface";
 import Model from "./Model";
 import { ObjectId } from "mongodb";
+import _ from "lodash";
 
 class Relation extends Query implements RelationInterface {
   protected static lookups: object[] = [];
@@ -206,12 +207,13 @@ class Relation extends Query implements RelationInterface {
 
     this.relation = {};
 
-    model.relation = {
+    const cloneModel = _.cloneDeep(model);
+    cloneModel.relation = {
       ...rest,
       relationModel: this,
     };
 
-    return model;
+    return cloneModel;
   }
 
   protected static generateHasMany<T extends typeof Relation>(this: T): T {
@@ -334,7 +336,7 @@ class Relation extends Query implements RelationInterface {
           from: collection,
           localField: `pivot.${localKey}`,
           foreignField: "_id",
-          as: alias,
+          as: alias || "pivot",
           pipeline,
         },
       },
