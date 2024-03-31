@@ -209,6 +209,7 @@ class Relation extends Query implements RelationInterface {
       relationModel: this,
     };
 
+    this.relation = {};
     return model;
   }
 
@@ -530,10 +531,14 @@ class Relation extends Query implements RelationInterface {
       collection: _collection,
       ...rest
     } = this.relation as any;
+
     model.relation = {
       ...rest,
       relationModel: this,
     };
+
+    this.relation = {};
+
     return model;
   }
 
