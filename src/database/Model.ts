@@ -141,6 +141,21 @@ class Model extends Relation implements ModelInterface {
 
           this.whereIn("_id", belongsToManyIds);
           break;
+        case "hasManyThrough":
+          const hasManyThroughCollection = this.getCollection(
+            _relation.throughCollection
+          );
+
+          const hasManyThroughIds = await hasManyThroughCollection
+            .find({
+              [_relation.localKey]: _relation.relationModel?.data._id,
+            })
+            .map((el) => el._id)
+            .toArray();
+
+          this.whereIn(_relation.foreignKey, hasManyThroughIds);
+
+          break;
         case "morphMany":
           this.where(
             _relation.relationType,

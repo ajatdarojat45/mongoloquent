@@ -350,14 +350,13 @@ class Relation extends Query implements RelationInterface {
     return this;
   }
 
-  protected static hasManyThrough<T extends typeof Relation>(
-    this: T,
-    model: typeof Model | string,
+  protected static hasManyThrough(
+    model: typeof Model,
     throughModel: typeof Model | string,
     foreignKey: string,
     foreignKeyThrough: string
-  ): T {
-    const collection = typeof model === "string" ? model : model.collection;
+  ): Model {
+    const collection = model.collection;
     const throughCollection =
       typeof throughModel === "string" ? throughModel : throughModel.collection;
 
@@ -371,7 +370,21 @@ class Relation extends Query implements RelationInterface {
     };
 
     this.generateHasManyThrough();
-    return this;
+
+    const {
+      model: _model,
+      collection: _collection,
+      ...rest
+    }: any = this.relation as any;
+
+    this.relation = {};
+
+    model.relation = {
+      ...rest,
+      relationModel: this,
+    };
+
+    return model;
   }
 
   protected static generateHasManyThrough<T extends typeof Relation>(
