@@ -123,25 +123,42 @@ class Model extends Relation implements ModelInterface {
     try {
       const _relation: any = this.relation;
 
-      if (_relation.type === "hasMany") {
-        this.where(_relation.foreignKey, _relation.relationModel?.data._id);
-      } else if (_relation.type === "morphMany") {
-        this.where(_relation.relationType, _relation.relationModel?.name).where(
-          _relation.relationId,
-          _relation.relationModel?.data?._id
-        );
-      } else if (_relation.type === "morphToMany") {
-        const _collection = this.getCollection(_relation.pivotCollection);
+      switch (_relation.type) {
+        case "hasMany":
+          this.where(_relation.foreignKey, _relation.relationModel?.data._id);
+        case "morphMany":
+          this.where(
+            _relation.relationType,
+            _relation.relationModel?.name
+          ).where(_relation.relationId, _relation.relationModel?.data?._id);
+        case "morphToMany":
+          const morphToManyCollection = this.getCollection(
+            _relation.pivotCollection
+          );
 
-        const ids = await _collection
-          .find({
-            [_relation.relationType]: _relation.relationModel.name,
-            [_relation.relationId]: _relation.relationModel?.data._id,
-          })
-          .map((el) => el[_relation.foreignKey])
-          .toArray();
+          const morphToManyIds = await morphToManyCollection
+            .find({
+              [_relation.relationType]: _relation.relationModel.name,
+              [_relation.relationId]: _relation.relationModel?.data._id,
+            })
+            .map((el) => el[_relation.foreignKey])
+            .toArray();
 
-        this.whereIn("_id", ids);
+          this.whereIn("_id", morphToManyIds);
+        case "morphedByMany":
+          const morphedByManyCollection = this.getCollection(
+            _relation.pivotCollection
+          );
+
+          const morphedByManyIds = await morphedByManyCollection
+            .find({
+              [_relation.relationType]: this.name,
+              [_relation.foreignKey]: _relation.relationModel?.data._id,
+            })
+            .map((el) => el[_relation.relationId])
+            .toArray();
+
+          this.whereIn("_id", morphedByManyIds);
       }
 
       const collection = this.getCollection();

@@ -532,12 +532,12 @@ class Relation extends Query implements RelationInterface {
       ...rest
     } = this.relation as any;
 
+    this.relation = {};
+
     model.relation = {
       ...rest,
       relationModel: this,
     };
-
-    this.relation = {};
 
     return model;
   }
@@ -624,12 +624,12 @@ class Relation extends Query implements RelationInterface {
       ...rest
     } = this.relation as any;
 
+    this.relation = {};
+
     model.relation = {
       ...rest,
       relationModel: this,
     };
-
-    this.relation = {};
 
     return model;
   }
@@ -709,11 +709,7 @@ class Relation extends Query implements RelationInterface {
     return this;
   }
 
-  protected static morphedByMany<T extends typeof Relation>(
-    this: T,
-    model: typeof Model,
-    relation: string
-  ): T {
+  protected static morphedByMany(model: typeof Model, relation: string): Model {
     this.relation = {
       collection: model.collection,
       pivotCollection: `${relation}s`,
@@ -725,7 +721,21 @@ class Relation extends Query implements RelationInterface {
     };
 
     this.generateMorphedByMany();
-    return this;
+
+    const {
+      model: _model,
+      collection: _collection,
+      ...rest
+    } = this.relation as any;
+
+    this.relation = {};
+
+    model.relation = {
+      ...rest,
+      relationModel: this,
+    };
+
+    return model;
   }
 
   protected static generateMorphedByMany<T extends typeof Relation>(
