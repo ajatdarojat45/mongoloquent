@@ -121,6 +121,11 @@ class Model extends Relation implements ModelInterface {
 
   protected static aggregate() {
     try {
+      const _relation: any = this.relation;
+      if (_relation.type === "hasMany") {
+        this.where(_relation.foreignKey, _relation.relationModel?.data._id);
+      }
+
       const collection = this.getCollection();
       const _pipeline = [];
       this.generateQuery();

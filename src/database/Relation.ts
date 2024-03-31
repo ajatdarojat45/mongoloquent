@@ -181,13 +181,13 @@ class Relation extends Query implements RelationInterface {
     return this;
   }
 
-  protected static hasMany<T extends typeof Relation>(
-    this: T,
-    model: typeof Model | string,
+  protected static hasMany(
+    model: typeof Model,
     foreignKey: string,
     localKey: string = "_id"
-  ): T {
-    const collection = typeof model === "string" ? model : model.collection;
+  ): Model {
+    const collection = model.collection;
+
     this.relation = {
       collection,
       foreignKey: foreignKey,
@@ -197,7 +197,19 @@ class Relation extends Query implements RelationInterface {
     };
 
     this.generateHasMany();
-    return this;
+
+    const {
+      model: _model,
+      collection: _collection,
+      ...rest
+    }: any = this.relation as any;
+
+    model.relation = {
+      ...rest,
+      relationModel: this,
+    };
+
+    return model;
   }
 
   protected static generateHasMany<T extends typeof Relation>(this: T): T {
