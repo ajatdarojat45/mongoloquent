@@ -11,7 +11,7 @@ class User extends Model {
 }
 
 class Phone extends Model {
-  static collection = "users";
+  static collection = "phones";
   static timestamps = true;
   static softDelete = true;
 
