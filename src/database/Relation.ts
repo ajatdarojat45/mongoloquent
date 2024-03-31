@@ -204,12 +204,13 @@ class Relation extends Query implements RelationInterface {
       ...rest
     }: any = this.relation as any;
 
+    this.relation = {};
+
     model.relation = {
       ...rest,
       relationModel: this,
     };
 
-    this.relation = {};
     return model;
   }
 
@@ -253,14 +254,13 @@ class Relation extends Query implements RelationInterface {
     return this;
   }
 
-  protected static belongsToMany<T extends typeof Relation>(
-    this: T,
-    model: typeof Model | string,
+  protected static belongsToMany(
+    model: typeof Model,
     pivotModel: typeof Model | string,
     foreignKey: string,
     foreignKeyTarget: string
-  ): T {
-    const collection = typeof model === "string" ? model : model.collection;
+  ): Model {
+    const collection = model.collection;
     const pivotCollection =
       typeof pivotModel === "string" ? pivotModel : pivotModel.collection;
 
@@ -274,7 +274,21 @@ class Relation extends Query implements RelationInterface {
     };
 
     this.generateBelongsToMany();
-    return this;
+
+    const {
+      model: _model,
+      collection: _collection,
+      ...rest
+    }: any = this.relation as any;
+
+    this.relation = {};
+
+    model.relation = {
+      ...rest,
+      relationModel: this,
+    };
+
+    return model;
   }
 
   protected static generateBelongsToMany<T extends typeof Relation>(

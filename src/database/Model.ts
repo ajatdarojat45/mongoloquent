@@ -126,11 +126,27 @@ class Model extends Relation implements ModelInterface {
       switch (_relation.type) {
         case "hasMany":
           this.where(_relation.foreignKey, _relation.relationModel?.data._id);
+          break;
+        case "belongsToMany":
+          const belongsToManyCollection = this.getCollection(
+            _relation.pivotCollection
+          );
+
+          const belongsToManyIds = await belongsToManyCollection
+            .find({
+              [_relation.foreignKey]: _relation.relationModel?.data._id,
+            })
+            .map((el) => el[_relation.localKey])
+            .toArray();
+
+          this.whereIn("_id", belongsToManyIds);
+          break;
         case "morphMany":
           this.where(
             _relation.relationType,
             _relation.relationModel?.name
           ).where(_relation.relationId, _relation.relationModel?.data?._id);
+          break;
         case "morphToMany":
           const morphToManyCollection = this.getCollection(
             _relation.pivotCollection
@@ -145,6 +161,7 @@ class Model extends Relation implements ModelInterface {
             .toArray();
 
           this.whereIn("_id", morphToManyIds);
+          break;
         case "morphedByMany":
           const morphedByManyCollection = this.getCollection(
             _relation.pivotCollection
@@ -159,6 +176,7 @@ class Model extends Relation implements ModelInterface {
             .toArray();
 
           this.whereIn("_id", morphedByManyIds);
+          break;
       }
 
       const collection = this.getCollection();
