@@ -918,19 +918,20 @@ class Relation extends Query implements RelationInterface {
   public static async detach(
     payload: string | string[] | ObjectId | ObjectId[]
   ): Promise<object> {
-    const data = (this as any).data;
     const relation: any = this.relation;
+    const data = relation.relationModel?.data;
     let ids: ObjectId[] = [];
+    let isDeleteAll = false;
 
     if (!Array.isArray(payload)) {
-      ids = [new ObjectId(payload)];
+      ids = payload ? [new ObjectId(payload)] : [];
+      isDeleteAll = !payload && true;
     } else {
       ids = payload.map((el) => new ObjectId(el));
     }
 
-    const db = this.getDb();
-    const collection = db.collection(relation.pivotCollection);
-    let q = {};
+    const collection = this.getCollection(relation.pivotCollection);
+    let q: any = {};
 
     if ((relation as any).type === "belongsToMany") {
       q = {
@@ -939,16 +940,21 @@ class Relation extends Query implements RelationInterface {
         },
         [relation.foreignKey]: data._id,
       };
+
+      isDeleteAll && delete q[relation.localKey];
+
+      await collection.deleteMany(q);
     } else if ((relation as any).type === "morphToMany") {
       q = {
         [relation.foreignKey]: { $in: ids },
         [relation.relationId]: data._id,
-        [relation.relationType]: this.name,
+        [relation.relationType]: relation.relationModel?.name,
       };
-    }
 
-    await collection.deleteMany(q);
-    this.resetRelation();
+      isDeleteAll && delete q[relation.foreignKey];
+
+      await collection.deleteMany(q);
+    }
 
     return {
       message: "Detach successfully",
