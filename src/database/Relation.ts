@@ -845,20 +845,20 @@ class Relation extends Query implements RelationInterface {
   public static async attach(
     payload: string | string[] | ObjectId | ObjectId[]
   ): Promise<object> {
-    const data = (this as any).data;
     const relation: any = this.relation;
+    const data = relation.relationModel?.data;
+
     let ids: ObjectId[] = [];
     let qFind = {};
     let key = "";
 
     if (!Array.isArray(payload)) {
-      ids = [new ObjectId(payload)];
+      ids = payload ? [new ObjectId(payload)] : [];
     } else {
       ids = payload.map((el) => new ObjectId(el));
     }
 
-    const db = this.getDb();
-    const collection = db.collection(relation.pivotCollection);
+    const collection = this.getCollection(relation.pivotCollection);
     const _payload: object[] = [];
 
     if ((relation as any).type === "belongsToMany") {
@@ -883,14 +883,14 @@ class Relation extends Query implements RelationInterface {
       qFind = {
         [relation.foreignKey]: { $in: ids },
         [relation.relationId]: data._id,
-        [relation.relationType]: this.name,
+        [relation.relationType]: relation.relationModel?.name,
       };
 
       ids.forEach((id) =>
         _payload.push({
           [relation.foreignKey]: id,
           [relation.relationId]: data._id,
-          [relation.relationType]: this.name,
+          [relation.relationType]: relation.relationModel?.name,
         })
       );
     }
@@ -910,7 +910,6 @@ class Relation extends Query implements RelationInterface {
       }
     }
 
-    this.resetRelation();
     return {
       message: "Attach successfully",
     };
