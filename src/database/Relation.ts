@@ -5,7 +5,7 @@ import {
 } from "../interfaces/RelationInterface";
 import Model from "./Model";
 import { ObjectId } from "mongodb";
-import _ from "lodash";
+import { deepClone } from "../helpers/deepClone";
 
 class Relation extends Query implements RelationInterface {
   protected static lookups: object[] = [];
@@ -194,7 +194,7 @@ class Relation extends Query implements RelationInterface {
       foreignKey: foreignKey,
       localKey: localKey,
       type: "hasMany",
-      model: model,
+      model: deepClone(model),
     };
 
     this.generateHasMany();
@@ -207,19 +207,23 @@ class Relation extends Query implements RelationInterface {
 
     this.relation = {};
 
-    const cloneModel = _.cloneDeep(model);
-    cloneModel.relation = {
+    const clonedModel = Object.assign(
+      Object.create(Object.getPrototypeOf(model)),
+      model
+    );
+
+    clonedModel.relation = {
       ...rest,
       relationModel: this,
     };
 
-    return cloneModel;
+    return clonedModel;
   }
 
   protected static generateHasMany<T extends typeof Relation>(this: T): T {
     const { collection, foreignKey, localKey, model } = this.relation as any;
     const alias = this.alias;
-    const _lookups = JSON.parse(JSON.stringify(this.lookups));
+    const _lookups = deepClone(this.lookups);
 
     let isSoftDelete = false;
     let pipeline: any[] = [];
@@ -244,11 +248,16 @@ class Relation extends Query implements RelationInterface {
       from: collection,
       localField: localKey,
       foreignField: foreignKey,
-      as: alias,
+      as: alias || "alias",
       pipeline: pipeline,
     };
 
     _lookups.push({ $lookup: lookup });
+    _lookups.push({
+      $project: {
+        alias: 0,
+      },
+    });
 
     this.lookups = _lookups;
     this.selectFields();

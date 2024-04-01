@@ -1,6 +1,7 @@
 import Database from "./Database";
 import { QueriesInterface, QueryInterface } from "../interfaces/QueryInterface";
 import { ObjectId } from "mongodb";
+import { deepClone } from "../helpers/deepClone";
 
 class Query extends Database implements QueryInterface {
   protected static isWithTrashed: boolean = false;
@@ -323,7 +324,7 @@ class Query extends Database implements QueryInterface {
   ): T {
     let _value = value;
     let _operator = operator;
-    const _queries = JSON.parse(JSON.stringify(this.queries));
+    const _queries: any = deepClone(this.queries);
     let q = {};
     const _logicalOperator = isOr ? "$or" : "$and";
 
@@ -438,7 +439,7 @@ class Query extends Database implements QueryInterface {
     }
 
     if (_orLength > 0 && this.softDelete) {
-      this.$queries.push(JSON.parse(JSON.stringify(this.queries)));
+      this.$queries.push(deepClone(this.queries));
     }
 
     if (
@@ -447,7 +448,7 @@ class Query extends Database implements QueryInterface {
       !this.isWithTrashed &&
       !this.isOnlyTrashed
     ) {
-      const _$queries = JSON.parse(JSON.stringify(this.$queries));
+      const _$queries = deepClone(this.$queries);
 
       _$queries.push({
         $match: {
@@ -461,7 +462,7 @@ class Query extends Database implements QueryInterface {
     }
 
     if (_orLength > 0 && this.softDelete && this.isOnlyTrashed) {
-      const _$queries = JSON.parse(JSON.stringify(this.$queries));
+      const _$queries = deepClone(this.$queries);
 
       _$queries.push({
         $match: {
