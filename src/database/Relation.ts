@@ -314,7 +314,7 @@ class Relation extends Query implements RelationInterface {
       .relation as any;
     const alias = this.alias;
 
-    const _lookups = JSON.parse(JSON.stringify(this.lookups));
+    const _lookups = deepClone(this.lookups);
 
     let isSoftDelete = false;
     let pipeline: any[] = [];
@@ -395,12 +395,17 @@ class Relation extends Query implements RelationInterface {
 
     this.relation = {};
 
-    model.relation = {
+    const clonedModel = Object.assign(
+      Object.create(Object.getPrototypeOf(model)),
+      model
+    );
+
+    clonedModel.relation = {
       ...rest,
       relationModel: this,
     };
 
-    return model;
+    return clonedModel;
   }
 
   protected static generateHasManyThrough<T extends typeof Relation>(
@@ -409,7 +414,7 @@ class Relation extends Query implements RelationInterface {
     const { collection, throughCollection, foreignKey, localKey, model } = this
       .relation as any;
     const alias = this.alias;
-    const _lookups = JSON.parse(JSON.stringify(this.lookups));
+    const _lookups = deepClone(this.lookups);
 
     let isSoftDelete = false;
     let pipeline: any[] = [];
@@ -444,13 +449,14 @@ class Relation extends Query implements RelationInterface {
           from: collection,
           localField: "pivot._id",
           foreignField: `${foreignKey}`,
-          as: alias,
+          as: alias || "alias",
           pipeline,
         },
       },
       {
         $project: {
           pivot: 0,
+          alias: 0,
         },
       }
     );
