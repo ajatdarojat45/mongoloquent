@@ -294,12 +294,17 @@ class Relation extends Query implements RelationInterface {
 
     this.relation = {};
 
-    model.relation = {
+    const clonedModel = Object.assign(
+      Object.create(Object.getPrototypeOf(model)),
+      model
+    );
+
+    clonedModel.relation = {
       ...rest,
       relationModel: this,
     };
 
-    return model;
+    return clonedModel;
   }
 
   protected static generateBelongsToMany<T extends typeof Relation>(

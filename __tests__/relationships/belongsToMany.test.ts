@@ -38,9 +38,9 @@ beforeAll(async () => {
   ]);
 
   roleIds = await Role.insertMany([
-    { name: "Admin", type: "Full" },
-    { name: "Staff", type: "Half" },
-    { name: "Member", type: "Empty" },
+    { name: "Role 1", type: "Full" },
+    { name: "Role 2", type: "Half" },
+    { name: "Role 3", type: "Empty" },
   ]);
 
   const udin: any = await User.find(userIds[0]);
@@ -108,7 +108,7 @@ describe("belongsToMany Relation", () => {
     expect(role).not.toHaveProperty("_id");
   });
 
-  it("With selected fields", async () => {
+  it("With exclude fields", async () => {
     const { data: user }: any = await User.with("roles", {
       exclude: ["name"],
     }).find(userIds[0]);
@@ -125,6 +125,25 @@ describe("belongsToMany Relation", () => {
     expect(role).not.toHaveProperty("name");
     expect(role).toHaveProperty("type");
     expect(role).toHaveProperty("_id");
+  });
+
+  it("With has no data", async () => {
+    const { data: user }: any = await User.with("roles").find(userIds[2]);
+
+    expect(user).toEqual(expect.any(Object));
+    expect(user).toHaveProperty("roles");
+
+    const roles = user.roles;
+    expect(roles).toEqual(expect.any(Array));
+    expect(roles).toHaveLength(0);
+  });
+
+  it("Querying related data", async () => {
+    const user: any = await User.with("roles").find(userIds[0]);
+    const roles = await user.roles().where("name", "Role 1").get();
+
+    expect(roles).toEqual(expect.any(Array));
+    expect(roles).toHaveLength(1);
   });
 
   it("With softDelete", async () => {

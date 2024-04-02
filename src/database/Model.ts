@@ -429,14 +429,20 @@ class Model extends Relation implements ModelInterface {
       let _payload: object = checkSoftDelete(this.softDelete, payload);
       _payload = checkTimestamps(this.timestamps, _payload);
 
-      const relationTypes = ["morphTo", "morphMany"];
+      const morphTypes = ["morphTo", "morphMany"];
 
       const _relation: any = this.relation;
-      if (relationTypes.includes(_relation.type)) {
+
+      if (morphTypes.includes(_relation.type)) {
         _payload = {
           ..._payload,
           [_relation.relationType]: _relation.relationModel.name,
           [_relation.relationId]: _relation.relationModel.data._id,
+        };
+      } else if (_relation.type === "hasMany") {
+        _payload = {
+          ..._payload,
+          [_relation.foreignKey]: _relation.relationModel.data._id,
         };
       }
 
@@ -476,14 +482,19 @@ class Model extends Relation implements ModelInterface {
         let _item: object = checkSoftDelete(this.softDelete, item);
         _item = checkTimestamps(this.timestamps, _item);
 
-        const relationTypes = ["morphTo", "morphMany"];
+        const morphTypes = ["morphTo", "morphMany"];
 
         const _relation: any = this.relation;
-        if (relationTypes.includes(_relation.type)) {
+        if (morphTypes.includes(_relation.type)) {
           _item = {
             ..._item,
             [_relation.relationType]: _relation.relationModel.name,
             [_relation.relationId]: _relation.relationModel.data._id,
+          };
+        } else if (_relation.type === "hasMany") {
+          _item = {
+            ..._item,
+            [_relation.foreignKey]: _relation.relationModel.data._id,
           };
         }
 
