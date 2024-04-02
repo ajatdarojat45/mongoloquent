@@ -41,10 +41,12 @@ beforeAll(async () => {
     { name: "Role 1", type: "Full" },
     { name: "Role 2", type: "Half" },
     { name: "Role 3", type: "Empty" },
+    { name: "Role 4", type: "Empty" },
+    { name: "Role 5", type: "Empty" },
   ]);
 
   const udin: any = await User.find(userIds[0]);
-  await udin.roles().attach(roleIds);
+  await udin.roles().attach([roleIds[0], roleIds[1], roleIds[2]]);
 
   const kosasih: any = await User.find(userIds[1]);
   await kosasih.roles().attach([roleIds[0], roleIds[1]]);
@@ -139,7 +141,7 @@ describe("belongsToMany Relation", () => {
   });
 
   it("Querying related data", async () => {
-    const user: any = await User.with("roles").find(userIds[0]);
+    const user: any = await User.find(userIds[0]);
     const roles = await user.roles().where("name", "Role 1").get();
 
     expect(roles).toEqual(expect.any(Array));
@@ -160,6 +162,39 @@ describe("belongsToMany Relation", () => {
 
     const _roles = await Role.withTrashed().get();
     expect(_roles).toEqual(expect.any(Array));
-    expect(_roles).toHaveLength(3);
+    expect(_roles).toHaveLength(5);
+  });
+
+  it("With attach method", async () => {
+    const user: any = await User.find(userIds[0]);
+
+    await user.roles().attach(roleIds[3]);
+
+    const roles = await user.roles().get();
+
+    expect(roles).toEqual(expect.any(Array));
+    expect(roles).toHaveLength(3);
+  });
+
+  it("With detach method", async () => {
+    const user: any = await User.find(userIds[0]);
+
+    await user.roles().detach([roleIds[1], roleIds[2]]);
+
+    const roles = await user.roles().get();
+
+    expect(roles).toEqual(expect.any(Array));
+    expect(roles).toHaveLength(1);
+  });
+
+  it("With sync method", async () => {
+    const user: any = await User.find(userIds[0]);
+
+    await user.roles().sync([roleIds[1], roleIds[2]]);
+
+    const roles = await user.roles().get();
+
+    expect(roles).toEqual(expect.any(Array));
+    expect(roles).toHaveLength(2);
   });
 });
