@@ -485,12 +485,17 @@ class Relation extends Query implements RelationInterface {
       ...rest
     } = this.relation as any;
 
-    model.relation = {
+    const clonedModel = Object.assign(
+      Object.create(Object.getPrototypeOf(model)),
+      model
+    );
+
+    clonedModel.relation = {
       ...rest,
       relationModel: this,
     };
 
-    return model;
+    return clonedModel;
   }
 
   protected static generateMorphTo<T extends typeof Relation>(this: T): T {
@@ -500,7 +505,7 @@ class Relation extends Query implements RelationInterface {
 
     if (alias === "") return this;
 
-    const _lookups = JSON.parse(JSON.stringify(this.lookups));
+    const _lookups = deepClone(this.lookups);
 
     let isSoftDelete = false;
     let pipeline: any[] = [];
