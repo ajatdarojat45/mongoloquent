@@ -128,8 +128,31 @@ describe("morphTo Relation", () => {
     expect(image).toHaveProperty("imageableType");
   });
 
+  it("With add data from related model", async () => {
+    let post: any = await Post.find(postIds[1]);
+
+    expect(post.data).toEqual(expect.any(Object));
+    expect(post.data).not.toHaveProperty("image");
+
+    await post.image().save({
+      url: "newImage.jpg",
+    });
+
+    post = await Post.with("image").find(postIds[1]);
+
+    expect(post.data).toEqual(expect.any(Object));
+    expect(post.data).toHaveProperty("image");
+
+    const { image } = post.data;
+
+    expect(image).toEqual(expect.any(Object));
+    expect(image).toHaveProperty("url", "newImage.jpg");
+    expect(image).toHaveProperty("imageableId", postIds[1]);
+    expect(image).toHaveProperty("imageableType", Post.name);
+  });
+
   it("With has no data", async () => {
-    const { data: post }: any = await Post.with("image").find(postIds[1]);
+    const { data: post }: any = await Post.with("image").find(postIds[2]);
 
     expect(post).toEqual(expect.any(Object));
     expect(post).not.toHaveProperty("image");
@@ -145,6 +168,6 @@ describe("morphTo Relation", () => {
 
     const images = await Image.withTrashed().get();
     expect(images).toEqual(expect.any(Array));
-    expect(images).toHaveLength(2);
+    expect(images).toHaveLength(3);
   });
 });
