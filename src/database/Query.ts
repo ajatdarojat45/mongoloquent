@@ -84,7 +84,7 @@ class Query extends Database implements QueryInterface {
     const _field: string = field;
     const _order: number = order.toLowerCase() === "desc" ? -1 : 1;
 
-    const _sorts = JSON.parse(JSON.stringify(this.sorts));
+    const _sorts: any = deepClone(this.sorts);
 
     _sorts[0].$project[`${_field}`] = 1;
 
@@ -102,7 +102,7 @@ class Query extends Database implements QueryInterface {
 
   static groupBy<T extends typeof Query>(this: T, field: string): T {
     const _field: string = field;
-    const _groups = [...JSON.parse(JSON.stringify(this.groups))];
+    const _groups: any = deepClone(this.groups);
 
     if (_groups.length > 0) {
       _groups[0].$group._id[`${_field}`] = `$${_field}`;
@@ -124,7 +124,7 @@ class Query extends Database implements QueryInterface {
     this: T,
     fields: string | string[] = ""
   ): T {
-    const _fields = JSON.parse(JSON.stringify(this.fields));
+    const _fields: any = deepClone(this.fields);
     const isNotEmpty = _fields.length > 0;
     let _project = {
       $project: {
@@ -167,7 +167,7 @@ class Query extends Database implements QueryInterface {
     this: T,
     fields: string | string[] = ""
   ): T {
-    const _fields = JSON.parse(JSON.stringify(this.fields));
+    const _fields: any = deepClone(this.fields);
     const isNotEmpty = _fields.length > 0;
     let _project = {};
 

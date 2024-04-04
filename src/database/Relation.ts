@@ -62,7 +62,7 @@ class Relation extends Query implements RelationInterface {
   protected static generateBelongsTo<T extends typeof Relation>(this: T): T {
     const { collection, foreignKey, localKey, model } = this.relation as any;
     const alias = this.alias;
-    const _lookups = JSON.parse(JSON.stringify(this.lookups));
+    const _lookups = deepClone(this.lookups);
 
     let _foreignKey = foreignKey;
     let _localKey = localKey;
@@ -139,7 +139,7 @@ class Relation extends Query implements RelationInterface {
   protected static generateHasOne<T extends typeof Relation>(this: T): T {
     const { collection, foreignKey, localKey, model } = this.relation as any;
     const alias = this.alias;
-    const _lookups = JSON.parse(JSON.stringify(this.lookups));
+    const _lookups = deepClone(this.lookups);
 
     let isSoftDelete = false;
     let pipeline: any[] = [];
