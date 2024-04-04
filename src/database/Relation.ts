@@ -685,12 +685,17 @@ class Relation extends Query implements RelationInterface {
 
     this.relation = {};
 
-    model.relation = {
+    const clonedModel = Object.assign(
+      Object.create(Object.getPrototypeOf(model)),
+      model
+    );
+
+    clonedModel.relation = {
       ...rest,
       relationModel: this,
     };
 
-    return model;
+    return clonedModel;
   }
 
   protected static generateMorphToMany<T extends typeof Relation>(this: T): T {
@@ -703,7 +708,7 @@ class Relation extends Query implements RelationInterface {
       model,
     } = this.relation as any;
     const alias = this.alias;
-    const _lookups = JSON.parse(JSON.stringify(this.lookups));
+    const _lookups = deepClone(this.lookups);
 
     let isSoftDelete = false;
     let pipeline: any[] = [];
@@ -751,13 +756,14 @@ class Relation extends Query implements RelationInterface {
           from: collection,
           localField: `pivot.${foreignKey}`,
           foreignField: "_id",
-          as: alias,
+          as: alias || "alias",
           pipeline,
         },
       },
       {
         $project: {
           pivot: 0,
+          alias: 0,
         },
       }
     );
@@ -809,7 +815,7 @@ class Relation extends Query implements RelationInterface {
       model,
     } = this.relation as any;
     const alias = this.alias;
-    const _lookups = JSON.parse(JSON.stringify(this.lookups));
+    const _lookups = deepClone(this.lookups);
 
     let isSoftDelete = false;
     let pipeline: any[] = [];
@@ -857,13 +863,14 @@ class Relation extends Query implements RelationInterface {
           from: collection,
           localField: `pivot.${relationId}`,
           foreignField: "_id",
-          as: alias,
+          as: alias || "alias",
           pipeline,
         },
       },
       {
         $project: {
           pivot: 0,
+          alias: 0,
         },
       }
     );
