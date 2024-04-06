@@ -131,7 +131,7 @@ describe("QueryResult - groupBy method", () => {
 
 describe("QueryResult - select method", () => {
   it("single select with string", async () => {
-    const result: any = await User.select("name").first();
+    const { data: result }: any = await User.select("name").first();
 
     expect(result).toEqual(expect.any(Object));
     expect(result.name).toBeDefined();
@@ -142,7 +142,7 @@ describe("QueryResult - select method", () => {
   });
 
   it("single select with array", async () => {
-    const result: any = await User.select(["name", "age"]).first();
+    const { data: result }: any = await User.select(["name", "age"]).first();
 
     expect(result).toEqual(expect.any(Object));
     expect(result.name).toBeDefined();
@@ -153,7 +153,7 @@ describe("QueryResult - select method", () => {
   });
 
   it("multiple select", async () => {
-    const result: any = await User.select("name")
+    const { data: result }: any = await User.select("name")
       .select(["age", "email"])
       .first();
 
@@ -168,7 +168,7 @@ describe("QueryResult - select method", () => {
 
 describe("QueryResult - exclude method", () => {
   it("single exclude with string", async () => {
-    const result: any = await User.exclude("name").first();
+    const { data: result }: any = await User.exclude("name").first();
 
     expect(result).toEqual(expect.any(Object));
     expect(result.name).toBeUndefined();
@@ -179,7 +179,7 @@ describe("QueryResult - exclude method", () => {
   });
 
   it("single exclude with array", async () => {
-    const result: any = await User.exclude(["name", "age"]).first();
+    const { data: result }: any = await User.exclude(["name", "age"]).first();
 
     expect(result).toEqual(expect.any(Object));
     expect(result.name).toBeUndefined();
@@ -190,7 +190,7 @@ describe("QueryResult - exclude method", () => {
   });
 
   it("multiple exclude", async () => {
-    const result: any = await User.exclude("name")
+    const { data: result }: any = await User.exclude("name")
       .exclude(["age", "email"])
       .first();
 
