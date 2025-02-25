@@ -1,7 +1,8 @@
 import { Document } from "mongodb";
 import { IOrder, IWhere } from "./interfaces/IQuery"
+import Database from "./Database";
 
-export default class Query {
+export default class Query extends Database {
   /**
    * The current stages to be run.
    *
