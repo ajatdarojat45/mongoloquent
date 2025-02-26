@@ -6,6 +6,7 @@ import HashOne from "./relations/HasOne";
 import BelongsTo from "./relations/BelongsTo";
 import HasMany from "./relations/HasMany";
 import BelongsToMany from "./relations/BelongsToMany";
+import HasManyThrough from "./relations/HasManyThrough";
 
 export default class Relation extends Query {
   /**
@@ -91,6 +92,25 @@ export default class Relation extends Query {
     */
   static belongsToMany(related: typeof Model, table: typeof Model, foreignPivotKey: string, relatedPivotKey: string, parentKey: string = "_id", relatedKey: string = "_id") {
     const lookup = BelongsToMany.generate(related, table, foreignPivotKey, relatedPivotKey, parentKey, relatedKey, this.$alias, this.$options)
+    this.$lookups.push(...lookup)
+
+    return related
+  }
+
+  /**
+    * Define a hasManyThrough relationship.
+    *
+    * @param Model related
+    * @param Model through
+    * @param string firstKey
+    * @param string secondKey
+    * @param  string localKey
+    * @param  string secondLocalKey
+    *
+    * @return Model 
+    */
+  static hasManyThrough(related: typeof Model, through: typeof Model, firstKey: string, secondKey: string, localKey: string = "_id", secondLocalKey: string = "_id") {
+    const lookup = HasManyThrough.generate(related, through, firstKey, secondKey, localKey, secondLocalKey, this.$alias, this.$options)
     this.$lookups.push(...lookup)
 
     return related

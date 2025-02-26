@@ -47,7 +47,6 @@ export default class BelongsToMany extends Relation {
    * @return mongodb/Document[] 
    */
   static lookup(related: typeof Model, table: typeof Model, foreignPivotKey: string, relatedPivotKey: string, parentKey: string = "_id", relatedKey: string = "_id", alias: string): Document[] {
-    const collection = related.$collection;
     const lookup: Document[] = []
     const pipeline: Document[] = []
 
@@ -66,7 +65,7 @@ export default class BelongsToMany extends Relation {
     lookup.push(
       {
         $lookup: {
-          from: table,
+          from: table.$collection,
           localField: parentKey,
           foreignField: foreignPivotKey,
           as: "pivot",
@@ -74,7 +73,7 @@ export default class BelongsToMany extends Relation {
       },
       {
         $lookup: {
-          from: collection,
+          from: related.$collection,
           localField: `pivot.${relatedPivotKey}`,
           foreignField: relatedKey,
           as: alias || "pivot",
