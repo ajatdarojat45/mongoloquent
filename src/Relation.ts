@@ -35,6 +35,44 @@ export default class Relation extends Query {
   private static $lookups: Document[] = []
 
   /**
+    * A function will execute relationship 
+    *
+    * @param string relation
+    * @param IRelationOptions options
+    *
+    * @return Model
+    */
+  public static with<T extends typeof Relation>(
+    this: T,
+    relation: keyof T,
+    options: IRelationOptions = {}
+  ) {
+    if (typeof this[relation] === "function") {
+      this.$alias = relation as string;
+      this.$options = options;
+      (this[relation] as Function).call(this);
+    }
+
+    return this;
+  }
+
+  /**
+    * Alias of with method 
+    *
+    * @param string relation
+    * @param IRelationOptions options
+    *
+    * @return Model
+    */
+  public static has<T extends typeof Relation>(
+    this: T,
+    relation: keyof T,
+    options: IRelationOptions = {}
+  ): T {
+    return this.with(relation, options);
+  }
+
+  /**
    * Define a one-to-one relationship.
    *
    * @param Model related
