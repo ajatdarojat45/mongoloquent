@@ -10,6 +10,7 @@ import HasManyThrough from "./relations/HasManyThrough";
 import MorphTo from "./relations/MorphTo";
 import MorphMany from "./relations/MorphMany";
 import MorphToMany from "./relations/MorphToMany";
+import MorphByMany from "./relations/MorphByMany";
 
 export default class Relation extends Query {
   /**
@@ -162,6 +163,22 @@ export default class Relation extends Query {
    */
   static morphToMany(target: typeof Model, name: string, ownerKey: string = "_id") {
     const lookup = MorphToMany.generate(target, name, `${name}Type`, `${name}Id`, ownerKey, this.$alias, this.$options)
+    this.$lookups.push(...lookup)
+
+    return target
+  }
+
+  /**
+    * Define a morphByMany relationship.
+    *
+    * @param Model target
+    * @param  string name
+    * @param  string ownerKey
+    *
+    * @return Model 
+    */
+  static morphByMany(target: typeof Model, name: string, ownerKey: string = "_id") {
+    const lookup = MorphByMany.generate(target, name, `${name}Type`, `${name}Id`, ownerKey, this.$alias, this.$options)
     this.$lookups.push(...lookup)
 
     return target
