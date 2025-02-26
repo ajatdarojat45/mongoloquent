@@ -22,14 +22,14 @@ export default class Database {
    *
    * @var IDb[]
    */
-  protected static $dbs: IDb[] = []
+  private static $dbs: IDb[] = []
 
   /**
    * The connection name for the model.
    *
-   * @var string|null
+   * @var string
    */
-  protected static $collection: string = ""
+  public static $collection: string = ""
 
   /**
    * The primary key for the model.
@@ -38,6 +38,23 @@ export default class Database {
    */
   protected static $primaryKey: string = "_id"
 
+  /**
+   * Get the current connection name for the model.
+   *
+   * @return string
+   */
+  protected static getConnectionName(): string {
+    return this.$connection || MONGOLOQUENT_DATABASE_URI;
+  }
+
+  /**
+   * Get the current database name for the model.
+   *
+   * @return string
+   */
+  protected static getDatabaseName(): string {
+    return this.$databaseName || MONGOLOQUENT_DATABASE_NAME;
+  }
 
   /**
    * Get Mongodb collection
@@ -67,7 +84,6 @@ export default class Database {
     return db?.db as Db
   }
 
-
   /**
    * Connect to Mongodb database
    *
@@ -75,7 +91,7 @@ export default class Database {
    */
   private static connect(): void {
     try {
-      console.log("Mongoloquent trying to connect to database...");
+      console.log("Mongoloquent trying to connect to Mongodb database...");
 
       client.connect();
       const dbName = this.$databaseName || MONGOLOQUENT_DATABASE_NAME
@@ -87,7 +103,7 @@ export default class Database {
       this.$dbs.push({ db, name })
 
     } catch (error) {
-      throw new Error("Mongoloquent failed to connect to database...");
+      throw new Error("Mongoloquent failed to connect to Mongodb database...");
     }
   }
 }
