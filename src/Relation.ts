@@ -4,6 +4,7 @@ import Query from "./Query";
 import { IRelationOptions } from "./interfaces/IRelation";
 import HashOne from "./relations/HasOne";
 import BelongsTo from "./relations/BelongsTo";
+import HasMany from "./relations/HasMany";
 
 export default class Relation extends Query {
   /**
@@ -43,7 +44,7 @@ export default class Relation extends Query {
   }
 
   /**
-   * Define a one-to-one relationship.
+   * Define a belongsTo relationship.
    *
    * @param Model related
    * @param  string foreignKey
@@ -52,6 +53,21 @@ export default class Relation extends Query {
    */
   static belongsTo(related: typeof Model, foreignKey: string, ownerKey: string = "_id") {
     const lookup = BelongsTo.generate(related, foreignKey, ownerKey, this.$alias, this.$options)
+    this.$lookups.push(...lookup)
+
+    return related
+  }
+
+  /**
+   * Define a one-to-many relationship.
+   *
+   * @param Model related
+   * @param  string foreignKey
+   * @param  string localKey
+   * @return Model 
+   */
+  static hasMany(related: typeof Model, foreignKey: string, localKey: string = "_id") {
+    const lookup = HasMany.generate(related, foreignKey, localKey, this.$alias, this.$options)
     this.$lookups.push(...lookup)
 
     return related
