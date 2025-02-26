@@ -8,6 +8,7 @@ import HasMany from "./relations/HasMany";
 import BelongsToMany from "./relations/BelongsToMany";
 import HasManyThrough from "./relations/HasManyThrough";
 import MorphTo from "./relations/MorphTo";
+import MorphMany from "./relations/MorphMany";
 
 export default class Relation extends Query {
   /**
@@ -80,22 +81,6 @@ export default class Relation extends Query {
   }
 
   /**
-   * Define a morphTo relationship.
-   *
-   * @param Model target
-   * @param  string name
-   * @param  string ownerKey
-   *
-   * @return Model 
-   */
-  static morphTo(target: typeof Model, name: string, ownerKey: string = "_id") {
-    const lookup = MorphTo.generate(target, name, `${name}Type`, `${name}Id`, ownerKey, this.$alias, this.$options)
-    this.$lookups.push(...lookup)
-
-    return target
-  }
-
-  /**
     * Define a belongsToMany relationship.
     *
     * @param Model related
@@ -131,6 +116,38 @@ export default class Relation extends Query {
     this.$lookups.push(...lookup)
 
     return related
+  }
+
+  /**
+   * Define a morphTo relationship.
+   *
+   * @param Model target
+   * @param  string name
+   * @param  string ownerKey
+   *
+   * @return Model 
+   */
+  static morphTo(target: typeof Model, name: string, ownerKey: string = "_id") {
+    const lookup = MorphTo.generate(target, name, `${name}Type`, `${name}Id`, ownerKey, this.$alias, this.$options)
+    this.$lookups.push(...lookup)
+
+    return target
+  }
+
+  /**
+   * Define a morphMany relationship.
+   *
+   * @param Model target
+   * @param  string name
+   * @param  string ownerKey
+   *
+   * @return Model 
+   */
+  static morphMany(target: typeof Model, name: string, ownerKey: string = "_id") {
+    const lookup = MorphMany.generate(target, name, `${name}Type`, `${name}Id`, ownerKey, this.$alias, this.$options)
+    this.$lookups.push(...lookup)
+
+    return target
   }
 
   /**
