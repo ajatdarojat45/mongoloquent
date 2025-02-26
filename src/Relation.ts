@@ -5,6 +5,7 @@ import { IRelationOptions } from "./interfaces/IRelation";
 import HashOne from "./relations/HasOne";
 import BelongsTo from "./relations/BelongsTo";
 import HasMany from "./relations/HasMany";
+import BelongsToMany from "./relations/BelongsToMany";
 
 export default class Relation extends Query {
   /**
@@ -34,6 +35,7 @@ export default class Relation extends Query {
    * @param Model related
    * @param  string foreignKey
    * @param  string localKey
+   *
    * @return Model 
    */
   static hasOne(related: typeof Model, foreignKey: string, localKey: string = "_id") {
@@ -49,6 +51,7 @@ export default class Relation extends Query {
    * @param Model related
    * @param  string foreignKey
    * @param  string localKey
+   *
    * @return Model 
    */
   static belongsTo(related: typeof Model, foreignKey: string, ownerKey: string = "_id") {
@@ -64,10 +67,30 @@ export default class Relation extends Query {
    * @param Model related
    * @param  string foreignKey
    * @param  string localKey
+   *
    * @return Model 
    */
   static hasMany(related: typeof Model, foreignKey: string, localKey: string = "_id") {
     const lookup = HasMany.generate(related, foreignKey, localKey, this.$alias, this.$options)
+    this.$lookups.push(...lookup)
+
+    return related
+  }
+
+  /**
+    * Define a belongsToMany relationship.
+    *
+    * @param Model related
+    * @param Model table
+    * @param string foreignPivotKey
+    * @param string relatedPivotKey
+    * @param  string parentKey
+    * @param  string relatedKey
+    *
+    * @return Model 
+    */
+  static belongsToMany(related: typeof Model, table: typeof Model, foreignPivotKey: string, relatedPivotKey: string, parentKey: string = "_id", relatedKey: string = "_id") {
+    const lookup = BelongsToMany.generate(related, table, foreignPivotKey, relatedPivotKey, parentKey, relatedKey, this.$alias, this.$options)
     this.$lookups.push(...lookup)
 
     return related
