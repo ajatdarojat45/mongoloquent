@@ -3,6 +3,7 @@ import Model from "./Model";
 import Query from "./Query";
 import { IRelationOptions } from "./interfaces/IRelation";
 import HashOne from "./relations/HasOne";
+import BelongsTo from "./relations/BelongsTo";
 
 export default class Relation extends Query {
   /**
@@ -36,6 +37,21 @@ export default class Relation extends Query {
    */
   static hasOne(related: typeof Model, foreignKey: string, localKey: string = "_id") {
     const lookup = HashOne.generate(related, foreignKey, localKey, this.$alias, this.$options)
+    this.$lookups.push(...lookup)
+
+    return related
+  }
+
+  /**
+   * Define a one-to-one relationship.
+   *
+   * @param Model related
+   * @param  string foreignKey
+   * @param  string localKey
+   * @return Model 
+   */
+  static belongsTo(related: typeof Model, foreignKey: string, ownerKey: string = "_id") {
+    const lookup = BelongsTo.generate(related, foreignKey, ownerKey, this.$alias, this.$options)
     this.$lookups.push(...lookup)
 
     return related
@@ -101,5 +117,4 @@ export default class Relation extends Query {
   static excludeRelationColumns(columns: string | string[], alias: string) {
     return this.selectRelationColumns(columns, alias, false)
   }
-
 }

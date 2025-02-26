@@ -1,20 +1,20 @@
-import { Document } from "mongodb";
+import Relation from "../Relation"
 import Model from "../Model";
-import Relation from "../Relation";
 import { IRelationOptions } from "../interfaces/IRelation";
+import { Document } from "mongodb";
 
-export default class HashOne extends Relation {
+export default class BelongsTo extends Relation {
   /**
-   * generate lookup, select and exclude for has one relation 
+   * Define an inverse one-to-one or many relationship.
    *
-   * @param Model related
-   * @param  string foreignKey
-   * @param  string localKey
-   * @param  string alias
-   * @return mongodb/Document[] 
+   * @param  typeof  Model  $related
+   * @param  string  $foreignKey
+   * @param  string  $ownerKey
+   * @param  string  $relation
+   * @return Model
    */
-  static generate(related: typeof Model, foreignKey: string, localKey: string = "_id", alias: string, options: IRelationOptions): Document[] {
-    const lookup = this.lookup(related, foreignKey, localKey, alias)
+  public static generate(related: typeof Model, foreignKey: string, ownerKey: string = "_id", alias: string, options: IRelationOptions): Document[] {
+    const lookup = this.lookup(related, foreignKey, ownerKey, alias)
     let select: Document[] = []
     let exclude: Document[] = []
 
@@ -28,15 +28,16 @@ export default class HashOne extends Relation {
   }
 
   /**
-   * generate lookup for has one relation 
+   * generate lookup for belongsTo relation 
    *
    * @param Model related
    * @param  string foreignKey
-   * @param  string localKey
+   * @param  string ownerKey
    * @param  string alias
+   *
    * @return mongodb/Document[] 
    */
-  static lookup(related: typeof Model, foreignKey: string, localKey: string = "_id", alias: string): Document[] {
+  static lookup(related: typeof Model, foreignKey: string, ownerKey: string = "_id", alias: string): Document[] {
     const collection = related.$collection;
     const lookup: Document[] = []
     const pipeline: Document[] = []
@@ -56,21 +57,25 @@ export default class HashOne extends Relation {
 
     const $lookup = {
       from: collection,
-      localField: localKey,
-      foreignField: foreignKey,
+      localField: foreignKey,
+      foreignField: ownerKey,
       as: alias,
       pipeline: pipeline,
     };
 
-    lookup.push({ $lookup });
     lookup.push({
+      $lookup,
+    });
+
+    const _unwind = {
       $unwind: {
         path: `$${alias}`,
         preserveNullAndEmptyArrays: true,
       },
-    });
+    };
 
-    return lookup;
+    lookup.push(_unwind);
+
+    return lookup
   }
 }
-
