@@ -3,9 +3,9 @@ import Relation from "../Relation";
 import Model from "../Model";
 import { IRelationOptions } from "../interfaces/IRelation";
 
-export default class MorphMany extends Relation {
+export default class MorphToMany extends Relation {
   /**
-   * generate lookup, select and exclude for MorphMany relation 
+   * generate lookup, select and exclude for MorphToMany relation 
    *
    * @param Model target
    * @param string name
@@ -47,7 +47,7 @@ export default class MorphMany extends Relation {
   }
 
   /**
-   * generate lookup for MorphMany relation 
+   * generate lookup for MorphToMany relation 
    *
    * @param Model target
    * @param string name
@@ -73,37 +73,50 @@ export default class MorphMany extends Relation {
       pipeline.push({
         $match: {
           $expr: {
-            $and: [
-              { $eq: ["$isDeleted", false] },
-              {
-                $eq: [`$${type}`, name],
-              },
-            ],
-          },
-        },
-      })
-    } else {
-      pipeline.push({
-        $match: {
-          $expr: {
-            $and: [
-              {
-                $eq: [`$${type}`, name],
-              },
-            ],
+            $and: [{ $eq: ["$isDeleted", false] }],
           },
         },
       })
     }
 
-    const $lookup = {
-      from: target.$collection,
-      localField: ownerKey,
-      foreignField: id,
-      as: alias,
-      pipeline: pipeline,
-    };
-    lookup.push({ $lookup });
+    lookup.push(
+      {
+        $lookup: {
+          from: `${name}s`,
+          localField: ownerKey,
+          foreignField: id,
+          as: "pivot",
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    {
+                      $eq: [`$${type}`, name],
+                    },
+                  ],
+                },
+              },
+            },
+          ],
+        },
+      },
+      {
+        $lookup: {
+          from: target.$collection,
+          localField: `pivot.${id}`,
+          foreignField: ownerKey,
+          as: alias || "alias",
+          pipeline,
+        },
+      },
+      {
+        $project: {
+          pivot: 0,
+          alias: 0,
+        },
+      }
+    );
 
     return lookup
   }
