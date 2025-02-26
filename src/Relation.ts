@@ -7,6 +7,7 @@ import BelongsTo from "./relations/BelongsTo";
 import HasMany from "./relations/HasMany";
 import BelongsToMany from "./relations/BelongsToMany";
 import HasManyThrough from "./relations/HasManyThrough";
+import MorphTo from "./relations/MorphTo";
 
 export default class Relation extends Query {
   /**
@@ -76,6 +77,22 @@ export default class Relation extends Query {
     this.$lookups.push(...lookup)
 
     return related
+  }
+
+  /**
+   * Define a morphTo relationship.
+   *
+   * @param Model target
+   * @param  string name
+   * @param  string ownerKey
+   *
+   * @return Model 
+   */
+  static morphTo(target: typeof Model, name: string, ownerKey: string = "_id") {
+    const lookup = MorphTo.generate(target, name, `${name}Type`, `${name}Id`, ownerKey, this.$alias, this.$options)
+    this.$lookups.push(...lookup)
+
+    return target
   }
 
   /**
