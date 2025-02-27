@@ -3,17 +3,10 @@ import Relation from "./Relation";
 
 export default class Model extends Relation {
   /**
-   * Identifier for soft delete feature
-   *
-   * @var string
-   */
-  public static $useSoftDelete: boolean = false
-
-  /**
-   * The name of the "created at" column.
-   *
-   * @var string
-   */
+  * The name of the "created at" column.
+  *
+  * @var string
+  */
   protected static $CREATED_AT = 'created_at';
 
   /**
@@ -30,6 +23,7 @@ export default class Model extends Relation {
    */
   static async aggregate() {
     try {
+      this.checkSoftDelete()
       this.generateColumns()
       this.generateExcludes()
       this.generateWheres()

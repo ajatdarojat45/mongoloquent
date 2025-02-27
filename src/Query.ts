@@ -46,6 +46,27 @@ export default class Query extends Database {
   private static $groups: string[] = [];
 
   /**
+    * Identifier for soft delete feature
+    *
+    * @var boolean
+    */
+  public static $useSoftDelete: boolean = false
+
+  /**
+    * Identifier for query soft delete data
+    *
+    * @var boolean
+    */
+  private static $withTrashed: boolean = false
+
+  /**
+    * Identifier for query soft delete data
+    *
+    * @var boolean
+    */
+  private static $onlyTrashed: boolean = false
+
+  /**
    * The maximum number of records to return.
    *
    * @var int
@@ -307,6 +328,7 @@ export default class Query extends Database {
    * Add an or where between statement to the query.
    *
    * @param string column
+   * @param [any, any] values
    * @return this
    */
   public static orWhereBetween<T extends typeof Query>(
@@ -322,8 +344,10 @@ export default class Query extends Database {
    *
    * @return this
    */
-  public static withTrashed() {
-    return this.where("isDeleted", "eq", true, "or");
+  public static withTrashed<T extends typeof Query>(this: T) {
+    this.$withTrashed = true
+
+    return this
   }
 
   /**
@@ -331,8 +355,9 @@ export default class Query extends Database {
    *
    * @return this
    */
-  public static onlyTrashed() {
-    return this.where("isDeleted", "eq", true, "and");
+  public static onlyTrashed<T extends typeof Query>(this: T) {
+    this.$onlyTrashed = true
+    return this.where("isDeleted", "eq", true);
   }
 
   /**
@@ -390,7 +415,6 @@ export default class Query extends Database {
     return this.offset((page - 1) * perPage).limit(perPage);
   }
 
-
   /**
    * Add order by for a query
    *
@@ -420,6 +444,16 @@ export default class Query extends Database {
     this.$groups.push(column)
 
     return this;
+  }
+
+  /**
+    * Check soft delete feature 
+    *
+    * @return void
+   */
+  public static checkSoftDelete(): void {
+    if (!this.$withTrashed && !this.$onlyTrashed && this.$useSoftDelete)
+      this.where("isDeleted", false)
   }
 
   /**
@@ -476,7 +510,7 @@ export default class Query extends Database {
 
       let condition = {
         [el.column]: {
-          [`$${op?.mongoOperator}`]: value
+          [`$${op?.mongoOperator}`]: value || el.value
         },
         $options: op?.options
       }
@@ -572,6 +606,8 @@ export default class Query extends Database {
    * @return void
   */
   protected static resetQuery() {
+    this.$withTrashed = false
+    this.$onlyTrashed = false
     this.$stages = []
     this.$excludes = []
     this.$wheres = []
