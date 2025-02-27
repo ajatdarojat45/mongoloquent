@@ -104,6 +104,28 @@ export default class Model extends Relation {
   }
 
   /**
+   * Get item by id 
+   *
+   * @param string|string[] columns
+   *
+   * @return Promise<Document|null>
+   */
+  static async find(id: string | ObjectId) {
+    try {
+      this.where("_id", id)
+
+      const data = await this.get()
+      if (data.length > 0) {
+        return data[0]
+      }
+
+      return null
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  /**
    * Update the model in the database.
    *
    * @param  object  $attributes
