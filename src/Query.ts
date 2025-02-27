@@ -361,23 +361,35 @@ export default class Query extends Database {
   }
 
   /**
-   * Alias to set the "offset" value of the query.
-   *
-   * @param  int  value
-   * @return this
-   */
-  public static skip(value: number) {
-    return this.offset(value);
-  }
-
-  /**
    * Set the "offset" value of the query.
    *
    * @param  int value
    * @return this
    */
-  public static offset(value: number) {
-    this.$offset = value
+  public static offset<T extends typeof Query>(this: T, value: number) {
+    this.$stages.push({ $skip: value })
+
+    return this;
+  }
+
+  /**
+   * Alias to set the "offset" value of the query.
+   *
+   * @param  int  value
+   * @return this
+   */
+  public static skip<T extends typeof Query>(this: T, value: number) {
+    return this.offset(value);
+  }
+
+  /**
+    * Set the "limit" value of the query.
+    *
+    * @param  int value
+    * @return this
+    */
+  public static limit<T extends typeof Query>(this: T, value: number) {
+    this.$stages.push({ $limit: value })
 
     return this;
   }
@@ -388,30 +400,18 @@ export default class Query extends Database {
    * @param  int  value
    * @return this
    */
-  public static take(value: number) {
+  public static take<T extends typeof Query>(this: T, value: number) {
     return this.limit(value);
   }
 
   /**
-   * Set the "limit" value of the query.
-   *
-   * @param  int value
-   * @return this
-   */
-  public static limit(value: number) {
-    this.$limit = value
-
-    return this;
-  }
-
-  /**
-   * Set the limit and offset for a given page.
-   *
-   * @param  int  page
-   * @param  int  perPage
-   * @return this
-   */
-  public static forPage(page: number, perPage: number = 15) {
+  * Set the limit and offset for a given page.
+  *
+  * @param  int  page
+  * @param  int  perPage
+  * @return this
+  */
+  public static forPage<T extends typeof Query>(this: T, page: number, perPage: number = 15) {
     return this.offset((page - 1) * perPage).limit(perPage);
   }
 
