@@ -439,7 +439,8 @@ export default class Query extends Database {
    * @param  string  column
    * @return this
    */
-  static groupBy(
+  static groupBy<T extends typeof Query>(
+    this: T,
     column: string,
   ) {
     this.$groups.push(column)
