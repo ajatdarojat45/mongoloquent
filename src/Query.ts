@@ -196,10 +196,14 @@ export default class Query extends Database {
    * Add an "or where not" clause to the query.
    *
    * @param  column
-   * @param  mixed  value
-   * @return $this
+   * @param  any  value
+   * @return this
    */
-  public static orWhereNot(column: string, value: any) {
+  public static orWhereNot<T extends typeof Query>(
+    this: T,
+    column: string,
+    value: any
+  ) {
     return this.whereNot(column, value, 'or');
   }
 
