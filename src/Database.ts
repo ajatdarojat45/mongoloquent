@@ -1,14 +1,13 @@
-import { Collection, Db } from "mongodb"
-import { IDb } from "./interfaces/IDatabase"
-import { MONGOLOQUENT_DATABASE_NAME, MONGOLOQUENT_DATABASE_URI, client } from "./configs/mongodb"
+import { Collection, Db, MongoClient, ServerApiVersion } from "mongodb"
+import { MONGOLOQUENT_DATABASE_NAME, MONGOLOQUENT_DATABASE_URI } from "./configs/app"
 
 export default class Database {
   /**
    * The connection name for the model.
    *
-   * @var string|null
+   * @var string
    */
-  protected static $connection: string | null = null
+  protected static $connection: string = ""
 
   /**
    * The database name for the model.
@@ -20,9 +19,9 @@ export default class Database {
   /**
    * List of connected databases
    *
-   * @var IDb[]
+   * @var mongodb/Db
    */
-  private static $dbs: IDb[] = []
+  private static $dbs: Map<string, Db> = new Map();
 
   /**
    * The connection name for the model.
@@ -65,12 +64,9 @@ export default class Database {
    */
   protected static getCollection(collection?: string): Collection {
     const db = this.getDb()
+    const coll = collection || this.$collection
 
-    if (!db) {
-      this.connect();
-    }
-
-    return db.collection(collection || this.$collection)
+    return db?.collection(coll)
   }
 
   /**
@@ -78,20 +74,44 @@ export default class Database {
    *
    * @return Db
    */
-  protected static getDb(): Db {
-    const db = this.$dbs.find(el => el.name === this.$connection)
+  protected static getDb() {
+    const connection = this.$connection !== "" ? this.$connection : MONGOLOQUENT_DATABASE_URI
+    const key = `${connection}_${this.$databaseName}`
 
-    return db?.db as Db
+    if (this.$dbs.has(key)) {
+      return this.$dbs.get(key) as Db;
+    }
+
+    return this.connect()
+  }
+
+  /**
+     * Get Mongodb databases
+     *
+     * @return mongodb/Db[]
+     */
+  protected static getDbs() {
+    return this.$dbs
   }
 
   /**
    * Connect to Mongodb database
    *
-   * @return void
+   * @return mongodb/Db
    */
-  private static connect(): void {
+  public static connect(): Db {
     try {
       console.log("Mongoloquent trying to connect to Mongodb database...");
+
+      const connection = this.$connection !== "" ? this.$connection : MONGOLOQUENT_DATABASE_URI
+
+      const client = new MongoClient(connection, {
+        serverApi: {
+          version: ServerApiVersion.v1,
+          strict: true,
+          deprecationErrors: true,
+        },
+      });
 
       client.connect();
       const dbName = this.$databaseName || MONGOLOQUENT_DATABASE_NAME
@@ -99,9 +119,10 @@ export default class Database {
 
       console.log("Mongoloquent connected to database...");
 
-      const name = this.$connection || MONGOLOQUENT_DATABASE_URI
-      this.$dbs.push({ db, name })
+      const key = `${connection}_${this.$databaseName}`
+      this.$dbs.set(key, db);
 
+      return db
     } catch (error) {
       throw new Error("Mongoloquent failed to connect to Mongodb database...");
     }
