@@ -126,6 +126,23 @@ export default class Model extends Relation {
   }
 
   /**
+    * Retrieve the values of a specific column from the query results.
+    *
+    * @param string columns
+    *
+    * @return Promise<any>
+    */
+  static async pluck(column: string) {
+    try {
+      const data = await this.get()
+
+      return data.map(el => el[column])
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  /**
    * Update the model in the database.
    *
    * @param  object  $attributes
