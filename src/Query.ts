@@ -110,7 +110,7 @@ export default class Query extends Database {
    * @param  string|string[]  $columns
    * @return this
    */
-  public static select(columns: string | string[]) {
+  public static select<T extends typeof Query>(this: T, columns: string | string[]) {
     if (Array.isArray(columns))
       this.$columns.push(...columns)
     else
@@ -125,7 +125,7 @@ export default class Query extends Database {
    * @param  string|string[]  $columns
    * @return this
    */
-  public static exclude(columns: string | string[]) {
+  public static exclude<T extends typeof Query>(this: T, columns: string | string[]) {
     if (Array.isArray(columns))
       this.$excludes.push(...columns)
     else
