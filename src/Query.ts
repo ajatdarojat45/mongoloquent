@@ -183,8 +183,13 @@ export default class Query extends Database {
    * @param  string  boolean
    * @return this
    */
-  public static whereNot(column: string, $value: any, $boolean = 'and') {
-    return this.where(column, "ne", $value, $boolean);
+  public static whereNot<T extends typeof Query>(
+    this: T,
+    column: string,
+    value: any,
+    boolean = 'and'
+  ) {
+    return this.where(column, "ne", value, boolean);
   }
 
   /**
