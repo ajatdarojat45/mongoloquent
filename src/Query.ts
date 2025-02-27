@@ -422,7 +422,8 @@ export default class Query extends Database {
    * @param  string  order
    * @return this
    */
-  static orderBy(
+  static orderBy<T extends typeof Query>(
+    this: T,
     column: string,
     order: string = "asc",
     isSensitive: boolean = false
@@ -556,13 +557,14 @@ export default class Query extends Database {
 
     this.$orders.forEach(el => {
       $project = { ...$project, [el.column]: 1 }
+      const direction = el.order === "asc" ? 1 : -1
 
       if (el.isSensitive) {
         $project = { ...$project, [`lowercase_${el.column}`]: { $toLower: `$${el.column}` } }
         $sort = {
-          ...$sort, [`lowercase_${el.column}`]: el.order
+          ...$sort, [`lowercase_${el.column}`]: direction
         }
-      } else $sort = { ...$sort, [el.column]: el.order }
+      } else $sort = { ...$sort, [el.column]: direction }
     })
 
     const orders = [
