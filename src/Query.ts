@@ -143,7 +143,7 @@ export default class Query extends Database {
    * @param  string  boolean
    * @return this
    */
-  public static where(column: string, operator: any, value: any = null, boolean: string = "and") {
+  public static where<T extends typeof Query>(this: T, column: string, operator: any, value: any = null, boolean: string = "and") {
     let _value = value || operator;
     let _operator = value ? operator : "eq";
 
@@ -432,6 +432,7 @@ export default class Query extends Database {
           $options: op?.options
         }
 
+      if (!condition.$options) delete condition.$options
 
       if (el.boolean === "and") $and.push(condition)
       else $or.push(condition)

@@ -37,9 +37,7 @@ export default class Model extends Relation {
       this.generateGroups()
 
       const collection = this.getCollection();
-      const aggregate = collection.aggregate(
-        [...this.$stages]
-      );
+      const aggregate = collection.aggregate([...this.$stages, ...this.$lookups]);
 
       this.resetQuery()
       this.resetRelation()
