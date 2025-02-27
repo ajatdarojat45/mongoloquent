@@ -1,4 +1,3 @@
-import { MongoClient, ServerApiVersion } from "mongodb";
 import "dotenv/config";
 
 let databaseName: string = process.env.MONGOLOQUENT_DATABASE_NAME || "mongoloquent";
@@ -13,10 +12,4 @@ export const MONGOLOQUENT_DATABASE_NAME: string = databaseName;
 export const MONGOLOQUENT_DATABASE_URI: string =
   process.env.MONGOLOQUENT_DATABASE_URI || "mongodb://localhost:27017";
 
-export const client = new MongoClient(MONGOLOQUENT_DATABASE_URI, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  },
-});
+
