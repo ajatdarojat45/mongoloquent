@@ -3,7 +3,7 @@ import Relation from "../Relation";
 import Model from "../Model";
 import { IRelationOptions } from "../interfaces/IRelation";
 
-export default class MorphMany extends Relation {
+export default class MorphMany {
   /**
    * generate lookup, select and exclude for MorphMany relation 
    *
@@ -38,10 +38,10 @@ export default class MorphMany extends Relation {
     let exclude: Document[] = []
 
     if (options.select)
-      select = this.selectRelationColumns(options.select, alias)
+      select = Relation.selectRelationColumns(options.select, alias)
 
     if (options.exclude)
-      select = this.excludeRelationColumns(options.exclude, alias)
+      select = Relation.excludeRelationColumns(options.exclude, alias)
 
     return [...lookup, ...select, ...exclude]
   }

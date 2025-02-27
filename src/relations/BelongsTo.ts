@@ -3,7 +3,7 @@ import Model from "../Model";
 import { IRelationOptions } from "../interfaces/IRelation";
 import { Document } from "mongodb";
 
-export default class BelongsTo extends Relation {
+export default class BelongsTo {
   /**
    * Define an inverse one-to-one or many relationship.
    *
@@ -19,10 +19,10 @@ export default class BelongsTo extends Relation {
     let exclude: Document[] = []
 
     if (options.select)
-      select = this.selectRelationColumns(options.select, alias)
+      select = Relation.selectRelationColumns(options.select, alias)
 
     if (options.exclude)
-      select = this.excludeRelationColumns(options.exclude, alias)
+      select = Relation.excludeRelationColumns(options.exclude, alias)
 
     return [...lookup, ...select, ...exclude]
   }
