@@ -281,11 +281,18 @@ export default class Query extends Database {
    * Add a where between statement to the query.
    *
    * @param  string  column
+   * @param  [any, any]  values
    * @param  string  boolean
-   * @param  bool  not
+   * @param  string  not
    * @return this
    */
-  public static whereBetween(column: string, values: [any, any], boolean: string = 'and', not: boolean = false) {
+  public static whereBetween<T extends typeof Query>(
+    this: T,
+    column: string,
+    values: [any, any],
+    boolean: string = 'and',
+    not: boolean = false
+  ) {
     this.$wheres.push({
       column,
       operator: "between",
@@ -302,7 +309,11 @@ export default class Query extends Database {
    * @param string column
    * @return this
    */
-  public static orWhereBetween(column: string, values: [any, any]) {
+  public static orWhereBetween<T extends typeof Query>(
+    this: T,
+    column: string,
+    values: [any, any]
+  ) {
     return this.whereBetween(column, values, 'or');
   }
 
