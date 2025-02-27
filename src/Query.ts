@@ -15,7 +15,7 @@ export default class Query extends Database {
    *
    * @var array
    */
-  private static $columns: string[] = [];
+  protected static $columns: string[] = [];
 
   /**
    * The columns that should be excluded.
@@ -373,39 +373,43 @@ export default class Query extends Database {
   }
 
   /**
-   * Build selected columns for a query.
+   * Generate selected columns for a query.
    *
    * @return void
   */
-  public static buildColumns(): void {
+  public static generateColumns(): void {
     let $project = {}
     this.$columns.forEach((el) => {
       $project = { ...$project, [el]: 1 }
     })
-    this.$stages.push({ $project })
+
+    if (Object.keys($project).length > 0)
+      this.$stages.push({ $project })
   }
 
   /**
-   * Build excluded columns for a query.
+   * Generate excluded columns for a query.
    *
    * @return void
   */
-  public static buildExcludes(): void {
+  public static generateExcludes(): void {
     let $project = {}
     this.$excludes.forEach((el) => {
       $project = { ...$project, [el]: 0 }
     })
-    this.$stages.push({ $project })
+
+    if (Object.keys($project).length > 0)
+      this.$stages.push({ $project })
   }
 
   /**
-   * Build where conditions for a query.
+   * Generate conditions for a query.
    *
    * @return void
   */
-  public static buildWheres(): void {
-    let $and: any[] = []
-    let $or: any[] = []
+  public static generateWheres(): void {
+    let $and: Document[] = []
+    let $or: Document[] = []
 
     this.$wheres.forEach(el => {
       const op = this.$operators.find(
@@ -437,15 +441,16 @@ export default class Query extends Database {
       $and.push({ $or })
     }
 
-    this.$stages.push({ $match: { $and } })
+    if ($and.length > 0)
+      this.$stages.push({ $match: { $and } })
   }
 
   /**
-   * Build orders for a query.
+   * Generate orders for a query.
    *
    * @return void
   */
-  static buildOrders() {
+  static generateOrders() {
     let $project = {
       document: "$$ROOT",
     }
@@ -473,15 +478,16 @@ export default class Query extends Database {
       },
     ]
 
-    this.$stages.push(...orders)
+    if (this.$orders.length > 0)
+      this.$stages.push(...orders)
   }
 
   /**
-   * Build orders for a query.
+   * Generate groups for a query.
    *
    * @return void
   */
-  static buildGroups() {
+  static generateGroups() {
     let _id = {}
 
     this.$groups.forEach(el => {
@@ -493,8 +499,20 @@ export default class Query extends Database {
       count: { $sum: 1 }
     }
 
-    this.$stages.push({ $group })
+    if (this.$groups.length > 0)
+      this.$stages.push({ $group })
+  }
 
-    console.log(JSON.stringify(this.$stages, null, 2))
+  /**
+   * Reset query state. 
+   *
+   * @return void
+  */
+  protected static resetQuery() {
+    this.$stages = []
+    this.$excludes = []
+    this.$wheres = []
+    this.$orders = []
+    this.$groups = []
   }
 }

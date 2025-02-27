@@ -36,9 +36,10 @@ export default class Model extends Relation {
       this.generateOrders()
       this.generateGroups()
 
+      console.log(this.$stages, "<<<< stages")
       const collection = this.getCollection();
       const aggregate = collection.aggregate(
-        [...this.$stages, this.$lookups]
+        [...this.$stages]
       );
 
       this.resetQuery()
