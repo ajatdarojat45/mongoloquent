@@ -266,10 +266,14 @@ export default class Query extends Database {
    * Add an "or where not in" clause to the query.
    *
    * @param  string  column
-   * @param  mixed  values
+   * @param  [any, ...any[]]  values
    * @return this
    */
-  public static orWhereNotIn(column: string, values: any) {
+  public static orWhereNotIn<T extends typeof Query>(
+    this: T,
+    column: string,
+    values: [any, ...any[]]
+  ) {
     return this.whereNotIn(column, values, 'or');
   }
 
