@@ -211,7 +211,7 @@ export default class Query extends Database {
    * Add a "where in" clause to the query.
    *
    * @param  string  column
-   * @param  any  values
+   * @param  [any, ...any[]]  values
    * @param  string  boolean
    * @param  boolean not
    *
@@ -234,10 +234,14 @@ export default class Query extends Database {
    * Add an "or where in" clause to the query.
    *
    * @param  string  column
-   * @param  mixed  values
+   * @param  [any, ...any[]]  values
    * @return this
    */
-  public static orWhereIn(column: string, values: any) {
+  public static orWhereIn<T extends typeof Query>(
+    this: T,
+    column: string,
+    values: [any, ...any[]]
+  ) {
     return this.whereIn(column, values, 'or');
   }
 
