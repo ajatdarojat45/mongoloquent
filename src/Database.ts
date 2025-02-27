@@ -1,5 +1,8 @@
-import { Collection, Db, MongoClient, ServerApiVersion } from "mongodb"
-import { MONGOLOQUENT_DATABASE_NAME, MONGOLOQUENT_DATABASE_URI } from "./configs/app"
+import { Collection, Db, MongoClient, ServerApiVersion } from "mongodb";
+import {
+  MONGOLOQUENT_DATABASE_NAME,
+  MONGOLOQUENT_DATABASE_URI,
+} from "./configs/app";
 
 export default class Database {
   /**
@@ -7,14 +10,14 @@ export default class Database {
    *
    * @var string
    */
-  protected static $connection: string = ""
+  protected static $connection: string = "";
 
   /**
    * The database name for the model.
    *
    * @var string|null
    */
-  protected static $databaseName: string | null = null
+  protected static $databaseName: string | null = null;
 
   /**
    * List of connected databases
@@ -28,14 +31,14 @@ export default class Database {
    *
    * @var string
    */
-  public static $collection: string = ""
+  public static $collection: string = "";
 
   /**
    * The primary key for the model.
    *
    * @var string
    */
-  protected static $primaryKey: string = "_id"
+  protected static $primaryKey: string = "_id";
 
   /**
    * Get the current connection name for the model.
@@ -56,54 +59,56 @@ export default class Database {
   }
 
   /**
-   * Get Mongodb collection
+   * Get MongoDB collection.
    *
-   * @param string collection
-   *
-   * @return Collection
+   * @param {string} [collection] - The collection name.
+   * @return {Collection} The MongoDB collection.
    */
   protected static getCollection(collection?: string): Collection {
-    const db = this.getDb()
-    const coll = collection || this.$collection
+    const db = this.getDb();
+    const coll = collection || this.$collection;
 
-    return db?.collection(coll)
+    return db?.collection(coll);
   }
 
   /**
-   * Get Mongodb database
+   * Get MongoDB database.
    *
-   * @return Db
+   * @return {Db} The MongoDB database.
    */
-  protected static getDb() {
-    const connection = this.$connection !== "" ? this.$connection : MONGOLOQUENT_DATABASE_URI
-    const key = `${connection}_${this.$databaseName}`
+  protected static getDb(): Db {
+    const connection =
+      this.$connection !== "" ? this.$connection : MONGOLOQUENT_DATABASE_URI;
+    const key = `${connection}_${this.$databaseName}`;
 
     if (this.$dbs.has(key)) {
       return this.$dbs.get(key) as Db;
     }
 
-    return this.connect()
+    return this.connect();
   }
 
   /**
-     * Get Mongodb databases
-     *
-     * @return mongodb/Db[]
-     */
-  protected static getDbs() {
-    return this.$dbs
-  }
-
-  /**
-   * Connect to Mongodb database
+   * Get MongoDB databases.
    *
-   * @return mongodb/Db
+   * @return {Map<string, Db>} The map of connected databases.
+   */
+  protected static getDbs(): Map<string, Db> {
+    return this.$dbs;
+  }
+
+  /**
+   * Connect to MongoDB database.
+   *
+   * @return {Db} The connected MongoDB database.
+   * @throws {Error} If connection fails.
    */
   public static connect(): Db {
     try {
-      console.log("Mongoloquent trying to connect to Mongodb database...");
+      console.log("Mongoloquent trying to connect to MongoDB database...");
 
-      const connection = this.$connection !== "" ? this.$connection : MONGOLOQUENT_DATABASE_URI
+      const connection =
+        this.$connection !== "" ? this.$connection : MONGOLOQUENT_DATABASE_URI;
 
       const client = new MongoClient(connection, {
         serverApi: {
@@ -114,17 +119,18 @@ export default class Database {
       });
 
       client.connect();
-      const dbName = this.$databaseName || MONGOLOQUENT_DATABASE_NAME
+      const dbName = this.$databaseName || MONGOLOQUENT_DATABASE_NAME;
       const db = client.db(dbName);
 
       console.log("Mongoloquent connected to database...");
 
-      const key = `${connection}_${this.$databaseName}`
+      const key = `${connection}_${this.$databaseName}`;
       this.$dbs.set(key, db);
 
-      return db
+      return db;
     } catch (error) {
-      throw new Error("Mongoloquent failed to connect to Mongodb database...");
+      console.error("Mongoloquent failed to connect to MongoDB database:", error);
+      throw new Error("Mongoloquent failed to connect to MongoDB database.");
     }
   }
 }
