@@ -211,14 +211,20 @@ export default class Query extends Database {
    * Add a "where in" clause to the query.
    *
    * @param  string  column
-   * @param  mixed  values
+   * @param  any  values
    * @param  string  boolean
-   * @param  bool  not
+   * @param  boolean not
+   *
    * @return this
    */
-  public static whereIn(column: string, values: any, boolean: string = 'and', not: boolean = false) {
+  public static whereIn<T extends typeof Query>(
+    this: T,
+    column: string,
+    values: [any, ...any[]],
+    boolean: string = 'and',
+    not: boolean = false
+  ) {
     const type = not ? 'nin' : 'in';
-
     this.$wheres.push({ column, operator: type, value: values, boolean })
 
     return this
@@ -436,7 +442,13 @@ export default class Query extends Database {
         (op) => op.operator === el.operator || op.mongoOperator === el.operator
       );
 
-      const value = el.column === "_id" ? new ObjectId(el.value) : el.value
+      let value
+      if (el.column === "_id") {
+        if (Array.isArray(el.value))
+          value = el.value.map(val => new ObjectId(val))
+        else
+          value = new ObjectId(el.value)
+      }
 
       let condition = {
         [el.column]: {
