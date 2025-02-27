@@ -1,4 +1,4 @@
-import { Document } from "mongodb";
+import { Document, ObjectId } from "mongodb";
 import { IOrder, IWhere } from "./interfaces/IQuery"
 import Database from "./Database";
 
@@ -143,7 +143,13 @@ export default class Query extends Database {
    * @param  string  boolean
    * @return this
    */
-  public static where<T extends typeof Query>(this: T, column: string, operator: any, value: any = null, boolean: string = "and") {
+  public static where<T extends typeof Query>(
+    this: T,
+    column: string,
+    operator: any,
+    value: any = null,
+    boolean: string = "and"
+  ) {
     let _value = value || operator;
     let _operator = value ? operator : "eq";
 
@@ -160,7 +166,12 @@ export default class Query extends Database {
    * @param  mixed  value
    * @return this
    */
-  public static orWhere(column: string, operator: string | null = null, value: any = null) {
+  public static orWhere<T extends typeof Query>(
+    this: T,
+    column: string,
+    operator: string | null = null,
+    value: any = null
+  ) {
     return this.where(column, operator, value, 'or');
   }
 
@@ -416,9 +427,11 @@ export default class Query extends Database {
         (op) => op.operator === el.operator || op.mongoOperator === el.operator
       );
 
+      const value = el.column === "_id" ? new ObjectId(el.value) : el.value
+
       let condition = {
         [el.column]: {
-          [`$${op?.mongoOperator}`]: el.value
+          [`$${op?.mongoOperator}`]: value
         },
         $options: op?.options
       }
@@ -439,7 +452,11 @@ export default class Query extends Database {
     })
 
     if ($or.length > 0) {
-      $and.push({ $or })
+      if ($and.length > 0)
+        $or.push({ $and })
+
+      this.$stages.push({ $match: { $or } })
+      return
     }
 
     if ($and.length > 0)
