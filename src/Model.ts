@@ -24,24 +24,71 @@ export default class Model extends Relation {
   protected static $UPDATED_AT = 'updated_at';
 
   /**
-   * Eager load relations on the model.
+   * Execute queries
    *
-   * @param  string[]|string  $relations
-   * @return $this
+   * @return Promise<AggregationCursor<Document>>
    */
-  public static load($relations: string | string[]): Model {
-    return this;
+  static async aggregate() {
+    try {
+      this.generateColumns()
+      this.generateExcludes()
+      this.generateWheres()
+      this.generateOrders()
+      this.generateGroups()
+
+      const collection = this.getCollection();
+      const aggregate = collection.aggregate(
+        [...this.$stages, this.$lookups]
+      );
+
+      this.resetQuery()
+      this.resetRelation()
+
+      return aggregate
+    } catch (error) {
+      throw error;
+    }
   }
 
   /**
-   * Eager load relationships on the polymorphic relation of a model.
+   * Get all of the items in the collection.
    *
-   * @param  string  $relation
-   * @param  string[]  $relations
-   * @return $this
+   * @return Promise<WithId<Document>[]>
    */
-  public static loadMorph($relation: string, $relations: string[]): Model {
-    return this
+  static async all() {
+    try {
+      const collection = this.getCollection();
+
+      let query = {};
+
+      if (this.$useSoftDelete) query = { isDeleted: false };
+
+      return await collection.find(query).toArray();
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  /**
+   * Get items from the collection.
+   *
+   * @param string|string[] columns
+   *
+   * @return Promise<Document[]>
+   */
+  static async get(columns: string | string[] = []) {
+    try {
+      if (Array.isArray(columns))
+        this.$columns.push(...columns)
+      else
+        this.$columns.push(columns)
+
+      const aggregate = await this.aggregate();
+
+      return await aggregate.toArray();
+    } catch (error) {
+      throw error;
+    }
   }
 
   /**
