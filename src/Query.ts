@@ -249,11 +249,16 @@ export default class Query extends Database {
    * Add a "where not in" clause to the query.
    *
    * @param  string  column
-   * @param  mixed  values
+   * @param  [...any, ...any[]]  values
    * @param  string  boolean
    * @return this
    */
-  public static whereNotIn(column: string, values: any, boolean = 'and') {
+  public static whereNotIn<T extends typeof Query>(
+    this: T,
+    column: string,
+    values: [any, ...any[]],
+    boolean = 'and'
+  ) {
     return this.whereIn(column, values, boolean, true);
   }
 
