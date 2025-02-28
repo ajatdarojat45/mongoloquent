@@ -37,10 +37,10 @@ export default class MorphToMany {
     let select: Document[] = []
     let exclude: Document[] = []
 
-    if (options.select)
+    if (options?.select)
       select = Relation.selectRelationColumns(options.select, alias)
 
-    if (options.exclude)
+    if (options?.exclude)
       select = Relation.excludeRelationColumns(options.exclude, alias)
 
     return [...lookup, ...select, ...exclude]

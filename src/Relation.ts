@@ -93,7 +93,7 @@ export default class Relation extends Query {
       this.$options
     );
     // Add the lookup stages to the $lookups array
-    this.$lookups.push(...lookup);
+    this.$lookups = [...this.$lookups, ...lookup]
 
     return related;
   }
@@ -119,7 +119,7 @@ export default class Relation extends Query {
       this.$options
     );
     // Add the lookup stages to the $lookups array
-    this.$lookups.push(...lookup);
+    this.$lookups = [...this.$lookups, ...lookup]
 
     return related;
   }
@@ -145,7 +145,7 @@ export default class Relation extends Query {
       this.$options
     );
     // Add the lookup stages to the $lookups array
-    this.$lookups.push(...lookup);
+    this.$lookups = [...this.$lookups, ...lookup]
 
     if (this.$parentId)
       related.where(foreignKey, this.$parentId)
@@ -183,7 +183,7 @@ export default class Relation extends Query {
       this.$options
     );
     // Add the lookup stages to the $lookups array
-    this.$lookups.push(...lookup);
+    this.$lookups = [...this.$lookups, ...lookup]
 
     return related;
   }
@@ -218,7 +218,7 @@ export default class Relation extends Query {
       this.$options
     );
     // Add the lookup stages to the $lookups array
-    this.$lookups.push(...lookup);
+    this.$lookups = [...this.$lookups, ...lookup]
 
     return related;
   }
@@ -246,7 +246,7 @@ export default class Relation extends Query {
       this.$options
     );
     // Add the lookup stages to the $lookups array
-    this.$lookups.push(...lookup);
+    this.$lookups = [...this.$lookups, ...lookup]
 
     return target;
   }
@@ -274,7 +274,7 @@ export default class Relation extends Query {
       this.$options
     );
     // Add the lookup stages to the $lookups array
-    this.$lookups.push(...lookup);
+    this.$lookups = [...this.$lookups, ...lookup]
 
     return target;
   }
@@ -302,7 +302,7 @@ export default class Relation extends Query {
       this.$options
     );
     // Add the lookup stages to the $lookups array
-    this.$lookups.push(...lookup);
+    this.$lookups = [...this.$lookups, ...lookup]
 
     return target;
   }
@@ -330,7 +330,7 @@ export default class Relation extends Query {
       this.$options
     );
     // Add the lookup stages to the $lookups array
-    this.$lookups.push(...lookup);
+    this.$lookups = [...this.$lookups, ...lookup]
 
     return target;
   }
