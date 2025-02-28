@@ -4,73 +4,89 @@ import Relation from "../Relation";
 import { IRelationOptions } from "../interfaces/IRelation";
 
 export default class HasOne {
-  /**
-   * generate lookup, select and exclude for has one relation 
-   *
-   * @param Model related
-   * @param  string foreignKey
-   * @param  string localKey
-   * @param  string alias
-   * @return mongodb/Document[] 
-   */
-  static generate(related: typeof Model, foreignKey: string, localKey: string = "_id", alias: string, options: IRelationOptions): Document[] {
-    const lookup = this.lookup(related, foreignKey, localKey, alias)
-    let select: Document[] = []
-    let exclude: Document[] = []
+	/**
+	 * @note This method generates the lookup, select, and exclude stages for the hasOne relation.
+	 * @param {typeof Model} related - The related model.
+	 * @param {string} foreignKey - The foreign key.
+	 * @param {string} [localKey="_id"] - The local key.
+	 * @param {string} alias - The alias for the relation.
+	 * @param {IRelationOptions} options - The options for the relation.
+	 * @return {Document[]} The lookup stages.
+	 */
+	static generate(
+		related: typeof Model,
+		foreignKey: string,
+		localKey: string = "_id",
+		alias: string,
+		options: IRelationOptions
+	): Document[] {
+		// Generate the lookup stages for the hasOne relationship
+		const lookup = this.lookup(related, foreignKey, localKey, alias);
+		let select: Document[] = [];
+		let exclude: Document[] = [];
 
-    if (options.select)
-      select = Relation.selectRelationColumns(options.select, alias)
+		// Generate the select stages if options.select is provided
+		if (options.select)
+			select = Relation.selectRelationColumns(options.select, alias);
 
-    if (options.exclude)
-      select = Relation.excludeRelationColumns(options.exclude, alias)
+		// Generate the exclude stages if options.exclude is provided
+		if (options.exclude)
+			exclude = Relation.excludeRelationColumns(options.exclude, alias);
 
-    return [...lookup, ...select, ...exclude]
-  }
+		// Return the combined lookup, select, and exclude stages
+		return [...lookup, ...select, ...exclude];
+	}
 
-  /**
-   * generate lookup for has one relation 
-   *
-   * @param Model related
-   * @param  string foreignKey
-   * @param  string localKey
-   * @param  string alias
-   * @return mongodb/Document[] 
-   */
-  static lookup(related: typeof Model, foreignKey: string, localKey: string = "_id", alias: string): Document[] {
-    const collection = related.$collection;
-    const lookup: Document[] = []
-    const pipeline: Document[] = []
-    const useSoftDelete = related.$useSoftDelete
+	/**
+	 * @note This method generates the lookup stages for the hasOne relation.
+	 * @param {typeof Model} related - The related model.
+	 * @param {string} foreignKey - The foreign key.
+	 * @param {string} [localKey="_id"] - The local key.
+	 * @param {string} alias - The alias for the relation.
+	 * @return {Document[]} The lookup stages.
+	 */
+	static lookup(
+		related: typeof Model,
+		foreignKey: string,
+		localKey: string = "_id",
+		alias: string
+	): Document[] {
+		const collection = related.$collection;
+		const lookup: Document[] = [];
+		const pipeline: Document[] = [];
+		const useSoftDelete = related.$useSoftDelete;
 
-    if (useSoftDelete) {
-      pipeline.push(
-        {
-          $match: {
-            $expr: {
-              $and: [{ $eq: ["$isDeleted", false] }],
-            },
-          },
-        },
-      );
-    }
+		// Add soft delete condition to the pipeline if enabled
+		if (useSoftDelete) {
+			pipeline.push({
+				$match: {
+					$expr: {
+						$and: [{ $eq: ["$isDeleted", false] }],
+					},
+				},
+			});
+		}
 
-    const $lookup = {
-      from: collection,
-      localField: localKey,
-      foreignField: foreignKey,
-      as: alias,
-      pipeline: pipeline,
-    };
+		// Define the $lookup stage
+		const $lookup = {
+			from: collection,
+			localField: localKey,
+			foreignField: foreignKey,
+			as: alias,
+			pipeline: pipeline,
+		};
 
-    lookup.push({ $lookup });
-    lookup.push({
-      $unwind: {
-        path: `$${alias}`,
-        preserveNullAndEmptyArrays: true,
-      },
-    });
+		// Add the $lookup stage to the lookup array
+		lookup.push({ $lookup });
 
-    return lookup;
-  }
+		// Define the $unwind stage
+		lookup.push({
+			$unwind: {
+				path: `$${alias}`,
+				preserveNullAndEmptyArrays: true,
+			},
+		});
+
+		return lookup;
+	}
 }
-

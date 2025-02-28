@@ -3,90 +3,114 @@ import Relation from "../Relation";
 import Model from "../Model";
 import { IRelationOptions } from "../interfaces/IRelation";
 
-
 export default class BelongsToMany {
-  /**
-   * generate lookup, select and exclude for BelongsToMany relation 
-   *
-   * @param Model related
-   * @param Model table
-   * @param string foreignPivotKey
-   * @param string relatedPivotKey
-   * @param string parentKey
-   * @param string relatedKey
-   * @param string alias
-   * @param options IRelationOptions
-   *
-   * @return mongodb/Document[] 
-   */
-  static generate(related: typeof Model, table: typeof Model, foreignPivotKey: string, relatedPivotKey: string, parentKey: string = "_id", relatedKey: string = "_id", alias: string, options: IRelationOptions): Document[] {
-    const lookup = this.lookup(related, table, foreignPivotKey, relatedPivotKey, parentKey, relatedKey, alias)
-    let select: Document[] = []
-    let exclude: Document[] = []
+	/**
+	 * @note This method generates the lookup, select, and exclude stages for the BelongsToMany relation.
+	 * @param {typeof Model} related - The related model.
+	 * @param {typeof Model} table - The pivot table model.
+	 * @param {string} foreignPivotKey - The foreign pivot key.
+	 * @param {string} relatedPivotKey - The related pivot key.
+	 * @param {string} [parentKey="_id"] - The parent key.
+	 * @param {string} [relatedKey="_id"] - The related key.
+	 * @param {string} alias - The alias for the relation.
+	 * @param {IRelationOptions} options - The options for the relation.
+	 * @return {Document[]} The lookup stages.
+	 */
+	static generate(
+		related: typeof Model,
+		table: typeof Model,
+		foreignPivotKey: string,
+		relatedPivotKey: string,
+		parentKey: string = "_id",
+		relatedKey: string = "_id",
+		alias: string,
+		options: IRelationOptions
+	): Document[] {
+		// Generate the lookup stages for the BelongsToMany relationship
+		const lookup = this.lookup(
+			related,
+			table,
+			foreignPivotKey,
+			relatedPivotKey,
+			parentKey,
+			relatedKey,
+			alias
+		);
+		let select: Document[] = [];
+		let exclude: Document[] = [];
 
-    if (options.select)
-      select = Relation.selectRelationColumns(options.select, alias)
+		// Generate the select stages if options.select is provided
+		if (options.select)
+			select = Relation.selectRelationColumns(options.select, alias);
 
-    if (options.exclude)
-      select = Relation.excludeRelationColumns(options.exclude, alias)
+		// Generate the exclude stages if options.exclude is provided
+		if (options.exclude)
+			exclude = Relation.excludeRelationColumns(options.exclude, alias);
 
-    return [...lookup, ...select, ...exclude]
-  }
+		// Return the combined lookup, select, and exclude stages
+		return [...lookup, ...select, ...exclude];
+	}
 
-  /**
-   * generate lookup for BelongsToMany relation 
-   *
-   * @param Model related
-   * @param Model table
-   * @param string foreignPivotKey
-   * @param string relatedPivotKey
-   * @param string parentKey
-   * @param string relatedKey
-   * @param string alias
-   *
-   * @return mongodb/Document[] 
-   */
-  static lookup(related: typeof Model, table: typeof Model, foreignPivotKey: string, relatedPivotKey: string, parentKey: string = "_id", relatedKey: string = "_id", alias: string): Document[] {
-    const lookup: Document[] = []
-    const pipeline: Document[] = []
+	/**
+	 * @note This method generates the lookup stages for the BelongsToMany relation.
+	 * @param {typeof Model} related - The related model.
+	 * @param {typeof Model} table - The pivot table model.
+	 * @param {string} foreignPivotKey - The foreign pivot key.
+	 * @param {string} relatedPivotKey - The related pivot key.
+	 * @param {string} [parentKey="_id"] - The parent key.
+	 * @param {string} [relatedKey="_id"] - The related key.
+	 * @param {string} alias - The alias for the relation.
+	 * @return {Document[]} The lookup stages.
+	 */
+	static lookup(
+		related: typeof Model,
+		table: typeof Model,
+		foreignPivotKey: string,
+		relatedPivotKey: string,
+		parentKey: string = "_id",
+		relatedKey: string = "_id",
+		alias: string
+	): Document[] {
+		const lookup: Document[] = [];
+		const pipeline: Document[] = [];
 
-    if (related.$useSoftDelete) {
-      pipeline.push(
-        {
-          $match: {
-            $expr: {
-              $and: [{ $eq: ["$isDeleted", false] }],
-            },
-          },
-        },
-      );
-    }
+		// Add soft delete condition to the pipeline if enabled
+		if (related.$useSoftDelete) {
+			pipeline.push({
+				$match: {
+					$expr: {
+						$and: [{ $eq: ["$isDeleted", false] }],
+					},
+				},
+			});
+		}
 
-    lookup.push(
-      {
-        $lookup: {
-          from: table.$collection,
-          localField: parentKey,
-          foreignField: foreignPivotKey,
-          as: "pivot",
-        },
-      },
-      {
-        $lookup: {
-          from: related.$collection,
-          localField: `pivot.${relatedPivotKey}`,
-          foreignField: relatedKey,
-          as: alias || "pivot",
-          pipeline,
-        },
-      },
-      {
-        $project: {
-          pivot: 0,
-        },
-      }
-    );
+		// Define the $lookup stages
+		lookup.push(
+			{
+				$lookup: {
+					from: table.$collection,
+					localField: parentKey,
+					foreignField: foreignPivotKey,
+					as: "pivot",
+				},
+			},
+			{
+				$lookup: {
+					from: related.$collection,
+					localField: `pivot.${relatedPivotKey}`,
+					foreignField: relatedKey,
+					as: alias || "pivot",
+					pipeline,
+				},
+			},
+			{
+				$project: {
+					pivot: 0,
+				},
+			}
+		);
 
-    return lookup
-  }
+		return lookup;
+	}
 }
