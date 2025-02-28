@@ -64,7 +64,7 @@ export default class Query extends Database {
    * @note This property stores the maximum number of records to return.
    * @var {number}
    */
-  private static $limit: number = 15;
+  protected static $limit: number = 15;
 
   /**
    * @note This property stores the number of records to skip.
@@ -377,7 +377,7 @@ export default class Query extends Database {
     // Set the $onlyTrashed property to true
     this.$onlyTrashed = true;
     // Add a where clause to filter only trashed data
-    return this.where("isDeleted", "eq", true);
+    return this.where(this.$IS_DELETED, "eq", true);
   }
 
   /**
@@ -477,7 +477,7 @@ export default class Query extends Database {
   public static checkSoftDelete(): void {
     // Check if soft delete is enabled and apply the necessary conditions
     if (!this.$withTrashed && !this.$onlyTrashed && this.$useSoftDelete)
-      this.where("isDeleted", false);
+      this.where(this.$IS_DELETED, false);
   }
 
   /**
