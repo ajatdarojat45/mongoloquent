@@ -4,85 +4,73 @@ import Database from "./Database";
 
 export default class Query extends Database {
 	/**
-	 * The current stages to be run.
-	 *
+	 * @note This property stores the current stages to be run.
 	 * @var {mongodb/Document[]}
 	 */
 	protected static $stages: Document[] = [];
 
 	/**
-	 * The columns that should be returned.
-	 *
+	 * @note This property stores the columns that should be returned.
 	 * @var {string[]}
 	 */
 	protected static $columns: string[] = [];
 
 	/**
-	 * The columns that should be excluded.
-	 *
+	 * @note This property stores the columns that should be excluded.
 	 * @var {string[]}
 	 */
 	private static $excludes: string[] = [];
 
 	/**
-	 * The where constraints for the query.
-	 *
+	 * @note This property stores the where constraints for the query.
 	 * @var {IWhere[]}
 	 */
 	private static $wheres: IWhere[] = [];
 
 	/**
-	 * The orderings for the query.
-	 *
+	 * @note This property stores the orderings for the query.
 	 * @var {IOrder[]}
 	 */
 	private static $orders: IOrder[] = [];
 
 	/**
-	 * The groupings for the query.
-	 *
+	 * @note This property stores the groupings for the query.
 	 * @var {string[]}
 	 */
 	private static $groups: string[] = [];
 
 	/**
-	 * Identifier for soft delete feature.
-	 *
+	 * @note This property identifies if the soft delete feature is enabled.
 	 * @var {boolean}
 	 */
 	public static $useSoftDelete: boolean = false;
 
 	/**
-	 * Identifier for querying soft deleted data.
-	 *
+	 * @note This property identifies if querying soft deleted data is enabled.
 	 * @var {boolean}
 	 */
 	private static $withTrashed: boolean = false;
 
 	/**
-	 * Identifier for querying only soft deleted data.
-	 *
+	 * @note This property identifies if querying only soft deleted data is enabled.
 	 * @var {boolean}
 	 */
 	private static $onlyTrashed: boolean = false;
 
 	/**
-	 * The maximum number of records to return.
-	 *
+	 * @note This property stores the maximum number of records to return.
 	 * @var {number}
 	 */
 	private static $limit: number = 15;
 
 	/**
-	 * The number of records to skip.
-	 *
+	 * @note This property stores the number of records to skip.
 	 * @var {number}
 	 */
 	private static $offset: number = 0;
 
 	/**
-	 * All of the available clause operators.
-	 *
+	 * @note This property stores all of the available clause operators.
 	 * @var {Array<{operator: string, mongoOperator: string, options?: string}>}
 	 */
 	private static $operators = [
@@ -126,8 +114,7 @@ export default class Query extends Database {
 	];
 
 	/**
-	 * Set the columns to be selected.
-	 *
+	 * @note This method sets the columns to be selected.
 	 * @param  {string|string[]} columns - The columns to be selected.
 	 * @return {this} The current query instance.
 	 */
@@ -135,15 +122,18 @@ export default class Query extends Database {
 		this: T,
 		columns: string | string[]
 	): T {
-		if (Array.isArray(columns)) this.$columns.push(...columns);
+		// Check if columns is an array
+		if (Array.isArray(columns))
+			// Add each column to the $columns array
+			this.$columns.push(...columns);
+		// Add the single column to the $columns array
 		else this.$columns.push(columns);
 
 		return this;
 	}
 
 	/**
-	 * Set the columns to be excluded.
-	 *
+	 * @note This method sets the columns to be excluded.
 	 * @param  {string|string[]} columns - The columns to be excluded.
 	 * @return {this} The current query instance.
 	 */
@@ -151,15 +141,18 @@ export default class Query extends Database {
 		this: T,
 		columns: string | string[]
 	): T {
-		if (Array.isArray(columns)) this.$excludes.push(...columns);
+		// Check if columns is an array
+		if (Array.isArray(columns))
+			// Add each column to the $excludes array
+			this.$excludes.push(...columns);
+		// Add the single column to the $excludes array
 		else this.$excludes.push(columns);
 
 		return this;
 	}
 
 	/**
-	 * Add a basic where clause to the query.
-	 *
+	 * @note This method adds a basic where clause to the query.
 	 * @param  {string} column - The column to apply the where clause on.
 	 * @param  {any} operator - The operator to use.
 	 * @param  {any} [value=null] - The value to compare against.
@@ -173,17 +166,18 @@ export default class Query extends Database {
 		value: any = null,
 		boolean: string = "and"
 	): T {
+		// Determine the value and operator
 		let _value = value || operator;
 		let _operator = value ? operator : "eq";
 
+		// Add the where clause to the $wheres array
 		this.$wheres.push({ column, operator: _operator, value: _value, boolean });
 
 		return this;
 	}
 
 	/**
-	 * Add an "or where" clause to the query.
-	 *
+	 * @note This method adds an "or where" clause to the query.
 	 * @param  {string} column - The column to apply the where clause on.
 	 * @param  {any} [operator=null] - The operator to use.
 	 * @param  {any} [value=null] - The value to compare against.
@@ -195,12 +189,12 @@ export default class Query extends Database {
 		operator: string | null = null,
 		value: any = null
 	): T {
+		// Call the where method with "or" boolean
 		return this.where(column, operator, value, "or");
 	}
 
 	/**
-	 * Add a basic "where not" clause to the query.
-	 *
+	 * @note This method adds a basic "where not" clause to the query.
 	 * @param  {string} column - The column to apply the where clause on.
 	 * @param  {any} value - The value to compare against.
 	 * @param  {string} [boolean="and"] - The boolean operator to use (and/or).
@@ -212,12 +206,12 @@ export default class Query extends Database {
 		value: any,
 		boolean: string = "and"
 	): T {
+		// Call the where method with "ne" operator
 		return this.where(column, "ne", value, boolean);
 	}
 
 	/**
-	 * Add an "or where not" clause to the query.
-	 *
+	 * @note This method adds an "or where not" clause to the query.
 	 * @param  {string} column - The column to apply the where clause on.
 	 * @param  {any} value - The value to compare against.
 	 * @return {this} The current query instance.
@@ -227,12 +221,12 @@ export default class Query extends Database {
 		column: string,
 		value: any
 	): T {
+		// Call the whereNot method with "or" boolean
 		return this.whereNot(column, value, "or");
 	}
 
 	/**
-	 * Add a "where in" clause to the query.
-	 *
+	 * @note This method adds a "where in" clause to the query.
 	 * @param  {string} column - The column to apply the where clause on.
 	 * @param  {[any, ...any[]]} values - The values to compare against.
 	 * @param  {string} [boolean="and"] - The boolean operator to use (and/or).
@@ -246,15 +240,16 @@ export default class Query extends Database {
 		boolean: string = "and",
 		not: boolean = false
 	): T {
+		// Determine the operator type
 		const type = not ? "nin" : "in";
+		// Add the whereIn clause to the $wheres array
 		this.$wheres.push({ column, operator: type, value: values, boolean });
 
 		return this;
 	}
 
 	/**
-	 * Add an "or where in" clause to the query.
-	 *
+	 * @note This method adds an "or where in" clause to the query.
 	 * @param  {string} column - The column to apply the where clause on.
 	 * @param  {[any, ...any[]]} values - The values to compare against.
 	 * @return {this} The current query instance.
@@ -264,12 +259,12 @@ export default class Query extends Database {
 		column: string,
 		values: [any, ...any[]]
 	): T {
+		// Call the whereIn method with "or" boolean
 		return this.whereIn(column, values, "or");
 	}
 
 	/**
-	 * Add a "where not in" clause to the query.
-	 *
+	 * @note This method adds a "where not in" clause to the query.
 	 * @param  {string} column - The column to apply the where clause on.
 	 * @param  {[any, ...any[]]} values - The values to compare against.
 	 * @param  {string} [boolean="and"] - The boolean operator to use (and/or).
@@ -281,12 +276,12 @@ export default class Query extends Database {
 		values: [any, ...any[]],
 		boolean: string = "and"
 	): T {
+		// Call the whereIn method with "nin" operator
 		return this.whereIn(column, values, boolean, true);
 	}
 
 	/**
-	 * Add an "or where not in" clause to the query.
-	 *
+	 * @note This method adds an "or where not in" clause to the query.
 	 * @param  {string} column - The column to apply the where clause on.
 	 * @param  {[any, ...any[]]} values - The values to compare against.
 	 * @return {this} The current query instance.
@@ -296,12 +291,12 @@ export default class Query extends Database {
 		column: string,
 		values: [any, ...any[]]
 	): T {
+		// Call the whereNotIn method with "or" boolean
 		return this.whereNotIn(column, values, "or");
 	}
 
 	/**
-	 * Add a where between statement to the query.
-	 *
+	 * @note This method adds a where between statement to the query.
 	 * @param  {string} column - The column to apply the where clause on.
 	 * @param  {[any, any]} values - The range of values to compare against.
 	 * @param  {string} [boolean="and"] - The boolean operator to use (and/or).
@@ -315,6 +310,7 @@ export default class Query extends Database {
 		boolean: string = "and",
 		not: boolean = false
 	): T {
+		// Add the whereBetween clause to the $wheres array
 		this.$wheres.push({
 			column,
 			operator: "between",
@@ -326,8 +322,7 @@ export default class Query extends Database {
 	}
 
 	/**
-	 * Add an or where between statement to the query.
-	 *
+	 * @note This method adds an or where between statement to the query.
 	 * @param  {string} column - The column to apply the where clause on.
 	 * @param  {[any, any]} values - The range of values to compare against.
 	 * @return {this} The current query instance.
@@ -337,12 +332,12 @@ export default class Query extends Database {
 		column: string,
 		values: [any, any]
 	): T {
+		// Call the whereBetween method with "or" boolean
 		return this.whereBetween(column, values, "or");
 	}
 
 	/**
-	 * Add a "where null" clause to the query.
-	 *
+	 * @note This method adds a "where null" clause to the query.
 	 * @param  {string} column - The column to check for null.
 	 * @param  {string} [boolean="and"] - The boolean operator to use (and/or).
 	 * @return {this} The current query instance.
@@ -352,77 +347,78 @@ export default class Query extends Database {
 		column: string,
 		boolean: string = "and"
 	): T {
+		// Call the where method with "eq" operator and null value
 		return this.where(column, "eq", null, boolean);
 	}
 
 	/**
-	 * Set query with trashed data.
-	 *
+	 * @note This method sets the query to include trashed data.
 	 * @return {this} The current query instance.
 	 */
 	public static withTrashed<T extends typeof Query>(this: T): T {
+		// Set the $withTrashed property to true
 		this.$withTrashed = true;
 
 		return this;
 	}
 
 	/**
-	 * Set query only trashed data.
-	 *
+	 * @note This method sets the query to include only trashed data.
 	 * @return {this} The current query instance.
 	 */
 	public static onlyTrashed<T extends typeof Query>(this: T): T {
+		// Set the $onlyTrashed property to true
 		this.$onlyTrashed = true;
+		// Add a where clause to filter only trashed data
 		return this.where("isDeleted", "eq", true);
 	}
 
 	/**
-	 * Set the "offset" value of the query.
-	 *
+	 * @note This method sets the "offset" value of the query.
 	 * @param  {number} value - The number of records to skip.
 	 * @return {this} The current query instance.
 	 */
 	public static offset<T extends typeof Query>(this: T, value: number): T {
+		// Add the $skip stage to the $stages array
 		this.$stages.push({ $skip: value });
 
 		return this;
 	}
 
 	/**
-	 * Alias to set the "offset" value of the query.
-	 *
+	 * @note This method is an alias to set the "offset" value of the query.
 	 * @param  {number} value - The number of records to skip.
 	 * @return {this} The current query instance.
 	 */
 	public static skip<T extends typeof Query>(this: T, value: number): T {
+		// Call the offset method
 		return this.offset(value);
 	}
 
 	/**
-	 * Set the "limit" value of the query.
-	 *
+	 * @note This method sets the "limit" value of the query.
 	 * @param  {number} value - The maximum number of records to return.
 	 * @return {this} The current query instance.
 	 */
 	public static limit<T extends typeof Query>(this: T, value: number): T {
+		// Add the $limit stage to the $stages array
 		this.$stages.push({ $limit: value });
 
 		return this;
 	}
 
 	/**
-	 * Alias to set the "limit" value of the query.
-	 *
+	 * @note This method is an alias to set the "limit" value of the query.
 	 * @param  {number} value - The maximum number of records to return.
 	 * @return {this} The current query instance.
 	 */
 	public static take<T extends typeof Query>(this: T, value: number): T {
+		// Call the limit method
 		return this.limit(value);
 	}
 
 	/**
-	 * Set the limit and offset for a given page.
-	 *
+	 * @note This method sets the limit and offset for a given page.
 	 * @param  {number} page - The page number.
 	 * @param  {number} [perPage=15] - The number of records per page.
 	 * @return {this} The current query instance.
@@ -432,12 +428,12 @@ export default class Query extends Database {
 		page: number,
 		perPage: number = 15
 	): T {
+		// Set the offset and limit for the given page
 		return this.offset((page - 1) * perPage).limit(perPage);
 	}
 
 	/**
-	 * Add order by for a query.
-	 *
+	 * @note This method adds an order by clause to the query.
 	 * @param  {string} column - The column to order by.
 	 * @param  {string} [order="asc"] - The order direction (asc/desc).
 	 * @param  {boolean} [isSensitive=false] - Whether the order is case-sensitive.
@@ -449,64 +445,66 @@ export default class Query extends Database {
 		order: string = "asc",
 		isSensitive: boolean = false
 	): T {
+		// Add the order by clause to the $orders array
 		this.$orders.push({ column, order, isSensitive });
 
 		return this;
 	}
 
 	/**
-	 * Add group by for a query.
-	 *
+	 * @note This method adds a group by clause to the query.
 	 * @param  {string} column - The column to group by.
 	 * @return {this} The current query instance.
 	 */
 	static groupBy<T extends typeof Query>(this: T, column: string): T {
+		// Add the group by clause to the $groups array
 		this.$groups.push(column);
 
 		return this;
 	}
 
 	/**
-	 * Check soft delete feature.
-	 *
+	 * @note This method checks if the soft delete feature is enabled and applies the necessary conditions.
 	 * @return {void}
 	 */
 	public static checkSoftDelete(): void {
+		// Check if soft delete is enabled and apply the necessary conditions
 		if (!this.$withTrashed && !this.$onlyTrashed && this.$useSoftDelete)
 			this.where("isDeleted", false);
 	}
 
 	/**
-	 * Generate selected columns for a query.
-	 *
+	 * @note This method generates the selected columns for a query.
 	 * @return {void}
 	 */
 	public static generateColumns(): void {
 		let $project = {};
+		// Add each selected column to the $project stage
 		this.$columns.forEach((el) => {
 			$project = { ...$project, [el]: 1 };
 		});
 
+		// Add the $project stage to the $stages array if there are selected columns
 		if (Object.keys($project).length > 0) this.$stages.push({ $project });
 	}
 
 	/**
-	 * Generate excluded columns for a query.
-	 *
+	 * @note This method generates the excluded columns for a query.
 	 * @return {void}
 	 */
 	public static generateExcludes(): void {
 		let $project = {};
+		// Add each excluded column to the $project stage
 		this.$excludes.forEach((el) => {
 			$project = { ...$project, [el]: 0 };
 		});
 
+		// Add the $project stage to the $stages array if there are excluded columns
 		if (Object.keys($project).length > 0) this.$stages.push({ $project });
 	}
 
 	/**
-	 * Generate conditions for a query.
-	 *
+	 * @note This method generates the conditions for a query.
 	 * @return {void}
 	 */
 	public static generateWheres(): void {
@@ -558,8 +556,7 @@ export default class Query extends Database {
 	}
 
 	/**
-	 * Generate orders for a query.
-	 *
+	 * @note This method generates the orders for a query.
 	 * @return {void}
 	 */
 	static generateOrders(): void {
@@ -599,8 +596,7 @@ export default class Query extends Database {
 	}
 
 	/**
-	 * Generate groups for a query.
-	 *
+	 * @note This method generates the groups for a query.
 	 * @return {void}
 	 */
 	static generateGroups(): void {
@@ -619,8 +615,7 @@ export default class Query extends Database {
 	}
 
 	/**
-	 * Reset query state.
-	 *
+	 * @note This method resets the query state.
 	 * @return {void}
 	 */
 	protected static resetQuery(): void {
