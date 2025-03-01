@@ -9,7 +9,7 @@ import {
 import Relation from "./Relation";
 import dayjs from "./utils/dayjs";
 import { TIME_ZONE } from "./configs/app";
-import { IPaginate } from "./interfaces/IModel";
+import { IModelPaginate } from "./interfaces/IModel";
 
 export default class Model extends Relation {
   /**
@@ -38,57 +38,21 @@ export default class Model extends Relation {
    *
    * @var string
    */
-  protected static $CREATED_AT = "CREATED_AT";
+  protected static $createdAt = "CREATED_AT";
 
   /**
    * @note This property defines the name of the "updated at" column.
    *
    * @var string
    */
-  protected static $UPDATED_AT = "UPDATED_AT";
-
-  /**
-   * @note This method aggregates the query stages and lookups, then executes the aggregation pipeline.
-   *
-   * @return Promise<AggregationCursor<Document>>
-   */
-  static async aggregate() {
-    try {
-      // Check if soft delete is enabled and apply necessary filters
-      this.checkSoftDelete();
-      // Generate the columns to be selected in the query
-      this.generateColumns();
-      // Generate the columns to be excluded from the query
-      this.generateExcludes();
-      // Generate the where conditions for the query
-      this.generateWheres();
-      // Generate the order by conditions for the query
-      this.generateOrders();
-      // Generate the group by conditions for the query
-      this.generateGroups();
-
-      // Get the collection from the database
-      const collection = this.getCollection();
-      // Execute the aggregation pipeline with the generated stages and lookups
-      const aggregate = collection.aggregate([...this.$stages, ...this.$lookups]);
-
-      // Reset the query and relation states
-      this.resetQuery();
-      this.resetRelation();
-
-      return aggregate;
-    } catch (error) {
-      console.log(error);
-      throw new Error(`Aggregation failed`);
-    }
-  }
+  protected static $updatedAt = "UPDATED_AT";
 
   /**
    * @note This method retrieves all documents from the collection, excluding soft-deleted ones if applicable.
    *
    * @return Promise<WithId<Document>[]>
    */
-  static async all() {
+  public static async all() {
     try {
       // Get the collection from the database
       const collection = this.getCollection();
@@ -112,11 +76,10 @@ export default class Model extends Relation {
    * @param columns - The columns to retrieve.
    * @return Promise<Document[]>
    */
-  static async get(columns: string | string[] = []) {
+  public static async get(columns: string | string[] = []) {
     try {
       // Add the specified columns to the query
-      if (Array.isArray(columns)) this.$columns.push(...columns);
-      else this.$columns.push(columns);
+      this.setColumns(columns)
 
       // Execute the aggregation pipeline
       const aggregate = await this.aggregate();
@@ -136,10 +99,10 @@ export default class Model extends Relation {
    * @param perPage - The number of documents per page.
    * @return Promise<IPaginate>
    */
-  static async paginate(
+  public static async paginate(
     page: number = 1,
     limit: number = this.$limit
-  ): Promise<IPaginate> {
+  ): Promise<IModelPaginate> {
     try {
       // Check if soft delete is enabled and apply necessary filters
       this.checkSoftDelete();
@@ -157,7 +120,9 @@ export default class Model extends Relation {
       // Get the collection from the database
       const collection = this.getCollection();
       // Execute the aggregation pipeline with the generated stages and lookups
-      const aggregate = collection.aggregate([...this.$stages, ...this.$lookups]);
+      const stages = this.getStages()
+      const lookups = this.getLookups()
+      const aggregate = collection.aggregate([...stages, ...lookups]);
 
       // Generate the where conditions for the query
       this.generateWheres();
@@ -165,7 +130,7 @@ export default class Model extends Relation {
       // Get the total count of documents
       let totalResult = await collection
         .aggregate([
-          ...this.$stages,
+          ...stages,
           {
             $count: "total",
           },
@@ -182,8 +147,7 @@ export default class Model extends Relation {
         .toArray();
 
       // Reset the query and relation states
-      this.resetQuery();
-      this.resetRelation();
+      this.reset();
 
       return {
         data: result,
@@ -206,7 +170,7 @@ export default class Model extends Relation {
    * @param columns - The columns to retrieve.
    * @return Promise<Document|null>
    */
-  static async first(columns: string | string[] = []) {
+  public static async first(columns: string | string[] = []) {
     try {
       // Retrieve the documents based on the specified columns
       const data = await this.get(columns);
@@ -228,8 +192,9 @@ export default class Model extends Relation {
    * @param id - The id of the item to retrieve.
    * @return this 
    */
-  static find<T extends typeof Model>(this: T, id: string | ObjectId) {
-    this.$parentId = new ObjectId(id)
+  public static find<T extends typeof Model>(this: T, id: string | ObjectId) {
+    const parentId = new ObjectId(id)
+    this.setParentId(parentId)
 
     return this
   }
@@ -240,7 +205,7 @@ export default class Model extends Relation {
    * @param column - The column to pluck.
    * @return Promise<any>
    */
-  static async pluck(column: string): Promise<any> {
+  public static async pluck(column: string): Promise<any> {
     try {
       // Retrieve the documents matching the query
       const data = (await this.get()) as any[];
@@ -371,7 +336,8 @@ export default class Model extends Relation {
       this.generateWheres();
       this.generateOrders();
       let filter = {};
-      if (this.$stages.length > 0) filter = this.$stages[0].$match;
+      const stages = this.getStages()
+      if (stages.length > 0) filter = stages[0].$match;
 
       // Apply timestamps and soft delete fields to the document if enabled
       let newDoc = this.checkUseTimestamps(doc, false);
@@ -391,8 +357,8 @@ export default class Model extends Relation {
         }
       );
 
-      // Reset the query state
-      this.resetQuery();
+      // Reset the query and relation states
+      this.reset();
       return data;
     } catch (error) {
       console.log(error);
@@ -418,8 +384,9 @@ export default class Model extends Relation {
       // Generate the where conditions for the query
       this.generateWheres();
       this.generateOrders();
+      const stages = this.getStages()
       let filter = {};
-      if (this.$stages.length > 0) filter = this.$stages[0].$match;
+      if (stages.length > 0) filter = stages[0].$match;
 
       // Apply timestamps and soft delete fields to the documents if enabled
       let newDoc = this.checkUseTimestamps(doc, false);
@@ -436,9 +403,8 @@ export default class Model extends Relation {
         options
       );
 
-      // Reset the query state
-      this.resetQuery();
-
+      // Reset the query and relation states
+      this.reset();
       return {
         modifiedCount: data.modifiedCount,
       };
@@ -460,8 +426,9 @@ export default class Model extends Relation {
 
       // Generate the where conditions for the query
       this.generateWheres();
+      const stages = this.getStages()
       let filter = {};
-      if (this.$stages.length > 0) filter = this.$stages[0].$match;
+      if (stages.length > 0) filter = stages[0].$match;
 
       // If soft delete is enabled, update the document to mark it as deleted
       if (this.$useSoftDelete) {
@@ -487,7 +454,7 @@ export default class Model extends Relation {
       // Delete the document from the collection
       const data = await collection.findOneAndDelete(filter);
       // Reset the query state
-      this.resetQuery();
+      this.reset();
 
       return data || null;
     } catch (error) {
@@ -501,14 +468,15 @@ export default class Model extends Relation {
    *
    * @return Promise<{ deletedCount: number }>
    */
-  static async deleteMany(): Promise<{ deletedCount: number }> {
+  public static async deleteMany(): Promise<{ deletedCount: number }> {
     try {
       // Get the collection from the database
       const collection = this.getCollection();
       // Generate the where conditions for the query
       this.generateWheres();
+      const stages = this.getStages()
       let filter = {};
-      if (this.$stages.length > 0) filter = this.$stages[0].$match;
+      if (stages.length > 0) filter = stages[0].$match;
 
       // If soft delete is enabled, update the documents to mark them as deleted
       if (this.$useSoftDelete) {
@@ -532,7 +500,7 @@ export default class Model extends Relation {
       // Delete the documents from the collection
       const data = await collection.deleteMany(filter);
       // Reset the query state
-      this.resetQuery();
+      this.reset();
 
       return {
         deletedCount: data.deletedCount,
@@ -549,7 +517,7 @@ export default class Model extends Relation {
    * @param ids - The ids of the documents to destroy.
    * @return Promise<{ deletedCount: number }>
    */
-  static async destroy(
+  public static async destroy(
     ids: string | string[] | ObjectId | ObjectId[]
   ): Promise<{ deletedCount: number }> {
     try {
@@ -585,14 +553,15 @@ export default class Model extends Relation {
       this.onlyTrashed();
       this.generateWheres();
 
+      const stages = this.getStages()
       let filter = {};
-      if (this.$stages.length > 0) filter = this.$stages[0].$match;
+      if (stages.length > 0) filter = stages[0].$match;
 
       // Forcefully delete the documents from the collection
       const data = await collection.deleteMany(filter);
 
       // Reset the query state
-      this.resetQuery();
+      this.reset();
       return {
         deletedCount: data.deletedCount,
       };
@@ -628,13 +597,14 @@ export default class Model extends Relation {
       this.onlyTrashed().whereIn("_id", id);
       this.generateWheres();
 
+      const stages = this.getStages()
       let filter = {};
-      if (this.$stages.length > 0) filter = this.$stages[0].$match;
+      if (stages.length > 0) filter = stages[0].$match;
 
       // Forcefully delete the documents from the collection
       const data = await collection.deleteMany(filter);
 
-      this.resetQuery();
+      this.reset();
 
       return {
         deletedCount: data.deletedCount,
@@ -650,13 +620,13 @@ export default class Model extends Relation {
    *
    * @return Promise<{ modifiedCount: number }>
    */
-  static async restore(): Promise<{ modifiedCount: number }> {
+  public static async restore(): Promise<{ modifiedCount: number }> {
     try {
       // Only include soft-deleted documents in the query
       this.onlyTrashed();
 
       // Update the documents to mark them as not deleted
-      return await this.updateMany({ [this.$IS_DELETED]: false });
+      return await this.updateMany({ [this.$isDeleted]: false });
     } catch (error) {
       console.log(error);
       throw new Error(`Restoring documents failed`);
@@ -670,17 +640,18 @@ export default class Model extends Relation {
    * @param type - The type of aggregation (default is "max").
    * @return Promise<number>
    */
-  static async max(field: string, type: string = "max"): Promise<number> {
+  public static async max(field: string, type: string = "max"): Promise<number> {
     try {
       // Get the collection from the database
       const collection = this.getCollection();
       // Generate the where conditions for the query
       this.generateWheres();
 
+      const stages = this.getStages()
       // Execute the aggregation pipeline to get the maximum value of the specified field
       const aggregate = await collection
         .aggregate([
-          ...this.$stages,
+          ...stages,
           {
             $group: {
               _id: null,
@@ -693,7 +664,7 @@ export default class Model extends Relation {
         .next();
 
       // Reset the query state
-      this.resetQuery();
+      this.reset()
 
       return aggregate?.[type] || 0;
     } catch (error) {
@@ -708,7 +679,7 @@ export default class Model extends Relation {
    * @param field - The field to get the minimum value of.
    * @return Promise<number>
    */
-  static async min(field: string): Promise<number> {
+  public static async min(field: string): Promise<number> {
     return this.max(field, "min");
   }
 
@@ -718,7 +689,7 @@ export default class Model extends Relation {
    * @param field - The field to get the average value of.
    * @return Promise<number>
    */
-  static async avg(field: string): Promise<number> {
+  public static async avg(field: string): Promise<number> {
     return this.max(field, "avg");
   }
 
@@ -728,7 +699,7 @@ export default class Model extends Relation {
    * @param field - The field to get the sum of.
    * @return Promise<number>
    */
-  static async sum(field: string): Promise<number> {
+  public static async sum(field: string): Promise<number> {
     return this.max(field, "sum");
   }
 
@@ -737,7 +708,7 @@ export default class Model extends Relation {
    *
    * @return Promise<number>
    */
-  static async count(): Promise<number> {
+  public static async count(): Promise<number> {
     try {
       // Get the collection from the database
       const collection = this.getCollection();
@@ -745,10 +716,11 @@ export default class Model extends Relation {
       // Generate the where conditions for the query
       this.generateWheres();
 
+      const stages = this.getStages()
       // Execute the aggregation pipeline to get the count of documents
       const aggregate = await collection
         .aggregate([
-          ...this.$stages,
+          ...stages,
           {
             $count: "total",
           },
@@ -756,7 +728,7 @@ export default class Model extends Relation {
         .next();
 
       // Reset the query state
-      this.resetQuery();
+      this.reset();
       return aggregate?.total || 0;
     } catch (error) {
       console.log(error);
@@ -765,20 +737,57 @@ export default class Model extends Relation {
   }
 
   /**
-   * @note This method applies created_at and updated_at timestamps to the document if $useTimestamps is true.
+   * @note This method aggregates the query stages and lookups, then executes the aggregation pipeline.
    *
-   * @param doc - The document to check.
-   * @param isNew - Whether the document is new.
-   * @return object
+   * @return Promise<AggregationCursor<Document>>
    */
-  public static checkUseTimestamps(doc: object, isNew: boolean = true): object {
+  private static async aggregate() {
+    try {
+      // Check if soft delete is enabled and apply necessary filters
+      this.checkSoftDelete();
+      // Generate the columns to be selected in the query
+      this.generateColumns();
+      // Generate the columns to be excluded from the query
+      this.generateExcludes();
+      // Generate the where conditions for the query
+      this.generateWheres();
+      // Generate the order by conditions for the query
+      this.generateOrders();
+      // Generate the group by conditions for the query
+      this.generateGroups();
+
+      // Get the collection from the database
+      const collection = this.getCollection();
+      // Execute the aggregation pipeline with the generated stages and lookups
+      const stages = this.getStages()
+      const lookups = this.getLookups()
+      const aggregate = collection.aggregate([...stages, ...lookups]);
+
+      // Reset the query and relation states
+      this.reset();
+
+      return aggregate;
+    } catch (error) {
+      console.log(error);
+      throw new Error(`Aggregation failed`);
+    }
+  }
+
+  /**
+  * @note This method applies created_at and updated_at timestamps to the document if $useTimestamps is true.
+  *
+  * @param doc - The document to check.
+  * @param isNew - Whether the document is new.
+  * @return object
+  */
+  private static checkUseTimestamps(doc: object, isNew: boolean = true): object {
     if (this.$useTimestamps) {
       const current = dayjs().format("YYYY/MM/DD HH:mm:ss");
       const now = dayjs.utc(current).tz(this.$timezone).toDate();
 
-      if (!isNew) return { ...doc, [this.$UPDATED_AT]: now };
+      if (!isNew) return { ...doc, [this.$updatedAt]: now };
 
-      return { ...doc, [this.$CREATED_AT]: now, [this.$UPDATED_AT]: now };
+      return { ...doc, [this.$createdAt]: now, [this.$updatedAt]: now };
     }
 
     return doc;
@@ -791,7 +800,7 @@ export default class Model extends Relation {
    * @param isDeleted - Whether the document is deleted.
    * @return object
    */
-  public static checkUseSoftdelete(
+  private static checkUseSoftdelete(
     doc: object,
     isDeleted: boolean = false
   ): object {
@@ -800,12 +809,19 @@ export default class Model extends Relation {
         const current = dayjs().format("YYYY/MM/DD HH:mm:ss");
         const now = dayjs.utc(current).tz(this.$timezone).toDate();
 
-        return { ...doc, [this.$IS_DELETED]: true, [this.$DELETED_AT]: now };
+        return { ...doc, [this.$isDeleted]: true, [this.$deletedAt]: now };
       }
 
-      return { ...doc, [this.$IS_DELETED]: false };
+      return { ...doc, [this.$isDeleted]: false };
     }
 
     return doc;
   }
+
+  private static reset(): void {
+    this.resetQuery();
+    this.resetRelation();
+  }
+
+
 }

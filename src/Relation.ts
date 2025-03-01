@@ -29,7 +29,7 @@ export default class Relation extends Query {
    * @note This property stores the lookup stages for the relationship.
    * @var Document[]
    */
-  protected static $lookups: Document[] = [];
+  private static $lookups: Document[] = [];
 
   /**
    * @note This method sets up the relationship and calls the corresponding relation method.
@@ -45,8 +45,12 @@ export default class Relation extends Query {
     // Check if the relation method exists
     if (typeof this[relation] === "function") {
       // Set the alias and options for the relation
-      this.$alias = relation as string;
-      this.$options = options;
+      if (true) {
+        const alias = relation as string;
+        this.setAlias(alias)
+        this.setOptions(options)
+      }
+
       // Call the relation method
       (this[relation] as Function).call(this);
     } else {
@@ -93,7 +97,7 @@ export default class Relation extends Query {
       this.$options
     );
     // Add the lookup stages to the $lookups array
-    this.$lookups = [...this.$lookups, ...lookup]
+    this.setLookups(lookup)
 
     return related;
   }
@@ -119,7 +123,7 @@ export default class Relation extends Query {
       this.$options
     );
     // Add the lookup stages to the $lookups array
-    this.$lookups = [...this.$lookups, ...lookup]
+    this.setLookups(lookup)
 
     return related;
   }
@@ -145,10 +149,11 @@ export default class Relation extends Query {
       this.$options
     );
     // Add the lookup stages to the $lookups array
-    this.$lookups = [...this.$lookups, ...lookup]
+    this.setLookups(lookup)
 
-    if (this.$parentId)
-      related.where(foreignKey, this.$parentId)
+    const parentId = this.getParentId()
+    if (parentId)
+      related.where(foreignKey, parentId)
 
     return related;
   }
@@ -183,7 +188,7 @@ export default class Relation extends Query {
       this.$options
     );
     // Add the lookup stages to the $lookups array
-    this.$lookups = [...this.$lookups, ...lookup]
+    this.setLookups(lookup)
 
     return related;
   }
@@ -218,7 +223,7 @@ export default class Relation extends Query {
       this.$options
     );
     // Add the lookup stages to the $lookups array
-    this.$lookups = [...this.$lookups, ...lookup]
+    this.setLookups(lookup)
 
     return related;
   }
@@ -246,7 +251,7 @@ export default class Relation extends Query {
       this.$options
     );
     // Add the lookup stages to the $lookups array
-    this.$lookups = [...this.$lookups, ...lookup]
+    this.setLookups(lookup)
 
     return target;
   }
@@ -274,7 +279,7 @@ export default class Relation extends Query {
       this.$options
     );
     // Add the lookup stages to the $lookups array
-    this.$lookups = [...this.$lookups, ...lookup]
+    this.setLookups(lookup)
 
     return target;
   }
@@ -302,7 +307,7 @@ export default class Relation extends Query {
       this.$options
     );
     // Add the lookup stages to the $lookups array
-    this.$lookups = [...this.$lookups, ...lookup]
+    this.setLookups(lookup)
 
     return target;
   }
@@ -330,7 +335,7 @@ export default class Relation extends Query {
       this.$options
     );
     // Add the lookup stages to the $lookups array
-    this.$lookups = [...this.$lookups, ...lookup]
+    this.setLookups(lookup)
 
     return target;
   }
@@ -390,6 +395,24 @@ export default class Relation extends Query {
     lookup.push(project, ...additionals);
 
     return lookup;
+  }
+
+  private static setLookups(doc: Document): void {
+    if (Array.isArray(doc))
+      this.$lookups = [...this.$lookups, ...doc]
+    else this.$lookups = [...this.$lookups, doc]
+  }
+
+  protected static getLookups(): Document[] {
+    return this.$lookups
+  }
+
+  private static setOptions(options: IRelationOptions): void {
+    this.$options = options
+  }
+
+  private static setAlias(name: string): void {
+    this.$alias = name
   }
 
   /**
