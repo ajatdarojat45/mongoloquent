@@ -10,6 +10,7 @@ import Relation from "./Relation";
 import dayjs from "./utils/dayjs";
 import { TIME_ZONE } from "./configs/app";
 import { IModelPaginate } from "./interfaces/IModel";
+import { IRelationTypes } from "./interfaces/IRelation";
 
 export default class Model extends Relation {
   /**
@@ -104,6 +105,7 @@ export default class Model extends Relation {
     limit: number = this.$limit
   ): Promise<IModelPaginate> {
     try {
+      await this.checkRelation()
       // Check if soft delete is enabled and apply necessary filters
       this.checkSoftDelete();
       // Generate the columns to be selected in the query
@@ -123,9 +125,6 @@ export default class Model extends Relation {
       const stages = this.getStages()
       const lookups = this.getLookups()
       const aggregate = collection.aggregate([...stages, ...lookups]);
-
-      // Generate the where conditions for the query
-      this.generateWheres();
 
       // Get the total count of documents
       let totalResult = await collection
@@ -743,6 +742,7 @@ export default class Model extends Relation {
    */
   private static async aggregate() {
     try {
+      await this.checkRelation()
       // Check if soft delete is enabled and apply necessary filters
       this.checkSoftDelete();
       // Generate the columns to be selected in the query
@@ -824,4 +824,82 @@ export default class Model extends Relation {
   }
 
 
+  private static async checkRelation() {
+    const relationship = this.getRelationship()
+
+    switch (relationship?.type) {
+      case IRelationTypes.hasMany:
+        this.where(relationship.foreignKey, relationship.parentId)
+        break
+
+      case IRelationTypes.belongsToMany:
+        const btmColl = this.getCollection(
+          relationship.pivot.$collection
+        );
+
+        const btmIds = await btmColl
+          .find({
+            [relationship.foreignPivotKey]: relationship.parentId,
+          })
+          .map((el) => el[relationship.relatedPivotKey])
+          .toArray();
+
+        this.whereIn("_id", btmIds);
+        break
+
+      case IRelationTypes.hasManyThrough:
+        const hmtColl = this.getCollection(
+          relationship.through.$collection
+        );
+
+        const hmtIds = await hmtColl
+          .find({
+            [relationship.firstKey]: relationship.parentId
+          })
+          .map((el) => el._id)
+          .toArray();
+
+        this.whereIn(relationship.secondKey, hmtIds);
+        break
+
+      case IRelationTypes.morphMany:
+        this.where(
+          relationship.morphType,
+          relationship.model.name
+        ).where(relationship.morphId, relationship.parentId);
+        break
+
+      case IRelationTypes.morphToMany:
+        const mtmColl = this.getCollection(relationship.collection);
+        const key = `${relationship.model.name.toLowerCase()}Id`
+
+        const mtmIds = await mtmColl
+          .find({
+            [relationship.morphType]: relationship.model.name,
+            [relationship.morphId]: relationship.parentId,
+          })
+          .map((el) => el[key])
+          .toArray();
+
+        this.whereIn(relationship.ownerKey, mtmIds);
+        break
+
+      case IRelationTypes.morphByMany:
+        const mbmColl = this.getCollection(relationship.collection);
+
+        const mbmIds = await mbmColl
+          .find({
+            [relationship.morphType]: this.name,
+            [relationship.foreignKey]: relationship.parentId
+          })
+          .map((el) => el[relationship.morphId])
+          .toArray();
+
+        this.whereIn(relationship.ownerKey, mbmIds);
+        break
+
+      default:
+        break
+    }
+  }
 }

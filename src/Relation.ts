@@ -1,7 +1,7 @@
-import { Document } from "mongodb";
+import { Document, ObjectId } from "mongodb";
 import Model from "./Model";
 import Query from "./Query";
-import { IRelationOptions } from "./interfaces/IRelation";
+import { IRelationBelongsToMany, IRelationHasMany, IRelationHasManyThrough, IRelationMorphByMany, IRelationMorphMany, IRelationMorphToMany, IRelationOptions, IRelationTypes } from "./interfaces/IRelation";
 import HasOne from "./relations/HasOne";
 import BelongsTo from "./relations/BelongsTo";
 import HasMany from "./relations/HasMany";
@@ -30,6 +30,8 @@ export default class Relation extends Query {
    * @var Document[]
    */
   private static $lookups: Document[] = [];
+
+  private static $relationship: IRelationHasMany | IRelationBelongsToMany | IRelationHasManyThrough | IRelationMorphMany | IRelationMorphToMany | IRelationMorphByMany | null = null
 
   /**
    * @note This method sets up the relationship and calls the corresponding relation method.
@@ -151,9 +153,14 @@ export default class Relation extends Query {
     // Add the lookup stages to the $lookups array
     this.setLookups(lookup)
 
-    const parentId = this.getParentId()
-    if (parentId)
-      related.where(foreignKey, parentId)
+    const hasMany: IRelationHasMany = {
+      type: IRelationTypes.hasMany,
+      model: related,
+      foreignKey,
+      localKey,
+      parentId: this.getParentId()
+    }
+    this.setRelationship(hasMany)
 
     return related;
   }
@@ -170,7 +177,7 @@ export default class Relation extends Query {
    */
   static belongsToMany(
     related: typeof Model,
-    table: typeof Model,
+    pivot: typeof Model,
     foreignPivotKey: string,
     relatedPivotKey: string,
     parentKey: string = "_id",
@@ -179,7 +186,7 @@ export default class Relation extends Query {
     // Generate the lookup stages for the belongsToMany relationship
     const lookup = BelongsToMany.generate(
       related,
-      table,
+      pivot,
       foreignPivotKey,
       relatedPivotKey,
       parentKey,
@@ -190,6 +197,18 @@ export default class Relation extends Query {
     // Add the lookup stages to the $lookups array
     this.setLookups(lookup)
 
+    const belongsToMany: IRelationBelongsToMany = {
+      type: IRelationTypes.belongsToMany,
+      model: related,
+      pivot,
+      foreignPivotKey,
+      relatedPivotKey,
+      parentKey,
+      relatedKey,
+      parentId: this.getParentId(),
+    }
+
+    related.setRelationship(belongsToMany)
     return related;
   }
 
@@ -224,6 +243,19 @@ export default class Relation extends Query {
     );
     // Add the lookup stages to the $lookups array
     this.setLookups(lookup)
+
+
+    const hasManyThrough: IRelationHasManyThrough = {
+      type: IRelationTypes.hasManyThrough,
+      model: related,
+      through: through,
+      firstKey,
+      secondKey,
+      localKey,
+      secondLocalKey,
+      parentId: this.getParentId()
+    }
+    related.setRelationship(hasManyThrough)
 
     return related;
   }
@@ -281,6 +313,15 @@ export default class Relation extends Query {
     // Add the lookup stages to the $lookups array
     this.setLookups(lookup)
 
+    const morphMany: IRelationMorphMany = {
+      type: IRelationTypes.morphMany,
+      model: target,
+      morphType: `${name}Type`,
+      morphId: `${name}Id`,
+      parentId: this.getParentId(),
+    }
+    target.setRelationship(morphMany)
+
     return target;
   }
 
@@ -309,6 +350,18 @@ export default class Relation extends Query {
     // Add the lookup stages to the $lookups array
     this.setLookups(lookup)
 
+    const morphToMany: IRelationMorphToMany = {
+      type: IRelationTypes.morphToMany,
+      model: target,
+      foreignKey: `${target.name.toLocaleLowerCase()}s`,
+      collection: `${this.$alias}s`,
+      morphType: `${name} Type`,
+      morphId: `${name} Id`,
+      ownerKey,
+      parentId: this.getParentId(),
+    }
+    target.setRelationship(morphToMany)
+
     return target;
   }
 
@@ -328,14 +381,26 @@ export default class Relation extends Query {
     const lookup = MorphByMany.generate(
       target,
       name,
-      `${name}Type`,
-      `${name}Id`,
+      `${name} Type`,
+      `${name} Id`,
       ownerKey,
       this.$alias,
       this.$options
     );
     // Add the lookup stages to the $lookups array
     this.setLookups(lookup)
+
+    const morphByMany: IRelationMorphByMany = {
+      type: IRelationTypes.morphByMany,
+      model: target,
+      collection: `${this.$alias} s`,
+      morphType: `${name} Type`,
+      morphId: `${name} Id`,
+      foreignKey: `${this.name.toLowerCase()} Id`,
+      ownerKey,
+      parentId: this.getParentId(),
+    }
+    target.setRelationship(morphByMany)
 
     return target;
   }
@@ -371,7 +436,7 @@ export default class Relation extends Query {
         ...project,
         $project: {
           ...project.$project,
-          [`${alias}.${el}`]: isSelect ? 1 : -1,
+          [`${alias}.${el} `]: isSelect ? 1 : -1,
         },
       };
     });
@@ -381,7 +446,7 @@ export default class Relation extends Query {
       additionals.push(
         {
           $set: {
-            [`document.${alias}`]: `$${alias}`,
+            [`document.${alias} `]: `$${alias} `,
           },
         },
         {
@@ -415,6 +480,22 @@ export default class Relation extends Query {
     this.$alias = name
   }
 
+  private static setRelationship(
+    relation:
+      IRelationHasMany |
+      IRelationHasManyThrough |
+      IRelationBelongsToMany |
+      IRelationMorphMany |
+      IRelationMorphToMany |
+      IRelationMorphByMany
+  ): void {
+    this.$relationship = relation
+  }
+
+  protected static getRelationship() {
+    return this.$relationship
+  }
+
   /**
    * @note This method excludes columns in a has one relation.
    * @param {string|string[]} columns - The columns to exclude.
@@ -429,12 +510,187 @@ export default class Relation extends Query {
     return this.selectRelationColumns(columns, alias, false);
   }
 
+  public static async attach(ids: string | string[] | ObjectId | ObjectId[]) {
+    const relationship = this.getRelationship()
+
+    if (relationship?.type === IRelationTypes.belongsToMany) return this.attachBelongsToMany(ids)
+    else if (relationship?.type === IRelationTypes.morphToMany) return this.attachMorphToMany(ids)
+  }
+
+  public static detach(ids: string | string[] | ObjectId | ObjectId[]) {
+    const relationship = this.getRelationship()
+
+    if (relationship?.type === IRelationTypes.belongsToMany) return this.detachBelongsToMany(ids)
+    else if (relationship?.type === IRelationTypes.morphToMany) return this.detachMorphToMany(ids)
+  }
+
+  private static async attachBelongsToMany(
+    ids: string | string[] | ObjectId | ObjectId[]
+  ) {
+    const relationship = this.getRelationship()
+    if (relationship?.type !== IRelationTypes.belongsToMany) return null
+
+    let objectIds: ObjectId[] = [];
+    let query: Document = {};
+
+    if (!Array.isArray(ids)) objectIds = ids ? [new ObjectId(ids)] : [];
+    else objectIds = ids.map((el) => new ObjectId(el));
+
+    const collection = this.getCollection(relationship.pivot.$collection);
+    const _payload: object[] = [];
+
+    query = {
+      [relationship.foreignPivotKey]: {
+        $in: objectIds,
+      },
+      [relationship.relatedPivotKey]: relationship.parentId,
+    };
+
+    objectIds.forEach((id) =>
+      _payload.push({
+        [relationship.relatedPivotKey]: relationship.parentId,
+        [relationship.foreignPivotKey]: id,
+      })
+    );
+
+    // find data
+    const existingData = await collection.find(query).toArray();
+
+    // check data
+    for (let i = 0; i < objectIds.length; i++) {
+      const existingItem = existingData.find((item: any) => {
+        return JSON.stringify(item[relationship.foreignPivotKey]) === JSON.stringify(objectIds[i]);
+      });
+
+      // insert if data does not exist
+      if (!existingItem) {
+        await collection.insertOne(_payload[i]);
+      }
+    }
+
+    return {
+      message: "Attach successfully",
+    };
+  }
+
+  private static async attachMorphToMany(
+    ids: string | string[] | ObjectId | ObjectId[]
+  ) {
+    const relationship = this.getRelationship()
+    if (relationship?.type !== IRelationTypes.morphToMany) return null
+
+    let objectIds: ObjectId[] = [];
+    let query = {};
+
+    if (!Array.isArray(ids)) objectIds = ids ? [new ObjectId(ids)] : [];
+    else objectIds = ids.map((el) => new ObjectId(el));
+
+    const collection = this.getCollection(relationship.collection);
+    const _payload: object[] = [];
+
+    query = {
+      [relationship.foreignKey]: { $in: ids },
+      [relationship.morphId]: relationship.parentId,
+      [relationship.morphType]: relationship.model.name,
+    };
+
+    objectIds.forEach((id) =>
+      _payload.push({
+        [relationship.foreignKey]: id,
+        [relationship.morphId]: relationship.parentId,
+        [relationship.morphType]: relationship.model.name,
+      })
+    );
+
+    // find data
+    const existingData = await collection.find(query).toArray();
+
+    // check data
+    for (let i = 0; i < objectIds.length; i++) {
+      const existingItem = existingData.find((item: any) => {
+        return JSON.stringify(item[relationship.foreignKey]) === JSON.stringify(objectIds[i]);
+      });
+
+      // insert if data does not exist
+      if (!existingItem) {
+        await collection.insertOne(_payload[i]);
+      }
+    }
+
+    return {
+      message: "Attach successfully",
+    };
+  }
+
+  public static async detachBelongsToMany(
+    ids: string | string[] | ObjectId | ObjectId[]
+  ) {
+    const relationship = this.getRelationship();
+    if (relationship?.type !== IRelationTypes.belongsToMany) return null
+
+    let objectIds: ObjectId[] = [];
+    let isDeleteAll = false;
+
+    if (!Array.isArray(ids)) {
+      objectIds = ids ? [new ObjectId(ids)] : [];
+      isDeleteAll = !ids && true;
+    }
+    else objectIds = ids.map((el) => new ObjectId(el));
+
+    const collection = this.getCollection(relationship.pivot.$collection);
+    const query = {
+      [relationship.foreignPivotKey]: {
+        $in: ids,
+      },
+      [relationship.relatedPivotKey]: relationship.parentId,
+    };
+
+    isDeleteAll && delete query[relationship.foreignPivotKey];
+    await collection.deleteMany(query);
+
+    return {
+      message: "Detach successfully",
+    };
+  }
+
+  private static async detachMorphToMany(
+    ids: string | string[] | ObjectId | ObjectId[]
+  ) {
+    const relationship = this.getRelationship()
+    if (relationship?.type !== IRelationTypes.morphToMany) return null
+
+    let objectIds: ObjectId[] = [];
+    let isDeleteAll = false;
+
+    if (!Array.isArray(ids)) {
+      objectIds = ids ? [new ObjectId(ids)] : [];
+      isDeleteAll = !ids && true;
+    } else objectIds = ids.map((el) => new ObjectId(el));
+
+
+    const collection = this.getCollection(relationship.collection);
+    const query = {
+      [relationship.foreignKey]: { $in: ids },
+      [relationship.morphId]: relationship.parentId,
+      [relationship.morphType]: relationship.model.name,
+    };
+
+    isDeleteAll && delete query[relationship.foreignKey];
+
+    await collection.deleteMany(query);
+
+    return {
+      message: "Detach successfully",
+    };
+  }
+
   /**
-   * @note This method resets the relation lookups.
-   * @return {void}
-   */
+  * @note This method resets the relation lookups.
+  * @return {void}
+  */
   protected static resetRelation(): void {
     // Clear the $lookups array
     this.$lookups = [];
+    this.$relationship = null
   }
 }
