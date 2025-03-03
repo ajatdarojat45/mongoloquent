@@ -60,7 +60,7 @@ export default class HasMany {
       pipeline.push({
         $match: {
           $expr: {
-            $and: [{ $eq: ["$isDeleted", false] }],
+            $and: [{ $eq: [`$${related.getIsDeleted()}`, false] }],
           },
         },
       });

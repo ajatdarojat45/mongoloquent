@@ -1,10 +1,10 @@
 import { ObjectId } from "mongodb";
-import Model from "../../src/database/Model";
+import Model from "../../src/Model";
 
 class Post extends Model {
-  static collection = "posts";
-  static timestamps = true;
-  static softDelete = true;
+  static $collection = "posts";
+  static $useSoftDelete = true;
+  static $useTimestamps = true;
 
   static comments() {
     return this.hasMany(Comment, "postId", "_id");
@@ -12,9 +12,9 @@ class Post extends Model {
 }
 
 class Comment extends Model {
-  static collection = "comments";
-  static timestamps = true;
-  static softDelete = true;
+  static $collection = "comments";
+  static $useSoftDelete = true;
+  static $useTimestamps = true;
 
   static post() {
     return this.belongsTo(Post, "postId", "_id");
@@ -39,7 +39,6 @@ beforeAll(async () => {
       description: "Post 3",
     },
   ]);
-
   commentIds = await Comment.insertMany([
     {
       text: "Comment 1",
@@ -70,24 +69,21 @@ afterAll(async () => {
 
 describe("hasMany Relation", () => {
   it("Should return related data", async () => {
-    const { data: post }: any = await Post.with("comments")
-      .where("title", "Post 1")
-      .first();
-
+    const post = await Post.with("comments").where("title", "Post 1").first();
     expect(post).toEqual(expect.any(Object));
     expect(post).toHaveProperty("comments");
 
-    const comments = post.comments;
+    const comments = post?.comments;
     expect(comments).toEqual(expect.any(Array));
     expect(comments).toHaveLength(3);
 
     const comment = comments[0];
     expect(comment).toEqual(expect.any(Object));
-    expect(comment).toHaveProperty("postId", post._id);
+    expect(comment).toHaveProperty("postId", post?._id);
   });
 
   it("With selected fields", async () => {
-    const { data: post }: any = await Post.with("comments", {
+    const post = await Post.with("comments", {
       select: ["text"],
     })
       .where("title", "Post 1")
@@ -96,7 +92,7 @@ describe("hasMany Relation", () => {
     expect(post).toEqual(expect.any(Object));
     expect(post).toHaveProperty("comments");
 
-    const comments = post.comments;
+    const comments = post?.comments;
     expect(comments).toEqual(expect.any(Array));
     expect(comments).toHaveLength(3);
 
@@ -108,7 +104,7 @@ describe("hasMany Relation", () => {
   });
 
   it("With excluded fields", async () => {
-    const { data: post }: any = await Post.with("comments", {
+    const post = await Post.with("comments", {
       exclude: ["text"],
     })
       .where("title", "Post 1")
@@ -117,7 +113,7 @@ describe("hasMany Relation", () => {
     expect(post).toEqual(expect.any(Object));
     expect(post).toHaveProperty("comments");
 
-    const comments = post.comments;
+    const comments = post?.comments;
     expect(comments).toEqual(expect.any(Array));
     expect(comments).toHaveLength(3);
 
@@ -125,24 +121,26 @@ describe("hasMany Relation", () => {
     expect(comment).toEqual(expect.any(Object));
     expect(comment).not.toHaveProperty("text");
     expect(comment).toHaveProperty("_id");
-    expect(comment).toHaveProperty("postId", post._id);
+    expect(comment).toHaveProperty("postId", post?._id);
   });
 
   it("With has no related data", async () => {
-    const { data: post }: any = await Post.with("comments", {
-      exclude: ["text"],
-    }).find(postIds[2]);
+    const post = await Post.where("_id", postIds[2])
+      .with("comments", {
+        exclude: ["text"],
+      })
+      .first();
 
     expect(post).toEqual(expect.any(Object));
     expect(post).toHaveProperty("comments");
 
-    const comments = post.comments;
+    const comments = post?.comments;
     expect(comments).toEqual(expect.any(Array));
     expect(comments).toHaveLength(0);
   });
 
   it("Querying related data", async () => {
-    const post: any = await Post.find(postIds[0]);
+    const post = Post.find(postIds[0]);
     const comments = await post.comments().where("text", "Comment 1").get();
 
     expect(comments).toEqual(expect.any(Array));
@@ -150,8 +148,7 @@ describe("hasMany Relation", () => {
   });
 
   it("Add data from related model", async () => {
-    const post: any = await Post.find(postIds[0]);
-
+    const post = Post.find(postIds[0]);
     const newComment = await post.comments().save({
       text: "New Comment",
     });
@@ -166,7 +163,7 @@ describe("hasMany Relation", () => {
   });
 
   it("Add multiple data from related model", async () => {
-    const post: any = await Post.find(postIds[0]);
+    const post = await Post.find(postIds[0]);
 
     await post
       .comments()
@@ -180,12 +177,12 @@ describe("hasMany Relation", () => {
   it("With softDelete", async () => {
     await Comment.destroy(commentIds[0]);
 
-    const { data: post }: any = await Post.with("comments").find(postIds[0]);
+    const post = await Post.with("comments").where("_id", postIds[0]).first();
 
     expect(post).toEqual(expect.any(Object));
     expect(post).toHaveProperty("comments");
 
-    const comments = post.comments;
+    const comments = post?.comments;
     expect(comments).toEqual(expect.any(Array));
     expect(comments).toHaveLength(5);
 

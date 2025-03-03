@@ -172,6 +172,7 @@ export default class Relation extends Query {
     );
     // Add the lookup stages to the $lookups array
     this.setLookups(lookup);
+    this.setRelatedModel(related);
 
     const hasMany: IRelationHasMany = {
       type: IRelationTypes.hasMany,
@@ -180,7 +181,7 @@ export default class Relation extends Query {
       localKey,
       parentId: this.getParentId(),
     };
-    this.setRelationship(hasMany);
+    related.setRelationship(hasMany);
 
     return related;
   }

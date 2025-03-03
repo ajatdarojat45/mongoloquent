@@ -237,9 +237,12 @@ export default class Model extends Relation {
       // Apply soft delete fields to the document if enabled
       newDoc = this.checkUseSoftdelete(newDoc);
 
+      newDoc = this.checkRelationship(newDoc);
+
       // Insert the document into the collection
       const data = await collection.insertOne(newDoc, options);
 
+      this.reset();
       // Return the inserted document with its ID
       return { _id: data.insertedId, ...newDoc };
     } catch (error) {
@@ -295,6 +298,7 @@ export default class Model extends Relation {
       const newDocs = docs.map((el) => {
         let newEl = this.checkUseTimestamps(el);
         newEl = this.checkUseSoftdelete(newEl);
+        newEl = this.checkRelationship(newEl);
 
         return newEl;
       });
@@ -309,6 +313,7 @@ export default class Model extends Relation {
         result.push(data.insertedIds[key]);
       }
 
+      this.reset();
       return result;
     } catch (error) {
       console.log(error);
@@ -822,6 +827,42 @@ export default class Model extends Relation {
     }
 
     return doc;
+  }
+
+  private static checkRelationship(doc: object): object {
+    const relationship = this.getRelationship();
+    if (!relationship) return doc;
+
+    switch (relationship.type) {
+      case IRelationTypes.hasMany:
+        return { ...doc, [relationship.foreignKey]: relationship.parentId };
+
+      case IRelationTypes.belongsToMany:
+        return doc;
+
+      case IRelationTypes.hasManyThrough:
+        return doc;
+
+      case IRelationTypes.morphMany:
+        return {
+          ...doc,
+          [relationship.morphType]: relationship.model.name,
+          [relationship.morphId]: relationship.parentId,
+        };
+
+      case IRelationTypes.morphToMany:
+        return doc;
+
+      case IRelationTypes.morphByMany:
+        return {
+          ...doc,
+          [relationship.morphType]: this.name,
+          [relationship.foreignKey]: relationship.parentId,
+        };
+
+      default:
+        return doc;
+    }
   }
 
   private static reset(): void {
