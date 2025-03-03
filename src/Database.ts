@@ -72,7 +72,7 @@ export default class Database {
    * @note This method retrieves the MongoDB database specified by the model.
    * @return {Db} The MongoDB database.
    */
-  private static getDb(): Db {
+  protected static getDb(): Db {
     // Determine the connection URI
     const connection =
       this.$connection !== "" ? this.$connection : MONGOLOQUENT_DATABASE_URI;
@@ -137,7 +137,10 @@ export default class Database {
       // Return the connected database
       return db;
     } catch (error) {
-      console.error("Mongoloquent failed to connect to MongoDB database:", error);
+      console.error(
+        "Mongoloquent failed to connect to MongoDB database:",
+        error
+      );
       // Throw an error if the connection fails
       throw new Error("Mongoloquent failed to connect to MongoDB database.");
     }

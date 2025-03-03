@@ -4,10 +4,10 @@ import Database from "./Database";
 
 export default class Query extends Database {
   /**
-    * @note This property stores the parentId of the document 
-    * @var {null|ObjectId}
-    */
-  private static $parentId: null | ObjectId
+   * @note This property stores the parentId of the document
+   * @var {null|ObjectId}
+   */
+  private static $parentId: null | ObjectId;
 
   /**
    * @note This property stores the current stages to be run.
@@ -140,7 +140,7 @@ export default class Query extends Database {
     this: T,
     columns: string | string[]
   ): T {
-    this.setColumns(columns)
+    this.setColumns(columns);
     return this;
   }
 
@@ -153,7 +153,7 @@ export default class Query extends Database {
     this: T,
     columns: string | string[]
   ): T {
-    this.setExcludes(columns)
+    this.setExcludes(columns);
     return this;
   }
 
@@ -168,14 +168,14 @@ export default class Query extends Database {
     this: T,
     column: string,
     operator: any,
-    value: any = null,
+    value: any = null
   ): T {
     // Determine the value and operator
     let _value = value || operator;
     let _operator = value ? operator : "eq";
 
     // Add the where clause to the $wheres array
-    this.setWheres(column, _operator, _value, "and")
+    this.setWheres(column, _operator, _value, "and");
 
     return this;
   }
@@ -198,9 +198,9 @@ export default class Query extends Database {
     let _operator = value ? operator : "eq";
 
     // Add the where clause to the $wheres array
-    this.setWheres(column, _operator, _value, "or")
+    this.setWheres(column, _operator, _value, "or");
 
-    return this
+    return this;
   }
 
   /**
@@ -212,12 +212,12 @@ export default class Query extends Database {
   public static whereNot<T extends typeof Query>(
     this: T,
     column: string,
-    value: any,
+    value: any
   ): T {
     // Add the where clause to the $wheres array
-    this.setWheres(column, "ne", value, "and")
+    this.setWheres(column, "ne", value, "and");
 
-    return this
+    return this;
   }
 
   /**
@@ -232,9 +232,9 @@ export default class Query extends Database {
     value: any
   ): T {
     // Add the where clause to the $wheres array
-    this.setWheres(column, "ne", value, "or")
+    this.setWheres(column, "ne", value, "or");
 
-    return this
+    return this;
   }
 
   /**
@@ -246,10 +246,10 @@ export default class Query extends Database {
   public static whereIn<T extends typeof Query>(
     this: T,
     column: string,
-    values: any[],
+    values: any[]
   ): T {
     // Add the where clause to the $wheres array
-    this.setWheres(column, "in", values, "and")
+    this.setWheres(column, "in", values, "and");
 
     return this;
   }
@@ -263,12 +263,12 @@ export default class Query extends Database {
   public static orWhereIn<T extends typeof Query>(
     this: T,
     column: string,
-    values: any[],
+    values: any[]
   ): T {
     // Add the where clause to the $wheres array
-    this.setWheres(column, "in", values, "or")
+    this.setWheres(column, "in", values, "or");
 
-    return this
+    return this;
   }
 
   /**
@@ -283,9 +283,9 @@ export default class Query extends Database {
     values: any[]
   ): T {
     // Add the where clause to the $wheres array
-    this.setWheres(column, "nin", values, "and")
+    this.setWheres(column, "nin", values, "and");
 
-    return this
+    return this;
   }
 
   /**
@@ -300,9 +300,9 @@ export default class Query extends Database {
     values: any[]
   ): T {
     // Add the where clause to the $wheres array
-    this.setWheres(column, "nin", values, "or")
+    this.setWheres(column, "nin", values, "or");
 
-    return this
+    return this;
   }
 
   /**
@@ -314,10 +314,10 @@ export default class Query extends Database {
   public static whereBetween<T extends typeof Query>(
     this: T,
     column: string,
-    values: [any, any],
+    values: [any, any]
   ): T {
     // Add the where clause to the $wheres array
-    this.setWheres(column, "between", values, "and")
+    this.setWheres(column, "between", values, "and");
 
     return this;
   }
@@ -334,9 +334,9 @@ export default class Query extends Database {
     values: [any, any]
   ): T {
     // Add the where clause to the $wheres array
-    this.setWheres(column, "between", values, "or")
+    this.setWheres(column, "between", values, "or");
 
-    return this
+    return this;
   }
 
   /**
@@ -344,14 +344,11 @@ export default class Query extends Database {
    * @param  {string} column - The column to check for null.
    * @return {this} The current query instance.
    */
-  public static whereNull<T extends typeof Query>(
-    this: T,
-    column: string,
-  ): T {
+  public static whereNull<T extends typeof Query>(this: T, column: string): T {
     // Add the where clause to the $wheres array
-    this.setWheres(column, "eq", null, "and")
+    this.setWheres(column, "eq", null, "and");
 
-    return this
+    return this;
   }
 
   /**
@@ -361,42 +358,42 @@ export default class Query extends Database {
    */
   public static OrWhereNull<T extends typeof Query>(
     this: T,
-    column: string,
+    column: string
   ): T {
     // Add the where clause to the $wheres array
-    this.setWheres(column, "eq", null, "or")
+    this.setWheres(column, "eq", null, "or");
 
-    return this
+    return this;
   }
 
   /**
-    * @note This method adds a "where not null" clause to the query.
-    * @param  {string} column - The column to check for null.
-    * @return {this} The current query instance.
-    */
+   * @note This method adds a "where not null" clause to the query.
+   * @param  {string} column - The column to check for null.
+   * @return {this} The current query instance.
+   */
   public static whereNotNull<T extends typeof Query>(
     this: T,
-    column: string,
+    column: string
   ): T {
     // Add the where clause to the $wheres array
-    this.setWheres(column, "ne", null, "and")
+    this.setWheres(column, "ne", null, "and");
 
-    return this
+    return this;
   }
 
   /**
-    * @note This method adds a "or where not null" clause to the query.
-    * @param  {string} column - The column to check for null.
-    * @return {this} The current query instance.
-    */
+   * @note This method adds a "or where not null" clause to the query.
+   * @param  {string} column - The column to check for null.
+   * @return {this} The current query instance.
+   */
   public static orWhereNotNull<T extends typeof Query>(
     this: T,
-    column: string,
+    column: string
   ): T {
     // Add the where clause to the $wheres array
-    this.setWheres(column, "ne", null, "or")
+    this.setWheres(column, "ne", null, "or");
 
-    return this
+    return this;
   }
 
   /**
@@ -428,7 +425,7 @@ export default class Query extends Database {
    */
   public static offset<T extends typeof Query>(this: T, value: number): T {
     // Add the $skip stage to the $stages array
-    this.setStages({ $skip: value })
+    this.setStages({ $skip: value });
 
     return this;
   }
@@ -450,7 +447,7 @@ export default class Query extends Database {
    */
   public static limit<T extends typeof Query>(this: T, value: number): T {
     // Add the $limit stage to the $stages array
-    this.setStages({ $limit: value })
+    this.setStages({ $limit: value });
 
     return this;
   }
@@ -494,7 +491,7 @@ export default class Query extends Database {
     isSensitive: boolean = false
   ): T {
     // Add the order by clause to the $orders array
-    this.setOrders({ column, order, isSensitive })
+    this.setOrders({ column, order, isSensitive });
 
     return this;
   }
@@ -506,39 +503,41 @@ export default class Query extends Database {
    */
   static groupBy<T extends typeof Query>(this: T, column: string): T {
     // Add the group by clause to the $groups array
-    this.setGroups(column)
+    this.setGroups(column);
 
     return this;
   }
 
   protected static setParentId(id: ObjectId | null): void {
-    this.$parentId = id
+    this.$parentId = id;
   }
 
   protected static getParentId(): ObjectId | null {
-    return this.$parentId
+    return this.$parentId;
   }
 
   private static setStages(doc: Document | Document[]): void {
-    if (Array.isArray(doc))
-      this.$stages = [...this.$stages, ...doc]
-    else this.$stages = [...this.$stages, doc]
+    if (Array.isArray(doc)) this.$stages = [...this.$stages, ...doc];
+    else this.$stages = [...this.$stages, doc];
   }
 
   protected static getStages(): Document[] {
-    return this.$stages
+    return this.$stages;
+  }
+
+  public static getIsDeleted(): string {
+    return this.$isDeleted;
   }
 
   protected static setColumns(columns: string | string[]): void {
-    if (Array.isArray(columns))
-      this.$columns = [...this.$columns, ...columns]
-    else this.$columns = [...this.$columns, columns]
+    if (Array.isArray(columns)) this.$columns = [...this.$columns, ...columns];
+    else this.$columns = [...this.$columns, columns];
   }
 
   private static setExcludes(columns: string | string[]): void {
     if (Array.isArray(columns))
-      this.$excludes = [...this.$excludes, ...columns]
-    else this.$excludes = [...this.$excludes, columns]
+      this.$excludes = [...this.$excludes, ...columns];
+    else this.$excludes = [...this.$excludes, columns];
   }
 
   /**
@@ -547,37 +546,34 @@ export default class Query extends Database {
    * @param  {any} operator - The operator to use.
    * @param  {any} [value=null] - The value to compare against.
    * @param  {string} [boolean="and"] - The boolean operator to use (and/or).
-   * @return {void} 
+   * @return {void}
    */
   private static setWheres(
     column: string,
     operator: any,
-    value: any = null,
-    boolean: string = "and",
+    value: any,
+    boolean: string = "and"
   ): void {
-    // Determine the value and operator
-    let _value = value || operator;
-    let _operator = value ? operator : "eq";
-
-    // Determine type of query E|R|S 
-    const ep = ["eq", "ne", "=", "!="]
-    let type = "R"
-    if (ep.includes(_operator)) type = "E"
+    // Determine type of query E|R|S
+    const ep = ["eq", "ne", "=", "!="];
+    let type = "R";
+    if (ep.includes(operator)) type = "E";
 
     // Add the where clause to the $wheres array
-    this.$wheres = [...this.$wheres, { column, operator: _operator, value: _value, boolean, type }]
+    this.$wheres = [
+      ...this.$wheres,
+      { column, operator: operator, value, boolean, type },
+    ];
   }
 
   private static setOrders(doc: IQueryOrder): void {
-    if (Array.isArray(doc))
-      this.$orders = [...this.$orders, ...doc]
-    else this.$orders = [...this.$orders, doc]
+    if (Array.isArray(doc)) this.$orders = [...this.$orders, ...doc];
+    else this.$orders = [...this.$orders, doc];
   }
 
   private static setGroups(doc: string): void {
-    if (Array.isArray(doc))
-      this.$groups = [...this.$groups, ...doc]
-    else this.$groups = [...this.$groups, doc]
+    if (Array.isArray(doc)) this.$groups = [...this.$groups, ...doc];
+    else this.$groups = [...this.$groups, doc];
   }
 
   /**
@@ -665,12 +661,11 @@ export default class Query extends Database {
 
     if ($or.length > 0) {
       if ($and.length > 0) $or.push({ $and });
-      this.setStages({ $match: { $or } })
+      this.setStages({ $match: { $or } });
       return;
     }
 
-    if ($and.length > 0)
-      this.setStages({ $match: { $and } })
+    if ($and.length > 0) this.setStages({ $match: { $and } });
   }
 
   /**
@@ -710,7 +705,7 @@ export default class Query extends Database {
       },
     ];
 
-    if (this.$orders.length > 0) this.setStages(orders)
+    if (this.$orders.length > 0) this.setStages(orders);
   }
 
   /**
@@ -729,7 +724,7 @@ export default class Query extends Database {
       count: { $sum: 1 },
     };
 
-    if (this.$groups.length > 0) this.setStages({ $group })
+    if (this.$groups.length > 0) this.setStages({ $group });
   }
 
   /**

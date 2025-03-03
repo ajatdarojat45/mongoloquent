@@ -36,8 +36,8 @@ export default class BelongsToMany {
       relatedKey,
       alias
     );
-    let select: Document[] = [];
-    let exclude: Document[] = [];
+    let select: any = [];
+    let exclude: any = [];
 
     // Generate the select stages if options.select is provided
     if (options?.select)
@@ -79,7 +79,7 @@ export default class BelongsToMany {
       pipeline.push({
         $match: {
           $expr: {
-            $and: [{ $eq: ["$isDeleted", false] }],
+            $and: [{ $eq: [`$${related.getIsDeleted()}`, false] }],
           },
         },
       });

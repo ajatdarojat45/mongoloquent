@@ -22,8 +22,8 @@ export default class BelongsTo {
   ): Document[] {
     // Generate the lookup stages for the belongsTo relationship
     const lookup = this.lookup(related, foreignKey, ownerKey, alias);
-    let select: Document[] = [];
-    let exclude: Document[] = [];
+    let select: any = [];
+    let exclude: any = [];
 
     // Generate the select stages if options.select is provided
     if (options?.select)

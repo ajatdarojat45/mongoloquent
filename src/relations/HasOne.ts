@@ -22,8 +22,8 @@ export default class HasOne {
   ): Document[] {
     // Generate the lookup stages for the hasOne relationship
     const lookup = this.lookup(related, foreignKey, localKey, alias);
-    let select: Document[] = [];
-    let exclude: Document[] = [];
+    let select: any = [];
+    let exclude: any = [];
 
     // Generate the select stages if options.select is provided
     if (options?.select)

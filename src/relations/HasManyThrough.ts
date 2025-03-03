@@ -36,8 +36,8 @@ export default class HasManyThrough {
       secondLocalKey,
       alias
     );
-    let select: Document[] = [];
-    let exclude: Document[] = [];
+    let select: any = [];
+    let exclude: any = [];
 
     // Generate the select stages if options.select is provided
     if (options?.select)

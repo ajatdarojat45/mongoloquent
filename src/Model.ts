@@ -14,7 +14,7 @@ import { IRelationTypes } from "./interfaces/IRelation";
 
 export default class Model extends Relation {
   /**
-   * @note This property store result of find method 
+   * @note This property store result of find method
    *
    * @var null|object
    */
@@ -80,7 +80,7 @@ export default class Model extends Relation {
   public static async get(columns: string | string[] = []) {
     try {
       // Add the specified columns to the query
-      this.setColumns(columns)
+      this.setColumns(columns);
 
       // Execute the aggregation pipeline
       const aggregate = await this.aggregate();
@@ -105,7 +105,7 @@ export default class Model extends Relation {
     limit: number = this.$limit
   ): Promise<IModelPaginate> {
     try {
-      await this.checkRelation()
+      await this.checkRelation();
       // Check if soft delete is enabled and apply necessary filters
       this.checkSoftDelete();
       // Generate the columns to be selected in the query
@@ -122,8 +122,8 @@ export default class Model extends Relation {
       // Get the collection from the database
       const collection = this.getCollection();
       // Execute the aggregation pipeline with the generated stages and lookups
-      const stages = this.getStages()
-      const lookups = this.getLookups()
+      const stages = this.getStages();
+      const lookups = this.getLookups();
       const aggregate = collection.aggregate([...stages, ...lookups]);
 
       // Get the total count of documents
@@ -189,13 +189,13 @@ export default class Model extends Relation {
    * @note This method set id and retrieve Model
    *
    * @param id - The id of the item to retrieve.
-   * @return this 
+   * @return this
    */
   public static find<T extends typeof Model>(this: T, id: string | ObjectId) {
-    const parentId = new ObjectId(id)
-    this.setParentId(parentId)
+    const parentId = new ObjectId(id);
+    this.setParentId(parentId);
 
-    return this
+    return this;
   }
 
   /**
@@ -335,7 +335,7 @@ export default class Model extends Relation {
       this.generateWheres();
       this.generateOrders();
       let filter = {};
-      const stages = this.getStages()
+      const stages = this.getStages();
       if (stages.length > 0) filter = stages[0].$match;
 
       // Apply timestamps and soft delete fields to the document if enabled
@@ -383,7 +383,7 @@ export default class Model extends Relation {
       // Generate the where conditions for the query
       this.generateWheres();
       this.generateOrders();
-      const stages = this.getStages()
+      const stages = this.getStages();
       let filter = {};
       if (stages.length > 0) filter = stages[0].$match;
 
@@ -425,7 +425,7 @@ export default class Model extends Relation {
 
       // Generate the where conditions for the query
       this.generateWheres();
-      const stages = this.getStages()
+      const stages = this.getStages();
       let filter = {};
       if (stages.length > 0) filter = stages[0].$match;
 
@@ -473,7 +473,7 @@ export default class Model extends Relation {
       const collection = this.getCollection();
       // Generate the where conditions for the query
       this.generateWheres();
-      const stages = this.getStages()
+      const stages = this.getStages();
       let filter = {};
       if (stages.length > 0) filter = stages[0].$match;
 
@@ -552,7 +552,7 @@ export default class Model extends Relation {
       this.onlyTrashed();
       this.generateWheres();
 
-      const stages = this.getStages()
+      const stages = this.getStages();
       let filter = {};
       if (stages.length > 0) filter = stages[0].$match;
 
@@ -596,7 +596,7 @@ export default class Model extends Relation {
       this.onlyTrashed().whereIn("_id", id);
       this.generateWheres();
 
-      const stages = this.getStages()
+      const stages = this.getStages();
       let filter = {};
       if (stages.length > 0) filter = stages[0].$match;
 
@@ -639,14 +639,17 @@ export default class Model extends Relation {
    * @param type - The type of aggregation (default is "max").
    * @return Promise<number>
    */
-  public static async max(field: string, type: string = "max"): Promise<number> {
+  public static async max(
+    field: string,
+    type: string = "max"
+  ): Promise<number> {
     try {
       // Get the collection from the database
       const collection = this.getCollection();
       // Generate the where conditions for the query
       this.generateWheres();
 
-      const stages = this.getStages()
+      const stages = this.getStages();
       // Execute the aggregation pipeline to get the maximum value of the specified field
       const aggregate = await collection
         .aggregate([
@@ -663,7 +666,7 @@ export default class Model extends Relation {
         .next();
 
       // Reset the query state
-      this.reset()
+      this.reset();
 
       return aggregate?.[type] || 0;
     } catch (error) {
@@ -715,7 +718,7 @@ export default class Model extends Relation {
       // Generate the where conditions for the query
       this.generateWheres();
 
-      const stages = this.getStages()
+      const stages = this.getStages();
       // Execute the aggregation pipeline to get the count of documents
       const aggregate = await collection
         .aggregate([
@@ -742,7 +745,7 @@ export default class Model extends Relation {
    */
   private static async aggregate() {
     try {
-      await this.checkRelation()
+      await this.checkRelation();
       // Check if soft delete is enabled and apply necessary filters
       this.checkSoftDelete();
       // Generate the columns to be selected in the query
@@ -759,8 +762,8 @@ export default class Model extends Relation {
       // Get the collection from the database
       const collection = this.getCollection();
       // Execute the aggregation pipeline with the generated stages and lookups
-      const stages = this.getStages()
-      const lookups = this.getLookups()
+      const stages = this.getStages();
+      const lookups = this.getLookups();
       const aggregate = collection.aggregate([...stages, ...lookups]);
 
       // Reset the query and relation states
@@ -774,13 +777,16 @@ export default class Model extends Relation {
   }
 
   /**
-  * @note This method applies created_at and updated_at timestamps to the document if $useTimestamps is true.
-  *
-  * @param doc - The document to check.
-  * @param isNew - Whether the document is new.
-  * @return object
-  */
-  private static checkUseTimestamps(doc: object, isNew: boolean = true): object {
+   * @note This method applies created_at and updated_at timestamps to the document if $useTimestamps is true.
+   *
+   * @param doc - The document to check.
+   * @param isNew - Whether the document is new.
+   * @return object
+   */
+  private static checkUseTimestamps(
+    doc: object,
+    isNew: boolean = true
+  ): object {
     if (this.$useTimestamps) {
       const current = dayjs().format("YYYY/MM/DD HH:mm:ss");
       const now = dayjs.utc(current).tz(this.$timezone).toDate();
@@ -819,23 +825,23 @@ export default class Model extends Relation {
   }
 
   private static reset(): void {
+    const relatedModel = this.getRelatedModel();
+    if (relatedModel) relatedModel.reset();
+
     this.resetQuery();
     this.resetRelation();
   }
 
-
   private static async checkRelation() {
-    const relationship = this.getRelationship()
+    const relationship = this.getRelationship();
 
     switch (relationship?.type) {
       case IRelationTypes.hasMany:
-        this.where(relationship.foreignKey, relationship.parentId)
-        break
+        this.where(relationship.foreignKey, relationship.parentId);
+        break;
 
       case IRelationTypes.belongsToMany:
-        const btmColl = this.getCollection(
-          relationship.pivot.$collection
-        );
+        const btmColl = this.getCollection(relationship.pivot.$collection);
 
         const btmIds = await btmColl
           .find({
@@ -845,33 +851,31 @@ export default class Model extends Relation {
           .toArray();
 
         this.whereIn("_id", btmIds);
-        break
+        break;
 
       case IRelationTypes.hasManyThrough:
-        const hmtColl = this.getCollection(
-          relationship.through.$collection
-        );
+        const hmtColl = this.getCollection(relationship.through.$collection);
 
         const hmtIds = await hmtColl
           .find({
-            [relationship.firstKey]: relationship.parentId
+            [relationship.firstKey]: relationship.parentId,
           })
           .map((el) => el._id)
           .toArray();
 
         this.whereIn(relationship.secondKey, hmtIds);
-        break
+        break;
 
       case IRelationTypes.morphMany:
-        this.where(
-          relationship.morphType,
-          relationship.model.name
-        ).where(relationship.morphId, relationship.parentId);
-        break
+        this.where(relationship.morphType, relationship.model.name).where(
+          relationship.morphId,
+          relationship.parentId
+        );
+        break;
 
       case IRelationTypes.morphToMany:
         const mtmColl = this.getCollection(relationship.collection);
-        const key = `${relationship.model.name.toLowerCase()}Id`
+        const key = `${relationship.model.name.toLowerCase()}Id`;
 
         const mtmIds = await mtmColl
           .find({
@@ -882,7 +886,7 @@ export default class Model extends Relation {
           .toArray();
 
         this.whereIn(relationship.ownerKey, mtmIds);
-        break
+        break;
 
       case IRelationTypes.morphByMany:
         const mbmColl = this.getCollection(relationship.collection);
@@ -890,16 +894,16 @@ export default class Model extends Relation {
         const mbmIds = await mbmColl
           .find({
             [relationship.morphType]: this.name,
-            [relationship.foreignKey]: relationship.parentId
+            [relationship.foreignKey]: relationship.parentId,
           })
           .map((el) => el[relationship.morphId])
           .toArray();
 
         this.whereIn(relationship.ownerKey, mbmIds);
-        break
+        break;
 
       default:
-        break
+        break;
     }
   }
 }

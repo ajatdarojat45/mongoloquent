@@ -5,7 +5,7 @@ import { IRelationOptions } from "../interfaces/IRelation";
 
 export default class MorphToMany {
   /**
-   * generate lookup, select and exclude for MorphToMany relation 
+   * generate lookup, select and exclude for MorphToMany relation
    *
    * @param Model target
    * @param string name
@@ -15,7 +15,7 @@ export default class MorphToMany {
    * @param string alias
    * @param options IRelationOptions
    *
-   * @return mongodb/Document[] 
+   * @return mongodb/Document[]
    */
   static generate(
     target: typeof Model,
@@ -26,28 +26,21 @@ export default class MorphToMany {
     alias: string,
     options: IRelationOptions
   ): Document[] {
-    const lookup = this.lookup(
-      target,
-      name,
-      type,
-      id,
-      ownerKey,
-      alias,
-    )
-    let select: Document[] = []
-    let exclude: Document[] = []
+    const lookup = this.lookup(target, name, type, id, ownerKey, alias);
+    let select: any = [];
+    let exclude: any = [];
 
     if (options?.select)
-      select = Relation.selectRelationColumns(options.select, alias)
+      select = Relation.selectRelationColumns(options.select, alias);
 
     if (options?.exclude)
-      select = Relation.excludeRelationColumns(options.exclude, alias)
+      select = Relation.excludeRelationColumns(options.exclude, alias);
 
-    return [...lookup, ...select, ...exclude]
+    return [...lookup, ...select, ...exclude];
   }
 
   /**
-   * generate lookup for MorphToMany relation 
+   * generate lookup for MorphToMany relation
    *
    * @param Model target
    * @param string name
@@ -56,7 +49,7 @@ export default class MorphToMany {
    * @param string ownerKey
    * @param string alias
    *
-   * @return mongodb/Document[] 
+   * @return mongodb/Document[]
    */
   static lookup(
     target: typeof Model,
@@ -64,10 +57,10 @@ export default class MorphToMany {
     type: string,
     id: string,
     ownerKey: string = "_id",
-    alias: string,
+    alias: string
   ): Document[] {
-    const lookup: Document[] = []
-    const pipeline: Document[] = []
+    const lookup: Document[] = [];
+    const pipeline: Document[] = [];
 
     if (target.$useSoftDelete) {
       pipeline.push({
@@ -76,7 +69,7 @@ export default class MorphToMany {
             $and: [{ $eq: ["$isDeleted", false] }],
           },
         },
-      })
+      });
     }
 
     lookup.push(
@@ -118,6 +111,6 @@ export default class MorphToMany {
       }
     );
 
-    return lookup
+    return lookup;
   }
 }

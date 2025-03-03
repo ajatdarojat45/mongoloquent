@@ -26,8 +26,8 @@ export default class MorphTo {
   ): Document[] {
     // Generate the lookup stages for the MorphTo relationship
     const lookup = this.lookup(target, name, type, id, ownerKey, alias);
-    let select: Document[] = [];
-    let exclude: Document[] = [];
+    let select: any = [];
+    let exclude: any = [];
 
     // Generate the select stages if options.select is provided
     if (options?.select)
