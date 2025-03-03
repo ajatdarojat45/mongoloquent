@@ -25,6 +25,7 @@ export default class MorphTo {
     options: IRelationOptions
   ): Document[] {
     // Generate the lookup stages for the MorphTo relationship
+    if (alias === "") alias = "alias";
     const lookup = this.lookup(target, name, type, id, ownerKey, alias);
     let select: any = [];
     let exclude: any = [];
@@ -59,7 +60,7 @@ export default class MorphTo {
     ownerKey: string = "_id",
     alias: string
   ): Document[] {
-    const lookup: Document[] = [];
+    const lookup: Document[] = [{ $project: { alias: 0 } }];
     const pipeline: Document[] = [];
 
     // Add soft delete condition to the pipeline if enabled
@@ -68,7 +69,7 @@ export default class MorphTo {
         $match: {
           $expr: {
             $and: [
-              { $eq: ["$isDeleted", false] },
+              { $eq: [`$${target.getIsDeleted()}`, false] },
               {
                 $eq: [`$${type}`, name],
               },

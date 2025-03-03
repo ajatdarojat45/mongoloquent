@@ -7,6 +7,7 @@ import {
   IRelationHasManyThrough,
   IRelationMorphByMany,
   IRelationMorphMany,
+  IRelationMorphTo,
   IRelationMorphToMany,
   IRelationOptions,
   IRelationTypes,
@@ -49,6 +50,7 @@ export default class Relation extends Query {
     | IRelationBelongsToMany
     | IRelationHasManyThrough
     | IRelationMorphMany
+    | IRelationMorphTo
     | IRelationMorphToMany
     | IRelationMorphByMany
     | null = null;
@@ -297,7 +299,7 @@ export default class Relation extends Query {
     // Generate the lookup stages for the morphTo relationship
     const lookup = MorphTo.generate(
       target,
-      name,
+      this.name,
       `${name}Type`,
       `${name}Id`,
       ownerKey,
@@ -306,6 +308,19 @@ export default class Relation extends Query {
     );
     // Add the lookup stages to the $lookups array
     this.setLookups(lookup);
+    this.setRelatedModel(target);
+
+    const morphMany: IRelationMorphTo = {
+      type: IRelationTypes.morphTo,
+      model: target,
+      modelName: this.name,
+      morphType: `${name}Type`,
+      morphId: `${name}Id`,
+      parentId: this.getParentId(),
+    };
+    target.setRelationship(morphMany);
+
+    return target;
 
     return target;
   }
@@ -528,6 +543,7 @@ export default class Relation extends Query {
       | IRelationHasMany
       | IRelationHasManyThrough
       | IRelationBelongsToMany
+      | IRelationMorphTo
       | IRelationMorphMany
       | IRelationMorphToMany
       | IRelationMorphByMany

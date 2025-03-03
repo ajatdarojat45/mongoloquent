@@ -1,10 +1,10 @@
 import { ObjectId } from "mongodb";
-import Model from "../../src/database/Model";
+import Model from "../../src/Model";
 
 class Post extends Model {
-  static collection = "posts";
-  static softDelete = true;
-  static timestamps = true;
+  static $collection = "posts";
+  static $useSoftDelete = true;
+  static $useTimestamps = true;
 
   static image() {
     return this.morphTo(Image, "imageable");
@@ -12,9 +12,9 @@ class Post extends Model {
 }
 
 class User extends Model {
-  static collection = "users";
-  static softDelete = true;
-  static timestamps = true;
+  static $collection = "users";
+  static $useSoftDelete = true;
+  static $useTimestamps = true;
 
   static image() {
     return this.morphTo(Image, "imageable");
@@ -22,9 +22,9 @@ class User extends Model {
 }
 
 class Image extends Model {
-  static collection = "imageables";
-  static softDelete = true;
-  static timestamps = true;
+  static $collection = "imageables";
+  static $useSoftDelete = true;
+  static $useTimestamps = true;
 }
 
 let userIds: ObjectId[];
@@ -44,15 +44,8 @@ beforeAll(async () => {
     { title: "Post 3" },
   ]);
 
-  const user: any = await User.find(userIds[0]);
-  await user.image().save({
-    url: "image1.jpg",
-  });
-
-  const post: any = await Post.find(postIds[0]);
-  await post.image().save({
-    url: "image2.jpg",
-  });
+  await User.find(userIds[0]).image().save({ url: "image1.jpg" });
+  await Post.find(postIds[0]).image().save({ url: "image2.jpg" });
 });
 
 afterAll(async () => {
@@ -67,13 +60,11 @@ afterAll(async () => {
 
 describe("morphTo Relation", () => {
   it("Should return related data", async () => {
-    const { data: user }: any = await User.with("image").find(userIds[0]);
-
+    const user = await User.with("image").where("_id", userIds[0]).first();
     expect(user).toEqual(expect.any(Object));
     expect(user).toHaveProperty("image");
 
-    const { image } = user;
-
+    const image = user?.image;
     expect(image).toEqual(expect.any(Object));
     expect(image).toHaveProperty("url");
     expect(image).toHaveProperty("imageableId", userIds[0]);
@@ -81,12 +72,12 @@ describe("morphTo Relation", () => {
   });
 
   it("Should return related data from another model", async () => {
-    const { data: post }: any = await Post.with("image").find(postIds[0]);
+    const post = await Post.with("image").where("_id", postIds[0]).first();
 
     expect(post).toEqual(expect.any(Object));
     expect(post).toHaveProperty("image");
 
-    const { image } = post;
+    const image = post?.image;
 
     expect(image).toEqual(expect.any(Object));
     expect(image).toHaveProperty("url");
@@ -95,15 +86,16 @@ describe("morphTo Relation", () => {
   });
 
   it("With selected fields", async () => {
-    const { data: user }: any = await User.with("image", {
+    const user = await User.with("image", {
       select: ["url"],
-    }).find(userIds[0]);
+    })
+      .where("_id", userIds[0])
+      .first();
 
     expect(user).toEqual(expect.any(Object));
     expect(user).toHaveProperty("image");
 
-    const { image } = user;
-
+    const image = user?.image;
     expect(image).toEqual(expect.any(Object));
     expect(image).toHaveProperty("url");
     expect(image).not.toHaveProperty("_id");
@@ -112,15 +104,16 @@ describe("morphTo Relation", () => {
   });
 
   it("With excluded fields", async () => {
-    const { data: user }: any = await User.with("image", {
+    const user = await User.with("image", {
       exclude: ["url"],
-    }).find(userIds[0]);
+    })
+      .where("_id", userIds[0])
+      .first();
 
     expect(user).toEqual(expect.any(Object));
     expect(user).toHaveProperty("image");
 
-    const { image } = user;
-
+    const image = user?.image;
     expect(image).toEqual(expect.any(Object));
     expect(image).not.toHaveProperty("url");
     expect(image).toHaveProperty("_id");
@@ -129,22 +122,15 @@ describe("morphTo Relation", () => {
   });
 
   it("With add data from related model", async () => {
-    let post: any = await Post.find(postIds[1]);
-
-    expect(post.data).toEqual(expect.any(Object));
-    expect(post.data).not.toHaveProperty("image");
-
-    await post.image().save({
+    await Post.find(postIds[1]).image().save({
       url: "newImage.jpg",
     });
 
-    post = await Post.with("image").find(postIds[1]);
+    const post = await Post.with("image").where("_id", postIds[1]).first();
+    expect(post).toEqual(expect.any(Object));
+    expect(post).toHaveProperty("image");
 
-    expect(post.data).toEqual(expect.any(Object));
-    expect(post.data).toHaveProperty("image");
-
-    const { image } = post.data;
-
+    const image = post?.image;
     expect(image).toEqual(expect.any(Object));
     expect(image).toHaveProperty("url", "newImage.jpg");
     expect(image).toHaveProperty("imageableId", postIds[1]);
@@ -152,17 +138,14 @@ describe("morphTo Relation", () => {
   });
 
   it("With has no data", async () => {
-    const { data: post }: any = await Post.with("image").find(postIds[2]);
-
+    const post = await Post.with("image").where("_id", postIds[2]).first();
     expect(post).toEqual(expect.any(Object));
     expect(post).not.toHaveProperty("image");
   });
 
   it("With softDelete", async () => {
     await Image.where("url", "image1.jpg").delete();
-
-    const { data: user }: any = await User.with("image").find(userIds[0]);
-
+    const user = await User.with("image").where("_id", userIds[0]).first();
     expect(user).toEqual(expect.any(Object));
     expect(user).not.toHaveProperty("image");
 

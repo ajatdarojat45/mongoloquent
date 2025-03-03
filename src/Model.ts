@@ -850,6 +850,13 @@ export default class Model extends Relation {
           [relationship.morphId]: relationship.parentId,
         };
 
+      case IRelationTypes.morphTo:
+        return {
+          ...doc,
+          [relationship.morphType]: relationship.modelName,
+          [relationship.morphId]: relationship.parentId,
+        };
+
       case IRelationTypes.morphToMany:
         return doc;
 

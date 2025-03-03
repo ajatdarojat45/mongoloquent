@@ -57,6 +57,15 @@ export interface IRelationMorphMany {
   parentId: string | ObjectId | null;
 }
 
+export interface IRelationMorphTo {
+  type: IRelationTypes.morphTo;
+  model: typeof Model;
+  modelName: string;
+  morphType: string;
+  morphId: string;
+  parentId: string | ObjectId | null;
+}
+
 export interface IRelationMorphToMany {
   type: IRelationTypes.morphToMany;
   model: typeof Model;
