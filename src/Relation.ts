@@ -325,7 +325,7 @@ export default class Relation extends Query {
     // Generate the lookup stages for the morphMany relationship
     const lookup = MorphMany.generate(
       target,
-      name,
+      this.name,
       `${name}Type`,
       `${name}Id`,
       ownerKey,
@@ -334,10 +334,12 @@ export default class Relation extends Query {
     );
     // Add the lookup stages to the $lookups array
     this.setLookups(lookup);
+    this.setRelatedModel(target);
 
     const morphMany: IRelationMorphMany = {
       type: IRelationTypes.morphMany,
       model: target,
+      modelName: this.name,
       morphType: `${name}Type`,
       morphId: `${name}Id`,
       parentId: this.getParentId(),

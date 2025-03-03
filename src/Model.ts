@@ -451,7 +451,7 @@ export default class Model extends Relation {
             returnDocument: "after",
           }
         );
-
+        this.reset();
         return data;
       }
 
@@ -846,7 +846,7 @@ export default class Model extends Relation {
       case IRelationTypes.morphMany:
         return {
           ...doc,
-          [relationship.morphType]: relationship.model.name,
+          [relationship.morphType]: relationship.modelName,
           [relationship.morphId]: relationship.parentId,
         };
 
@@ -908,7 +908,7 @@ export default class Model extends Relation {
         break;
 
       case IRelationTypes.morphMany:
-        this.where(relationship.morphType, relationship.model.name).where(
+        this.where(relationship.morphType, relationship.modelName).where(
           relationship.morphId,
           relationship.parentId
         );
