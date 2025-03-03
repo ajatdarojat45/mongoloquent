@@ -79,7 +79,7 @@ export default class HasManyThrough {
       pipeline.push({
         $match: {
           $expr: {
-            $and: [{ $eq: ["$isDeleted", false] }],
+            $and: [{ $eq: [`$${related.getIsDeleted()}`, false] }],
           },
         },
       });

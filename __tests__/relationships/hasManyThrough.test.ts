@@ -1,10 +1,10 @@
 import { ObjectId } from "mongodb";
-import Model from "../../src/database/Model";
+import Model from "../../src/Model";
 
 class Project extends Model {
-  static collection = "projects";
-  static timestamps = true;
-  static softDelete = true;
+  static $collection = "projects";
+  static $useTimestamps = true;
+  static $useSoftDelete = true;
 
   static deployments() {
     return this.hasManyThrough(
@@ -17,15 +17,15 @@ class Project extends Model {
 }
 
 class Environment extends Model {
-  static collection = "environments";
-  static timestamps = true;
-  static softDelete = true;
+  static $collection = "environments";
+  static $useTimestamps = true;
+  static $useSoftDelete = true;
 }
 
 class Deployment extends Model {
-  static collection = "deployments";
-  static timestamps = true;
-  static softDelete = true;
+  static $collection = "deployments";
+  static $useTimestamps = true;
+  static $useSoftDelete = true;
 }
 
 let projectIds: ObjectId[];
@@ -85,50 +85,50 @@ afterAll(async () => {
 
 describe("hasManyThrough relation", () => {
   it("Should return related data", async () => {
-    const { data: project }: any = await Project.with("deployments").find(
-      projectIds[0]
-    );
+    const project = await Project.with("deployments")
+      .where("_id", projectIds[0])
+      .first();
 
     expect(project).toEqual(expect.any(Object));
     expect(project).toHaveProperty("deployments");
 
-    const { deployments } = project;
-    expect(deployments).toEqual(expect.any(Array));
-    expect(deployments).toHaveLength(5);
+    expect(project?.deployments).toEqual(expect.any(Array));
+    expect(project?.deployments).toHaveLength(5);
   });
 
   it("With selected fields", async () => {
-    const { data: project }: any = await Project.with("deployments", {
+    const project = await Project.with("deployments", {
       select: ["commitHash"],
-    }).find(projectIds[0]);
+    })
+      .where("_id", projectIds[0])
+      .first();
 
     expect(project).toEqual(expect.any(Object));
     expect(project).toHaveProperty("deployments");
 
-    const { deployments } = project;
-    expect(deployments).toEqual(expect.any(Array));
-    expect(deployments).toHaveLength(5);
+    expect(project?.deployments).toEqual(expect.any(Array));
+    expect(project?.deployments).toHaveLength(5);
 
-    const [deployment] = deployments;
-    expect(deployment).toEqual(expect.any(Object));
-    expect(deployment).toHaveProperty("commitHash");
-    expect(deployment).not.toHaveProperty("_id");
-    expect(deployment).not.toHaveProperty("environmentId");
+    expect(project?.deployments[0]).toEqual(expect.any(Object));
+    expect(project?.deployments[0]).toHaveProperty("commitHash");
+    expect(project?.deployments[0]).not.toHaveProperty("_id");
+    expect(project?.deployments[0]).not.toHaveProperty("environmentId");
   });
 
   it("With excluded fields", async () => {
-    const { data: project }: any = await Project.with("deployments", {
+    const project = await Project.with("deployments", {
       exclude: ["commitHash"],
-    }).find(projectIds[0]);
+    })
+      .where("_id", projectIds[0])
+      .first();
 
     expect(project).toEqual(expect.any(Object));
     expect(project).toHaveProperty("deployments");
 
-    const { deployments } = project;
-    expect(deployments).toEqual(expect.any(Array));
-    expect(deployments).toHaveLength(5);
+    expect(project?.deployments).toEqual(expect.any(Array));
+    expect(project?.deployments).toHaveLength(5);
 
-    const [deployment] = deployments;
+    const deployment = project?.deployments[0];
     expect(deployment).toEqual(expect.any(Object));
     expect(deployment).not.toHaveProperty("commitHash");
     expect(deployment).toHaveProperty("_id");
@@ -136,20 +136,19 @@ describe("hasManyThrough relation", () => {
   });
 
   it("With has no related data", async () => {
-    const { data: project }: any = await Project.with("deployments").find(
-      projectIds[2]
-    );
+    const project = await Project.with("deployments")
+      .where("_id", projectIds[2])
+      .first();
 
     expect(project).toEqual(expect.any(Object));
     expect(project).toHaveProperty("deployments");
 
-    const { deployments } = project;
-    expect(deployments).toEqual(expect.any(Array));
-    expect(deployments).toHaveLength(0);
+    expect(project?.deployments).toEqual(expect.any(Array));
+    expect(project?.deployments).toHaveLength(0);
   });
 
   it("With Querying related data", async () => {
-    const project: any = await Project.find(projectIds[0]);
+    const project = Project.find(projectIds[0]);
 
     const deployments = await project
       .deployments()
@@ -163,16 +162,17 @@ describe("hasManyThrough relation", () => {
   it("With softDelete target data", async () => {
     await Deployment.destroy(deploymentIds[0]);
 
-    const project: any = await Project.with("deployments").find(projectIds[0]);
+    const project = await Project.with("deployments")
+      .where("_id", projectIds[0])
+      .first();
 
-    expect(project.data).toEqual(expect.any(Object));
-    expect(project.data).toHaveProperty("deployments");
+    expect(project).toEqual(expect.any(Object));
+    expect(project).toHaveProperty("deployments");
 
-    const { deployments } = project.data;
-    expect(deployments).toEqual(expect.any(Array));
-    expect(deployments).toHaveLength(4);
+    expect(project?.deployments).toEqual(expect.any(Array));
+    expect(project?.deployments).toHaveLength(4);
 
-    const deploymentsWithTrashed = await project
+    const deploymentsWithTrashed = await Project.find(projectIds[0])
       .deployments()
       .withTrashed()
       .get();

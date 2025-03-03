@@ -265,6 +265,7 @@ export default class Relation extends Query {
     );
     // Add the lookup stages to the $lookups array
     this.setLookups(lookup);
+    this.setRelatedModel(related);
 
     const hasManyThrough: IRelationHasManyThrough = {
       type: IRelationTypes.hasManyThrough,
