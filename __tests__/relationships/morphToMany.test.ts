@@ -1,10 +1,10 @@
 import { ObjectId } from "mongodb";
-import Model from "../../src/database/Model";
+import Model from "../../src/Model";
 
 class Post extends Model {
-  static collection = "posts";
-  static softDelete = true;
-  static timestamps = true;
+  static $collection = "posts";
+  static $useSoftDelete = true;
+  static $useTimestamps = true;
 
   static tags() {
     return this.morphToMany(Tag, "taggable");
@@ -12,9 +12,9 @@ class Post extends Model {
 }
 
 class Video extends Model {
-  static collection = "videos";
-  static softDelete = true;
-  static timestamps = true;
+  static $collection = "videos";
+  static $useSoftDelete = true;
+  static $useTimestamps = true;
 
   static tags() {
     return this.morphToMany(Tag, "taggable");
@@ -22,9 +22,9 @@ class Video extends Model {
 }
 
 class Tag extends Model {
-  static collection = "roleUser";
-  static softDelete = true;
-  static timestamps = true;
+  static $collection = "tags";
+  static $useSoftDelete = true;
+  static $useTimestamps = true;
 
   static posts() {
     return this.morphedByMany(Post, "taggable");
@@ -36,7 +36,7 @@ class Tag extends Model {
 }
 
 class Taggable extends Model {
-  static collection = "taggables";
+  static $collection = "taggables";
 }
 
 let postIds: ObjectId[];
@@ -62,14 +62,9 @@ beforeAll(async () => {
     { name: "Tag 3" },
   ]);
 
-  const post: any = await Post.find(postIds[0]);
-  await post.tags().attach(tagIds);
-
-  const post1: any = await Post.find(postIds[1]);
-  await post1.tags().attach(tagIds);
-
-  const video: any = await Video.find(videoIds[0]);
-  await video.tags().attach(tagIds);
+  await Post.find(postIds[0]).tags().attach(tagIds);
+  await Post.find(postIds[1]).tags().attach(tagIds);
+  await Video.find(videoIds[0]).tags().attach(tagIds);
 });
 
 afterAll(async () => {
@@ -86,85 +81,87 @@ afterAll(async () => {
 
 describe("morphToMany Relation", () => {
   it("Should return related data", async () => {
-    const { data: post }: any = await Post.with("tags").find(postIds[0]);
-
+    const post = await Post.with("tags").where("_id", postIds[0]).first();
     expect(post).toEqual(expect.any(Object));
     expect(post).toHaveProperty("tags");
 
-    const { tags } = post;
+    const tags = post?.tags;
     expect(tags).toEqual(expect.any(Array));
     expect(tags).toHaveLength(3);
   });
 
   it("With selected field", async () => {
-    const { data: post }: any = await Post.with("tags", {
+    const post = await Post.with("tags", {
       select: ["name"],
-    }).find(postIds[0]);
+    })
+      .where("_id", postIds[0])
+      .first();
 
     expect(post).toEqual(expect.any(Object));
     expect(post).toHaveProperty("tags");
 
-    const { tags } = post;
+    const tags = post?.tags;
     expect(tags).toEqual(expect.any(Array));
     expect(tags).toHaveLength(3);
 
-    const [tag] = tags;
+    const tag = tags[0];
     expect(tag).toEqual(expect.any(Object));
     expect(tag).toHaveProperty("name");
     expect(tag).not.toHaveProperty("_id");
   });
 
   it("With excluded field", async () => {
-    const { data: post }: any = await Post.with("tags", {
+    const post = await Post.with("tags", {
       exclude: ["name"],
-    }).find(postIds[0]);
+    })
+      .where("_id", postIds[0])
+      .first();
 
     expect(post).toEqual(expect.any(Object));
     expect(post).toHaveProperty("tags");
 
-    const { tags } = post;
+    const tags = post?.tags;
     expect(tags).toEqual(expect.any(Array));
     expect(tags).toHaveLength(3);
 
-    const [tag] = tags;
+    const tag = tags[0];
     expect(tag).toEqual(expect.any(Object));
     expect(tag).not.toHaveProperty("name");
     expect(tag).toHaveProperty("_id");
   });
 
   it("With querying related data", async () => {
-    const post: any = await Post.with("tags").find(postIds[0]);
+    const post = await Post.with("tags").where("_id", postIds[0]).first();
+    expect(post).toEqual(expect.any(Object));
+    expect(post).toHaveProperty("tags");
+    expect(post?.tags).toHaveLength(3);
 
-    expect(post.data).toEqual(expect.any(Object));
-    expect(post.data).toHaveProperty("tags");
-    expect(post.data.tags).toHaveLength(3);
-
-    const tags = await post.tags().where("name", "Tag 1").get();
+    const tags = await Post.find(postIds[0])
+      .tags()
+      .where("name", "Tag 1")
+      .get();
     expect(tags).toEqual(expect.any(Array));
     expect(tags).toHaveLength(1);
   });
 
   it("Should return related data from another model", async () => {
-    const { data: video }: any = await Video.with("tags").find(videoIds[0]);
-
+    const video = await Video.with("tags").where("_id", videoIds[0]).first();
     expect(video).toEqual(expect.any(Object));
     expect(video).toHaveProperty("tags");
 
-    const { tags } = video;
+    const tags = video?.tags;
     expect(tags).toEqual(expect.any(Array));
     expect(tags).toHaveLength(3);
   });
 
   it("With softDelete", async () => {
     await Tag.destroy(tagIds[2]);
+    const post = await Post.with("tags").where("_id", postIds[0]).first();
+    expect(post).toEqual(expect.any(Object));
+    expect(post).toHaveProperty("tags");
+    expect(post?.tags).toHaveLength(2);
 
-    const post: any = await Post.with("tags").find(postIds[0]);
-
-    expect(post.data).toEqual(expect.any(Object));
-    expect(post.data).toHaveProperty("tags");
-    expect(post.data.tags).toHaveLength(2);
-
-    const tags = await post.tags().withTrashed().get();
+    const tags = await Post.find(postIds[0]).tags().withTrashed().get();
     expect(tags).toEqual(expect.any(Array));
     expect(tags).toHaveLength(3);
   });
@@ -172,36 +169,35 @@ describe("morphToMany Relation", () => {
 
 describe("morphToMany Relation Reverse", () => {
   it("Should return related data", async () => {
-    const { data: tag }: any = await Tag.with("posts").find(tagIds[0]);
-
+    const tag = await Tag.with("posts").where("_id", tagIds[0]).first();
     expect(tag).toEqual(expect.any(Object));
     expect(tag).toHaveProperty("posts");
 
-    const { posts } = tag;
+    const posts = tag?.posts;
     expect(posts).toEqual(expect.any(Array));
     expect(posts).toHaveLength(2);
   });
 
   it("Should return related data from another model", async () => {
-    const { data: tag }: any = await Tag.with("videos").find(tagIds[0]);
-
+    const tag = await Tag.with("videos").where("_id", tagIds[0]).first();
     expect(tag).toEqual(expect.any(Object));
     expect(tag).toHaveProperty("videos");
 
-    const { videos } = tag;
+    const videos = tag?.videos;
     expect(videos).toEqual(expect.any(Array));
     expect(videos).toHaveLength(1);
   });
 
   it("With selected fields", async () => {
-    const { data: tag }: any = await Tag.with("posts", {
+    const tag = await Tag.with("posts", {
       select: ["title"],
-    }).find(tagIds[0]);
-
+    })
+      .where("_id", tagIds[0])
+      .first();
     expect(tag).toEqual(expect.any(Object));
     expect(tag).toHaveProperty("posts");
 
-    const { posts } = tag;
+    const posts = tag?.posts;
     expect(posts).toEqual(expect.any(Array));
     expect(posts).toHaveLength(2);
 
@@ -212,46 +208,47 @@ describe("morphToMany Relation Reverse", () => {
   });
 
   it("With excluded fields", async () => {
-    const { data: tag }: any = await Tag.with("posts", {
+    const tag = await Tag.with("posts", {
       exclude: ["title"],
-    }).find(tagIds[0]);
-
+    })
+      .where("_id", tagIds[0])
+      .first();
     expect(tag).toEqual(expect.any(Object));
     expect(tag).toHaveProperty("posts");
 
-    const { posts } = tag;
+    const posts = tag?.posts;
     expect(posts).toEqual(expect.any(Array));
     expect(posts).toHaveLength(2);
 
-    const [post] = posts;
+    const post = posts[0];
     expect(post).toEqual(expect.any(Object));
     expect(post).not.toHaveProperty("title");
     expect(post).toHaveProperty("_id");
   });
 
   it("With querying related data", async () => {
-    const tag: any = await Tag.with("posts").find(tagIds[0]);
+    const tag = await Tag.with("posts").where("_id", tagIds[0]).first();
+    expect(tag).toEqual(expect.any(Object));
+    expect(tag).toHaveProperty("posts");
+    expect(tag?.posts).toEqual(expect.any(Array));
+    expect(tag?.posts).toHaveLength(2);
 
-    expect(tag.data).toEqual(expect.any(Object));
-    expect(tag.data).toHaveProperty("posts");
-    expect(tag.data.posts).toEqual(expect.any(Array));
-    expect(tag.data.posts).toHaveLength(2);
-
-    const posts = await tag.posts().where("title", "Post 1").get();
+    const posts = await Tag.find(tagIds[0])
+      .posts()
+      .where("title", "Post 1")
+      .get();
     expect(posts).toEqual(expect.any(Array));
     expect(posts).toHaveLength(1);
   });
 
   it("With softDelete", async () => {
     await Post.destroy(postIds[1]);
+    const tag = await Tag.with("posts").where("_id", tagIds[0]).first();
+    expect(tag).toEqual(expect.any(Object));
+    expect(tag).toHaveProperty("posts");
+    expect(tag?.posts).toHaveLength(1);
 
-    const tag: any = await Tag.with("posts").find(tagIds[0]);
-
-    expect(tag.data).toEqual(expect.any(Object));
-    expect(tag.data).toHaveProperty("posts");
-    expect(tag.data.posts).toHaveLength(1);
-
-    const posts = await tag.posts().withTrashed().get();
+    const posts = await Tag.find(tagIds[0]).posts().withTrashed().get();
     expect(posts).toEqual(expect.any(Array));
     expect(posts).toHaveLength(2);
   });

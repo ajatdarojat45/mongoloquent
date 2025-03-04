@@ -10,7 +10,7 @@ export enum IRelationTypes {
   morphTo = "morphTo",
   morphMany = "morphMany",
   morphToMany = "morphToMany",
-  morphByMany = "morphByMany",
+  morphedByMany = "morphedByMany",
 }
 
 export interface IRelationOptions {
@@ -69,6 +69,7 @@ export interface IRelationMorphTo {
 export interface IRelationMorphToMany {
   type: IRelationTypes.morphToMany;
   model: typeof Model;
+  modelName: string;
   foreignKey: string;
   collection: string;
   morphType: string;
@@ -77,13 +78,14 @@ export interface IRelationMorphToMany {
   parentId: string | ObjectId | null;
 }
 
-export interface IRelationMorphByMany {
-  type: IRelationTypes.morphByMany;
+export interface IRelationMorphedByMany {
+  type: IRelationTypes.morphedByMany;
   model: typeof Model;
+  modelName: string;
+  foreignKey: string;
   collection: string;
   morphType: string;
   morphId: string;
   ownerKey: string;
-  foreignKey: string;
   parentId: string | ObjectId | null;
 }

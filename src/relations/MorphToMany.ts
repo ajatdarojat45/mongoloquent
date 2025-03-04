@@ -20,13 +20,22 @@ export default class MorphToMany {
   static generate(
     target: typeof Model,
     name: string,
+    modelName: string,
     type: string,
     id: string,
     ownerKey: string = "_id",
     alias: string,
     options: IRelationOptions
   ): Document[] {
-    const lookup = this.lookup(target, name, type, id, ownerKey, alias);
+    const lookup = this.lookup(
+      target,
+      modelName,
+      name,
+      type,
+      id,
+      ownerKey,
+      alias
+    );
     let select: any = [];
     let exclude: any = [];
 
@@ -53,6 +62,7 @@ export default class MorphToMany {
    */
   static lookup(
     target: typeof Model,
+    modelName: string,
     name: string,
     type: string,
     id: string,
@@ -66,7 +76,7 @@ export default class MorphToMany {
       pipeline.push({
         $match: {
           $expr: {
-            $and: [{ $eq: ["$isDeleted", false] }],
+            $and: [{ $eq: [`$${target.getIsDeleted()}`, false] }],
           },
         },
       });
@@ -85,7 +95,7 @@ export default class MorphToMany {
                 $expr: {
                   $and: [
                     {
-                      $eq: [`$${type}`, name],
+                      $eq: [`$${type}`, modelName],
                     },
                   ],
                 },
@@ -97,7 +107,7 @@ export default class MorphToMany {
       {
         $lookup: {
           from: target.$collection,
-          localField: `pivot.${id}`,
+          localField: `pivot.${target.name.toLowerCase()}Id`,
           foreignField: ownerKey,
           as: alias || "alias",
           pipeline,

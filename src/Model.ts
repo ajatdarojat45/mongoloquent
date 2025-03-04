@@ -496,6 +496,8 @@ export default class Model extends Relation {
           }
         );
 
+        this.reset();
+
         return {
           deletedCount: data.modifiedCount,
         };
@@ -860,7 +862,7 @@ export default class Model extends Relation {
       case IRelationTypes.morphToMany:
         return doc;
 
-      case IRelationTypes.morphByMany:
+      case IRelationTypes.morphedByMany:
         return {
           ...doc,
           [relationship.morphType]: this.name,
@@ -927,7 +929,7 @@ export default class Model extends Relation {
 
         const mtmIds = await mtmColl
           .find({
-            [relationship.morphType]: relationship.model.name,
+            [relationship.morphType]: relationship.modelName,
             [relationship.morphId]: relationship.parentId,
           })
           .map((el) => el[key])
@@ -936,7 +938,7 @@ export default class Model extends Relation {
         this.whereIn(relationship.ownerKey, mtmIds);
         break;
 
-      case IRelationTypes.morphByMany:
+      case IRelationTypes.morphedByMany:
         const mbmColl = this.getCollection(relationship.collection);
 
         const mbmIds = await mbmColl

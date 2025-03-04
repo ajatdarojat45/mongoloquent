@@ -3,7 +3,7 @@ import Model from "../Model";
 import Relation from "../Relation";
 import { IRelationOptions } from "../interfaces/IRelation";
 
-export default class MorphByMany {
+export default class MorphedByMany {
   /**
    * @note This method generates the lookup, select, and exclude stages for the MorphByMany relation.
    * @param {typeof Model} target - The target model.
@@ -18,6 +18,7 @@ export default class MorphByMany {
   static generate(
     target: typeof Model,
     name: string,
+    modelName: string,
     type: string,
     id: string,
     ownerKey: string = "_id",
@@ -25,7 +26,15 @@ export default class MorphByMany {
     options: IRelationOptions
   ): Document[] {
     // Generate the lookup stages for the MorphByMany relationship
-    const lookup = this.lookup(target, name, type, id, ownerKey, alias);
+    const lookup = this.lookup(
+      target,
+      name,
+      modelName,
+      type,
+      id,
+      ownerKey,
+      alias
+    );
     let select: any = [];
     let exclude: any = [];
 
@@ -54,6 +63,7 @@ export default class MorphByMany {
   static lookup(
     target: typeof Model,
     name: string,
+    modelName: string,
     type: string,
     id: string,
     ownerKey: string = "_id",
@@ -67,7 +77,7 @@ export default class MorphByMany {
       pipeline.push({
         $match: {
           $expr: {
-            $and: [{ $eq: ["$isDeleted", false] }],
+            $and: [{ $eq: [`$${target.getIsDeleted()}`, false] }],
           },
         },
       });
@@ -79,7 +89,7 @@ export default class MorphByMany {
         $lookup: {
           from: `${name}s`,
           localField: ownerKey,
-          foreignField: id,
+          foreignField: `${modelName.toLocaleLowerCase()}Id`,
           as: "pivot",
           pipeline: [
             {
@@ -87,7 +97,7 @@ export default class MorphByMany {
                 $expr: {
                   $and: [
                     {
-                      $eq: [`$${type}`, name],
+                      $eq: [`$${type}`, target.name],
                     },
                   ],
                 },
@@ -100,7 +110,7 @@ export default class MorphByMany {
         $lookup: {
           from: target.$collection,
           localField: `pivot.${id}`,
-          foreignField: "_id",
+          foreignField: ownerKey,
           as: alias || "alias",
           pipeline,
         },
