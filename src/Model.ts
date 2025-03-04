@@ -61,7 +61,7 @@ export default class Model extends Relation {
       let query = {};
 
       // If soft delete is enabled, exclude soft-deleted documents
-      if (this.$useSoftDelete) query = { isDeleted: false };
+      if (this.$useSoftDelete) query = { [this.getIsDeleted()]: false };
 
       // Retrieve all documents matching the query
       return await collection.find(query).toArray();
@@ -386,15 +386,18 @@ export default class Model extends Relation {
       const collection = this.getCollection();
 
       // Generate the where conditions for the query
+      await this.checkRelation();
+      // Check if soft delete is enabled and apply necessary filters
+      this.checkSoftDelete();
+      // Generate the columns to be selected in the query
       this.generateWheres();
-      this.generateOrders();
       const stages = this.getStages();
       let filter = {};
       if (stages.length > 0) filter = stages[0].$match;
-
       // Apply timestamps and soft delete fields to the documents if enabled
       let newDoc = this.checkUseTimestamps(doc, false);
       newDoc = this.checkUseSoftdelete(newDoc);
+      delete (newDoc as any)._id;
 
       // Update the documents in the collection
       const data = await collection.updateMany(
@@ -639,21 +642,17 @@ export default class Model extends Relation {
     }
   }
 
-  /**
-   * @note This method retrieves the maximum value of a specified field.
-   *
-   * @param field - The field to get the maximum value of.
-   * @param type - The type of aggregation (default is "max").
-   * @return Promise<number>
-   */
-  public static async max(
+  private static async aggregation(
     field: string,
-    type: string = "max"
+    type: string
   ): Promise<number> {
     try {
       // Get the collection from the database
       const collection = this.getCollection();
-      // Generate the where conditions for the query
+      await this.checkRelation();
+      // Check if soft delete is enabled and apply necessary filters
+      this.checkSoftDelete();
+      // Generate the columns to be selected in the query
       this.generateWheres();
 
       const stages = this.getStages();
@@ -675,11 +674,22 @@ export default class Model extends Relation {
       // Reset the query state
       this.reset();
 
-      return aggregate?.[type] || 0;
+      return typeof aggregate?.[type] === "number" ? aggregate[type] : 0;
     } catch (error) {
       console.log(error);
       throw new Error(`Fetching maximum value failed`);
     }
+  }
+
+  /**
+   * @note This method retrieves the maximum value of a specified field.
+   *
+   * @param field - The field to get the maximum value of.
+   * @param type - The type of aggregation (default is "max").
+   * @return Promise<number>
+   */
+  public static async max(field: string): Promise<number> {
+    return this.aggregation(field, "max");
   }
 
   /**
@@ -689,7 +699,7 @@ export default class Model extends Relation {
    * @return Promise<number>
    */
   public static async min(field: string): Promise<number> {
-    return this.max(field, "min");
+    return this.aggregation(field, "min");
   }
 
   /**
@@ -699,7 +709,7 @@ export default class Model extends Relation {
    * @return Promise<number>
    */
   public static async avg(field: string): Promise<number> {
-    return this.max(field, "avg");
+    return this.aggregation(field, "avg");
   }
 
   /**
@@ -709,7 +719,7 @@ export default class Model extends Relation {
    * @return Promise<number>
    */
   public static async sum(field: string): Promise<number> {
-    return this.max(field, "sum");
+    return this.aggregation(field, "sum");
   }
 
   /**
@@ -722,7 +732,10 @@ export default class Model extends Relation {
       // Get the collection from the database
       const collection = this.getCollection();
 
-      // Generate the where conditions for the query
+      await this.checkRelation();
+      // Check if soft delete is enabled and apply necessary filters
+      this.checkSoftDelete();
+      // Generate the columns to be selected in the query
       this.generateWheres();
 
       const stages = this.getStages();

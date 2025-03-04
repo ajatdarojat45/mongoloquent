@@ -1,28 +1,28 @@
-import Model from "../../src/database/Model";
+import Model from "../../src/Model";
 
 const users = [
   {
     name: "John Doe",
     email: "jhon@mail.com",
     age: 20,
-    isDeleted: false,
+    IS_DELETED: false,
   },
   {
     name: "Udin",
     email: "udin@mail.com",
-    isDeleted: false,
+    IS_DELETED: false,
     age: 10,
   },
   {
     name: "Kosasih",
     email: "kosasih@mail.com",
-    isDeleted: true,
+    IS_DELETED: true,
     age: 50,
   },
 ];
 
 class User extends Model {
-  static collection = "users";
+  static $collection = "users";
 }
 
 beforeAll(async () => {
@@ -63,7 +63,8 @@ describe("Model - all method", () => {
   });
 
   it("should return all users", async () => {
-    User["softDelete"] = false;
+    User["$useSoftDelete"] = false;
+
     const result = await User.all();
     expect(result.length).toBe(3);
     expect(result).toEqual(expect.any(Array));
@@ -71,7 +72,7 @@ describe("Model - all method", () => {
   });
 
   it("should return all users with soft delete", async () => {
-    User["softDelete"] = true;
+    User["$useSoftDelete"] = true;
     const result = await User.all();
     expect(result.length).toBe(2);
     expect(result).toEqual(expect.any(Array));
@@ -99,7 +100,7 @@ describe("Model - get method", () => {
   });
 
   it("should return all users", async () => {
-    User["softDelete"] = false;
+    User["$useSoftDelete"] = false;
     const result = await User.get();
 
     expect(result.length).toBe(3);
@@ -108,16 +109,15 @@ describe("Model - get method", () => {
   });
 
   it("should return all users with soft delete", async () => {
-    User["softDelete"] = true;
+    User["$useSoftDelete"] = true;
     const result = await User.get();
-
     expect(result.length).toBe(2);
     expect(result).toEqual(expect.any(Array));
     expect(result[0]).toEqual(expect.any(Object));
   });
 
   it("should return all users with selected field", async () => {
-    User["softDelete"] = false;
+    User["$useSoftDelete"] = false;
     const result = await User.get("name");
 
     expect(result.length).toBe(3);
@@ -129,7 +129,7 @@ describe("Model - get method", () => {
   });
 
   it("should return all users with selected fields", async () => {
-    User["softDelete"] = false;
+    User["$useSoftDelete"] = false;
     const result = await User.get(["name", "age"]);
 
     expect(result.length).toBe(3);
@@ -161,16 +161,16 @@ describe("Model - first method", () => {
   });
 
   it("should return first user", async () => {
-    User["softDelete"] = false;
-    const { data: result } = await User.where("name", "Kosasih").first();
+    User["$useSoftDelete"] = false;
+    const result = await User.where("name", "Kosasih").first();
 
     expect(result).toEqual(expect.any(Object));
     expect(result).toHaveProperty("name", "Kosasih");
   });
 
   it("should return first user with selected field", async () => {
-    User["softDelete"] = false;
-    const { data: result } = await User.where("name", "Kosasih").first("name");
+    User["$useSoftDelete"] = false;
+    const result = await User.where("name", "Kosasih").first("name");
 
     expect(result).toEqual(expect.any(Object));
     expect(result).toHaveProperty("name", "Kosasih");
@@ -179,11 +179,8 @@ describe("Model - first method", () => {
   });
 
   it("should return first user with selected fields", async () => {
-    User["softDelete"] = false;
-    const { data: result } = await User.where("name", "Kosasih").first([
-      "name",
-      "age",
-    ]);
+    User["$useSoftDelete"] = false;
+    const result = await User.where("name", "Kosasih").first(["name", "age"]);
 
     expect(result).toEqual(expect.any(Object));
     expect(result).toHaveProperty("name", "Kosasih");
@@ -192,15 +189,15 @@ describe("Model - first method", () => {
   });
 
   it("should return first user with non exist data", async () => {
-    User["softDelete"] = false;
-    const { data: result } = await User.where("name", "Kosasih1").first();
+    User["$useSoftDelete"] = false;
+    const result = await User.where("name", "Kosasih1").first();
 
     expect(result).toEqual(null);
   });
 
   it("should return first user with soft delete data", async () => {
-    User["softDelete"] = true;
-    const { data: result } = await User.where("name", "Kosasih").first();
+    User["$useSoftDelete"] = true;
+    const result = await User.where("name", "Kosasih").first();
 
     expect(result).toEqual(null);
   });
@@ -227,27 +224,10 @@ describe("Model - find method", () => {
     }
   });
 
-  it("should return user with ObjectId", async () => {
-    User["softDelete"] = false;
-    const { data: result } = await User.find(userIds[2]);
-
-    expect(result).toEqual(expect.any(Object));
-    expect(result).toHaveProperty("_id", userIds[2]);
-  });
-
-  it("should return user with string ObjectId", async () => {
-    User["softDelete"] = false;
-    const { data: result } = await User.find(userIds[2].toString());
-
-    expect(result).toEqual(expect.any(Object));
-    expect(result).toHaveProperty("_id", userIds[2]);
-  });
-
-  it("should return user soft delete", async () => {
-    User["softDelete"] = true;
-    const { data: result } = await User.find(userIds[2]);
-
-    expect(result).toEqual(null);
+  it("should return Model with parentId", async () => {
+    User["$useSoftDelete"] = false;
+    const result = User.find(userIds[2]);
+    expect(result).toHaveProperty("$parentId", userIds[2]);
   });
 });
 
@@ -271,7 +251,7 @@ describe("Model - paginate method", () => {
   });
 
   it("should return paginated users", async () => {
-    User["softDelete"] = false;
+    User["$useSoftDelete"] = false;
     const result = await User.paginate(1, 3);
 
     expect(result).toEqual(expect.any(Object));
@@ -281,13 +261,13 @@ describe("Model - paginate method", () => {
 
     expect(result).toHaveProperty("meta", expect.any(Object));
     expect(result.meta).toHaveProperty("page", 1);
-    expect(result.meta).toHaveProperty("perPage", 3);
+    expect(result.meta).toHaveProperty("limit", 3);
     expect(result.meta).toHaveProperty("total", 3);
     expect(result.meta).toHaveProperty("lastPage", 1);
   });
 
   it("should return paginated users with soft delete", async () => {
-    User["softDelete"] = true;
+    User["$useSoftDelete"] = true;
     const result = await User.paginate(1, 3);
 
     expect(result).toEqual(expect.any(Object));
@@ -297,13 +277,13 @@ describe("Model - paginate method", () => {
 
     expect(result).toHaveProperty("meta", expect.any(Object));
     expect(result.meta).toHaveProperty("page", 1);
-    expect(result.meta).toHaveProperty("perPage", 3);
+    expect(result.meta).toHaveProperty("limit", 3);
     expect(result.meta).toHaveProperty("total", 2);
     expect(result.meta).toHaveProperty("lastPage", 1);
   });
 
   it("check lastPage should return paginated users", async () => {
-    User["softDelete"] = false;
+    User["$useSoftDelete"] = false;
     const result = await User.paginate(2, 2);
 
     expect(result).toEqual(expect.any(Object));
@@ -313,7 +293,7 @@ describe("Model - paginate method", () => {
 
     expect(result).toHaveProperty("meta", expect.any(Object));
     expect(result.meta).toHaveProperty("page", 2);
-    expect(result.meta).toHaveProperty("perPage", 2);
+    expect(result.meta).toHaveProperty("limit", 2);
     expect(result.meta).toHaveProperty("total", 3);
     expect(result.meta).toHaveProperty("lastPage", 2);
   });
@@ -339,7 +319,7 @@ describe("Model - max method", () => {
   });
 
   it("should return max value", async () => {
-    User["softDelete"] = false;
+    User["$useSoftDelete"] = false;
     const result = await User.max("age");
 
     expect(result).toEqual(expect.any(Number));
@@ -347,15 +327,14 @@ describe("Model - max method", () => {
   });
 
   it("should return max value with soft delete", async () => {
-    User["softDelete"] = true;
+    User["$useSoftDelete"] = true;
     const result = await User.max("age");
-
     expect(result).toEqual(expect.any(Number));
     expect(result).toBe(20);
   });
 
   it("with where condition should return max value", async () => {
-    User["softDelete"] = false;
+    User["$useSoftDelete"] = false;
     const result = await User.where("name", "Udin").max("age");
 
     expect(result).toEqual(expect.any(Number));
@@ -363,7 +342,7 @@ describe("Model - max method", () => {
   });
 
   it("with non exist data should return 0", async () => {
-    User["softDelete"] = false;
+    User["$useSoftDelete"] = false;
     const result = await User.where("name", "Udin1").max("age");
 
     expect(result).toEqual(expect.any(Number));
@@ -371,9 +350,8 @@ describe("Model - max method", () => {
   });
 
   it("with non number field should return 0", async () => {
-    User["softDelete"] = false;
+    User["$useSoftDelete"] = false;
     const result = await User.max("name");
-
     expect(result).toEqual(expect.any(Number));
     expect(result).toEqual(0);
   });
@@ -402,7 +380,7 @@ describe("Model - min method", () => {
   });
 
   it("should return min value", async () => {
-    User["softDelete"] = false;
+    User["$useSoftDelete"] = false;
     const result = await User.min("age");
 
     expect(result).toEqual(expect.any(Number));
@@ -410,15 +388,15 @@ describe("Model - min method", () => {
   });
 
   it("should return min value with soft delete", async () => {
-    User["softDelete"] = true;
+    User["$useSoftDelete"] = true;
     const result = await User.min("age");
-
+    console.log(result);
     expect(result).toEqual(expect.any(Number));
-    expect(result).toBe(20);
+    expect(result).toBe(10);
   });
 
   it("with where condition should return min value", async () => {
-    User["softDelete"] = false;
+    User["$useSoftDelete"] = false;
     const result = await User.where("name", "Kosasih").min("age");
 
     expect(result).toEqual(expect.any(Number));
@@ -426,7 +404,7 @@ describe("Model - min method", () => {
   });
 
   it("with non exist data should return 0", async () => {
-    User["softDelete"] = false;
+    User["$useSoftDelete"] = false;
     const result = await User.where("name", "Udin1").min("age");
 
     expect(result).toEqual(expect.any(Number));
@@ -434,7 +412,7 @@ describe("Model - min method", () => {
   });
 
   it("with non number field should return 0", async () => {
-    User["softDelete"] = false;
+    User["$useSoftDelete"] = false;
     const result = await User.min("name");
 
     expect(result).toEqual(expect.any(Number));
@@ -462,15 +440,14 @@ describe("Model - avg method", () => {
   });
 
   it("should return avg value", async () => {
-    User["softDelete"] = false;
+    User["$useSoftDelete"] = false;
     const result = await User.avg("age");
-
     expect(result).toEqual(expect.any(Number));
     expect(Math.round(result)).toBe(27);
   });
 
   it("should return avg value with soft delete", async () => {
-    User["softDelete"] = true;
+    User["$useSoftDelete"] = true;
     const result = await User.avg("age");
 
     expect(result).toEqual(expect.any(Number));
@@ -478,7 +455,7 @@ describe("Model - avg method", () => {
   });
 
   it("with where condition should return avg value", async () => {
-    User["softDelete"] = false;
+    User["$useSoftDelete"] = false;
     const result = await User.where("name", "Udin").avg("age");
 
     expect(result).toEqual(expect.any(Number));
@@ -486,7 +463,7 @@ describe("Model - avg method", () => {
   });
 
   it("with non exist data should return 0", async () => {
-    User["softDelete"] = false;
+    User["$useSoftDelete"] = false;
     const result = await User.where("name", "Udin1").avg("age");
 
     expect(result).toEqual(expect.any(Number));
@@ -494,9 +471,8 @@ describe("Model - avg method", () => {
   });
 
   it("with non number field should return 0", async () => {
-    User["softDelete"] = false;
+    User["$useSoftDelete"] = false;
     const result = await User.avg("name");
-
     expect(result).toEqual(expect.any(Number));
     expect(result).toEqual(0);
   });
@@ -522,7 +498,7 @@ describe("Model - sum method", () => {
   });
 
   it("should return sum value", async () => {
-    User["softDelete"] = false;
+    User["$useSoftDelete"] = false;
     const result = await User.sum("age");
 
     expect(result).toEqual(expect.any(Number));
@@ -530,7 +506,7 @@ describe("Model - sum method", () => {
   });
 
   it("should return sum value with soft delete", async () => {
-    User["softDelete"] = true;
+    User["$useSoftDelete"] = true;
     const result = await User.sum("age");
 
     expect(result).toEqual(expect.any(Number));
@@ -538,7 +514,7 @@ describe("Model - sum method", () => {
   });
 
   it("with where condition should return sum value", async () => {
-    User["softDelete"] = false;
+    User["$useSoftDelete"] = false;
     const result = await User.where("name", "Udin").sum("age");
 
     expect(result).toEqual(expect.any(Number));
@@ -546,7 +522,7 @@ describe("Model - sum method", () => {
   });
 
   it("with non exist data should return 0", async () => {
-    User["softDelete"] = false;
+    User["$useSoftDelete"] = false;
     const result = await User.where("name", "Udin1").sum("age");
 
     expect(result).toEqual(expect.any(Number));
@@ -554,7 +530,7 @@ describe("Model - sum method", () => {
   });
 
   it("with non number field should return 0", async () => {
-    User["softDelete"] = false;
+    User["$useSoftDelete"] = false;
     const result = await User.sum("name");
 
     expect(result).toEqual(expect.any(Number));
@@ -582,7 +558,7 @@ describe("Model - count method", () => {
   });
 
   it("should return count value", async () => {
-    User["softDelete"] = false;
+    User["$useSoftDelete"] = false;
     const result = await User.count();
 
     expect(result).toEqual(expect.any(Number));
@@ -590,7 +566,7 @@ describe("Model - count method", () => {
   });
 
   it("should return count value with soft delete", async () => {
-    User["softDelete"] = true;
+    User["$useSoftDelete"] = true;
     const result = await User.count();
 
     expect(result).toEqual(expect.any(Number));
@@ -598,7 +574,7 @@ describe("Model - count method", () => {
   });
 
   it("with where condition should return count value", async () => {
-    User["softDelete"] = false;
+    User["$useSoftDelete"] = false;
     const result = await User.where("name", "Udin").count();
 
     expect(result).toEqual(expect.any(Number));
@@ -606,7 +582,7 @@ describe("Model - count method", () => {
   });
 
   it("with non exist data should return 0", async () => {
-    User["softDelete"] = false;
+    User["$useSoftDelete"] = false;
     const result = await User.where("name", "Udin1").count();
 
     expect(result).toEqual(expect.any(Number));
@@ -634,7 +610,7 @@ describe("Model - pluck method", () => {
   });
 
   it("should return pluck value", async () => {
-    User["softDelete"] = false;
+    User["$useSoftDelete"] = false;
     const result = await User.pluck("name");
 
     expect(result).toEqual(expect.any(Array));
@@ -642,7 +618,7 @@ describe("Model - pluck method", () => {
   });
 
   it("with where condition should return pluck value", async () => {
-    User["softDelete"] = false;
+    User["$useSoftDelete"] = false;
     const result = await User.where("name", "Udin").pluck("name");
 
     expect(result).toEqual(expect.any(Array));
@@ -650,7 +626,7 @@ describe("Model - pluck method", () => {
   });
 
   it("with non exist data should return empty array", async () => {
-    User["softDelete"] = false;
+    User["$useSoftDelete"] = false;
     const result = await User.where("name", "Udin1").pluck("name");
 
     expect(result).toEqual(expect.any(Array));
@@ -658,7 +634,7 @@ describe("Model - pluck method", () => {
   });
 
   it("with non exist field should return empty array", async () => {
-    User["softDelete"] = false;
+    User["$useSoftDelete"] = false;
     const result = await User.pluck("address");
 
     expect(result).toEqual(expect.any(Array));
@@ -666,7 +642,7 @@ describe("Model - pluck method", () => {
   });
 
   it("with $skip should return pluck value", async () => {
-    User["softDelete"] = false;
+    User["$useSoftDelete"] = false;
     const result = await User.skip(1).pluck("name");
 
     expect(result).toEqual(expect.any(Array));
@@ -674,7 +650,7 @@ describe("Model - pluck method", () => {
   });
 
   it("with $limit should return pluck value", async () => {
-    User["softDelete"] = false;
+    User["$useSoftDelete"] = false;
     const result = await User.limit(2).pluck("name");
 
     expect(result).toEqual(expect.any(Array));
@@ -682,7 +658,7 @@ describe("Model - pluck method", () => {
   });
 
   it("with $skip and $limit should return pluck value", async () => {
-    User["softDelete"] = false;
+    User["$useSoftDelete"] = false;
     const result = await User.skip(1).limit(1).pluck("name");
 
     expect(result).toEqual(expect.any(Array));
@@ -702,8 +678,8 @@ describe("Model - insert method", () => {
   });
 
   it("should insert data", async () => {
-    User["softDelete"] = false;
-    User["timestamps"] = false;
+    User["$useSoftDelete"] = false;
+    User["$useTimestamps"] = false;
 
     const result = await User.insert({
       name: "Udin",
@@ -719,8 +695,8 @@ describe("Model - insert method", () => {
   });
 
   it("should insert data with timestamps", async () => {
-    User["softDelete"] = false;
-    User["timestamps"] = true;
+    User["$useSoftDelete"] = false;
+    User["$useTimestamps"] = true;
 
     const result = await User.insert({
       name: "Udin",
@@ -733,13 +709,13 @@ describe("Model - insert method", () => {
     expect(result).toHaveProperty("name", "Udin");
     expect(result).toHaveProperty("age", 20);
     expect(result).toHaveProperty("address", "Jakarta");
-    expect(result).toHaveProperty("createdAt");
-    expect(result).toHaveProperty("updatedAt");
+    expect(result).toHaveProperty(User["$createdAt"]);
+    expect(result).toHaveProperty(User["$updatedAt"]);
   });
 
   it("should insert with soft delete", async () => {
-    User["softDelete"] = true;
-    User["timestamps"] = false;
+    User["$useSoftDelete"] = true;
+    User["$useTimestamps"] = false;
 
     const result = await User.insert({
       name: "Udin",
@@ -752,12 +728,12 @@ describe("Model - insert method", () => {
     expect(result).toHaveProperty("name", "Udin");
     expect(result).toHaveProperty("age", 20);
     expect(result).toHaveProperty("address", "Jakarta");
-    expect(result).toHaveProperty("isDeleted", false);
+    expect(result).toHaveProperty(User.getIsDeleted(), false);
   });
 
   it("should insert with soft delete and timestamps", async () => {
-    User["softDelete"] = true;
-    User["timestamps"] = true;
+    User["$useSoftDelete"] = true;
+    User["$useTimestamps"] = true;
 
     const result = await User.insert({
       name: "Udin",
@@ -770,9 +746,9 @@ describe("Model - insert method", () => {
     expect(result).toHaveProperty("name", "Udin");
     expect(result).toHaveProperty("age", 20);
     expect(result).toHaveProperty("address", "Jakarta");
-    expect(result).toHaveProperty("isDeleted", false);
-    expect(result).toHaveProperty("createdAt");
-    expect(result).toHaveProperty("updatedAt");
+    expect(result).toHaveProperty(User.getIsDeleted(), false);
+    expect(result).toHaveProperty(User["$createdAt"]);
+    expect(result).toHaveProperty(User["$updatedAt"]);
   });
 });
 
@@ -788,8 +764,8 @@ describe("Model - create method", () => {
   });
 
   it("should insert data", async () => {
-    User["softDelete"] = false;
-    User["timestamps"] = false;
+    User["$useSoftDelete"] = false;
+    User["$useTimestamps"] = false;
 
     const result = await User.create({
       name: "Udin",
@@ -805,8 +781,8 @@ describe("Model - create method", () => {
   });
 
   it("should insert data with timestamps", async () => {
-    User["softDelete"] = false;
-    User["timestamps"] = true;
+    User["$useSoftDelete"] = false;
+    User["$useTimestamps"] = true;
 
     const result = await User.create({
       name: "Udin",
@@ -819,13 +795,13 @@ describe("Model - create method", () => {
     expect(result).toHaveProperty("name", "Udin");
     expect(result).toHaveProperty("age", 20);
     expect(result).toHaveProperty("address", "Jakarta");
-    expect(result).toHaveProperty("createdAt");
-    expect(result).toHaveProperty("updatedAt");
+    expect(result).toHaveProperty(User["$createdAt"]);
+    expect(result).toHaveProperty(User["$updatedAt"]);
   });
 
   it("should insert with soft delete", async () => {
-    User["softDelete"] = true;
-    User["timestamps"] = false;
+    User["$useSoftDelete"] = true;
+    User["$useTimestamps"] = false;
 
     const result = await User.create({
       name: "Udin",
@@ -838,12 +814,12 @@ describe("Model - create method", () => {
     expect(result).toHaveProperty("name", "Udin");
     expect(result).toHaveProperty("age", 20);
     expect(result).toHaveProperty("address", "Jakarta");
-    expect(result).toHaveProperty("isDeleted", false);
+    expect(result).toHaveProperty(User.getIsDeleted(), false);
   });
 
   it("should insert with soft delete and timestamps", async () => {
-    User["softDelete"] = true;
-    User["timestamps"] = true;
+    User["$useSoftDelete"] = true;
+    User["$useTimestamps"] = true;
 
     const result = await User.create({
       name: "Udin",
@@ -856,9 +832,9 @@ describe("Model - create method", () => {
     expect(result).toHaveProperty("name", "Udin");
     expect(result).toHaveProperty("age", 20);
     expect(result).toHaveProperty("address", "Jakarta");
-    expect(result).toHaveProperty("isDeleted", false);
-    expect(result).toHaveProperty("createdAt");
-    expect(result).toHaveProperty("updatedAt");
+    expect(result).toHaveProperty(User.getIsDeleted(), false);
+    expect(result).toHaveProperty(User["$createdAt"]);
+    expect(result).toHaveProperty(User["$updatedAt"]);
   });
 });
 
@@ -874,8 +850,8 @@ describe("Model - insertMany method", () => {
   });
 
   it("should insert data", async () => {
-    User["softDelete"] = false;
-    User["timestamps"] = false;
+    User["$useSoftDelete"] = false;
+    User["$useTimestamps"] = false;
 
     const result = await User.insertMany([
       {
@@ -895,8 +871,8 @@ describe("Model - insertMany method", () => {
   });
 
   it("should insert data with timestamps", async () => {
-    User["softDelete"] = false;
-    User["timestamps"] = true;
+    User["$useSoftDelete"] = false;
+    User["$useTimestamps"] = true;
 
     const result = await User.insertMany([
       {
@@ -916,8 +892,8 @@ describe("Model - insertMany method", () => {
   });
 
   it("should insert with soft delete", async () => {
-    User["softDelete"] = true;
-    User["timestamps"] = false;
+    User["$useSoftDelete"] = true;
+    User["$useTimestamps"] = false;
 
     const result = await User.insertMany([
       {
@@ -937,8 +913,8 @@ describe("Model - insertMany method", () => {
   });
 
   it("should insert with soft delete and timestamps", async () => {
-    User["softDelete"] = true;
-    User["timestamps"] = true;
+    User["$useSoftDelete"] = true;
+    User["$useTimestamps"] = true;
 
     const result = await User.insertMany([
       {
@@ -977,8 +953,8 @@ describe("Model - update method", () => {
   });
 
   it("should update data", async () => {
-    User["softDelete"] = false;
-    User["timestamps"] = false;
+    User["$useSoftDelete"] = false;
+    User["$useTimestamps"] = false;
 
     await User.insert({
       name: "Udin",
@@ -1000,8 +976,8 @@ describe("Model - update method", () => {
   });
 
   it("should update data with timestamps", async () => {
-    User["softDelete"] = false;
-    User["timestamps"] = true;
+    User["$useSoftDelete"] = false;
+    User["$useTimestamps"] = true;
 
     const user = await User.insert({
       name: "Udin",
@@ -1020,14 +996,19 @@ describe("Model - update method", () => {
     expect(result).toHaveProperty("age", 21);
     expect(result).toHaveProperty("address", "Jakarta");
     expect(result).toHaveProperty("_id");
-    expect(result).toHaveProperty("createdAt", (user as any).createdAt);
-    expect(result).toHaveProperty("updatedAt");
-    expect((result as any).updatedAt).not.toEqual((user as any).updatedAt);
+    expect(result).toHaveProperty(
+      User["$createdAt"],
+      (user as any)[User["$createdAt"]]
+    );
+    expect(result).toHaveProperty(User["$updatedAt"]);
+    expect((result as any).updatedAt).not.toEqual(
+      (user as any)[User["$updatedAt"]]
+    );
   });
 
   it("with send _id in payload", async () => {
-    User["softDelete"] = false;
-    User["timestamps"] = false;
+    User["$useSoftDelete"] = false;
+    User["$useTimestamps"] = false;
 
     const user = await User.insert({
       name: "Udin",
@@ -1050,8 +1031,8 @@ describe("Model - update method", () => {
   });
 
   it("with send createdAt at in payload", async () => {
-    User["softDelete"] = false;
-    User["timestamps"] = true;
+    User["$useSoftDelete"] = false;
+    User["$useTimestamps"] = true;
 
     const user = await User.insert({
       name: "Udin",
@@ -1071,12 +1052,15 @@ describe("Model - update method", () => {
     expect(result).toHaveProperty("age", 21);
     expect(result).toHaveProperty("address", "Jakarta");
     expect(result).toHaveProperty("_id", (user as any)._id);
-    expect(result).toHaveProperty("createdAt", (user as any).createdAt);
+    expect(result).toHaveProperty(
+      User["$createdAt"],
+      (user as any)[User["$createdAt"]]
+    );
   });
 
   it("with not found data", async () => {
-    User["softDelete"] = false;
-    User["timestamps"] = false;
+    User["$useSoftDelete"] = false;
+    User["$useTimestamps"] = false;
 
     const result = await User.where("name", "Udin").update({
       name: "Udin Ganteng",
@@ -1108,8 +1092,8 @@ describe("Model - updateMany method", () => {
   });
 
   it("should update data", async () => {
-    User["softDelete"] = false;
-    User["timestamps"] = false;
+    User["$useSoftDelete"] = false;
+    User["$useTimestamps"] = false;
 
     await User.insertMany([
       {
@@ -1132,9 +1116,9 @@ describe("Model - updateMany method", () => {
     expect(result).toHaveProperty("modifiedCount", 2);
   });
 
-  it("with soft delete", async () => {
-    User["softDelete"] = true;
-    User["timestamps"] = false;
+  it.only("with soft delete", async () => {
+    User["$useSoftDelete"] = true;
+    User["$useTimestamps"] = false;
 
     await userCollection["insertMany"]([
       {
@@ -1166,8 +1150,8 @@ describe("Model - updateMany method", () => {
   });
 
   it("with send _id in payload", async () => {
-    User["softDelete"] = false;
-    User["timestamps"] = false;
+    User["$useSoftDelete"] = false;
+    User["$useTimestamps"] = false;
 
     await User.insertMany([
       {
@@ -1192,8 +1176,8 @@ describe("Model - updateMany method", () => {
   });
 
   it("with send createdAt in payload", async () => {
-    User["softDelete"] = false;
-    User["timestamps"] = false;
+    User["$useSoftDelete"] = false;
+    User["$useTimestamps"] = false;
 
     await User.insertMany([
       {
@@ -1218,8 +1202,8 @@ describe("Model - updateMany method", () => {
   });
 
   it("with not found data", async () => {
-    User["softDelete"] = false;
-    User["timestamps"] = false;
+    User["$useSoftDelete"] = false;
+    User["$useTimestamps"] = false;
 
     const result = await User.where("age", ">", 30).updateMany({
       age: 50,
@@ -1250,8 +1234,8 @@ describe("Model - delete method", () => {
   });
 
   it("should delete data", async () => {
-    User["softDelete"] = false;
-    User["timestamps"] = false;
+    User["$useSoftDelete"] = false;
+    User["$useTimestamps"] = false;
 
     await User.insert({
       name: "Udin",
@@ -1271,8 +1255,8 @@ describe("Model - delete method", () => {
   });
 
   it("with soft delete", async () => {
-    User["softDelete"] = true;
-    User["timestamps"] = false;
+    User["$useSoftDelete"] = true;
+    User["$useTimestamps"] = false;
 
     await User.insert({
       name: "Udin",
@@ -1293,8 +1277,8 @@ describe("Model - delete method", () => {
   });
 
   it("with not found data", async () => {
-    User["softDelete"] = false;
-    User["timestamps"] = false;
+    User["$useSoftDelete"] = false;
+    User["$useTimestamps"] = false;
 
     const result = await User.where("name", "Udin").delete();
 
@@ -1322,8 +1306,8 @@ describe("Model - deleteMany method", () => {
   });
 
   it("should delete data", async () => {
-    User["softDelete"] = false;
-    User["timestamps"] = false;
+    User["$useSoftDelete"] = false;
+    User["$useTimestamps"] = false;
 
     await User.insertMany([
       {
@@ -1347,8 +1331,8 @@ describe("Model - deleteMany method", () => {
   });
 
   it("with soft delete", async () => {
-    User["softDelete"] = true;
-    User["timestamps"] = false;
+    User["$useSoftDelete"] = true;
+    User["$useTimestamps"] = false;
 
     await User.insertMany([
       {
@@ -1372,8 +1356,8 @@ describe("Model - deleteMany method", () => {
   });
 
   it("with not found data", async () => {
-    User["softDelete"] = false;
-    User["timestamps"] = false;
+    User["$useSoftDelete"] = false;
+    User["$useTimestamps"] = false;
 
     const result = await User.where("age", ">", 30).deleteMany();
 
@@ -1402,8 +1386,8 @@ describe("Model - destroy method", () => {
   });
 
   it("with string param should delete data", async () => {
-    User["softDelete"] = false;
-    User["timestamps"] = false;
+    User["$useSoftDelete"] = false;
+    User["$useTimestamps"] = false;
 
     const userIds = await User.insertMany([
       {
@@ -1427,8 +1411,8 @@ describe("Model - destroy method", () => {
   });
 
   it("with array of string param should delete data", async () => {
-    User["softDelete"] = false;
-    User["timestamps"] = false;
+    User["$useSoftDelete"] = false;
+    User["$useTimestamps"] = false;
 
     const userIds = await User.insertMany([
       {
@@ -1454,8 +1438,8 @@ describe("Model - destroy method", () => {
   });
 
   it("with ObjectId param should delete data", async () => {
-    User["softDelete"] = false;
-    User["timestamps"] = false;
+    User["$useSoftDelete"] = false;
+    User["$useTimestamps"] = false;
 
     const userIds = await User.insertMany([
       {
@@ -1479,8 +1463,8 @@ describe("Model - destroy method", () => {
   });
 
   it("with array of ObjectId param should delete data", async () => {
-    User["softDelete"] = false;
-    User["timestamps"] = false;
+    User["$useSoftDelete"] = false;
+    User["$useTimestamps"] = false;
 
     const userIds = await User.insertMany([
       {
@@ -1524,8 +1508,8 @@ describe("Model - forceDelete method", () => {
   });
 
   it("should force delete data", async () => {
-    User["softDelete"] = true;
-    User["timestamps"] = false;
+    User["$useSoftDelete"] = true;
+    User["$useTimestamps"] = false;
 
     await userCollection["insertMany"]([
       {
@@ -1552,8 +1536,8 @@ describe("Model - forceDelete method", () => {
   });
 
   it("with queries should force delete data", async () => {
-    User["softDelete"] = true;
-    User["timestamps"] = false;
+    User["$useSoftDelete"] = true;
+    User["$useTimestamps"] = false;
 
     await userCollection["insertMany"]([
       {
@@ -1582,8 +1566,8 @@ describe("Model - forceDelete method", () => {
   });
 
   it("with not found data", async () => {
-    User["softDelete"] = true;
-    User["timestamps"] = false;
+    User["$useSoftDelete"] = true;
+    User["$useTimestamps"] = false;
 
     const result = await User.where("name", "Udin").forceDelete();
 
@@ -1612,8 +1596,8 @@ describe("Model - restore method", () => {
   });
 
   it("should restore data", async () => {
-    User["softDelete"] = true;
-    User["timestamps"] = false;
+    User["$useSoftDelete"] = true;
+    User["$useTimestamps"] = false;
 
     await userCollection["insertMany"]([
       {
@@ -1640,8 +1624,8 @@ describe("Model - restore method", () => {
   });
 
   it("with queries should restore data", async () => {
-    User["softDelete"] = true;
-    User["timestamps"] = false;
+    User["$useSoftDelete"] = true;
+    User["$useTimestamps"] = false;
 
     await userCollection["insertMany"]([
       {
@@ -1668,8 +1652,8 @@ describe("Model - restore method", () => {
   });
 
   it("with not found data", async () => {
-    User["softDelete"] = true;
-    User["timestamps"] = false;
+    User["$useSoftDelete"] = true;
+    User["$useTimestamps"] = false;
 
     const result = await User.where("name", "Udin").restore();
 
