@@ -8,11 +8,15 @@ class Database implements DatabaseInterface {
   protected static timestamps: boolean = false;
   private static db: Db;
 
-  protected static getCollection(): Collection {
+  protected static getCollection(collection?: string): Collection {
     if (!this.db) {
       this.connect();
     }
-    return this.db.collection(this.collection);
+    return this.db.collection(collection || this.collection);
+  }
+
+  protected static getDb(): Db {
+    return this.db;
   }
 
   private static connect(): void {

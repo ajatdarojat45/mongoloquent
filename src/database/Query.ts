@@ -1,6 +1,7 @@
 import Database from "./Database";
 import { QueriesInterface, QueryInterface } from "../interfaces/QueryInterface";
 import { ObjectId } from "mongodb";
+import { deepClone } from "../helpers/deepClone";
 
 class Query extends Database implements QueryInterface {
   protected static isWithTrashed: boolean = false;
@@ -10,6 +11,7 @@ class Query extends Database implements QueryInterface {
   protected static perPage: number = 10;
   protected static groups: object[] = [];
   protected static fields: object[] = [];
+  protected static $queries: any[] = [];
   protected static queries: QueriesInterface = {
     $match: {
       $and: [],
@@ -76,13 +78,13 @@ class Query extends Database implements QueryInterface {
   static orderBy<T extends typeof Query>(
     this: T,
     field: string,
-    order: string,
+    order: string = "asc",
     insensitive: boolean = false
   ): T {
     const _field: string = field;
     const _order: number = order.toLowerCase() === "desc" ? -1 : 1;
 
-    const _sorts = JSON.parse(JSON.stringify(this.sorts));
+    const _sorts: any = deepClone(this.sorts);
 
     _sorts[0].$project[`${_field}`] = 1;
 
@@ -100,7 +102,7 @@ class Query extends Database implements QueryInterface {
 
   static groupBy<T extends typeof Query>(this: T, field: string): T {
     const _field: string = field;
-    const _groups = [...JSON.parse(JSON.stringify(this.groups))];
+    const _groups: any = deepClone(this.groups);
 
     if (_groups.length > 0) {
       _groups[0].$group._id[`${_field}`] = `$${_field}`;
@@ -122,12 +124,19 @@ class Query extends Database implements QueryInterface {
     this: T,
     fields: string | string[] = ""
   ): T {
-    const _fields = JSON.parse(JSON.stringify(this.fields));
+    const _fields: any = deepClone(this.fields);
+    const isNotEmpty = _fields.length > 0;
     let _project = {
       $project: {
         document: "$$ROOT",
       },
     };
+
+    if (isNotEmpty) {
+      _project = {
+        ..._fields[0],
+      };
+    }
 
     if (typeof fields === "string") {
       _project = {
@@ -137,7 +146,7 @@ class Query extends Database implements QueryInterface {
           [fields]: 1,
         },
       };
-    } else if (typeof fields !== "string" && fields.length > 0) {
+    } else if (Array.isArray(fields) && fields.length > 0) {
       fields.forEach((field) => {
         _project = {
           ..._project,
@@ -158,8 +167,15 @@ class Query extends Database implements QueryInterface {
     this: T,
     fields: string | string[] = ""
   ): T {
-    const _fields = JSON.parse(JSON.stringify(this.fields));
+    const _fields: any = deepClone(this.fields);
+    const isNotEmpty = _fields.length > 0;
     let _project = {};
+
+    if (isNotEmpty) {
+      _project = {
+        ..._fields[0].$project,
+      };
+    }
 
     if (typeof fields === "string") {
       _project = {
@@ -308,7 +324,7 @@ class Query extends Database implements QueryInterface {
   ): T {
     let _value = value;
     let _operator = operator;
-    const _queries = JSON.parse(JSON.stringify(this.queries));
+    const _queries: any = deepClone(this.queries);
     let q = {};
     const _logicalOperator = isOr ? "$or" : "$and";
 
@@ -422,6 +438,43 @@ class Query extends Database implements QueryInterface {
       delete this?.queries?.$match?.$or;
     }
 
+    if (_orLength > 0 && this.softDelete) {
+      this.$queries.push(deepClone(this.queries));
+    }
+
+    if (
+      _orLength > 0 &&
+      this.softDelete &&
+      !this.isWithTrashed &&
+      !this.isOnlyTrashed
+    ) {
+      const _$queries = deepClone(this.$queries);
+
+      _$queries.push({
+        $match: {
+          isDeleted: {
+            $eq: false,
+          },
+        },
+      });
+
+      this.$queries = _$queries;
+    }
+
+    if (_orLength > 0 && this.softDelete && this.isOnlyTrashed) {
+      const _$queries = deepClone(this.$queries);
+
+      _$queries.push({
+        $match: {
+          isDeleted: {
+            $eq: true,
+          },
+        },
+      });
+
+      this.$queries = _$queries;
+    }
+
     return this;
   }
 
@@ -433,6 +486,13 @@ class Query extends Database implements QueryInterface {
     this.perPage = 10;
     this.groups = [];
     this.fields = [];
+    this.$queries = JSON.parse(JSON.stringify([]));
+    this.queries = {
+      $match: {
+        $and: [],
+        $or: [],
+      },
+    };
 
     this.sorts = [
       {
@@ -446,21 +506,6 @@ class Query extends Database implements QueryInterface {
       {
         $replaceRoot: {
           newRoot: "$document",
-        },
-      },
-    ];
-
-    this.queries = {
-      $match: {
-        $and: [],
-        $or: [],
-      },
-    };
-
-    this.fields = [
-      {
-        $project: {
-          document: "$$ROOT",
         },
       },
     ];

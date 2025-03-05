@@ -1,55 +1,56 @@
 {
-  "name": "mongoloquent",
-  "version": "1.1.0",
-  "description": "Mongoloquent is a lightweight MongoDB ORM library for Javascript",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "files": ["dist"],
-  "scripts": {
-    "test": "jest --detectOpenHandles --runInBand --verbose  --forceExit --coverage --watchAll",
-    "build": "tsc",
-    "start": "ts-node src/index.ts",
-    "prepublishOnly": "npm run build",
-    "dev": "nodemon --exec ts-node sandbox.ts"
-  },
-  "keywords": [
-    "javascript",
-    "typescript",
-    "database",
-    "mongodb",
-    "orm",
-    "mongoloquent"
-  ],
-  "author": {
-    "name": "Ajat Darojat",
-    "email": "ajatdarojat45@gmail.com",
-    "url": "https://ajatdarojat45.id"
-  },
-  "license": "MIT",
-  "dependencies": {
-    "dayjs": "^1.11.10",
-    "dotenv": "^16.3.2",
-    "mongodb": "^6.3.0"
-  },
-  "devDependencies": {
-    "@types/jest": "^29.5.11",
-    "@types/node": "^20.11.5",
-    "jest": "^29.7.0",
-    "ts-jest": "^29.1.2",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.3.3"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ajatdarojat45/mongoloquent.git"
-  },
-  "funding": {
-    "type": "opencollective",
-    "url": "https://opencollective.com/mongoloquent"
-  },
-  "bugs": {
-    "url": "https://github.com/ajatdarojat45/mongoloquent/issues",
-    "email": "ajatdarojat45@gmail.com"
-  },
-  "homepage": "https://github.com/ajatdarojat45/mongoloquent#readme"
+	"name": "mongoloquent",
+	"version": "2.0.0",
+	"description": "Mongoloquent is a lightweight MongoDB ORM library for Javascript/Typescript",
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"files": ["dist"],
+	"scripts": {
+		"test": "jest --detectOpenHandles --runInBand --verbose  --forceExit --coverage --watchAll",
+		"build": "tsc",
+		"start": "ts-node src/index.ts",
+		"prepublishOnly": "npm run build",
+		"dev": "nodemon --exec ts-node sandbox.ts"
+	},
+	"keywords": [
+		"javascript",
+		"typescript",
+		"database",
+		"mongodb",
+		"orm",
+		"mongoloquent",
+		"nodejs"
+	],
+	"author": {
+		"name": "Ajat Darojat",
+		"email": "ajatdarojat45@gmail.com",
+		"url": "https://ajatdarojat45.id"
+	},
+	"license": "MIT",
+	"dependencies": {
+		"dayjs": "^1.11.10",
+		"dotenv": "^16.3.2",
+		"mongodb": "^6.3.0"
+	},
+	"devDependencies": {
+		"@types/jest": "^29.5.11",
+		"@types/node": "^20.11.5",
+		"jest": "^29.7.0",
+		"ts-jest": "^29.1.2",
+		"ts-node": "^10.9.2",
+		"typescript": "^5.3.3"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/ajatdarojat45/mongoloquent.git"
+	},
+	"funding": {
+		"type": "GitHub",
+		"url": "https://github.com/sponsors/ajatdarojat45"
+	},
+	"bugs": {
+		"url": "https://github.com/ajatdarojat45/mongoloquent/issues",
+		"email": "ajatdarojat45@gmail.com"
+	},
+	"homepage": "https://mongoloquent.com"
 }

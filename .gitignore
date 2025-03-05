@@ -1,10 +1,11 @@
 # Directories
 node_modules
-models
+# models
 dist
 coverage
 
 # Files
 .DS_Store
 .env
+app.js
 sandbox*.*

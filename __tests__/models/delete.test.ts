@@ -1,0 +1,98 @@
+import Model from "../../src/Model";
+
+class User extends Model {
+  static $collection = "users";
+}
+
+beforeAll(async () => {
+  try {
+    const userCollection = User["getCollection"]();
+    await userCollection.deleteMany({});
+  } catch (error) {
+    console.error(error);
+  }
+});
+
+afterAll(async () => {
+  try {
+    const userCollection = User["getCollection"]();
+    await userCollection.deleteMany({});
+  } catch (error) {
+    console.error(error);
+  }
+});
+
+describe("User Model - delete method", () => {
+  const userCollection = User["getCollection"]();
+
+  beforeEach(async () => {
+    try {
+      await userCollection.deleteMany({});
+    } catch (error) {
+      console.error(error);
+    }
+  });
+
+  afterAll(async () => {
+    try {
+      await userCollection.deleteMany({});
+    } catch (error) {
+      console.error(error);
+    }
+  });
+
+  it("should delete a user without soft delete", async () => {
+    User["$useSoftDelete"] = false;
+    User["$useTimestamps"] = false;
+
+    await User.insert({
+      name: "Udin",
+      age: 20,
+      address: "Bogor",
+    });
+
+    const result = await User.where("name", "Udin").delete();
+    const user = await User.where("name", "Udin").first();
+
+    // Check if the user was deleted successfully
+    expect(result).toEqual(expect.any(Object));
+    expect(result).toHaveProperty("_id");
+    expect(result).toHaveProperty("name", "Udin");
+    expect(result).toHaveProperty("age", 20);
+    expect(result).toHaveProperty("address", "Bogor");
+    expect(user).toEqual(null);
+  });
+
+  it("should soft delete a user", async () => {
+    User["$useSoftDelete"] = true;
+    User["$useTimestamps"] = false;
+
+    await User.insert({
+      name: "Udin",
+      age: 20,
+      address: "Bogor",
+    });
+
+    const result = await User.where("name", "Udin").delete();
+    const user = await User.where("name", "Udin").withTrashed().first();
+
+    // Check if the user was soft deleted successfully
+    expect(result).toEqual(expect.any(Object));
+    expect(result).toHaveProperty("_id");
+    expect(result).toHaveProperty("name", "Udin");
+    expect(result).toHaveProperty("age", 20);
+    expect(result).toHaveProperty("address", "Bogor");
+    expect(result).toHaveProperty(User.getIsDeleted(), true);
+    expect(user).not.toEqual(null);
+  });
+
+  it("should return null when trying to delete a non-existent user", async () => {
+    User["$useSoftDelete"] = false;
+    User["$useTimestamps"] = false;
+
+    const result = await User.where("name", "Udin").delete();
+
+    // Check if the result is null for non-existent user
+    expect(result).toEqual(null);
+  });
+});

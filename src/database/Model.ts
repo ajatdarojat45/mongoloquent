@@ -9,6 +9,8 @@ import {
 } from "../interfaces/ModelInterface";
 
 class Model extends Relation implements ModelInterface {
+  public static data: object | null = null;
+
   static async all(): Promise<object[]> {
     try {
       const collection = this.getCollection();
@@ -27,7 +29,7 @@ class Model extends Relation implements ModelInterface {
     try {
       if (fields) this.select(fields);
 
-      const aggregate = this.aggregate();
+      const aggregate = await this.aggregate();
       this.resetQuery();
       this.resetRelation();
 
@@ -37,32 +39,40 @@ class Model extends Relation implements ModelInterface {
     }
   }
 
-  static async first(fields?: string | string[]): Promise<{} | null> {
+  static async first<T extends typeof Model>(
+    this: T,
+    fields?: string | string[]
+  ): Promise<T> {
     try {
       if (fields) this.select(fields);
 
-      const aggregate = this.aggregate();
+      const aggregate = await this.aggregate();
       this.resetQuery();
       this.resetRelation();
 
-      return await aggregate.next();
+      (this as any).data = await aggregate.next();
+      return this;
     } catch (error) {
       throw error;
     }
   }
 
-  static async find(id: string | ObjectId): Promise<{} | null> {
+  static async find<T extends typeof Model>(
+    this: T,
+    id: string | ObjectId
+  ): Promise<T> {
     try {
       let _id = id;
 
       if (typeof _id === "string") _id = new ObjectId(_id);
 
       this.where("_id", _id);
-      const aggregate = this.aggregate();
+      const aggregate = await this.aggregate();
       this.resetQuery();
       this.resetRelation();
 
-      return await aggregate.next();
+      (this as any).data = await aggregate.next();
+      return this;
     } catch (error) {
       throw error;
     }
@@ -73,7 +83,7 @@ class Model extends Relation implements ModelInterface {
     perPage: number = this.perPage
   ): Promise<PaginateInterface> {
     try {
-      const aggregate = this.aggregate();
+      const aggregate = await this.aggregate();
       const collection = this.getCollection();
       let totalResult = await collection
         .aggregate([
@@ -109,12 +119,92 @@ class Model extends Relation implements ModelInterface {
     }
   }
 
-  protected static aggregate() {
+  protected static async aggregate() {
     try {
+      const _relation: any = this.relation;
+
+      switch (_relation.type) {
+        case "hasMany":
+          this.where(_relation.foreignKey, _relation.relationModel?.data._id);
+          break;
+        case "belongsToMany":
+          const belongsToManyCollection = this.getCollection(
+            _relation.pivotCollection
+          );
+
+          const belongsToManyIds = await belongsToManyCollection
+            .find({
+              [_relation.foreignKey]: _relation.relationModel?.data._id,
+            })
+            .map((el) => el[_relation.localKey])
+            .toArray();
+
+          this.whereIn("_id", belongsToManyIds);
+          break;
+        case "hasManyThrough":
+          const hasManyThroughCollection = this.getCollection(
+            _relation.throughCollection
+          );
+
+          const hasManyThroughIds = await hasManyThroughCollection
+            .find({
+              [_relation.localKey]: _relation.relationModel?.data._id,
+            })
+            .map((el) => el._id)
+            .toArray();
+
+          this.whereIn(_relation.foreignKey, hasManyThroughIds);
+
+          break;
+        case "morphMany":
+          this.where(
+            _relation.relationType,
+            _relation.relationModel?.name
+          ).where(_relation.relationId, _relation.relationModel?.data?._id);
+          break;
+        case "morphToMany":
+          const morphToManyCollection = this.getCollection(
+            _relation.pivotCollection
+          );
+
+          const morphToManyIds = await morphToManyCollection
+            .find({
+              [_relation.relationType]: _relation.relationModel.name,
+              [_relation.relationId]: _relation.relationModel?.data._id,
+            })
+            .map((el) => el[_relation.foreignKey])
+            .toArray();
+
+          this.whereIn("_id", morphToManyIds);
+          break;
+        case "morphedByMany":
+          const morphedByManyCollection = this.getCollection(
+            _relation.pivotCollection
+          );
+
+          const morphedByManyIds = await morphedByManyCollection
+            .find({
+              [_relation.relationType]: this.name,
+              [_relation.foreignKey]: _relation.relationModel?.data._id,
+            })
+            .map((el) => el[_relation.relationId])
+            .toArray();
+
+          this.whereIn("_id", morphedByManyIds);
+          break;
+      }
+
       const collection = this.getCollection();
       const _pipeline = [];
       this.generateQuery();
-      _pipeline.push(this.queries);
+
+      if (this.$queries.length > 0) {
+        this.$queries.forEach((query) => {
+          _pipeline.push(query);
+        });
+      } else {
+        _pipeline.push(this.queries);
+      }
 
       if (
         Object.entries(
@@ -123,13 +213,7 @@ class Model extends Relation implements ModelInterface {
       )
         _pipeline.push(...this.sorts);
 
-      if (
-        Object.entries(
-          (this?.fields?.[0] as { $project?: Record<string, any> })?.$project ||
-            {}
-        ).length > 1 ||
-        this.fields.length > 1
-      ) {
+      if (this.fields.length > 0) {
         _pipeline.push(...this.fields);
       }
 
@@ -177,7 +261,8 @@ class Model extends Relation implements ModelInterface {
       this.resetQuery();
       this.resetRelation();
 
-      return aggregate?.max || 0;
+      if (typeof aggregate?.max === "number") return aggregate?.max;
+      else return 0;
     } catch (error) {
       throw error;
     }
@@ -209,7 +294,8 @@ class Model extends Relation implements ModelInterface {
       this.resetQuery();
       this.resetRelation();
 
-      return aggregate?.min || 0;
+      if (typeof aggregate?.min === "number") return aggregate?.min;
+      else return 0;
     } catch (error) {
       throw error;
     }
@@ -343,10 +429,29 @@ class Model extends Relation implements ModelInterface {
       let _payload: object = checkSoftDelete(this.softDelete, payload);
       _payload = checkTimestamps(this.timestamps, _payload);
 
+      const morphTypes = ["morphTo", "morphMany"];
+
+      const _relation: any = this.relation;
+
+      if (morphTypes.includes(_relation.type)) {
+        _payload = {
+          ..._payload,
+          [_relation.relationType]: _relation.relationModel.name,
+          [_relation.relationId]: _relation.relationModel.data._id,
+        };
+      } else if (_relation.type === "hasMany") {
+        _payload = {
+          ..._payload,
+          [_relation.foreignKey]: _relation.relationModel.data._id,
+        };
+      }
+
       const data = await collection.insertOne({
         ..._payload,
       });
 
+      this.resetQuery();
+      this.resetRelation();
       return { _id: data.insertedId, ..._payload };
     } catch (error) {
       throw error;
@@ -361,19 +466,50 @@ class Model extends Relation implements ModelInterface {
     }
   }
 
-  static async insertMany(payload: object[]): Promise<object> {
+  static async save(payload: object): Promise<object> {
+    try {
+      return await this.insert(payload);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async insertMany(payload: object[]): Promise<ObjectId[]> {
     try {
       const collection = this.getCollection();
 
       const _payload = payload.map((item) => {
         let _item: object = checkSoftDelete(this.softDelete, item);
         _item = checkTimestamps(this.timestamps, _item);
+
+        const morphTypes = ["morphTo", "morphMany"];
+
+        const _relation: any = this.relation;
+        if (morphTypes.includes(_relation.type)) {
+          _item = {
+            ..._item,
+            [_relation.relationType]: _relation.relationModel.name,
+            [_relation.relationId]: _relation.relationModel.data._id,
+          };
+        } else if (_relation.type === "hasMany") {
+          _item = {
+            ..._item,
+            [_relation.foreignKey]: _relation.relationModel.data._id,
+          };
+        }
+
         return _item;
       });
 
       const data = await collection.insertMany(_payload);
 
-      return data;
+      const result: ObjectId[] = [];
+
+      for (var key in data.insertedIds) {
+        result.push(data.insertedIds[key]);
+      }
+
+      return result;
     } catch (error) {
       throw error;
     }
@@ -502,6 +638,53 @@ class Model extends Relation implements ModelInterface {
       this.resetRelation();
 
       const _data = await collection.deleteMany(q);
+
+      return {
+        deletedCount: _data.deletedCount,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async destroy(
+    id: string | string[] | ObjectId | ObjectId[]
+  ): Promise<object> {
+    try {
+      const collection = this.getCollection();
+      let q: ObjectId[] = [];
+
+      if (!Array.isArray(id)) {
+        q = [new ObjectId(id)];
+      } else {
+        q = id.map((el) => new ObjectId(el));
+      }
+
+      if (this.softDelete) {
+        const _data = await collection.updateMany(
+          {
+            _id: {
+              $in: q,
+            },
+          },
+          {
+            $set: {
+              isDeleted: true,
+              deletedAt: dayjs().toDate(),
+            },
+          }
+        );
+
+        return {
+          deletedCount: _data.modifiedCount,
+        };
+      }
+
+      const _data = await collection.deleteMany({
+        _id: {
+          $in: q,
+        },
+      });
 
       return {
         deletedCount: _data.deletedCount,
