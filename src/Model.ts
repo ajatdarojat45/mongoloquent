@@ -642,6 +642,13 @@ export default class Model extends Relation {
     }
   }
 
+  /**
+   * @note This method performs aggregation operations on a specified field.
+   *
+   * @param field - The field to aggregate.
+   * @param type - The type of aggregation (e.g., "max", "min", "avg", "sum").
+   * @return Promise<number>
+   */
   private static async aggregation(
     field: string,
     type: string
@@ -685,7 +692,6 @@ export default class Model extends Relation {
    * @note This method retrieves the maximum value of a specified field.
    *
    * @param field - The field to get the maximum value of.
-   * @param type - The type of aggregation (default is "max").
    * @return Promise<number>
    */
   public static async max(field: string): Promise<number> {
@@ -846,6 +852,12 @@ export default class Model extends Relation {
     return doc;
   }
 
+  /**
+   * @note This method checks and applies relationship fields to the document.
+   *
+   * @param doc - The document to check.
+   * @return object
+   */
   private static checkRelationship(doc: object): object {
     const relationship = this.getRelationship();
     if (!relationship) return doc;
@@ -889,6 +901,9 @@ export default class Model extends Relation {
     }
   }
 
+  /**
+   * @note This method resets the query and relation states.
+   */
   private static reset(): void {
     const relatedModel = this.getRelatedModel();
     if (relatedModel) relatedModel.reset();
@@ -897,6 +912,9 @@ export default class Model extends Relation {
     this.resetRelation();
   }
 
+  /**
+   * @note This method checks and applies relationship conditions to the query.
+   */
   private static async checkRelation() {
     const relationship = this.getRelationship();
 

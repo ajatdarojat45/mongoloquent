@@ -55,6 +55,10 @@ export default class Relation extends Query {
     | IRelationMorphedByMany
     | null = null;
 
+  /**
+   * @note This property stores the related model.
+   * @var typeof Model | null
+   */
   private static $relatedModel: typeof Model | null = null;
 
   /**
@@ -555,10 +559,19 @@ export default class Relation extends Query {
     this.$relationship = relation;
   }
 
+  /**
+   * @note This method sets the related model.
+   * @param {typeof Model} model - The related model.
+   * @return {void}
+   */
   private static setRelatedModel(model: typeof Model) {
     this.$relatedModel = model;
   }
 
+  /**
+   * @note This method gets the related model.
+   * @return {typeof Model | null} The related model.
+   */
   protected static getRelatedModel() {
     return this.$relatedModel;
   }
@@ -823,6 +836,11 @@ export default class Relation extends Query {
     };
   }
 
+  /**
+   * @note This method syncs related models in a many-to-many relationship.
+   * @param {string | string[] | ObjectId | ObjectId[]} ids - The IDs of the related models.
+   * @return {Promise<{message: string}>} The result of the sync operation.
+   */
   public static sync(ids: string | string[] | ObjectId | ObjectId[]) {
     const relationship = this.getRelationship();
 
@@ -832,6 +850,11 @@ export default class Relation extends Query {
       return this.syncMorphToMany(ids);
   }
 
+  /**
+   * @note This method syncs related models in a belongsToMany relationship.
+   * @param {string | string[] | ObjectId | ObjectId[]} ids - The IDs of the related models.
+   * @return {Promise<{message: string}>} The result of the sync operation.
+   */
   private static async syncBelongsToMany(
     ids: string | string[] | ObjectId | ObjectId[]
   ) {
@@ -897,6 +920,11 @@ export default class Relation extends Query {
     };
   }
 
+  /**
+   * @note This method syncs related models in a morphToMany relationship.
+   * @param {string | string[] | ObjectId | ObjectId[]} ids - The IDs of the related models.
+   * @return {Promise<{message: string}>} The result of the sync operation.
+   */
   public static async syncMorphToMany(
     ids: string | string[] | ObjectId | ObjectId[]
   ) {

@@ -29,13 +29,13 @@ export default class Query extends Database {
 
   /**
    * @note This property stores the where constraints for the query.
-   * @var {IWhere[]}
+   * @var {IQueryWhere[]}
    */
   private static $wheres: IQueryWhere[] = [];
 
   /**
    * @note This property stores the orderings for the query.
-   * @var {IOrder[]}
+   * @var {IQueryOrder[]}
    */
   private static $orders: IQueryOrder[] = [];
 
@@ -507,32 +507,64 @@ export default class Query extends Database {
     return this;
   }
 
+  /**
+   * @note This method sets the parent ID for the query.
+   * @param {ObjectId | null} id - The parent ID.
+   * @return {void}
+   */
   protected static setParentId(id: ObjectId | null): void {
     this.$parentId = id;
   }
 
+  /**
+   * @note This method retrieves the parent ID for the query.
+   * @return {ObjectId | null} The parent ID.
+   */
   protected static getParentId(): ObjectId | null {
     return this.$parentId;
   }
 
+  /**
+   * @note This method sets the stages for the query.
+   * @param {Document | Document[]} doc - The stages to be set.
+   * @return {void}
+   */
   private static setStages(doc: Document | Document[]): void {
     if (Array.isArray(doc)) this.$stages = [...this.$stages, ...doc];
     else this.$stages = [...this.$stages, doc];
   }
 
+  /**
+   * @note This method retrieves the stages for the query.
+   * @return {Document[]} The stages.
+   */
   protected static getStages(): Document[] {
     return this.$stages;
   }
 
+  /**
+   * @note This method retrieves the field name for the soft delete flag.
+   * @return {string} The field name for the soft delete flag.
+   */
   public static getIsDeleted(): string {
     return this.$isDeleted;
   }
 
+  /**
+   * @note This method sets the columns to be selected.
+   * @param {string | string[]} columns - The columns to be selected.
+   * @return {void}
+   */
   protected static setColumns(columns: string | string[]): void {
     if (Array.isArray(columns)) this.$columns = [...this.$columns, ...columns];
     else this.$columns = [...this.$columns, columns];
   }
 
+  /**
+   * @note This method sets the columns to be excluded.
+   * @param {string | string[]} columns - The columns to be excluded.
+   * @return {void}
+   */
   private static setExcludes(columns: string | string[]): void {
     if (Array.isArray(columns))
       this.$excludes = [...this.$excludes, ...columns];
@@ -541,10 +573,10 @@ export default class Query extends Database {
 
   /**
    * @note This method adds a basic where clause to the query.
-   * @param  {string} column - The column to apply the where clause on.
-   * @param  {any} operator - The operator to use.
-   * @param  {any} [value=null] - The value to compare against.
-   * @param  {string} [boolean="and"] - The boolean operator to use (and/or).
+   * @param {string} column - The column to apply the where clause on.
+   * @param {any} operator - The operator to use.
+   * @param {any} [value=null] - The value to compare against.
+   * @param {string} [boolean="and"] - The boolean operator to use (and/or).
    * @return {void}
    */
   private static setWheres(
@@ -565,11 +597,21 @@ export default class Query extends Database {
     ];
   }
 
+  /**
+   * @note This method sets the orders for the query.
+   * @param {IQueryOrder} doc - The orders to be set.
+   * @return {void}
+   */
   private static setOrders(doc: IQueryOrder): void {
     if (Array.isArray(doc)) this.$orders = [...this.$orders, ...doc];
     else this.$orders = [...this.$orders, doc];
   }
 
+  /**
+   * @note This method sets the groups for the query.
+   * @param {string} doc - The groups to be set.
+   * @return {void}
+   */
   private static setGroups(doc: string): void {
     if (Array.isArray(doc)) this.$groups = [...this.$groups, ...doc];
     else this.$groups = [...this.$groups, doc];
@@ -761,10 +803,18 @@ export default class Query extends Database {
     if (this.$groups.length > 0) this.setStages({ $group });
   }
 
+  /**
+   * @note This method generates the limit for a query.
+   * @return {void}
+   */
   protected static generateLimit(): void {
     if (this.$limit > 0) this.setStages({ $limit: this.$limit });
   }
 
+  /**
+   * @note This method generates the offset for a query.
+   * @return {void}
+   */
   protected static generateOffset(): void {
     if (this.$offset > 0) this.setStages({ $skip: this.$offset });
   }
