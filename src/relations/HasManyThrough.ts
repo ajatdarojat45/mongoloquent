@@ -1,7 +1,6 @@
 import { Document } from "mongodb";
 import Relation from "../Relation";
-import Model from "../Model";
-import { IRelationOptions } from "../interfaces/IRelation";
+import { IRelationHasManyThrough } from "../interfaces/IRelation";
 
 export default class HasManyThrough {
   /**
@@ -16,36 +15,19 @@ export default class HasManyThrough {
    * @param {IRelationOptions} options - The options for the relation.
    * @return {Document[]} The lookup stages.
    */
-  static generate(
-    related: typeof Model,
-    through: typeof Model,
-    firstKey: string,
-    secondKey: string,
-    localKey: string = "_id",
-    secondLocalKey: string = "_id",
-    alias: string,
-    options: IRelationOptions
-  ): Document[] {
+  static generate(hasManyThrough: IRelationHasManyThrough): Document[] {
     // Generate the lookup stages for the HasManyThrough relationship
-    const lookup = this.lookup(
-      related,
-      through,
-      firstKey,
-      secondKey,
-      localKey,
-      secondLocalKey,
-      alias
-    );
+    const lookup = this.lookup(hasManyThrough);
     let select: any = [];
     let exclude: any = [];
 
     // Generate the select stages if options.select is provided
-    if (options?.select)
-      select = Relation.selectRelationColumns(options.select, alias);
+    if (hasManyThrough.options?.select)
+      select = Relation.selectRelationColumns(hasManyThrough.options.select, hasManyThrough.alias);
 
     // Generate the exclude stages if options.exclude is provided
-    if (options?.exclude)
-      exclude = Relation.excludeRelationColumns(options.exclude, alias);
+    if (hasManyThrough.options?.exclude)
+      exclude = Relation.excludeRelationColumns(hasManyThrough.options.exclude, hasManyThrough.alias);
 
     // Return the combined lookup, select, and exclude stages
     return [...lookup, ...select, ...exclude];
@@ -62,24 +44,16 @@ export default class HasManyThrough {
    * @param {string} alias - The alias for the relation.
    * @return {Document[]} The lookup stages.
    */
-  static lookup(
-    related: typeof Model,
-    through: typeof Model,
-    firstKey: string,
-    secondKey: string,
-    localKey: string = "_id",
-    secondLocalKey: string = "_id",
-    alias: string
-  ): Document[] {
+  static lookup(hasManyThrough: IRelationHasManyThrough): Document[] {
     const lookup: Document[] = [];
     const pipeline: Document[] = [];
 
     // Add soft delete condition to the pipeline if enabled
-    if (related.$useSoftDelete) {
+    if (hasManyThrough.model.$useSoftDelete) {
       pipeline.push({
         $match: {
           $expr: {
-            $and: [{ $eq: [`$${related.getIsDeleted()}`, false] }],
+            $and: [{ $eq: [`$${hasManyThrough.model.getIsDeleted()}`, false] }],
           },
         },
       });
@@ -89,18 +63,18 @@ export default class HasManyThrough {
     lookup.push(
       {
         $lookup: {
-          from: through.$collection,
-          localField: localKey,
-          foreignField: firstKey,
+          from: hasManyThrough.throughModel.$collection,
+          localField: hasManyThrough.localKey,
+          foreignField: hasManyThrough.foreignKey,
           as: "pivot",
         },
       },
       {
         $lookup: {
-          from: related.$collection,
-          localField: `pivot.${secondLocalKey}`,
-          foreignField: `${secondKey}`,
-          as: alias || "alias",
+          from: hasManyThrough.model.$collection,
+          localField: `pivot.${hasManyThrough.localKeyThrough}`,
+          foreignField: `${hasManyThrough.foreignKeyThrough}`,
+          as: hasManyThrough.alias || "alias",
           pipeline,
         },
       },

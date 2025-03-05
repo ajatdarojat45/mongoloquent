@@ -1,7 +1,10 @@
 import { Document } from "mongodb";
 import Model from "../Model";
 import Relation from "../Relation";
-import { IRelationOptions } from "../interfaces/IRelation";
+import {
+  IRelationMorphedByMany,
+  IRelationOptions,
+} from "../interfaces/IRelation";
 
 export default class MorphedByMany {
   /**
@@ -15,36 +18,25 @@ export default class MorphedByMany {
    * @param {IRelationOptions} options - The options for the relation.
    * @return {Document[]} The lookup stages.
    */
-  static generate(
-    target: typeof Model,
-    name: string,
-    modelName: string,
-    type: string,
-    id: string,
-    ownerKey: string = "_id",
-    alias: string,
-    options: IRelationOptions
-  ): Document[] {
+  static generate(morphedByMany: IRelationMorphedByMany): Document[] {
     // Generate the lookup stages for the MorphByMany relationship
-    const lookup = this.lookup(
-      target,
-      name,
-      modelName,
-      type,
-      id,
-      ownerKey,
-      alias
-    );
+    const lookup = this.lookup(morphedByMany);
     let select: any = [];
     let exclude: any = [];
 
     // Generate the select stages if options.select is provided
-    if (options?.select)
-      select = Relation.selectRelationColumns(options.select, alias);
+    if (morphedByMany.options?.select)
+      select = Relation.selectRelationColumns(
+        morphedByMany.options.select,
+        morphedByMany.alias
+      );
 
     // Generate the exclude stages if options.exclude is provided
-    if (options?.exclude)
-      exclude = Relation.excludeRelationColumns(options.exclude, alias);
+    if (morphedByMany.options?.exclude)
+      exclude = Relation.excludeRelationColumns(
+        morphedByMany.options.exclude,
+        morphedByMany.alias
+      );
 
     // Return the combined lookup, select, and exclude stages
     return [...lookup, ...select, ...exclude];
@@ -60,24 +52,16 @@ export default class MorphedByMany {
    * @param {string} alias - The alias for the relation.
    * @return {Document[]} The lookup stages.
    */
-  static lookup(
-    target: typeof Model,
-    name: string,
-    modelName: string,
-    type: string,
-    id: string,
-    ownerKey: string = "_id",
-    alias: string
-  ): Document[] {
+  static lookup(morphedByMany: IRelationMorphedByMany): Document[] {
     const lookup: Document[] = [];
     const pipeline: Document[] = [];
 
     // Add soft delete condition to the pipeline if enabled
-    if (target.$useSoftDelete) {
+    if (morphedByMany.model.$useSoftDelete) {
       pipeline.push({
         $match: {
           $expr: {
-            $and: [{ $eq: [`$${target.getIsDeleted()}`, false] }],
+            $and: [{ $eq: [`$${morphedByMany.model.getIsDeleted()}`, false] }],
           },
         },
       });
@@ -87,9 +71,9 @@ export default class MorphedByMany {
     lookup.push(
       {
         $lookup: {
-          from: `${name}s`,
-          localField: ownerKey,
-          foreignField: `${modelName.toLocaleLowerCase()}Id`,
+          from: morphedByMany.morphCollectionName,
+          localField: "_id",
+          foreignField: `${morphedByMany.parentModelName.toLowerCase()}Id`,
           as: "pivot",
           pipeline: [
             {
@@ -97,7 +81,10 @@ export default class MorphedByMany {
                 $expr: {
                   $and: [
                     {
-                      $eq: [`$${type}`, target.name],
+                      $eq: [
+                        `$${morphedByMany.morphType}`,
+                        morphedByMany.model.name,
+                      ],
                     },
                   ],
                 },
@@ -108,10 +95,10 @@ export default class MorphedByMany {
       },
       {
         $lookup: {
-          from: target.$collection,
-          localField: `pivot.${id}`,
-          foreignField: ownerKey,
-          as: alias || "alias",
+          from: morphedByMany.model.$collection,
+          localField: `pivot.${morphedByMany.morphId}`,
+          foreignField: "_id",
+          as: morphedByMany.alias || "alias",
           pipeline,
         },
       },

@@ -1,7 +1,7 @@
 import { Document } from "mongodb";
 import Relation from "../Relation";
 import Model from "../Model";
-import { IRelationOptions } from "../interfaces/IRelation";
+import { IRelationMorphTo, IRelationOptions } from "../interfaces/IRelation";
 
 export default class MorphTo {
   /**
@@ -15,28 +15,20 @@ export default class MorphTo {
    * @param {IRelationOptions} options - The options for the relation.
    * @return {Document[]} The lookup stages.
    */
-  static generate(
-    target: typeof Model,
-    name: string,
-    type: string,
-    id: string,
-    ownerKey: string = "_id",
-    alias: string,
-    options: IRelationOptions
-  ): Document[] {
+  static generate(morphTo: IRelationMorphTo): Document[] {
     // Generate the lookup stages for the MorphTo relationship
-    if (alias === "") alias = "alias";
-    const lookup = this.lookup(target, name, type, id, ownerKey, alias);
+    const alias = morphTo.alias || "alias"
+    const lookup = this.lookup(morphTo);
     let select: any = [];
     let exclude: any = [];
 
     // Generate the select stages if options.select is provided
-    if (options?.select)
-      select = Relation.selectRelationColumns(options.select, alias);
+    if (morphTo.options?.select)
+      select = Relation.selectRelationColumns(morphTo.options.select, alias);
 
     // Generate the exclude stages if options.exclude is provided
-    if (options?.exclude)
-      exclude = Relation.excludeRelationColumns(options.exclude, alias);
+    if (morphTo.options?.exclude)
+      exclude = Relation.excludeRelationColumns(morphTo.options.exclude, alias);
 
     // Return the combined lookup, select, and exclude stages
     return [...lookup, ...select, ...exclude];
@@ -52,26 +44,20 @@ export default class MorphTo {
    * @param {string} alias - The alias for the relation.
    * @return {Document[]} The lookup stages.
    */
-  static lookup(
-    target: typeof Model,
-    name: string,
-    type: string,
-    id: string,
-    ownerKey: string = "_id",
-    alias: string
-  ): Document[] {
+  static lookup(morphTo: IRelationMorphTo): Document[] {
+    const alias = morphTo.alias || "alias"
     const lookup: Document[] = [{ $project: { alias: 0 } }];
     const pipeline: Document[] = [];
 
     // Add soft delete condition to the pipeline if enabled
-    if (target.$useSoftDelete) {
+    if (morphTo.model.$useSoftDelete) {
       pipeline.push({
         $match: {
           $expr: {
             $and: [
-              { $eq: [`$${target.getIsDeleted()}`, false] },
+              { $eq: [`$${morphTo.model.getIsDeleted()}`, false] },
               {
-                $eq: [`$${type}`, name],
+                $eq: [`$${morphTo.morphType}`, morphTo.parentModelName],
               },
             ],
           },
@@ -83,7 +69,7 @@ export default class MorphTo {
           $expr: {
             $and: [
               {
-                $eq: [`$${type}`, name],
+                $eq: [`$${morphTo.morphType}`, morphTo.parentModelName],
               },
             ],
           },
@@ -93,9 +79,9 @@ export default class MorphTo {
 
     // Define the $lookup stage
     const $lookup = {
-      from: target.$collection,
-      localField: ownerKey,
-      foreignField: `${id}`,
+      from: morphTo.model.$collection,
+      localField: "_id",
+      foreignField: `${morphTo.morphId}`,
       as: alias,
       pipeline: pipeline,
     };

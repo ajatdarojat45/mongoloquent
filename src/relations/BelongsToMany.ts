@@ -1,7 +1,6 @@
 import { Document } from "mongodb";
 import Relation from "../Relation";
-import Model from "../Model";
-import { IRelationOptions } from "../interfaces/IRelation";
+import { IRelationBelongsToMany } from "../interfaces/IRelation";
 
 export default class BelongsToMany {
   /**
@@ -16,36 +15,19 @@ export default class BelongsToMany {
    * @param {IRelationOptions} options - The options for the relation.
    * @return {Document[]} The lookup stages.
    */
-  static generate(
-    related: typeof Model,
-    table: typeof Model,
-    foreignPivotKey: string,
-    relatedPivotKey: string,
-    parentKey: string = "_id",
-    relatedKey: string = "_id",
-    alias: string,
-    options: IRelationOptions
-  ): Document[] {
+  static generate(belongsToMany: IRelationBelongsToMany): Document[] {
     // Generate the lookup stages for the BelongsToMany relationship
-    const lookup = this.lookup(
-      related,
-      table,
-      foreignPivotKey,
-      relatedPivotKey,
-      parentKey,
-      relatedKey,
-      alias
-    );
+    const lookup = this.lookup(belongsToMany);
     let select: any = [];
     let exclude: any = [];
 
     // Generate the select stages if options.select is provided
-    if (options?.select)
-      select = Relation.selectRelationColumns(options.select, alias);
+    if (belongsToMany.options?.select)
+      select = Relation.selectRelationColumns(belongsToMany.options.select, belongsToMany.alias);
 
     // Generate the exclude stages if options.exclude is provided
-    if (options?.exclude)
-      exclude = Relation.excludeRelationColumns(options.exclude, alias);
+    if (belongsToMany.options?.exclude)
+      exclude = Relation.excludeRelationColumns(belongsToMany.options.exclude, belongsToMany.alias);
 
     // Return the combined lookup, select, and exclude stages
     return [...lookup, ...select, ...exclude];
@@ -62,24 +44,16 @@ export default class BelongsToMany {
    * @param {string} alias - The alias for the relation.
    * @return {Document[]} The lookup stages.
    */
-  static lookup(
-    related: typeof Model,
-    table: typeof Model,
-    foreignPivotKey: string,
-    relatedPivotKey: string,
-    parentKey: string = "_id",
-    relatedKey: string = "_id",
-    alias: string
-  ): Document[] {
+  static lookup(belongsToMany: IRelationBelongsToMany): Document[] {
     const lookup: Document[] = [];
     const pipeline: Document[] = [];
 
     // Add soft delete condition to the pipeline if enabled
-    if (related.$useSoftDelete) {
+    if (belongsToMany.model.$useSoftDelete) {
       pipeline.push({
         $match: {
           $expr: {
-            $and: [{ $eq: [`$${related.getIsDeleted()}`, false] }],
+            $and: [{ $eq: [`$${belongsToMany.model.getIsDeleted()}`, false] }],
           },
         },
       });
@@ -89,18 +63,18 @@ export default class BelongsToMany {
     lookup.push(
       {
         $lookup: {
-          from: table.$collection,
-          localField: parentKey,
-          foreignField: foreignPivotKey,
+          from: belongsToMany.pivotModel.$collection,
+          localField: belongsToMany.parentKey,
+          foreignField: belongsToMany.foreignPivotKey,
           as: "pivot",
         },
       },
       {
         $lookup: {
-          from: related.$collection,
-          localField: `pivot.${relatedPivotKey}`,
-          foreignField: relatedKey,
-          as: alias || "pivot",
+          from: belongsToMany.model.$collection,
+          localField: `pivot.${belongsToMany.relatedPivotKey}`,
+          foreignField: belongsToMany.relatedKey,
+          as: belongsToMany.alias || "pivot",
           pipeline,
         },
       },

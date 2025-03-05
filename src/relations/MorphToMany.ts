@@ -1,7 +1,6 @@
 import { Document } from "mongodb";
 import Relation from "../Relation";
-import Model from "../Model";
-import { IRelationOptions } from "../interfaces/IRelation";
+import { IRelationMorphToMany } from "../interfaces/IRelation";
 
 export default class MorphToMany {
   /**
@@ -17,33 +16,16 @@ export default class MorphToMany {
    *
    * @return mongodb/Document[]
    */
-  static generate(
-    target: typeof Model,
-    name: string,
-    modelName: string,
-    type: string,
-    id: string,
-    ownerKey: string = "_id",
-    alias: string,
-    options: IRelationOptions
-  ): Document[] {
-    const lookup = this.lookup(
-      target,
-      modelName,
-      name,
-      type,
-      id,
-      ownerKey,
-      alias
-    );
+  static generate(morphToMany: IRelationMorphToMany): Document[] {
+    const lookup = this.lookup(morphToMany);
     let select: any = [];
     let exclude: any = [];
 
-    if (options?.select)
-      select = Relation.selectRelationColumns(options.select, alias);
+    if (morphToMany.options?.select)
+      select = Relation.selectRelationColumns(morphToMany.options.select, morphToMany.alias);
 
-    if (options?.exclude)
-      select = Relation.excludeRelationColumns(options.exclude, alias);
+    if (morphToMany.options?.exclude)
+      select = Relation.excludeRelationColumns(morphToMany.options.exclude, morphToMany.alias);
 
     return [...lookup, ...select, ...exclude];
   }
@@ -60,23 +42,15 @@ export default class MorphToMany {
    *
    * @return mongodb/Document[]
    */
-  static lookup(
-    target: typeof Model,
-    modelName: string,
-    name: string,
-    type: string,
-    id: string,
-    ownerKey: string = "_id",
-    alias: string
-  ): Document[] {
+  static lookup(morphToMany: IRelationMorphToMany): Document[] {
     const lookup: Document[] = [];
     const pipeline: Document[] = [];
 
-    if (target.$useSoftDelete) {
+    if (morphToMany.model.$useSoftDelete) {
       pipeline.push({
         $match: {
           $expr: {
-            $and: [{ $eq: [`$${target.getIsDeleted()}`, false] }],
+            $and: [{ $eq: [`$${morphToMany.model.getIsDeleted()}`, false] }],
           },
         },
       });
@@ -85,9 +59,9 @@ export default class MorphToMany {
     lookup.push(
       {
         $lookup: {
-          from: `${name}s`,
-          localField: ownerKey,
-          foreignField: id,
+          from: morphToMany.morphCollectionName,
+          localField: "_id",
+          foreignField: morphToMany.morphId,
           as: "pivot",
           pipeline: [
             {
@@ -95,7 +69,7 @@ export default class MorphToMany {
                 $expr: {
                   $and: [
                     {
-                      $eq: [`$${type}`, modelName],
+                      $eq: [`$${morphToMany.morphType}`, morphToMany.parentModelName],
                     },
                   ],
                 },
@@ -106,10 +80,10 @@ export default class MorphToMany {
       },
       {
         $lookup: {
-          from: target.$collection,
-          localField: `pivot.${target.name.toLowerCase()}Id`,
-          foreignField: ownerKey,
-          as: alias || "alias",
+          from: morphToMany.model.$collection,
+          localField: `pivot.${morphToMany.foreignKey}`,
+          foreignField: "_id",
+          as: morphToMany.alias || "alias",
           pipeline,
         },
       },
