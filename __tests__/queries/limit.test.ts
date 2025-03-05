@@ -66,8 +66,6 @@ describe("QueryResult - limit method", () => {
       .limit(1)
       .get();
 
-    console.log(result, "<<<<");
-
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
   });

@@ -1,37 +1,32 @@
 import Relation from "../Relation";
-import Model from "../Model";
-import { IRelationOptions } from "../interfaces/IRelation";
+import { IRelationBelongsTo } from "../interfaces/IRelation";
 import { Document } from "mongodb";
 
 export default class BelongsTo {
   /**
    * @note This method defines an inverse one-to-one or many relationship.
-   * @param {typeof Model} related - The related model.
-   * @param {string} foreignKey - The foreign key.
-   * @param {string} [ownerKey="_id"] - The owner key.
-   * @param {string} alias - The alias for the relation.
-   * @param {IRelationOptions} options - The options for the relation.
+   * @param {IRelationBelongsTo} belongsTo - The belongsTo relation details.
    * @return {Document[]} The lookup stages.
    */
-  public static generate(
-    related: typeof Model,
-    foreignKey: string,
-    ownerKey: string = "_id",
-    alias: string,
-    options: IRelationOptions
-  ): Document[] {
+  public static generate(belongsTo: IRelationBelongsTo): Document[] {
     // Generate the lookup stages for the belongsTo relationship
-    const lookup = this.lookup(related, foreignKey, ownerKey, alias);
+    const lookup = this.lookup(belongsTo);
     let select: any = [];
     let exclude: any = [];
 
     // Generate the select stages if options.select is provided
-    if (options?.select)
-      select = Relation.selectRelationColumns(options.select, alias);
+    if (belongsTo.options?.select)
+      select = Relation.selectRelationColumns(
+        belongsTo.options.select,
+        belongsTo.alias
+      );
 
     // Generate the exclude stages if options.exclude is provided
-    if (options?.exclude)
-      exclude = Relation.excludeRelationColumns(options.exclude, alias);
+    if (belongsTo.options?.exclude)
+      exclude = Relation.excludeRelationColumns(
+        belongsTo.options.exclude,
+        belongsTo.alias
+      );
 
     // Return the combined lookup, select, and exclude stages
     return [...lookup, ...select, ...exclude];
@@ -39,29 +34,19 @@ export default class BelongsTo {
 
   /**
    * @note This method generates the lookup stages for the belongsTo relation.
-   * @param {typeof Model} related - The related model.
-   * @param {string} foreignKey - The foreign key.
-   * @param {string} [ownerKey="_id"] - The owner key.
-   * @param {string} alias - The alias for the relation.
+   * @param {IRelationBelongsTo} belongsTo - The belongsTo relation details.
    * @return {Document[]} The lookup stages.
    */
-  static lookup(
-    related: typeof Model,
-    foreignKey: string,
-    ownerKey: string = "_id",
-    alias: string
-  ): Document[] {
-    const collection = related.$collection;
+  static lookup(belongsTo: IRelationBelongsTo): Document[] {
     const lookup: Document[] = [];
     const pipeline: Document[] = [];
-    const useSoftDelete = related.$useSoftDelete;
 
     // Add soft delete condition to the pipeline if enabled
-    if (useSoftDelete) {
+    if (belongsTo.model.$useSoftDelete) {
       pipeline.push({
         $match: {
           $expr: {
-            $and: [{ $eq: [`$${related.getIsDeleted()}`, false] }],
+            $and: [{ $eq: [`$${belongsTo.model.getIsDeleted()}`, false] }],
           },
         },
       });
@@ -69,10 +54,10 @@ export default class BelongsTo {
 
     // Define the $lookup stage
     const $lookup = {
-      from: collection,
-      localField: foreignKey,
-      foreignField: ownerKey,
-      as: alias,
+      from: belongsTo.model.$collection,
+      localField: belongsTo.foreignKey,
+      foreignField: belongsTo.ownerKey,
+      as: belongsTo.alias,
       pipeline: pipeline,
     };
 
@@ -84,7 +69,7 @@ export default class BelongsTo {
     // Define the $unwind stage
     const _unwind = {
       $unwind: {
-        path: `$${alias}`,
+        path: `$${belongsTo.alias}`,
         preserveNullAndEmptyArrays: true,
       },
     };

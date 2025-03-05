@@ -868,14 +868,14 @@ export default class Model extends Relation {
       case IRelationTypes.morphMany:
         return {
           ...doc,
-          [relationship.morphType]: relationship.modelName,
+          [relationship.morphType]: relationship.parentModelName,
           [relationship.morphId]: relationship.parentId,
         };
 
       case IRelationTypes.morphTo:
         return {
           ...doc,
-          [relationship.morphType]: relationship.modelName,
+          [relationship.morphType]: relationship.parentModelName,
           [relationship.morphId]: relationship.parentId,
         };
 
@@ -917,7 +917,7 @@ export default class Model extends Relation {
         break;
 
       case IRelationTypes.belongsToMany:
-        const btmColl = this.getCollection(relationship.pivot.$collection);
+        const btmColl = this.getCollection(relationship.pivotModel.$collection);
 
         const btmIds = await btmColl
           .find({
@@ -930,42 +930,44 @@ export default class Model extends Relation {
         break;
 
       case IRelationTypes.hasManyThrough:
-        const hmtColl = this.getCollection(relationship.through.$collection);
+        const hmtColl = this.getCollection(
+          relationship.throughModel.$collection
+        );
 
         const hmtIds = await hmtColl
           .find({
-            [relationship.firstKey]: relationship.parentId,
+            [relationship.foreignKey]: relationship.parentId,
           })
           .map((el) => el._id)
           .toArray();
 
-        this.whereIn(relationship.secondKey, hmtIds);
+        this.whereIn(relationship.foreignKeyThrough, hmtIds);
         break;
 
       case IRelationTypes.morphMany:
-        this.where(relationship.morphType, relationship.modelName).where(
+        this.where(relationship.morphType, relationship.parentModelName).where(
           relationship.morphId,
           relationship.parentId
         );
         break;
 
       case IRelationTypes.morphToMany:
-        const mtmColl = this.getCollection(relationship.collection);
+        const mtmColl = this.getCollection(relationship.morphCollectionName);
         const key = `${relationship.model.name.toLowerCase()}Id`;
 
         const mtmIds = await mtmColl
           .find({
-            [relationship.morphType]: relationship.modelName,
+            [relationship.morphType]: relationship.parentModelName,
             [relationship.morphId]: relationship.parentId,
           })
           .map((el) => el[key])
           .toArray();
 
-        this.whereIn(relationship.ownerKey, mtmIds);
+        this.whereIn("_id", mtmIds);
         break;
 
       case IRelationTypes.morphedByMany:
-        const mbmColl = this.getCollection(relationship.collection);
+        const mbmColl = this.getCollection(relationship.morphCollectionName);
 
         const mbmIds = await mbmColl
           .find({
@@ -975,7 +977,7 @@ export default class Model extends Relation {
           .map((el) => el[relationship.morphId])
           .toArray();
 
-        this.whereIn(relationship.ownerKey, mbmIds);
+        this.whereIn("_id", mbmIds);
         break;
 
       default:
