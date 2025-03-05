@@ -152,8 +152,6 @@ describe("QueryResult - orWhere method", () => {
       .withTrashed()
       .get();
 
-    console.log(result);
-
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(3);
 
