@@ -62,7 +62,6 @@ describe("QueryResult - offset method", () => {
 
   it("offset with where condition", async () => {
     const result: any[] = await User.where("age", 5).offset(1).get();
-    console.log(result);
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
   });

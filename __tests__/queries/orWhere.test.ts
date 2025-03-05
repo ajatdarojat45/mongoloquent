@@ -102,8 +102,6 @@ describe("QueryResult - orWhere method", () => {
       .orWhere("balance", 500)
       .get();
 
-    console.log(result);
-
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(2);
 

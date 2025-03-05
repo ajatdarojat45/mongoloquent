@@ -4,16 +4,9 @@ import { IRelationHasManyThrough } from "../interfaces/IRelation";
 
 export default class HasManyThrough {
   /**
-   * @note This method generates the lookup, select, and exclude stages for the HasManyThrough relation.
-   * @param {typeof Model} related - The related model.
-   * @param {typeof Model} through - The through model.
-   * @param {string} firstKey - The first key.
-   * @param {string} secondKey - The second key.
-   * @param {string} [localKey="_id"] - The local key.
-   * @param {string} [secondLocalKey="_id"] - The second local key.
-   * @param {string} alias - The alias for the relation.
-   * @param {IRelationOptions} options - The options for the relation.
-   * @return {Document[]} The lookup stages.
+   * Generates the lookup, select, and exclude stages for the HasManyThrough relation.
+   * @param {IRelationHasManyThrough} hasManyThrough - The HasManyThrough relation configuration.
+   * @return {Document[]} The combined lookup, select, and exclude stages.
    */
   static generate(hasManyThrough: IRelationHasManyThrough): Document[] {
     // Generate the lookup stages for the HasManyThrough relationship
@@ -23,25 +16,25 @@ export default class HasManyThrough {
 
     // Generate the select stages if options.select is provided
     if (hasManyThrough.options?.select)
-      select = Relation.selectRelationColumns(hasManyThrough.options.select, hasManyThrough.alias);
+      select = Relation.selectRelationColumns(
+        hasManyThrough.options.select,
+        hasManyThrough.alias
+      );
 
     // Generate the exclude stages if options.exclude is provided
     if (hasManyThrough.options?.exclude)
-      exclude = Relation.excludeRelationColumns(hasManyThrough.options.exclude, hasManyThrough.alias);
+      exclude = Relation.excludeRelationColumns(
+        hasManyThrough.options.exclude,
+        hasManyThrough.alias
+      );
 
     // Return the combined lookup, select, and exclude stages
     return [...lookup, ...select, ...exclude];
   }
 
   /**
-   * @note This method generates the lookup stages for the HasManyThrough relation.
-   * @param {typeof Model} related - The related model.
-   * @param {typeof Model} through - The through model.
-   * @param {string} firstKey - The first key.
-   * @param {string} secondKey - The second key.
-   * @param {string} [localKey="_id"] - The local key.
-   * @param {string} [secondLocalKey="_id"] - The second local key.
-   * @param {string} alias - The alias for the relation.
+   * Generates the lookup stages for the HasManyThrough relation.
+   * @param {IRelationHasManyThrough} hasManyThrough - The HasManyThrough relation configuration.
    * @return {Document[]} The lookup stages.
    */
   static lookup(hasManyThrough: IRelationHasManyThrough): Document[] {

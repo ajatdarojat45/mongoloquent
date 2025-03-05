@@ -1,23 +1,16 @@
 import { Document } from "mongodb";
 import Relation from "../Relation";
-import Model from "../Model";
-import { IRelationMorphTo, IRelationOptions } from "../interfaces/IRelation";
+import { IRelationMorphTo } from "../interfaces/IRelation";
 
 export default class MorphTo {
   /**
-   * @note This method generates the lookup, select, and exclude stages for the MorphTo relation.
-   * @param {typeof Model} target - The target model.
-   * @param {string} name - The name of the morph.
-   * @param {string} type - The type of the morph.
-   * @param {string} id - The ID of the morph.
-   * @param {string} [ownerKey="_id"] - The owner key.
-   * @param {string} alias - The alias for the relation.
-   * @param {IRelationOptions} options - The options for the relation.
-   * @return {Document[]} The lookup stages.
+   * Generates the lookup, select, and exclude stages for the MorphTo relation.
+   * @param {IRelationMorphTo} morphTo - The MorphTo relation configuration.
+   * @return {Document[]} The combined lookup, select, and exclude stages.
    */
   static generate(morphTo: IRelationMorphTo): Document[] {
     // Generate the lookup stages for the MorphTo relationship
-    const alias = morphTo.alias || "alias"
+    const alias = morphTo.alias || "alias";
     const lookup = this.lookup(morphTo);
     let select: any = [];
     let exclude: any = [];
@@ -35,17 +28,12 @@ export default class MorphTo {
   }
 
   /**
-   * @note This method generates the lookup stages for the MorphTo relation.
-   * @param {typeof Model} target - The target model.
-   * @param {string} name - The name of the morph.
-   * @param {string} type - The type of the morph.
-   * @param {string} id - The ID of the morph.
-   * @param {string} [ownerKey="_id"] - The owner key.
-   * @param {string} alias - The alias for the relation.
+   * Generates the lookup stages for the MorphTo relation.
+   * @param {IRelationMorphTo} morphTo - The MorphTo relation configuration.
    * @return {Document[]} The lookup stages.
    */
   static lookup(morphTo: IRelationMorphTo): Document[] {
-    const alias = morphTo.alias || "alias"
+    const alias = morphTo.alias || "alias";
     const lookup: Document[] = [{ $project: { alias: 0 } }];
     const pipeline: Document[] = [];
 

@@ -1,22 +1,12 @@
 import { Document } from "mongodb";
-import Model from "../Model";
 import Relation from "../Relation";
-import {
-  IRelationMorphedByMany,
-  IRelationOptions,
-} from "../interfaces/IRelation";
+import { IRelationMorphedByMany } from "../interfaces/IRelation";
 
 export default class MorphedByMany {
   /**
-   * @note This method generates the lookup, select, and exclude stages for the MorphByMany relation.
-   * @param {typeof Model} target - The target model.
-   * @param {string} name - The name of the morph.
-   * @param {string} type - The type of the morph.
-   * @param {string} id - The ID of the morph.
-   * @param {string} [ownerKey="_id"] - The owner key.
-   * @param {string} alias - The alias for the relation.
-   * @param {IRelationOptions} options - The options for the relation.
-   * @return {Document[]} The lookup stages.
+   * Generates the lookup, select, and exclude stages for the MorphByMany relation.
+   * @param {IRelationMorphedByMany} morphedByMany - The MorphByMany relation configuration.
+   * @return {Document[]} The combined lookup, select, and exclude stages.
    */
   static generate(morphedByMany: IRelationMorphedByMany): Document[] {
     // Generate the lookup stages for the MorphByMany relationship
@@ -43,13 +33,8 @@ export default class MorphedByMany {
   }
 
   /**
-   * @note This method generates the lookup stages for the MorphByMany relation.
-   * @param {typeof Model} target - The target model.
-   * @param {string} name - The name of the morph.
-   * @param {string} type - The type of the morph.
-   * @param {string} id - The ID of the morph.
-   * @param {string} [ownerKey="_id"] - The owner key.
-   * @param {string} alias - The alias for the relation.
+   * Generates the lookup stages for the MorphByMany relation.
+   * @param {IRelationMorphedByMany} morphedByMany - The MorphByMany relation configuration.
    * @return {Document[]} The lookup stages.
    */
   static lookup(morphedByMany: IRelationMorphedByMany): Document[] {

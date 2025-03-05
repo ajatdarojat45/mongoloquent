@@ -76,7 +76,6 @@ describe("User Model - min method", () => {
   it("should return the minimum value of the specified field considering soft delete", async () => {
     User["$useSoftDelete"] = true;
     const result = await User.min("age");
-    console.log(result);
     expect(result).toEqual(expect.any(Number));
     expect(result).toBe(10);
   });

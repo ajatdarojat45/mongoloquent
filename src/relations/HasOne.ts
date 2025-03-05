@@ -1,17 +1,12 @@
 import { Document } from "mongodb";
-import Model from "../Model";
 import Relation from "../Relation";
-import { IRelationOptions, IRelationHasOne } from "../interfaces/IRelation";
+import { IRelationHasOne } from "../interfaces/IRelation";
 
 export default class HasOne {
   /**
-   * @note This method generates the lookup, select, and exclude stages for the hasOne relation.
-   * @param {typeof Model} related - The related model.
-   * @param {string} foreignKey - The foreign key.
-   * @param {string} [localKey="_id"] - The local key.
-   * @param {string} alias - The alias for the relation.
-   * @param {IRelationOptions} options - The options for the relation.
-   * @return {Document[]} The lookup stages.
+   * Generates the lookup, select, and exclude stages for the hasOne relation.
+   * @param {IRelationHasOne} hasOne - The hasOne relation configuration.
+   * @return {Document[]} The combined lookup, select, and exclude stages.
    */
   static generate(hasOne: IRelationHasOne): Document[] {
     // Generate the lookup stages for the hasOne relationship
@@ -33,17 +28,13 @@ export default class HasOne {
         hasOne.alias
       );
 
-    console.log(select, exclude, "<<<<<");
     // Return the combined lookup, select, and exclude stages
     return [...lookup, ...select, ...exclude];
   }
 
   /**
-   * @note This method generates the lookup stages for the hasOne relation.
-   * @param {typeof Model} related - The related model.
-   * @param {string} foreignKey - The foreign key.
-   * @param {string} [localKey="_id"] - The local key.
-   * @param {string} alias - The alias for the relation.
+   * Generates the lookup stages for the hasOne relation.
+   * @param {IRelationHasOne} hasOne - The hasOne relation configuration.
    * @return {Document[]} The lookup stages.
    */
   static lookup(hasOne: IRelationHasOne): Document[] {
