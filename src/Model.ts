@@ -14,13 +14,6 @@ import { IRelationTypes } from "./interfaces/IRelation";
 
 export default class Model extends Relation {
   /**
-   * @note This property store result of find method
-   *
-   * @var null|object
-   */
-  protected static $data: null | object = null;
-
-  /**
    * @note This property defines timestamps for the document.
    *
    * @var string

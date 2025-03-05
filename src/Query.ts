@@ -483,7 +483,7 @@ export default class Query extends Database {
    * @param  {boolean} [isSensitive=false] - Whether the order is case-sensitive.
    * @return {this} The current query instance.
    */
-  static orderBy<T extends typeof Query>(
+  public static orderBy<T extends typeof Query>(
     this: T,
     column: string,
     order: string = "asc",
@@ -500,7 +500,7 @@ export default class Query extends Database {
    * @param  {string} column - The column to group by.
    * @return {this} The current query instance.
    */
-  static groupBy<T extends typeof Query>(this: T, column: string): T {
+  public static groupBy<T extends typeof Query>(this: T, column: string): T {
     // Add the group by clause to the $groups array
     this.setGroups(column);
 
