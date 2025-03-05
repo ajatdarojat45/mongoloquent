@@ -50,9 +50,9 @@ export default class Relation extends Query {
     | IRelationBelongsToMany
     | IRelationHasManyThrough
     | IRelationMorphMany
+    | IRelationMorphTo
     | IRelationMorphToMany
     | IRelationMorphedByMany
-    | IRelationMorphTo
     | null = null;
 
   private static $relatedModel: typeof Model | null = null;
@@ -174,6 +174,7 @@ export default class Relation extends Query {
     );
     // Add the lookup stages to the $lookups array
     this.setLookups(lookup);
+    this.setRelatedModel(related);
 
     const hasMany: IRelationHasMany = {
       type: IRelationTypes.hasMany,
@@ -182,7 +183,7 @@ export default class Relation extends Query {
       localKey,
       parentId: this.getParentId(),
     };
-    this.setRelationship(hasMany);
+    related.setRelationship(hasMany);
 
     return related;
   }
@@ -266,6 +267,7 @@ export default class Relation extends Query {
     );
     // Add the lookup stages to the $lookups array
     this.setLookups(lookup);
+    this.setRelatedModel(related);
 
     const hasManyThrough: IRelationHasManyThrough = {
       type: IRelationTypes.hasManyThrough,
@@ -297,7 +299,7 @@ export default class Relation extends Query {
     // Generate the lookup stages for the morphTo relationship
     const lookup = MorphTo.generate(
       target,
-      name,
+      this.name,
       `${name}Type`,
       `${name}Id`,
       ownerKey,
@@ -306,6 +308,17 @@ export default class Relation extends Query {
     );
     // Add the lookup stages to the $lookups array
     this.setLookups(lookup);
+    this.setRelatedModel(target);
+
+    const morphMany: IRelationMorphTo = {
+      type: IRelationTypes.morphTo,
+      model: target,
+      modelName: this.name,
+      morphType: `${name}Type`,
+      morphId: `${name}Id`,
+      parentId: this.getParentId(),
+    };
+    target.setRelationship(morphMany);
 
     return target;
   }
@@ -325,7 +338,7 @@ export default class Relation extends Query {
     // Generate the lookup stages for the morphMany relationship
     const lookup = MorphMany.generate(
       target,
-      name,
+      this.name,
       `${name}Type`,
       `${name}Id`,
       ownerKey,
@@ -334,11 +347,12 @@ export default class Relation extends Query {
     );
     // Add the lookup stages to the $lookups array
     this.setLookups(lookup);
+    this.setRelatedModel(target);
 
     const morphMany: IRelationMorphMany = {
       type: IRelationTypes.morphMany,
       model: target,
-      modelName: target.name,
+      modelName: this.name,
       morphType: `${name}Type`,
       morphId: `${name}Id`,
       parentId: this.getParentId(),
@@ -373,13 +387,14 @@ export default class Relation extends Query {
     );
     // Add the lookup stages to the $lookups array
     this.setLookups(lookup);
+    this.setRelatedModel(target);
 
     const morphToMany: IRelationMorphToMany = {
       type: IRelationTypes.morphToMany,
       model: target,
       modelName: this.name,
-      foreignKey: `${target.name.toLocaleLowerCase()}s`,
-      collection: `${this.$alias}s`,
+      foreignKey: `${target.name.toLocaleLowerCase()}Id`,
+      collection: `${name}s`,
       morphType: `${name}Type`,
       morphId: `${name}Id`,
       ownerKey,
@@ -407,27 +422,28 @@ export default class Relation extends Query {
       target,
       name,
       this.name,
-      `${name} Type`,
-      `${name} Id`,
+      `${name}Type`,
+      `${name}Id`,
       ownerKey,
       this.$alias,
       this.$options
     );
     // Add the lookup stages to the $lookups array
     this.setLookups(lookup);
+    // this.setRelatedModel(target);
 
-    const morphByMany: IRelationMorphedByMany = {
+    const morphByedMany: IRelationMorphedByMany = {
       type: IRelationTypes.morphedByMany,
       model: target,
       modelName: this.name,
-      collection: `${this.$alias} s`,
-      morphType: `${name} Type`,
-      morphId: `${name} Id`,
-      foreignKey: `${this.name.toLowerCase()} Id`,
+      collection: `${name}s`,
+      morphType: `${name}Type`,
+      morphId: `${name}Id`,
+      foreignKey: `${this.name.toLowerCase()}Id`,
       ownerKey,
       parentId: this.getParentId(),
     };
-    target.setRelationship(morphByMany);
+    target.setRelationship(morphByedMany);
 
     return target;
   }
@@ -531,6 +547,7 @@ export default class Relation extends Query {
       | IRelationHasMany
       | IRelationHasManyThrough
       | IRelationBelongsToMany
+      | IRelationMorphTo
       | IRelationMorphMany
       | IRelationMorphToMany
       | IRelationMorphedByMany
@@ -696,14 +713,14 @@ export default class Relation extends Query {
     query = {
       [relationship.foreignKey]: { $in: ids },
       [relationship.morphId]: relationship.parentId,
-      [relationship.morphType]: relationship.model.name,
+      [relationship.morphType]: relationship.modelName,
     };
 
     objectIds.forEach((id) =>
       _payload.push({
         [relationship.foreignKey]: id,
         [relationship.morphId]: relationship.parentId,
-        [relationship.morphType]: relationship.model.name,
+        [relationship.morphType]: relationship.modelName,
       })
     );
 
@@ -811,6 +828,8 @@ export default class Relation extends Query {
 
     if (relationship?.type === IRelationTypes.belongsToMany)
       return this.syncBelongsToMany(ids);
+    else if (relationship?.type === IRelationTypes.morphToMany)
+      return this.syncMorphToMany(ids);
   }
 
   private static async syncBelongsToMany(
@@ -834,17 +853,17 @@ export default class Relation extends Query {
     let qDelete = {};
 
     qFind = {
-      [relationship.foreignPivotKey]: {
+      [relationship.relatedPivotKey]: {
         $in: ids,
       },
-      [relationship.relatedPivotKey]: relationship.parentId,
+      [relationship.foreignPivotKey]: relationship.parentId,
     };
 
     qDelete = {
       [relationship.relatedPivotKey]: {
         $nin: ids,
       },
-      [relationship.relatedPivotKey]: relationship.parentId,
+      [relationship.foreignPivotKey]: relationship.parentId,
     };
 
     objectIds.forEach((id) =>
@@ -863,6 +882,72 @@ export default class Relation extends Query {
         (item: any) =>
           JSON.stringify(item[relationship.relatedPivotKey]) ===
           JSON.stringify(objectIds[i])
+      );
+
+      // insert if data does not exist
+      if (!existingItem) {
+        await collection.insertOne(_payload[i]);
+      }
+    }
+
+    // delete data
+    await collection.deleteMany(qDelete);
+    return {
+      message: "Sync successfully",
+    };
+  }
+
+  public static async syncMorphToMany(
+    ids: string | string[] | ObjectId | ObjectId[]
+  ) {
+    const relationship = this.getRelationship();
+    if (relationship?.type !== IRelationTypes.morphToMany) return null;
+
+    let objectIds: ObjectId[] = [];
+
+    if (!Array.isArray(ids)) {
+      objectIds = [new ObjectId(ids)];
+    } else {
+      objectIds = ids.map((el) => new ObjectId(el));
+    }
+
+    const db = this.getDb();
+    const collection = db.collection(relationship.collection);
+    const _payload: object[] = [];
+    let qFind = {};
+    let qDelete = {};
+    let key = "";
+
+    key = relationship.foreignKey;
+
+    qFind = {
+      [relationship.foreignKey]: { $in: objectIds },
+      [relationship.morphId]: relationship.parentId,
+      [relationship.morphType]: relationship.modelName,
+    };
+
+    qDelete = {
+      [relationship.foreignKey]: { $nin: objectIds },
+      [relationship.morphId]: relationship.parentId,
+      [relationship.morphType]: relationship.modelName,
+    };
+
+    objectIds.forEach((id) =>
+      _payload.push({
+        [relationship.foreignKey]: id,
+        [relationship.morphId]: relationship.parentId,
+        [relationship.morphType]: relationship.modelName,
+      })
+    );
+
+    // find data
+    const existingData = await collection.find(qFind).toArray();
+
+    // check data
+    for (let i = 0; i < objectIds.length; i++) {
+      const existingItem = existingData.find(
+        (item: any) =>
+          JSON.stringify(item[key]) === JSON.stringify(objectIds[i])
       );
 
       // insert if data does not exist
