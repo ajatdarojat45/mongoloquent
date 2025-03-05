@@ -79,7 +79,7 @@ export default class Query extends Database {
    * @note This property stores the maximum number of records to return.
    * @var {number}
    */
-  protected static $limit: number = 15;
+  protected static $limit: number = 0;
 
   /**
    * @note This property stores the number of records to skip.
@@ -314,7 +314,7 @@ export default class Query extends Database {
   public static whereBetween<T extends typeof Query>(
     this: T,
     column: string,
-    values: [any, any]
+    values: [number, number?]
   ): T {
     // Add the where clause to the $wheres array
     this.setWheres(column, "between", values, "and");
@@ -331,7 +331,7 @@ export default class Query extends Database {
   public static orWhereBetween<T extends typeof Query>(
     this: T,
     column: string,
-    values: [any, any]
+    values: [number, number?]
   ): T {
     // Add the where clause to the $wheres array
     this.setWheres(column, "between", values, "or");
@@ -414,8 +414,7 @@ export default class Query extends Database {
   public static onlyTrashed<T extends typeof Query>(this: T): T {
     // Set the $onlyTrashed property to true
     this.$onlyTrashed = true;
-    // Add a where clause to filter only trashed data
-    return this.where(this.$isDeleted, "eq", true);
+    return this;
   }
 
   /**
@@ -425,7 +424,7 @@ export default class Query extends Database {
    */
   public static offset<T extends typeof Query>(this: T, value: number): T {
     // Add the $skip stage to the $stages array
-    this.setStages({ $skip: value });
+    this.$offset = value;
 
     return this;
   }
@@ -447,7 +446,7 @@ export default class Query extends Database {
    */
   public static limit<T extends typeof Query>(this: T, value: number): T {
     // Add the $limit stage to the $stages array
-    this.setStages({ $limit: value });
+    this.$limit = value;
 
     return this;
   }
@@ -661,18 +660,53 @@ export default class Query extends Database {
 
     if ($or.length > 0) {
       if ($and.length > 0) $or.push({ $and });
-      this.setStages({ $match: { $or } });
+      let queries = {
+        $or,
+      };
+
+      if (this.$useSoftDelete && !this.$withTrashed) {
+        queries = {
+          [this.$isDeleted]: false,
+          $or,
+        };
+      }
+
+      if (this.$useSoftDelete && this.$onlyTrashed) {
+        queries = {
+          [this.$isDeleted]: true,
+          $or,
+        };
+      }
+
+      this.setStages({ $match: queries });
       return;
     }
 
-    if ($and.length > 0) this.setStages({ $match: { $and } });
+    if ($and.length > 0) {
+      let queries = {
+        $and,
+      };
+
+      if (this.$onlyTrashed) {
+        queries = {
+          [this.$isDeleted]: true,
+          $and,
+        };
+      }
+      this.setStages({ $match: queries });
+      return;
+    }
+
+    if (this.$onlyTrashed) {
+      this.setStages({ $match: { [this.$isDeleted]: true } });
+    }
   }
 
   /**
    * @note This method generates the orders for a query.
    * @return {void}
    */
-  static generateOrders(): void {
+  protected static generateOrders(): void {
     let $project = {
       document: "$$ROOT",
     };
@@ -712,7 +746,7 @@ export default class Query extends Database {
    * @note This method generates the groups for a query.
    * @return {void}
    */
-  static generateGroups(): void {
+  protected static generateGroups(): void {
     let _id = {};
 
     this.$groups.forEach((el) => {
@@ -725,6 +759,14 @@ export default class Query extends Database {
     };
 
     if (this.$groups.length > 0) this.setStages({ $group });
+  }
+
+  protected static generateLimit(): void {
+    if (this.$limit > 0) this.setStages({ $limit: this.$limit });
+  }
+
+  protected static generateOffset(): void {
+    if (this.$offset > 0) this.setStages({ $skip: this.$offset });
   }
 
   /**
@@ -740,5 +782,7 @@ export default class Query extends Database {
     this.$orders = [];
     this.$groups = [];
     this.$parentId = null;
+    this.$offset = 0;
+    this.$limit = 0;
   }
 }

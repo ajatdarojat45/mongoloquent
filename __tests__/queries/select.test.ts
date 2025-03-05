@@ -1,0 +1,88 @@
+import Model from "../../src/Model";
+
+class User extends Model {
+  static $collection = "users";
+}
+
+const userCollection = User["getCollection"]();
+
+beforeAll(async () => {
+  await userCollection.deleteMany({});
+
+  await userCollection.insertMany([
+    {
+      name: "John",
+      email: "john@mail.com",
+      age: 10,
+      balance: 100,
+      IS_DELETED: false,
+    },
+    {
+      name: "doe",
+      email: "doe@mail.com",
+      age: 30,
+      balance: 200,
+      IS_DELETED: false,
+    },
+    {
+      name: "Udin",
+      email: "udin@mail.com",
+      age: 5,
+      balance: 500,
+      IS_DELETED: false,
+    },
+    {
+      name: "Kosasih",
+      email: "kosasih@mail.com",
+      age: 5,
+      balance: 400,
+      IS_DELETED: false,
+    },
+    {
+      name: "Joko",
+      email: "joko@mail.com",
+      age: 45,
+      balance: 500,
+      IS_DELETED: true,
+    },
+  ]);
+});
+
+afterAll(async () => {
+  await userCollection.deleteMany({});
+});
+
+describe("QueryResult - select method", () => {
+  it("single select with string", async () => {
+    const result = await User.select("name").first();
+
+    expect(result).toEqual(expect.any(Object));
+    expect(result?.name).toBeDefined();
+    expect(result?.email).toBeUndefined();
+    expect(result?.age).toBeUndefined();
+    expect(result?.balance).toBeUndefined();
+    expect(result?.IS_DELETED).toBeUndefined();
+  });
+
+  it("single select with array", async () => {
+    const result = await User.select(["name", "age"]).first();
+
+    expect(result).toEqual(expect.any(Object));
+    expect(result?.name).toBeDefined();
+    expect(result?.email).toBeUndefined();
+    expect(result?.age).toBeDefined();
+    expect(result?.balance).toBeUndefined();
+    expect(result?.IS_DELETED).toBeUndefined();
+  });
+
+  it("multiple select", async () => {
+    const result = await User.select("name").select(["age", "email"]).first();
+
+    expect(result).toEqual(expect.any(Object));
+    expect(result?.name).toBeDefined();
+    expect(result?.email).toBeDefined();
+    expect(result?.age).toBeDefined();
+    expect(result?.balance).toBeUndefined();
+    expect(result?.IS_DELETED).toBeUndefined();
+  });
+});

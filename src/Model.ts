@@ -774,6 +774,8 @@ export default class Model extends Relation {
       this.generateExcludes();
       // Generate the where conditions for the query
       this.generateWheres();
+      this.generateOffset();
+      this.generateLimit();
       // Generate the order by conditions for the query
       this.generateOrders();
       // Generate the group by conditions for the query
