@@ -1,6 +1,6 @@
 # Directories
 node_modules
-models
+# models
 dist
 coverage
 
