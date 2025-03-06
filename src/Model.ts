@@ -1,4 +1,5 @@
 import {
+  AggregationCursor,
   BulkWriteOptions,
   FindOneAndUpdateOptions,
   InsertOneOptions,
@@ -16,7 +17,7 @@ import { IRelationTypes } from "./interfaces/IRelation";
 export default class Model extends Relation {
   /**
    * @note This property defines the schema definition for the model.
-   * 
+   *
    * @var WithId<unknown>
    */
   public static $schema: WithId<unknown>;
@@ -54,7 +55,9 @@ export default class Model extends Relation {
    *
    * @return Promise<T["$schema"][]>
    */
-  public static async all<T extends typeof Model>(this: T): Promise<T["$schema"][]> {
+  public static async all<T extends typeof Model>(
+    this: T
+  ): Promise<T["$schema"][]> {
     try {
       // Get the collection from the database
       const collection = this.getCollection();
@@ -78,10 +81,13 @@ export default class Model extends Relation {
    * @param columns - The columns to retrieve.
    * @return Promise<Document[]>
    */
-  public static async get(columns: string | string[] = []) {
+  public static async get<T extends typeof Model>(
+    this: T,
+    columns: keyof T["$schema"] | Array<keyof T["$schema"]> = []
+  ) {
     try {
       // Add the specified columns to the query
-      this.setColumns(columns);
+      this.setColumns(columns as string[]);
 
       // Execute the aggregation pipeline
       const aggregate = await this.aggregate();
@@ -170,7 +176,10 @@ export default class Model extends Relation {
    * @param columns - The columns to retrieve.
    * @return Promise<Document|null>
    */
-  public static async first(columns: string | string[] = []) {
+  public static async first<T extends typeof Model>(
+    this: T,
+    columns: keyof T["$schema"] | Array<keyof T["$schema"]> = []
+  ) {
     try {
       // Retrieve the documents based on the specified columns
       const data = await this.get(columns);
@@ -770,7 +779,7 @@ export default class Model extends Relation {
    *
    * @return Promise<AggregationCursor<Document>>
    */
-  private static async aggregate() {
+  private static async aggregate<T extends typeof Model>(this: T) {
     try {
       await this.checkRelation();
       // Check if soft delete is enabled and apply necessary filters
@@ -793,7 +802,10 @@ export default class Model extends Relation {
       // Execute the aggregation pipeline with the generated stages and lookups
       const stages = this.getStages();
       const lookups = this.getLookups();
-      const aggregate = collection.aggregate([...stages, ...lookups]);
+      const aggregate = collection.aggregate([
+        ...stages,
+        ...lookups,
+      ]) as AggregationCursor<T["$schema"]>;
 
       // Reset the query and relation states
       this.reset();
