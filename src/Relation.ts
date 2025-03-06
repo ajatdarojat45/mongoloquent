@@ -436,7 +436,9 @@ export default class Relation extends Query {
     const _columns: string[] = [];
     const additionals: any = [];
     let project = {
-      $project: {},
+      $project: {
+        document: "$$ROOT",
+      },
     };
 
     // Convert columns to an array if it's a string
