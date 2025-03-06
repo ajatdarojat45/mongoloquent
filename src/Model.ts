@@ -5,6 +5,7 @@ import {
   ObjectId,
   UpdateFilter,
   UpdateOptions,
+  WithId,
 } from "mongodb";
 import Relation from "./Relation";
 import dayjs from "./utils/dayjs";
@@ -13,6 +14,13 @@ import { IModelPaginate } from "./interfaces/IModel";
 import { IRelationTypes } from "./interfaces/IRelation";
 
 export default class Model extends Relation {
+  /**
+   * @note This property defines the schema definition for the model.
+   * 
+   * @var WithId<unknown>
+   */
+  public static $schema: WithId<unknown>;
+
   /**
    * @note This property defines timestamps for the document.
    *
@@ -44,9 +52,9 @@ export default class Model extends Relation {
   /**
    * @note This method retrieves all documents from the collection, excluding soft-deleted ones if applicable.
    *
-   * @return Promise<WithId<Document>[]>
+   * @return Promise<T["$schema"][]>
    */
-  public static async all() {
+  public static async all<T extends typeof Model>(this: T): Promise<T["$schema"][]> {
     try {
       // Get the collection from the database
       const collection = this.getCollection();
