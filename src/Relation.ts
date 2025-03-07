@@ -23,8 +23,6 @@ import MorphTo from "./relations/MorphTo";
 import MorphMany from "./relations/MorphMany";
 import MorphToMany from "./relations/MorphToMany";
 import MorphedByMany from "./relations/MorphedByMany";
-import { lookup } from "dns";
-import { time } from "console";
 
 export default class Relation extends Query {
   /**
@@ -631,7 +629,7 @@ export default class Relation extends Query {
     else objectIds = ids.map((el) => new ObjectId(el));
 
     const collection = this.getCollection(relationship.pivotModel.$collection);
-    const _payload: object[] = [];
+    const _payload: Document[] = [];
 
     query = {
       [relationship.foreignPivotKey]: {

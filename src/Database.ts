@@ -1,10 +1,16 @@
-import { Collection, Db, MongoClient, ServerApiVersion } from "mongodb";
+import { Db, MongoClient, ServerApiVersion, Document } from "mongodb";
 import {
   MONGOLOQUENT_DATABASE_NAME,
   MONGOLOQUENT_DATABASE_URI,
 } from "./configs/app";
 
 export default class Database {
+  /**
+   * @note This property defines the schema definition for the model.
+   * @var {Document}
+   */
+  public static $schema: Document;
+
   /**
    * @note This property stores the connection URI for the model.
    * @var {string}
@@ -56,16 +62,16 @@ export default class Database {
   /**
    * @note This method retrieves the MongoDB collection specified by the model.
    * @param {string} [collection] - The collection name.
-   * @return {Collection} The MongoDB collection.
+   * @return The MongoDB collection.
    */
-  protected static getCollection(collection?: string): Collection {
+  protected static getCollection(collection?: string) {
     // Get the database instance
     const db = this.getDb();
     // Use the provided collection name or the default collection name
     const coll = collection || this.$collection;
 
     // Return the MongoDB collection
-    return db?.collection(coll);
+    return db?.collection<(typeof Database)["$schema"]>(coll);
   }
 
   /**

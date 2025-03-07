@@ -6,7 +6,7 @@ import {
   ObjectId,
   UpdateFilter,
   UpdateOptions,
-  WithId,
+  Document,
 } from "mongodb";
 import Relation from "./Relation";
 import dayjs from "./utils/dayjs";
@@ -14,14 +14,27 @@ import { TIME_ZONE } from "./configs/app";
 import { IModelPaginate } from "./interfaces/IModel";
 import { IRelationTypes } from "./interfaces/IRelation";
 
-export default class Model extends Relation {
-  /**
-   * @note This property defines the schema definition for the model.
-   *
-   * @var WithId<unknown>
-   */
-  public static $schema: WithId<unknown>;
+/**
+ * Type utility that handles schema field selection for MongoDB documents
+ * @template K - Key(s) to select from schema
+ * @template T - Model type with schema definition
+ * @returns Selected fields from schema type
+ */
+type SelectResult<K, T extends { $schema: unknown }> = K extends
+  | undefined
+  | void
+  ? T["$schema"]
+  : K extends [] | readonly []
+  ? T["$schema"]
+  : K extends keyof T["$schema"]
+  ? Pick<T["$schema"], K>
+  : K extends (keyof T["$schema"])[] | readonly (keyof T["$schema"])[]
+  ? K extends { length: 0 }
+    ? T["$schema"]
+    : Pick<T["$schema"], K[number]>
+  : T["$schema"];
 
+export default class Model extends Relation {
   /**
    * @note This property defines timestamps for the document.
    *
@@ -81,10 +94,13 @@ export default class Model extends Relation {
    * @param columns - The columns to retrieve.
    * @return Promise<Document[]>
    */
-  public static async get<T extends typeof Model>(
-    this: T,
-    columns: keyof T["$schema"] | Array<keyof T["$schema"]> = []
-  ) {
+  public static async get<
+    T extends typeof Model,
+    K extends
+      | keyof T["$schema"]
+      | (keyof T["$schema"])[]
+      | undefined = undefined
+  >(this: T, columns?: K) {
     try {
       // Add the specified columns to the query
       this.setColumns(columns as string[]);
@@ -93,7 +109,7 @@ export default class Model extends Relation {
       const aggregate = await this.aggregate();
 
       // Convert the aggregation cursor to an array of documents
-      return await aggregate.toArray();
+      return (await aggregate.toArray()) as SelectResult<K, T>[];
     } catch (error) {
       console.log(error);
       throw new Error(`Fetching documents failed`);
@@ -176,13 +192,17 @@ export default class Model extends Relation {
    * @param columns - The columns to retrieve.
    * @return Promise<Document|null>
    */
-  public static async first<T extends typeof Model>(
-    this: T,
-    columns: keyof T["$schema"] | Array<keyof T["$schema"]> = []
-  ) {
+  public static async first<
+    T extends typeof Model,
+    K extends
+      | keyof T["$schema"]
+      | [keyof T["$schema"], ...(keyof T["$schema"])[]]
+      | undefined = undefined
+  >(this: T, columns?: K) {
     try {
       // Retrieve the documents based on the specified columns
       const data = await this.get(columns);
+
       // Return the first document if it exists, otherwise return null
       if (data.length > 0) {
         return data[0];
