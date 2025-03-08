@@ -79,19 +79,19 @@ describe("Model - updateMany method", () => {
         name: "Udin",
         age: 20,
         address: "Bogor",
-        IS_DELETED: false,
+        [Model["$isDeleted"]]: false,
       },
       {
         name: "John Doe",
         age: 25,
         address: "Bandung",
-        IS_DELETED: false,
+        [Model["$isDeleted"]]: false,
       },
       {
         name: "Kosasih",
         age: 27,
         address: "Jakarta",
-        IS_DELETED: true,
+        [Model["$isDeleted"]]: true,
       },
     ]);
 

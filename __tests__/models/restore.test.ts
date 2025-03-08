@@ -54,13 +54,13 @@ describe("User Model - restore method", () => {
         name: "Udin",
         age: 20,
         address: "Bogor",
-        IS_DELETED: true,
+        [Model["$isDeleted"]]: true,
       },
       {
         name: "Kosasih",
         age: 20,
         address: "Bogor",
-        IS_DELETED: true,
+        [Model["$isDeleted"]]: true,
       },
     ]);
 
@@ -81,13 +81,13 @@ describe("User Model - restore method", () => {
         name: "Udin",
         age: 20,
         address: "Bogor",
-        IS_DELETED: true,
+        [Model["$isDeleted"]]: true,
       },
       {
         name: "Kosasih",
         age: 20,
         address: "Bogor",
-        IS_DELETED: true,
+        [Model["$isDeleted"]]: true,
       },
     ]);
 

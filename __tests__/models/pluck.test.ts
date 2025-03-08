@@ -5,18 +5,18 @@ const users = [
     name: "John Doe",
     email: "jhon@mail.com",
     age: 20,
-    IS_DELETED: false,
+    [Model["$isDeleted"]]: false,
   },
   {
     name: "Udin",
     email: "udin@mail.com",
-    IS_DELETED: false,
+    [Model["$isDeleted"]]: false,
     age: 10,
   },
   {
     name: "Kosasih",
     email: "kosasih@mail.com",
-    IS_DELETED: true,
+    [Model["$isDeleted"]]: true,
     age: 50,
   },
 ];

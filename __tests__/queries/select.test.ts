@@ -15,35 +15,35 @@ beforeAll(async () => {
       email: "john@mail.com",
       age: 10,
       balance: 100,
-      IS_DELETED: false,
+      [Model["$isDeleted"]]: false,
     },
     {
       name: "doe",
       email: "doe@mail.com",
       age: 30,
       balance: 200,
-      IS_DELETED: false,
+      [Model["$isDeleted"]]: false,
     },
     {
       name: "Udin",
       email: "udin@mail.com",
       age: 5,
       balance: 500,
-      IS_DELETED: false,
+      [Model["$isDeleted"]]: false,
     },
     {
       name: "Kosasih",
       email: "kosasih@mail.com",
       age: 5,
       balance: 400,
-      IS_DELETED: false,
+      [Model["$isDeleted"]]: false,
     },
     {
       name: "Joko",
       email: "joko@mail.com",
       age: 45,
       balance: 500,
-      IS_DELETED: true,
+      [Model["$isDeleted"]]: true,
     },
   ]);
 });
@@ -61,7 +61,7 @@ describe("QueryResult - select method", () => {
     expect(result?.email).toBeUndefined();
     expect(result?.age).toBeUndefined();
     expect(result?.balance).toBeUndefined();
-    expect(result?.IS_DELETED).toBeUndefined();
+    expect(result?.[Model["$isDeleted"]]).toBeUndefined();
   });
 
   it("single select with array", async () => {
@@ -72,7 +72,7 @@ describe("QueryResult - select method", () => {
     expect(result?.email).toBeUndefined();
     expect(result?.age).toBeDefined();
     expect(result?.balance).toBeUndefined();
-    expect(result?.IS_DELETED).toBeUndefined();
+    expect(result?.[Model["$isDeleted"]]).toBeUndefined();
   });
 
   it("multiple select", async () => {
@@ -83,6 +83,6 @@ describe("QueryResult - select method", () => {
     expect(result?.email).toBeDefined();
     expect(result?.age).toBeDefined();
     expect(result?.balance).toBeUndefined();
-    expect(result?.IS_DELETED).toBeUndefined();
+    expect(result?.[Model["$isDeleted"]]).toBeUndefined();
   });
 });

@@ -55,13 +55,13 @@ export default class Query extends Database {
    * @note This property stores the field name for the soft delete flag.
    * @var {string}
    */
-  protected static $isDeleted: string = "IS_DELETED";
+  protected static $isDeleted: string = "isDeleted";
 
   /**
    * @note This property stores the field name for the soft delete timestamp.
    * @var {string}
    */
-  protected static $deletedAt: string = "DELETED_AT";
+  protected static $deletedAt: string = "deletedAt";
 
   /**
    * @note This property identifies if querying soft deleted data is enabled.
@@ -136,11 +136,14 @@ export default class Query extends Database {
    * @param  {string|string[]} columns - The columns to be selected.
    * @return {this} The current query instance.
    */
-  public static select<T extends typeof Query>(
-    this: T,
-    columns: string | string[]
-  ): T {
-    this.setColumns(columns);
+  public static select<
+    T extends typeof Query,
+    K extends
+      | keyof T["$schema"]
+      | [keyof T["$schema"], ...(keyof T["$schema"])[]]
+      | undefined = undefined
+  >(this: T, columns?: K): T {
+    this.setColumns(columns as string[]);
     return this;
   }
 
@@ -555,7 +558,7 @@ export default class Query extends Database {
    * @param {string | string[]} columns - The columns to be selected.
    * @return {void}
    */
-  protected static setColumns(columns: string | string[]): void {
+  protected static setColumns(columns: string | string[] = []): void {
     if (Array.isArray(columns)) this.$columns = [...this.$columns, ...columns];
     else this.$columns = [...this.$columns, columns];
   }

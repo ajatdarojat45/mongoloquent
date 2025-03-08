@@ -1,5 +1,5 @@
-export interface IModelPaginate {
-  data: object[];
+export interface IModelPaginate<T> {
+  data: T[];
   meta: {
     total: number;
     page: number;

@@ -7,6 +7,7 @@ import {
   UpdateFilter,
   UpdateOptions,
   Document,
+  WithId,
 } from "mongodb";
 import Relation from "./Relation";
 import dayjs from "./utils/dayjs";
@@ -54,14 +55,14 @@ export default class Model extends Relation {
    *
    * @var string
    */
-  protected static $createdAt = "CREATED_AT";
+  protected static $createdAt = "createdAt";
 
   /**
    * @note This property defines the name of the "updated at" column.
    *
    * @var string
    */
-  protected static $updatedAt = "UPDATED_AT";
+  protected static $updatedAt = "updatedAt";
 
   /**
    * @note This method retrieves all documents from the collection, excluding soft-deleted ones if applicable.
@@ -123,10 +124,11 @@ export default class Model extends Relation {
    * @param perPage - The number of documents per page.
    * @return Promise<IPaginate>
    */
-  public static async paginate(
+  public static async paginate<T extends typeof Model>(
+    this: T,
     page: number = 1,
     limit: number = this.$limit
-  ): Promise<IModelPaginate> {
+  ): Promise<IModelPaginate<T["$schema"]>> {
     try {
       await this.checkRelation();
       // Check if soft delete is enabled and apply necessary filters
@@ -234,10 +236,13 @@ export default class Model extends Relation {
    * @param column - The column to pluck.
    * @return Promise<any>
    */
-  public static async pluck(column: string): Promise<any> {
+  public static async pluck<
+    T extends typeof Model,
+    K extends keyof T["$schema"]
+  >(this: T, column: K) {
     try {
       // Retrieve the documents matching the query
-      const data = (await this.get()) as any[];
+      const data = await this.get();
 
       // Map the documents to extract the values of the specified column
       return data.map((el) => el[column]);
@@ -254,10 +259,11 @@ export default class Model extends Relation {
    * @param options - Optional insert options.
    * @return Promise<WithId<Document>>
    */
-  public static async insert(
-    doc: object,
+  public static async insert<T extends typeof Model>(
+    this: T,
+    doc: T["$schema"],
     options?: InsertOneOptions
-  ): Promise<object> {
+  ) {
     try {
       // Get the collection from the database
       const collection = this.getCollection();
@@ -274,7 +280,7 @@ export default class Model extends Relation {
 
       this.reset();
       // Return the inserted document with its ID
-      return { _id: data.insertedId, ...newDoc };
+      return { _id: data.insertedId, ...newDoc } as WithId<T["$schema"]>;
     } catch (error) {
       console.log(error);
       throw new Error(`Inserting document failed`);
@@ -679,10 +685,10 @@ export default class Model extends Relation {
    * @param type - The type of aggregation (e.g., "max", "min", "avg", "sum").
    * @return Promise<number>
    */
-  private static async aggregation(
-    field: string,
-    type: string
-  ): Promise<number> {
+  private static async aggregation<
+    T extends typeof Model,
+    K extends keyof T["$schema"]
+  >(this: T, field: K, type: string): Promise<number> {
     try {
       // Get the collection from the database
       const collection = this.getCollection();
@@ -701,7 +707,7 @@ export default class Model extends Relation {
             $group: {
               _id: null,
               [type]: {
-                [`$${type}`]: `$${field}`,
+                [`$${String(type)}`]: `$${String(field)}`,
               },
             },
           },
@@ -724,7 +730,10 @@ export default class Model extends Relation {
    * @param field - The field to get the maximum value of.
    * @return Promise<number>
    */
-  public static async max(field: string): Promise<number> {
+  public static async max<T extends typeof Model, K extends keyof T["$schema"]>(
+    this: T,
+    field: K
+  ): Promise<number> {
     return this.aggregation(field, "max");
   }
 
@@ -734,7 +743,10 @@ export default class Model extends Relation {
    * @param field - The field to get the minimum value of.
    * @return Promise<number>
    */
-  public static async min(field: string): Promise<number> {
+  public static async min<T extends typeof Model, K extends keyof T["$schema"]>(
+    this: T,
+    field: K
+  ): Promise<number> {
     return this.aggregation(field, "min");
   }
 
@@ -744,7 +756,10 @@ export default class Model extends Relation {
    * @param field - The field to get the average value of.
    * @return Promise<number>
    */
-  public static async avg(field: string): Promise<number> {
+  public static async avg<T extends typeof Model, K extends keyof T["$schema"]>(
+    this: T,
+    field: K
+  ): Promise<number> {
     return this.aggregation(field, "avg");
   }
 
@@ -754,7 +769,10 @@ export default class Model extends Relation {
    * @param field - The field to get the sum of.
    * @return Promise<number>
    */
-  public static async sum(field: string): Promise<number> {
+  public static async sum<T extends typeof Model, K extends keyof T["$schema"]>(
+    this: T,
+    field: K
+  ): Promise<number> {
     return this.aggregation(field, "sum");
   }
 
