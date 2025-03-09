@@ -14,24 +14,18 @@ export default class BelongsTo extends LookupBuilder {
 
     // Generate the select stages if options.select is provided
     if (belongsTo.options?.select) {
-      const select = this.select(
-        belongsTo.options.select,
-        belongsTo.alias
-      );
-      lookup.push(...select)
+      const select = this.select(belongsTo.options.select, belongsTo.alias);
+      lookup.push(...select);
     }
 
     // Generate the exclude stages if options.exclude is provided
     if (belongsTo.options?.exclude) {
-      const exclude = this.exclude(
-        belongsTo.options.exclude,
-        belongsTo.alias
-      );
-      lookup.push(...exclude)
+      const exclude = this.exclude(belongsTo.options.exclude, belongsTo.alias);
+      lookup.push(...exclude);
     }
 
     // Return the combined lookup, select, and exclude stages
-    return lookup
+    return lookup;
   }
 
   /**

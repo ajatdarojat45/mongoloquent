@@ -4,9 +4,9 @@ import LookupBuilder from "./LookupBuilder.ts";
 
 export default class HasMany extends LookupBuilder {
   /**
-   * Generates the lookup, select, and exclude stages for the hasMany relation.
+   * Generates the lookup, select, exclude, sort, skip, and limit stages for the hasMany relation.
    * @param {IRelationHasMany} hasMany - The hasMany relation configuration.
-   * @return {Document[]} The combined lookup, select, and exclude stages.
+   * @return {Document[]} The combined lookup, select, exclude, sort, skip, and limit stages.
    */
   static generate(hasMany: IRelationHasMany): Document[] {
     // Generate the lookup stages for the hasMany relationship
@@ -14,42 +14,39 @@ export default class HasMany extends LookupBuilder {
 
     // Generate the select stages if options.select is provided
     if (hasMany.options?.select) {
-      const select = this.select(
-        hasMany.options.select,
-        hasMany.alias
-      );
-      lookup.push(...select)
+      const select = this.select(hasMany.options.select, hasMany.alias);
+      lookup.push(...select);
     }
 
     // Generate the exclude stages if options.exclude is provided
     if (hasMany.options?.exclude) {
-      const exclude = this.exclude(
-        hasMany.options.exclude,
-        hasMany.alias
-      );
-      lookup.push(...exclude)
+      const exclude = this.exclude(hasMany.options.exclude, hasMany.alias);
+      lookup.push(...exclude);
     }
 
+    // Generate the sort stages if options.sort is provided
     if (hasMany.options?.sort) {
       const sort = this.sort(
         hasMany.options?.sort[0],
         hasMany.options?.sort[1]
-      )
-      lookup.push(sort)
+      );
+      lookup.push(sort);
     }
 
+    // Generate the skip stages if options.skip is provided
     if (hasMany.options?.skip) {
-      const skip = this.skip(hasMany.options?.skip)
-      lookup.push(skip)
+      const skip = this.skip(hasMany.options?.skip);
+      lookup.push(skip);
     }
 
+    // Generate the limit stages if options.limit is provided
     if (hasMany.options?.limit) {
-      const limit = this.limit(hasMany.options?.limit)
-      lookup.push(limit)
+      const limit = this.limit(hasMany.options?.limit);
+      lookup.push(limit);
     }
 
-    // Return the combined lookup, select, and exclude stages
-    return lookup
+    // Return the combined lookup, select, exclude, sort, skip, and limit stages
+    return lookup;
   }
 
   /**

@@ -16,17 +16,17 @@ export default class MorphTo extends LookupBuilder {
     // Generate the select stages if options.select is provided
     if (morphTo.options?.select) {
       const select = this.select(morphTo.options.select, alias);
-      lookup.push(...select)
+      lookup.push(...select);
     }
 
     // Generate the exclude stages if options.exclude is provided
     if (morphTo.options?.exclude) {
       const exclude = this.exclude(morphTo.options.exclude, alias);
-      lookup.push(...exclude)
+      lookup.push(...exclude);
     }
 
     // Return the combined lookup, select, and exclude stages
-    return lookup
+    return lookup;
   }
 
   /**
@@ -46,9 +46,7 @@ export default class MorphTo extends LookupBuilder {
           $expr: {
             $and: [
               { $eq: [`$${morphTo.model.getIsDeleted()}`, false] },
-              {
-                $eq: [`$${morphTo.morphType}`, morphTo.parentModelName],
-              },
+              { $eq: [`$${morphTo.morphType}`, morphTo.parentModelName] },
             ],
           },
         },
@@ -57,11 +55,7 @@ export default class MorphTo extends LookupBuilder {
       pipeline.push({
         $match: {
           $expr: {
-            $and: [
-              {
-                $eq: [`$${morphTo.morphType}`, morphTo.parentModelName],
-              },
-            ],
+            $and: [{ $eq: [`$${morphTo.morphType}`, morphTo.parentModelName] }],
           },
         },
       });
@@ -79,7 +73,7 @@ export default class MorphTo extends LookupBuilder {
     // Add the $lookup stage to the lookup array
     lookup.push({ $lookup });
 
-    // Define the $unwind stage
+    // Define the $unwind stage to deconstruct the array field
     lookup.push({
       $unwind: {
         path: `$${alias}`,

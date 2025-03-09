@@ -4,9 +4,9 @@ import LookupBuilder from "./LookupBuilder.ts";
 
 export default class BelongsToMany extends LookupBuilder {
   /**
-   * Generates the lookup, select, and exclude stages for the BelongsToMany relation.
+   * Generates the lookup, select, exclude, sort, skip, and limit stages for the BelongsToMany relation.
    * @param {IRelationBelongsToMany} belongsToMany - The BelongsToMany relation configuration.
-   * @return {Document[]} The combined lookup, select, and exclude stages.
+   * @return {Document[]} The combined lookup, select, exclude, sort, skip, and limit stages.
    */
   static generate(belongsToMany: IRelationBelongsToMany): Document[] {
     // Generate the lookup stages for the BelongsToMany relationship
@@ -18,7 +18,7 @@ export default class BelongsToMany extends LookupBuilder {
         belongsToMany.options.select,
         belongsToMany.alias
       );
-      lookup.push(...select)
+      lookup.push(...select);
     }
 
     // Generate the exclude stages if options.exclude is provided
@@ -27,29 +27,32 @@ export default class BelongsToMany extends LookupBuilder {
         belongsToMany.options.exclude,
         belongsToMany.alias
       );
-      lookup.push(...exclude)
+      lookup.push(...exclude);
     }
 
+    // Generate the sort stages if options.sort is provided
     if (belongsToMany.options?.sort) {
       const sort = this.sort(
         belongsToMany.options?.sort[0],
         belongsToMany.options?.sort[1]
-      )
-      lookup.push(sort)
+      );
+      lookup.push(sort);
     }
 
+    // Generate the skip stage if options.skip is provided
     if (belongsToMany.options?.skip) {
-      const skip = this.skip(belongsToMany.options?.skip)
-      lookup.push(skip)
+      const skip = this.skip(belongsToMany.options?.skip);
+      lookup.push(skip);
     }
 
+    // Generate the limit stage if options.limit is provided
     if (belongsToMany.options?.limit) {
-      const limit = this.limit(belongsToMany.options?.limit)
-      lookup.push(limit)
+      const limit = this.limit(belongsToMany.options?.limit);
+      lookup.push(limit);
     }
 
-    // Return the combined lookup, select, and exclude stages
-    return lookup
+    // Return the combined lookup, select, exclude, sort, skip, and limit stages
+    return lookup;
   }
 
   /**
