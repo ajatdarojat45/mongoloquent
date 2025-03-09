@@ -1,8 +1,8 @@
-import Relation from "../Relation";
 import { IRelationBelongsTo } from "../interfaces/IRelation";
 import { Document } from "mongodb";
+import LookupBuilder from "./LookupBuilder.ts";
 
-export default class BelongsTo {
+export default class BelongsTo extends LookupBuilder {
   /**
    * @note This method defines an inverse one-to-one or many relationship.
    * @param {IRelationBelongsTo} belongsTo - The belongsTo relation details.
@@ -11,25 +11,27 @@ export default class BelongsTo {
   public static generate(belongsTo: IRelationBelongsTo): Document[] {
     // Generate the lookup stages for the belongsTo relationship
     const lookup = this.lookup(belongsTo);
-    let select: any = [];
-    let exclude: any = [];
 
     // Generate the select stages if options.select is provided
-    if (belongsTo.options?.select)
-      select = Relation.selectRelationColumns(
+    if (belongsTo.options?.select) {
+      const select = this.select(
         belongsTo.options.select,
         belongsTo.alias
       );
+      lookup.push(...select)
+    }
 
     // Generate the exclude stages if options.exclude is provided
-    if (belongsTo.options?.exclude)
-      exclude = Relation.excludeRelationColumns(
+    if (belongsTo.options?.exclude) {
+      const exclude = this.exclude(
         belongsTo.options.exclude,
         belongsTo.alias
       );
+      lookup.push(...exclude)
+    }
 
     // Return the combined lookup, select, and exclude stages
-    return [...lookup, ...select, ...exclude];
+    return lookup
   }
 
   /**

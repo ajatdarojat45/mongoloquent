@@ -1,8 +1,8 @@
 import { Document } from "mongodb";
-import Relation from "../Relation";
 import { IRelationMorphToMany } from "../interfaces/IRelation";
+import LookupBuilder from "./LookupBuilder.ts";
 
-export default class MorphToMany {
+export default class MorphToMany extends LookupBuilder {
   /**
    * Generates the lookup, select, and exclude stages for the MorphToMany relation.
    * @param {IRelationMorphToMany} morphToMany - The MorphToMany relation configuration.
@@ -11,25 +11,45 @@ export default class MorphToMany {
   static generate(morphToMany: IRelationMorphToMany): Document[] {
     // Generate the lookup stages for the MorphToMany relationship
     const lookup = this.lookup(morphToMany);
-    let select: any = [];
-    let exclude: any = [];
 
     // Generate the select stages if options.select is provided
-    if (morphToMany.options?.select)
-      select = Relation.selectRelationColumns(
+    if (morphToMany.options?.select) {
+      const select = this.select(
         morphToMany.options.select,
         morphToMany.alias
       );
+      lookup.push(...select)
+    }
 
     // Generate the exclude stages if options.exclude is provided
-    if (morphToMany.options?.exclude)
-      exclude = Relation.excludeRelationColumns(
+    if (morphToMany.options?.exclude) {
+      const exclude = this.exclude(
         morphToMany.options.exclude,
         morphToMany.alias
       );
+      lookup.push(...exclude)
+    }
+
+    if (morphToMany.options?.sort) {
+      const sort = this.sort(
+        morphToMany.options?.sort[0],
+        morphToMany.options?.sort[1]
+      )
+      lookup.push(sort)
+    }
+
+    if (morphToMany.options?.skip) {
+      const skip = this.skip(morphToMany.options?.skip)
+      lookup.push(skip)
+    }
+
+    if (morphToMany.options?.limit) {
+      const limit = this.limit(morphToMany.options?.limit)
+      lookup.push(limit)
+    }
 
     // Return the combined lookup, select, and exclude stages
-    return [...lookup, ...select, ...exclude];
+    return lookup
   }
 
   /**

@@ -1,8 +1,8 @@
 import { Document } from "mongodb";
-import Relation from "../Relation";
 import { IRelationHasManyThrough } from "../interfaces/IRelation";
+import LookupBuilder from "./LookupBuilder.ts";
 
-export default class HasManyThrough {
+export default class HasManyThrough extends LookupBuilder {
   /**
    * Generates the lookup, select, and exclude stages for the HasManyThrough relation.
    * @param {IRelationHasManyThrough} hasManyThrough - The HasManyThrough relation configuration.
@@ -11,25 +11,45 @@ export default class HasManyThrough {
   static generate(hasManyThrough: IRelationHasManyThrough): Document[] {
     // Generate the lookup stages for the HasManyThrough relationship
     const lookup = this.lookup(hasManyThrough);
-    let select: any = [];
-    let exclude: any = [];
 
     // Generate the select stages if options.select is provided
-    if (hasManyThrough.options?.select)
-      select = Relation.selectRelationColumns(
+    if (hasManyThrough.options?.select) {
+      const select = this.select(
         hasManyThrough.options.select,
         hasManyThrough.alias
       );
+      lookup.push(...select)
+    }
 
     // Generate the exclude stages if options.exclude is provided
-    if (hasManyThrough.options?.exclude)
-      exclude = Relation.excludeRelationColumns(
+    if (hasManyThrough.options?.exclude) {
+      const exclude = this.exclude(
         hasManyThrough.options.exclude,
         hasManyThrough.alias
       );
+      lookup.push(...exclude)
+    }
+
+    if (hasManyThrough.options?.sort) {
+      const sort = this.sort(
+        hasManyThrough.options?.sort[0],
+        hasManyThrough.options?.sort[1]
+      )
+      lookup.push(sort)
+    }
+
+    if (hasManyThrough.options?.skip) {
+      const skip = this.skip(hasManyThrough.options?.skip)
+      lookup.push(skip)
+    }
+
+    if (hasManyThrough.options?.limit) {
+      const limit = this.limit(hasManyThrough.options?.limit)
+      lookup.push(limit)
+    }
 
     // Return the combined lookup, select, and exclude stages
-    return [...lookup, ...select, ...exclude];
+    return lookup
   }
 
   /**

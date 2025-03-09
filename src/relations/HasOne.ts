@@ -1,8 +1,8 @@
 import { Document } from "mongodb";
-import Relation from "../Relation";
 import { IRelationHasOne } from "../interfaces/IRelation";
+import LookupBuilder from "./LookupBuilder.ts";
 
-export default class HasOne {
+export default class HasOne extends LookupBuilder {
   /**
    * Generates the lookup, select, and exclude stages for the hasOne relation.
    * @param {IRelationHasOne} hasOne - The hasOne relation configuration.
@@ -11,25 +11,27 @@ export default class HasOne {
   static generate(hasOne: IRelationHasOne): Document[] {
     // Generate the lookup stages for the hasOne relationship
     const lookup = this.lookup(hasOne);
-    let select: any = [];
-    let exclude: any = [];
 
     // Generate the select stages if options.select is provided
-    if (hasOne.options?.select)
-      select = Relation.selectRelationColumns(
+    if (hasOne.options?.select) {
+      const select = this.select(
         hasOne.options.select,
         hasOne.alias
       );
+      lookup.push(...select)
+    }
 
     // Generate the exclude stages if options.exclude is provided
-    if (hasOne.options?.exclude)
-      exclude = Relation.excludeRelationColumns(
+    if (hasOne.options?.exclude) {
+      const exclude = this.exclude(
         hasOne.options.exclude,
         hasOne.alias
       );
+      lookup.push(...exclude)
+    }
 
     // Return the combined lookup, select, and exclude stages
-    return [...lookup, ...select, ...exclude];
+    return lookup
   }
 
   /**

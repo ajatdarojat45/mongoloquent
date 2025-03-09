@@ -1,8 +1,8 @@
 import { Document } from "mongodb";
-import Relation from "../Relation";
-import { IRelationHasMany, IRelationOptions } from "../interfaces/IRelation";
+import { IRelationHasMany } from "../interfaces/IRelation";
+import LookupBuilder from "./LookupBuilder.ts";
 
-export default class HasMany {
+export default class HasMany extends LookupBuilder {
   /**
    * Generates the lookup, select, and exclude stages for the hasMany relation.
    * @param {IRelationHasMany} hasMany - The hasMany relation configuration.
@@ -11,25 +11,45 @@ export default class HasMany {
   static generate(hasMany: IRelationHasMany): Document[] {
     // Generate the lookup stages for the hasMany relationship
     const lookup = this.lookup(hasMany);
-    let select: any = [];
-    let exclude: any = [];
 
     // Generate the select stages if options.select is provided
-    if (hasMany.options?.select)
-      select = Relation.selectRelationColumns(
+    if (hasMany.options?.select) {
+      const select = this.select(
         hasMany.options.select,
         hasMany.alias
       );
+      lookup.push(...select)
+    }
 
     // Generate the exclude stages if options.exclude is provided
-    if (hasMany.options?.exclude)
-      exclude = Relation.excludeRelationColumns(
+    if (hasMany.options?.exclude) {
+      const exclude = this.exclude(
         hasMany.options.exclude,
         hasMany.alias
       );
+      lookup.push(...exclude)
+    }
+
+    if (hasMany.options?.sort) {
+      const sort = this.sort(
+        hasMany.options?.sort[0],
+        hasMany.options?.sort[1]
+      )
+      lookup.push(sort)
+    }
+
+    if (hasMany.options?.skip) {
+      const skip = this.skip(hasMany.options?.skip)
+      lookup.push(skip)
+    }
+
+    if (hasMany.options?.limit) {
+      const limit = this.limit(hasMany.options?.limit)
+      lookup.push(limit)
+    }
 
     // Return the combined lookup, select, and exclude stages
-    return [...lookup, ...select, ...exclude];
+    return lookup
   }
 
   /**

@@ -422,61 +422,6 @@ export default class Relation extends Query {
   }
 
   /**
-   * @note This method selects columns in a has one relation.
-   * @param {string|string[]} columns - The columns to select.
-   * @param {string} alias - The alias for the relation.
-   * @param {boolean} [isSelect=true] - Whether to select or exclude the columns.
-   * @return {Document[]} The lookup stages.
-   */
-  static selectRelationColumns(
-    columns: string | string[],
-    alias: string
-  ): Document[] {
-    const lookup = [];
-    const _columns: string[] = [];
-    const additionals: any = [];
-    let project = {
-      $project: {
-        document: "$$ROOT",
-      },
-    };
-
-    // Convert columns to an array if it's a string
-    if (typeof columns === "string") _columns.push(columns);
-    else _columns.push(...columns);
-
-    // Add the columns to the project stage
-    _columns.forEach((el) => {
-      project = {
-        ...project,
-        $project: {
-          ...project.$project,
-          [`${alias}.${el}`]: 1,
-        },
-      };
-    });
-
-    // Add additional stages if selecting columns
-    additionals.push(
-      {
-        $set: {
-          [`document.${alias}`]: `$${alias}`,
-        },
-      },
-      {
-        $replaceRoot: {
-          newRoot: "$document",
-        },
-      }
-    );
-
-    // Add the project and additional stages to the lookup array
-    lookup.push(project, ...additionals);
-
-    return lookup;
-  }
-
-  /**
    * @note This method sets the lookup stages.
    * @param {Document} doc - The lookup stages.
    * @return {void}
@@ -553,38 +498,6 @@ export default class Relation extends Query {
    */
   protected static getRelationship() {
     return this.$relationship;
-  }
-
-  /**
-   * @note This method excludes columns in a has one relation.
-   * @param {string|string[]} columns - The columns to exclude.
-   * @param {string} alias - The alias for the relation.
-   * @return {Document[]} The lookup stages.
-   */
-  static excludeRelationColumns(columns: string | string[], alias: string) {
-    const lookup: Document = [];
-    const _columns: string[] = [];
-    // Convert columns to an array if it's a string
-    if (typeof columns === "string") _columns.push(columns);
-    else _columns.push(...columns);
-
-    let project = {
-      $project: {},
-    };
-
-    _columns.forEach((field: any) => {
-      project = {
-        ...project,
-        $project: {
-          ...project.$project,
-          [`${alias}.${field}`]: 0,
-        },
-      };
-    });
-
-    lookup.push(project);
-
-    return lookup;
   }
 
   /**

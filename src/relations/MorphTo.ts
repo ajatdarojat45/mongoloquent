@@ -1,8 +1,8 @@
 import { Document } from "mongodb";
-import Relation from "../Relation";
 import { IRelationMorphTo } from "../interfaces/IRelation";
+import LookupBuilder from "./LookupBuilder.ts";
 
-export default class MorphTo {
+export default class MorphTo extends LookupBuilder {
   /**
    * Generates the lookup, select, and exclude stages for the MorphTo relation.
    * @param {IRelationMorphTo} morphTo - The MorphTo relation configuration.
@@ -12,19 +12,21 @@ export default class MorphTo {
     // Generate the lookup stages for the MorphTo relationship
     const alias = morphTo.alias || "alias";
     const lookup = this.lookup(morphTo);
-    let select: any = [];
-    let exclude: any = [];
 
     // Generate the select stages if options.select is provided
-    if (morphTo.options?.select)
-      select = Relation.selectRelationColumns(morphTo.options.select, alias);
+    if (morphTo.options?.select) {
+      const select = this.select(morphTo.options.select, alias);
+      lookup.push(...select)
+    }
 
     // Generate the exclude stages if options.exclude is provided
-    if (morphTo.options?.exclude)
-      exclude = Relation.excludeRelationColumns(morphTo.options.exclude, alias);
+    if (morphTo.options?.exclude) {
+      const exclude = this.exclude(morphTo.options.exclude, alias);
+      lookup.push(...exclude)
+    }
 
     // Return the combined lookup, select, and exclude stages
-    return [...lookup, ...select, ...exclude];
+    return lookup
   }
 
   /**

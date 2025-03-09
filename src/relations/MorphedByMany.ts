@@ -1,8 +1,8 @@
 import { Document } from "mongodb";
-import Relation from "../Relation";
 import { IRelationMorphedByMany } from "../interfaces/IRelation";
+import LookupBuilder from "./LookupBuilder.ts";
 
-export default class MorphedByMany {
+export default class MorphedByMany extends LookupBuilder {
   /**
    * Generates the lookup, select, and exclude stages for the MorphByMany relation.
    * @param {IRelationMorphedByMany} morphedByMany - The MorphByMany relation configuration.
@@ -11,25 +11,45 @@ export default class MorphedByMany {
   static generate(morphedByMany: IRelationMorphedByMany): Document[] {
     // Generate the lookup stages for the MorphByMany relationship
     const lookup = this.lookup(morphedByMany);
-    let select: any = [];
-    let exclude: any = [];
 
     // Generate the select stages if options.select is provided
-    if (morphedByMany.options?.select)
-      select = Relation.selectRelationColumns(
+    if (morphedByMany.options?.select) {
+      const select = this.select(
         morphedByMany.options.select,
         morphedByMany.alias
       );
+      lookup.push(...select)
+    }
 
     // Generate the exclude stages if options.exclude is provided
-    if (morphedByMany.options?.exclude)
-      exclude = Relation.excludeRelationColumns(
+    if (morphedByMany.options?.exclude) {
+      const exclude = this.exclude(
         morphedByMany.options.exclude,
         morphedByMany.alias
       );
+      lookup.push(...exclude)
+    }
+
+    if (morphedByMany.options?.sort) {
+      const sort = this.sort(
+        morphedByMany.options?.sort[0],
+        morphedByMany.options?.sort[1]
+      )
+      lookup.push(sort)
+    }
+
+    if (morphedByMany.options?.skip) {
+      const skip = this.skip(morphedByMany.options?.skip)
+      lookup.push(skip)
+    }
+
+    if (morphedByMany.options?.limit) {
+      const limit = this.limit(morphedByMany.options?.limit)
+      lookup.push(limit)
+    }
 
     // Return the combined lookup, select, and exclude stages
-    return [...lookup, ...select, ...exclude];
+    return lookup
   }
 
   /**
