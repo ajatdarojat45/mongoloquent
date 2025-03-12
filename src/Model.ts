@@ -1,6 +1,5 @@
 import {
   BulkWriteOptions,
-  FindOneAndUpdateOptions,
   InsertOneOptions,
   ObjectId,
   UpdateFilter,
@@ -11,9 +10,7 @@ import dayjs from "./utils/dayjs";
 import { TIMEZONE } from "./configs/app";
 import { IModelPaginate } from "./interfaces/IModel";
 import { IRelationTypes } from "./interfaces/IRelation";
-import { throws } from "assert";
 import ModelNotFoundException from "./exceptions/ModelNotFoundException";
-import { exists } from "fs";
 
 export default class Model extends Relation {
   /**
@@ -740,6 +737,28 @@ export default class Model extends Relation {
 
   public static async only(fields: string | string[]) {
     return this.get(fields)
+  }
+
+  public static async search(value: any) {
+    const collection = this.getCollection()
+    const count = await collection.countDocuments({
+      $expr: {
+        $gt: [
+          {
+            $size: {
+              $filter: {
+                input: { $objectToArray: "$$ROOT" },
+                as: "field",
+                cond: { $eq: ["$$field.v", value] }
+              }
+            }
+          },
+          0
+        ]
+      }
+    });
+
+    return count > 0 ? count : false;
   }
 
   /**
