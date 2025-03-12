@@ -13,6 +13,7 @@ import { IModelPaginate } from "./interfaces/IModel";
 import { IRelationTypes } from "./interfaces/IRelation";
 import { throws } from "assert";
 import ModelNotFoundException from "./exceptions/ModelNotFoundException";
+import { exists } from "fs";
 
 export default class Model extends Relation {
   /**
@@ -688,7 +689,7 @@ export default class Model extends Relation {
 
   public static async contains(value: any): Promise<boolean> {
     const collection = this.getCollection()
-    const exists = await collection.findOne({
+    const exist = await collection.findOne({
       $expr: {
         $gt: [
           {
@@ -705,7 +706,29 @@ export default class Model extends Relation {
       }
     }) !== null;
 
-    return exists
+    return exist
+  }
+
+  public static async has(field: string): Promise<boolean> {
+    const collection = this.getCollection()
+    const exist = await collection.findOne({
+      $expr: {
+        $gt: [
+          {
+            $size: {
+              $filter: {
+                input: { $objectToArray: "$$ROOT" },
+                as: "field",
+                cond: { $eq: ["$$field.k", field] }
+              }
+            }
+          },
+          0
+        ]
+      }
+    }) !== null;
+
+    return exist
   }
 
   /**
