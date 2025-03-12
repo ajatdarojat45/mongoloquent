@@ -333,55 +333,6 @@ export default class Model extends Relation {
     }
   }
 
-  /**
-   * @note This method updates a document in the collection, applying timestamps and soft delete if applicable.
-   *
-   * @param doc - The document to update.
-   * @param options - Optional update options.
-   * @return Promise<WithId<Document> | null>
-   */
-  public static async update(
-    doc: UpdateFilter<Document>,
-    options?: FindOneAndUpdateOptions
-  ) {
-    try {
-      // Get the collection from the database
-      const collection = this.getCollection();
-
-      // Generate the where conditions for the query
-      this.generateWheres();
-      this.generateOrders();
-      let filter = {};
-      const stages = this.getStages();
-      if (stages.length > 0) filter = stages[0].$match;
-
-      // Apply timestamps and soft delete fields to the document if enabled
-      let newDoc = this.checkUseTimestamps(doc, false);
-      newDoc = this.checkUseSoftdelete(newDoc);
-
-      // Update the document in the collection
-      const data = await collection.findOneAndUpdate(
-        { ...filter },
-        {
-          $set: {
-            ...newDoc,
-          },
-        },
-        {
-          ...options,
-          returnDocument: "after",
-        }
-      );
-
-      // Reset the query and relation states
-      this.reset();
-      return data;
-    } catch (error) {
-      console.log(error);
-      throw new Error(`Updating document failed`);
-    }
-  }
-
   static async updateOrCreate(doc: { [key: string]: any }) {
     const collection = this.getCollection();
     const data = await collection.findOne(doc);
@@ -401,12 +352,12 @@ export default class Model extends Relation {
    *
    * @param doc - The documents to update.
    * @param options - Optional update options.
-   * @return Promise<{ modifiedCount: number }>
+   * @return Promise<number>
    */
-  public static async updateMany(
+  public static async update(
     doc: UpdateFilter<Document>,
     options?: UpdateOptions
-  ): Promise<{ modifiedCount: number }> {
+  ): Promise<number> {
     try {
       // Get the collection from the database
       const collection = this.getCollection();
@@ -438,9 +389,7 @@ export default class Model extends Relation {
 
       // Reset the query and relation states
       this.reset();
-      return {
-        modifiedCount: data.modifiedCount,
-      };
+      return data.modifiedCount;
     } catch (error) {
       console.log(error);
       throw new Error(`Updating multiple documents failed`);
@@ -655,13 +604,13 @@ export default class Model extends Relation {
    *
    * @return Promise<{ modifiedCount: number }>
    */
-  public static async restore(): Promise<{ modifiedCount: number }> {
+  public static async restore(): Promise<number> {
     try {
       // Only include soft-deleted documents in the query
       this.onlyTrashed();
 
       // Update the documents to mark them as not deleted
-      return await this.updateMany({ [this.$isDeleted]: false });
+      return await this.update({ [this.$isDeleted]: false });
     } catch (error) {
       console.log(error);
       throw new Error(`Restoring documents failed`);
