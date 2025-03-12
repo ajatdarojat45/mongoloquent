@@ -738,6 +738,10 @@ export default class Model extends Relation {
     return data[data.length - 1]
   }
 
+  public static async only(fields: string | string[]) {
+    return this.get(fields)
+  }
+
   /**
    * @note This method aggregates the query stages and lookups, then executes the aggregation pipeline.
    *
