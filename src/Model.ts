@@ -476,7 +476,7 @@ export default class Model extends Relation {
    *
    * @return Promise<{ deletedCount: number }>
    */
-  public static async forceDelete(): Promise<{ deletedCount: number }> {
+  public static async forceDelete(): Promise<number> {
     try {
       // Get the collection from the database
       const collection = this.getCollection();
@@ -493,9 +493,7 @@ export default class Model extends Relation {
 
       // Reset the query state
       this.reset();
-      return {
-        deletedCount: data.deletedCount,
-      };
+      return data.deletedCount
     } catch (error) {
       console.log(error);
       throw new Error(`Force deleting documents failed`);
@@ -512,7 +510,7 @@ export default class Model extends Relation {
    */
   public static async forceDestroy(
     ids: string | string[] | ObjectId | ObjectId[]
-  ): Promise<{ deletedCount: number }> {
+  ): Promise<number> {
     try {
       const collection = this.getCollection();
       let id = [];
@@ -537,9 +535,7 @@ export default class Model extends Relation {
 
       this.reset();
 
-      return {
-        deletedCount: data.deletedCount,
-      };
+      return data.deletedCount
     } catch (error) {
       console.log(error);
       throw new Error(`Force destroying documents failed`);
