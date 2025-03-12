@@ -263,6 +263,10 @@ export default class Model extends Relation {
   public static async firstOrCreate(doc: object) {
     const collection = this.getCollection();
 
+    if (this.$useSoftDelete) {
+      doc = { ...doc, [this.$isDeleted]: false };
+    }
+
     const data = await collection.findOne(doc);
     if (!data) return await this.insert(doc);
 
@@ -331,7 +335,6 @@ export default class Model extends Relation {
       newDoc = this.checkUseSoftdelete(newDoc);
 
       newDoc = this.checkRelationship(newDoc);
-
       // Insert the document into the collection
       const data = await collection.insertOne(newDoc, options);
 
@@ -436,18 +439,20 @@ export default class Model extends Relation {
    * @returns {Promise<Document>} The updated or newly created document
    * @throws {Error} When updating or creating fails
    */
-  static async updateOrCreate(doc: { [key: string]: any }) {
-    const collection = this.getCollection();
-    const data = await collection.findOne(doc);
-    if (!data) return this.insert(doc);
-
-    for (var key in doc) {
+  static async updateOrCreate(
+    filter: { [key: string]: any },
+    doc: { [key: string]: any }
+  ) {
+    for (var key in filter) {
       if (doc.hasOwnProperty(key)) {
-        this.where(key, doc[key]);
+        this.where(key, filter[key]);
       }
     }
 
-    return this.update(doc);
+    const data = await this.update(doc);
+    if (data) return data;
+
+    return this.insert(doc);
   }
 
   /**

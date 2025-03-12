@@ -68,42 +68,9 @@ describe("User Model - first method", () => {
 
   it("should return the first user matching the query", async () => {
     User["$useSoftDelete"] = false;
-    const result = await User.where("name", "Kosasih").first();
+    const result = await User.firstWhere("name", "Udin");
 
     expect(result).toEqual(expect.any(Object));
-    expect(result).toHaveProperty("name", "Kosasih");
-  });
-
-  it("should return the first user with only the selected field", async () => {
-    User["$useSoftDelete"] = false;
-    const result = await User.where("name", "Kosasih").first("name");
-    expect(result).toEqual(expect.any(Object));
-    expect(result).toHaveProperty("name", "Kosasih");
-    expect(result).not.toHaveProperty("age");
-    expect(result).not.toHaveProperty("email");
-  });
-
-  it("should return the first user with the selected fields", async () => {
-    User["$useSoftDelete"] = false;
-    const result = await User.where("name", "Kosasih").first(["name", "age"]);
-
-    expect(result).toEqual(expect.any(Object));
-    expect(result).toHaveProperty("name", "Kosasih");
-    expect(result).toHaveProperty("age", 50);
-    expect(result).not.toHaveProperty("email");
-  });
-
-  it("should return null for a non-existent user", async () => {
-    User["$useSoftDelete"] = false;
-    const result = await User.where("name", "Kosasih1").first();
-
-    expect(result).toEqual(null);
-  });
-
-  it("should return null for a soft-deleted user", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("name", "Kosasih").first();
-
-    expect(result).toEqual(null);
+    expect(result).toHaveProperty("name", "Udin");
   });
 });

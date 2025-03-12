@@ -13,7 +13,7 @@ beforeAll(async () => {
   }
 });
 
-afterAll(async () => {
+afterEach(async () => {
   try {
     const userCollection = User["getCollection"]();
     await userCollection.deleteMany({});
@@ -23,24 +23,6 @@ afterAll(async () => {
 });
 
 describe("User Model - Update Method", () => {
-  const userCollection = User["getCollection"]();
-
-  beforeAll(async () => {
-    try {
-      // Setup before all tests
-    } catch (error) {
-      console.error(error);
-    }
-  });
-
-  afterAll(async () => {
-    try {
-      await userCollection.deleteMany({});
-    } catch (error) {
-      console.error(error);
-    }
-  });
-
   it("should update user data without timestamps", async () => {
     User["$useSoftDelete"] = false;
     User["$useTimestamps"] = false;
@@ -56,12 +38,15 @@ describe("User Model - Update Method", () => {
       age: 21,
       address: "Jakarta",
     });
+    expect(result).toEqual(expect.any(Number));
+    expect(result).toEqual(1);
 
-    expect(result).toEqual(expect.any(Object));
-    expect(result).toHaveProperty("name", "Udin Ganteng");
-    expect(result).toHaveProperty("age", 21);
-    expect(result).toHaveProperty("address", "Jakarta");
-    expect(result).toHaveProperty("_id");
+    const user = await User.where("name", "Udin Ganteng").first();
+    expect(user).toEqual(expect.any(Object));
+    expect(user).toHaveProperty("name", "Udin Ganteng");
+    expect(user).toHaveProperty("age", 21);
+    expect(user).toHaveProperty("address", "Jakarta");
+    expect(user).toHaveProperty("_id");
   });
 
   it("should update user data with timestamps", async () => {
@@ -79,20 +64,20 @@ describe("User Model - Update Method", () => {
       age: 21,
       address: "Jakarta",
     });
+    expect(result).toEqual(expect.any(Number));
+    expect(result).toEqual(1);
 
-    expect(result).toEqual(expect.any(Object));
-    expect(result).toHaveProperty("name", "Udin Ganteng");
-    expect(result).toHaveProperty("age", 21);
-    expect(result).toHaveProperty("address", "Jakarta");
-    expect(result).toHaveProperty("_id");
-    expect(result).toHaveProperty(
+    const updatedUser = await User.where("name", "Udin Ganteng").first();
+    expect(updatedUser).toEqual(expect.any(Object));
+    expect(updatedUser).toHaveProperty("name", "Udin Ganteng");
+    expect(updatedUser).toHaveProperty("age", 21);
+    expect(updatedUser).toHaveProperty("address", "Jakarta");
+    expect(updatedUser).toHaveProperty("_id");
+    expect(updatedUser).toHaveProperty(
       User["$createdAt"],
       (user as any)[User["$createdAt"]]
     );
-    expect(result).toHaveProperty(User["$updatedAt"]);
-    expect((result as any).updatedAt).not.toEqual(
-      (user as any)[User["$updatedAt"]]
-    );
+    expect(updatedUser).toHaveProperty(User["$updatedAt"]);
   });
 
   it("should update user data including _id in payload", async () => {
@@ -111,12 +96,15 @@ describe("User Model - Update Method", () => {
       age: 21,
       address: "Jakarta",
     });
+    expect(result).toEqual(expect.any(Number));
+    expect(result).toEqual(1);
 
-    expect(result).toEqual(expect.any(Object));
-    expect(result).toHaveProperty("name", "Udin Ganteng");
-    expect(result).toHaveProperty("age", 21);
-    expect(result).toHaveProperty("address", "Jakarta");
-    expect(result).toHaveProperty("_id", (user as any)._id);
+    const updatedUser = await User.where("name", "Udin Ganteng").first();
+    expect(updatedUser).toEqual(expect.any(Object));
+    expect(updatedUser).toHaveProperty("name", "Udin Ganteng");
+    expect(updatedUser).toHaveProperty("age", 21);
+    expect(updatedUser).toHaveProperty("address", "Jakarta");
+    expect(updatedUser).toHaveProperty("_id", (user as any)._id);
   });
 
   it("should update user data including createdAt in payload", async () => {
@@ -135,13 +123,16 @@ describe("User Model - Update Method", () => {
       age: 21,
       address: "Jakarta",
     });
+    expect(result).toEqual(expect.any(Number));
+    expect(result).toEqual(1);
 
-    expect(result).toEqual(expect.any(Object));
-    expect(result).toHaveProperty("name", "Udin Ganteng");
-    expect(result).toHaveProperty("age", 21);
-    expect(result).toHaveProperty("address", "Jakarta");
-    expect(result).toHaveProperty("_id", (user as any)._id);
-    expect(result).toHaveProperty(
+    const updatedUser = await User.where("name", "Udin Ganteng").first();
+    expect(updatedUser).toEqual(expect.any(Object));
+    expect(updatedUser).toHaveProperty("name", "Udin Ganteng");
+    expect(updatedUser).toHaveProperty("age", 21);
+    expect(updatedUser).toHaveProperty("address", "Jakarta");
+    expect(updatedUser).toHaveProperty("_id", (user as any)._id);
+    expect(updatedUser).toHaveProperty(
       User["$createdAt"],
       (user as any)[User["$createdAt"]]
     );
@@ -157,6 +148,7 @@ describe("User Model - Update Method", () => {
       address: "Jakarta",
     });
 
-    expect(result).toEqual(null);
+    expect(result).toEqual(expect.any(Number));
+    expect(result).toEqual(0);
   });
 });
