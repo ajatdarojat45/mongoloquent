@@ -80,16 +80,7 @@ export default class Model extends Relation {
    */
   public static async all() {
     try {
-      // Get the collection from the database
-      const collection = this.getCollection();
-
-      let query = {};
-
-      // If soft delete is enabled, exclude soft-deleted documents
-      if (this.$useSoftDelete) query = { [this.getIsDeleted()]: false };
-
-      // Retrieve all documents matching the query
-      return await collection.find(query).toArray();
+      return this.get();
     } catch (error) {
       console.log(error);
       throw new Error(`Fetching all documents failed`);
