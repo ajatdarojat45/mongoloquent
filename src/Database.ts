@@ -6,38 +6,63 @@ import {
 
 export default class Database {
   /**
-   * @note This property stores the connection URI for the model.
-   * @var {string}
+   * The MongoDB connection URI for the model.
+   * If empty, the default URI from configuration will be used.
+   *
+   * @protected
+   * @static
+   * @type {string}
+   * @default ""
    */
   protected static $connection: string = "";
 
   /**
-   * @note This property stores the database name for the model.
-   * @var {string|null}
+   * The database name for the model.
+   * If null, the default database name from configuration will be used.
+   *
+   * @protected
+   * @static
+   * @type {string|null}
+   * @default null
    */
   protected static $databaseName: string | null = null;
 
   /**
-   * @note This property stores the list of connected databases.
-   * @var {Map<string, Db>}
+   * Map of all connected MongoDB database instances.
+   * Keys are connection strings, values are database instances.
+   *
+   * @private
+   * @static
+   * @type {Map<string, Db>}
    */
   private static $dbs: Map<string, Db> = new Map();
 
   /**
-   * @note This property stores the collection name for the model.
-   * @var {string}
+   * The collection name for the model.
+   *
+   * @public
+   * @static
+   * @type {string}
+   * @default ""
    */
   public static $collection: string = "";
 
   /**
-   * @note This property stores the primary key for the model.
-   * @var {string}
+   * The primary key field name for the model.
+   *
+   * @protected
+   * @static
+   * @type {string}
+   * @default "_id"
    */
   protected static $primaryKey: string = "_id";
 
   /**
-   * @note This method returns the current connection URI for the model.
-   * @return {string} The connection URI.
+   * Gets the current connection URI for the model.
+   *
+   * @protected
+   * @static
+   * @returns {string} The connection URI or the default URI from configuration
    */
   protected static getConnectionName(): string {
     // Return the connection URI or the default URI from the config
@@ -45,8 +70,11 @@ export default class Database {
   }
 
   /**
-   * @note This method returns the current database name for the model.
-   * @return {string} The database name.
+   * Gets the current database name for the model.
+   *
+   * @protected
+   * @static
+   * @returns {string} The database name or the default name from configuration
    */
   protected static getDatabaseName(): string {
     // Return the database name or the default name from the config
@@ -54,9 +82,12 @@ export default class Database {
   }
 
   /**
-   * @note This method retrieves the MongoDB collection specified by the model.
-   * @param {string} [collection] - The collection name.
-   * @return {Collection} The MongoDB collection.
+   * Retrieves a MongoDB collection instance.
+   *
+   * @protected
+   * @static
+   * @param {string} [collection] - Optional collection name. If not provided, uses the model's default collection
+   * @returns {Collection} A MongoDB collection instance
    */
   protected static getCollection(collection?: string): Collection {
     // Get the database instance
@@ -69,8 +100,13 @@ export default class Database {
   }
 
   /**
-   * @note This method retrieves the MongoDB database specified by the model.
-   * @return {Db} The MongoDB database.
+   * Retrieves the MongoDB database instance for the current model.
+   * If a connection already exists, returns the cached instance.
+   * Otherwise, creates a new connection.
+   *
+   * @protected
+   * @static
+   * @returns {Db} A MongoDB database instance
    */
   protected static getDb(): Db {
     // Determine the connection URI
@@ -90,8 +126,12 @@ export default class Database {
   }
 
   /**
-   * @note This method retrieves the map of connected MongoDB databases.
-   * @return {Map<string, Db>} The map of connected databases.
+   * Retrieves all active MongoDB database connections.
+   *
+   * @protected
+   * @static
+   * @returns {Map<string, Db>} A map of database connections where the key is the connection string
+   *                           and the value is the database instance
    */
   protected static getDbs(): Map<string, Db> {
     // Return the map of connected databases
@@ -99,9 +139,13 @@ export default class Database {
   }
 
   /**
-   * @note This method establishes a connection to the MongoDB database.
-   * @return {Db} The connected MongoDB database.
-   * @throws {Error} If connection fails.
+   * Establishes a connection to the MongoDB database.
+   * Creates a new MongoClient instance and connects to the server.
+   *
+   * @private
+   * @static
+   * @returns {Db} The connected MongoDB database instance
+   * @throws {Error} If the connection attempt fails
    */
   private static connect(): Db {
     try {

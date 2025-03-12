@@ -34,20 +34,41 @@ export default class Relation extends Query {
   private static $alias: string = "";
 
   /**
-   * @note This property is used to store the options for the relationship.
-   * @var IRelationOptions
+   * Configuration options for the relationship.
+   * Used to customize how the relationship behaves.
+   *
+   * @private
+   * @static
+   * @type {IRelationOptions}
    */
   private static $options: IRelationOptions;
 
   /**
-   * @note This property stores the lookup stages for the relationship.
-   * @var Document[]
+   * Stores MongoDB aggregation lookup stages for the relationship.
+   * These stages define how collections are joined together.
+   *
+   * @private
+   * @static
+   * @type {Document[]}
    */
   private static $lookups: Document[] = [];
 
   /**
-   * @note This property stores the current relationship details.
-   * @var IRelationHasMany | IRelationBelongsToMany | IRelationHasManyThrough | IRelationMorphMany | IRelationMorphToMany | IRelationMorphByMany | null
+   * Stores the details of the current relationship.
+   * This can be any of the supported relationship types:
+   * - HasOne
+   * - BelongsTo
+   * - HasMany
+   * - HasManyThrough
+   * - BelongsToMany
+   * - MorphTo
+   * - MorphMany
+   * - MorphToMany
+   * - MorphedByMany
+   *
+   * @private
+   * @static
+   * @type {IRelationHasOne | IRelationBelongsTo | IRelationHasMany | IRelationHasManyThrough | IRelationBelongsToMany | IRelationMorphTo | IRelationMorphMany | IRelationMorphToMany | IRelationMorphedByMany | null}
    */
   private static $relationship:
     | IRelationHasOne
@@ -62,16 +83,29 @@ export default class Relation extends Query {
     | null = null;
 
   /**
-   * @note This property stores the related model.
-   * @var typeof Model | null
+   * Reference to the model class that this relationship is connected to.
+   * Used to access the related model's properties and methods.
+   *
+   * @private
+   * @static
+   * @type {typeof Model | null}
    */
   private static $relatedModel: typeof Model | null = null;
 
   /**
-   * @note This method sets up the relationship and calls the corresponding relation method.
-   * @param {string} relation - The name of the relation.
-   * @param {IRelationOptions} options - The options for the relation.
-   * @return {this} The current relation instance.
+   * Sets up a relationship between models.
+   * This method initializes the relationship configuration and executes the corresponding relation method.
+   *
+   * @template T
+   * @static
+   * @param {keyof T} relation - Name of the relationship method to call
+   * @param {IRelationOptions} [options={}] - Optional configuration for the relationship
+   * @throws {Error} If the specified relation method doesn't exist
+   * @returns {T} Returns the current relation instance for method chaining
+   *
+   * @example
+   * // Set up a "posts" relationship with options
+   * User.with('posts', { select: ['title', 'content'] })
    */
   public static with<T extends typeof Relation>(
     this: T,
@@ -375,11 +409,13 @@ export default class Relation extends Query {
   }
 
   /**
-   * @note This method defines a morphByMany relationship.
-   * @param Model target - The target model.
-   * @param {string} name - The name of the morph.
-   * @param {string} [ownerKey="_id"] - The owner key.
-   * @return {Model} The target model.
+   * @note This method defines a morphedByMany relationship, which is the inverse of morphToMany.
+   * It allows a model to belong to multiple instances of another model, using a polymorphic pivot table.
+   * For example: A Tag model might be morphedByMany to both Posts and Videos.
+   *
+   * @param {typeof Model} model - The related model that this model belongs to polymorphically
+   * @param {string} name - The name of the polymorphic relationship that will be used in the pivot table
+   * @returns {typeof Model} Returns the related model instance for method chaining
    */
   static morphedByMany(model: typeof Model, name: string): typeof Model {
     // Generate the lookup stages for the morphByMany relationship
@@ -407,9 +443,14 @@ export default class Relation extends Query {
   }
 
   /**
-   * @note This method sets the lookup stages.
-   * @param {Document} doc - The lookup stages.
-   * @return {void}
+   * @note This method adds lookup stages to the relationship pipeline.
+   * Lookup stages are used in MongoDB aggregation to perform JOIN-like operations
+   * between collections.
+   *
+   * @param {Document} doc - A single lookup stage or an array of lookup stages to be added
+   *                        to the relationship pipeline. Each lookup defines how to join
+   *                        with another collection.
+   * @returns {void}
    */
   private static setLookups(doc: Document): void {
     if (Array.isArray(doc)) this.$lookups = [...this.$lookups, ...doc];
