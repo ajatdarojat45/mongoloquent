@@ -11,6 +11,8 @@ import dayjs from "./utils/dayjs";
 import { TIMEZONE } from "./configs/app";
 import { IModelPaginate } from "./interfaces/IModel";
 import { IRelationTypes } from "./interfaces/IRelation";
+import { throws } from "assert";
+import ModelNotFoundException from "./exceptions/ModelNotFoundException";
 
 export default class Model extends Relation {
   /**
@@ -185,6 +187,14 @@ export default class Model extends Relation {
   ) {
     this.where(column, operator, value)
     return this.first()
+  }
+
+  public static async firstOrFail(columns: string | string[] = []) {
+    const data = await this.first(columns)
+
+    if (!data) throw new ModelNotFoundException()
+
+    return data
   }
 
   /**
