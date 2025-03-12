@@ -179,19 +179,6 @@ export default class Model extends Relation {
   }
 
   /**
-   * @note This method set id and retrieve Model
-   *
-   * @param id - The id of the item to retrieve.
-   * @return this
-   */
-  public static find<T extends typeof Model>(this: T, id: string | ObjectId) {
-    const parentId = new ObjectId(id);
-    this.setParentId(parentId);
-
-    return this;
-  }
-
-  /**
    * @note This method retrieves the values of a specific column from the query results.
    *
    * @param column - The column to pluck.

@@ -9,6 +9,8 @@ export default class Query extends Database {
    */
   private static $parentId: null | ObjectId;
 
+  private static $id: null | ObjectId;
+
   /**
    * @note This property stores the current stages to be run.
    * @var {mongodb/Document[]}
@@ -524,6 +526,27 @@ export default class Query extends Database {
     return this.$parentId;
   }
 
+  protected static setId(id: ObjectId | null): void {
+    this.$id = id
+  }
+
+  /**
+   * @note This method set id and retrieve Model
+   *
+   * @param id - The id of the item to retrieve.
+   * @return this
+   */
+  public static find<T extends typeof Query>(this: T, id: string | ObjectId): T {
+    const _id = new ObjectId(id);
+    this.setId(_id)
+
+    return this;
+  }
+
+  protected static getId(): ObjectId | null {
+    return this.$id
+  }
+
   /**
    * @note This method sets the stages for the query.
    * @param {Document | Document[]} doc - The stages to be set.
@@ -834,5 +857,6 @@ export default class Query extends Database {
     this.$parentId = null;
     this.$offset = 0;
     this.$limit = 0;
+    this.$id = null
   }
 }
