@@ -185,16 +185,29 @@ export default class Model extends Relation {
     operator: any,
     value: any = null
   ) {
-    this.where(column, operator, value)
-    return this.first()
+    this.where(column, operator, value);
+    return this.first();
   }
 
   public static async firstOrFail(columns: string | string[] = []) {
-    const data = await this.first(columns)
+    const data = await this.first(columns);
 
-    if (!data) throw new ModelNotFoundException()
+    if (!data) throw new ModelNotFoundException();
 
-    return data
+    return data;
+  }
+
+  public static async firstOrCreate(doc: object) {
+    const collection = this.getCollection();
+
+    const data = await collection.findOne(doc);
+    if (!data) return await this.insert(doc);
+
+    return data;
+  }
+
+  public static async firstOrNew(doc: object) {
+    return this.firstOrCreate(doc);
   }
 
   /**
@@ -367,6 +380,20 @@ export default class Model extends Relation {
       console.log(error);
       throw new Error(`Updating document failed`);
     }
+  }
+
+  static async updateOrCreate(doc: { [key: string]: any }) {
+    const collection = this.getCollection();
+    const data = await collection.findOne(doc);
+    if (!data) return this.insert(doc);
+
+    for (var key in doc) {
+      if (doc.hasOwnProperty(key)) {
+        this.where(key, doc[key]);
+      }
+    }
+
+    return this.update(doc);
   }
 
   /**
