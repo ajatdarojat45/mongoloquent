@@ -96,21 +96,6 @@ export default class Relation extends Query {
   }
 
   /**
-   * @note This method is an alias for the with method.
-   * @param {string} relation - The name of the relation.
-   * @param {IRelationOptions} options - The options for the relation.
-   * @return {this} The current relation instance.
-   */
-  public static has<T extends typeof Relation>(
-    this: T,
-    relation: keyof T,
-    options: IRelationOptions = {}
-  ): T {
-    // Call the with method
-    return this.with(relation, options);
-  }
-
-  /**
    * @note This method defines a one-to-one relationship.
    * @param Model related - The related model.
    * @param {string} foreignKey - The foreign key.
