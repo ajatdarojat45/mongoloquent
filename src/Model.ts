@@ -731,6 +731,13 @@ export default class Model extends Relation {
     return exist
   }
 
+  public static async last() {
+    const data = await this.get()
+    if (data.length < 1) return null
+
+    return data[data.length - 1]
+  }
+
   /**
    * @note This method aggregates the query stages and lookups, then executes the aggregation pipeline.
    *
