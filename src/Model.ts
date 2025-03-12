@@ -8,7 +8,7 @@ import {
 } from "mongodb";
 import Relation from "./Relation";
 import dayjs from "./utils/dayjs";
-import { TIME_ZONE } from "./configs/app";
+import { TIMEZONE } from "./configs/app";
 import { IModelPaginate } from "./interfaces/IModel";
 import { IRelationTypes } from "./interfaces/IRelation";
 
@@ -25,7 +25,7 @@ export default class Model extends Relation {
    *
    * @var string
    */
-  protected static $timezone: string = TIME_ZONE;
+  protected static $timezone: string = TIMEZONE;
 
   /**
    * @note This property defines the name of the "created at" column.
