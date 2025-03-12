@@ -636,6 +636,10 @@ export default class Model extends Relation {
     return this.aggregation(field, "avg");
   }
 
+  public static async average(field: string) {
+    return this.avg(field)
+  }
+
   /**
    * @note This method retrieves the sum of a specified field.
    *
