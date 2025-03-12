@@ -178,6 +178,15 @@ export default class Model extends Relation {
     }
   }
 
+  public static async firstWhere(
+    column: string,
+    operator: any,
+    value: any = null
+  ) {
+    this.where(column, operator, value)
+    return this.first()
+  }
+
   /**
    * @note This method retrieves the values of a specific column from the query results.
    *
