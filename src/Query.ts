@@ -7,9 +7,9 @@ export default class Query extends Database {
    * @note This property stores the parentId of the document
    * @var {null|ObjectId}
    */
-  private static $parentId: null | ObjectId;
+  private static $parentId: ObjectId | null = null;
 
-  private static $id: null | ObjectId;
+  private static $id: ObjectId | null = null;
 
   /**
    * @note This property stores the current stages to be run.
