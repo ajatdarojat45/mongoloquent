@@ -16,7 +16,7 @@ export default class Model extends Relation {
   /**
    * @note This property defines timestamps for the document.
    *
-   * @var string
+   * @var boolean
    */
   protected static $useTimestamps: boolean = true;
 
@@ -90,8 +90,8 @@ export default class Model extends Relation {
    * @note This method retrieves paginated documents from the collection.
    *
    * @param page - The page number to retrieve.
-   * @param perPage - The number of documents per page.
-   * @return Promise<IPaginate>
+   * @param limit - The number of documents per page.
+   * @return Promise<IModelPaginate>
    */
   public static async paginate(
     page: number = 1,
@@ -178,6 +178,14 @@ export default class Model extends Relation {
     }
   }
 
+  /**
+   * @note This method retrieves the first document that matches the specified condition.
+   *
+   * @param column - The column to check.
+   * @param operator - The operator to use.
+   * @param value - The value to compare.
+   * @return Promise<Document|null>
+   */
   public static async firstWhere(
     column: string,
     operator: any,
@@ -187,14 +195,25 @@ export default class Model extends Relation {
     return this.first();
   }
 
+  /**
+   * @note This method retrieves the first document that matches the query criteria or throws an exception if not found.
+   *
+   * @param columns - The columns to retrieve.
+   * @return Promise<Document>
+   * @throws ModelNotFoundException
+   */
   public static async firstOrFail(columns: string | string[] = []) {
     const data = await this.first(columns);
-
     if (!data) throw new ModelNotFoundException();
-
     return data;
   }
 
+  /**
+   * @note This method retrieves the first document that matches the specified condition or creates a new one.
+   *
+   * @param doc - The document to check or create.
+   * @return Promise<Document>
+   */
   public static async firstOrCreate(doc: object) {
     const collection = this.getCollection();
 
@@ -204,6 +223,12 @@ export default class Model extends Relation {
     return data;
   }
 
+  /**
+   * @note This method retrieves the first document that matches the specified condition or creates a new one.
+   *
+   * @param doc - The document to check or create.
+   * @return Promise<Document>
+   */
   public static async firstOrNew(doc: object) {
     return this.firstOrCreate(doc);
   }
@@ -331,6 +356,12 @@ export default class Model extends Relation {
     }
   }
 
+  /**
+   * @note This method updates or creates a document based on the specified condition.
+   *
+   * @param doc - The document to update or create.
+   * @return Promise<Document>
+   */
   static async updateOrCreate(doc: { [key: string]: any }) {
     const collection = this.getCollection();
     const data = await collection.findOne(doc);
@@ -398,7 +429,7 @@ export default class Model extends Relation {
    * @note This method deletes documents by their IDs, applying soft delete if applicable.
    *
    * @param ids - The ids of the documents to destroy.
-   * @return Promise<{ deletedCount: number }>
+   * @return Promise<number>
    */
   public static async destroy(
     ids: string | string[] | ObjectId | ObjectId[]
@@ -424,7 +455,7 @@ export default class Model extends Relation {
   /**
    * @note This method deletes multiple documents from the collection, applying soft delete if applicable.
    *
-   * @return Promise<{ deletedCount: number }>
+   * @return Promise<number>
    */
   public static async delete(): Promise<number> {
     try {
@@ -452,7 +483,7 @@ export default class Model extends Relation {
 
         this.reset();
 
-        return data.modifiedCount
+        return data.modifiedCount;
       }
 
       // Delete the documents from the collection
@@ -460,7 +491,7 @@ export default class Model extends Relation {
       // Reset the query state
       this.reset();
 
-      return data.deletedCount
+      return data.deletedCount;
     } catch (error) {
       console.log(error);
       throw new Error(`Deleting multiple documents failed`);
@@ -472,7 +503,7 @@ export default class Model extends Relation {
    *
    * This method protects developers from running forceDelete when the trait is missing.
    *
-   * @return Promise<{ deletedCount: number }>
+   * @return Promise<number>
    */
   public static async forceDelete(): Promise<number> {
     try {
@@ -491,7 +522,7 @@ export default class Model extends Relation {
 
       // Reset the query state
       this.reset();
-      return data.deletedCount
+      return data.deletedCount;
     } catch (error) {
       console.log(error);
       throw new Error(`Force deleting documents failed`);
@@ -504,7 +535,7 @@ export default class Model extends Relation {
    * This method protects developers from running forceDestroy when the trait is missing.
    *
    * @param ids - The ids of the documents to destroy.
-   * @return Promise<{ deletedCount: number }>
+   * @return Promise<number>
    */
   public static async forceDestroy(
     ids: string | string[] | ObjectId | ObjectId[]
@@ -533,7 +564,7 @@ export default class Model extends Relation {
 
       this.reset();
 
-      return data.deletedCount
+      return data.deletedCount;
     } catch (error) {
       console.log(error);
       throw new Error(`Force destroying documents failed`);
@@ -543,7 +574,7 @@ export default class Model extends Relation {
   /**
    * @note This method restores soft deleted documents by setting isDeleted to false.
    *
-   * @return Promise<{ modifiedCount: number }>
+   * @return Promise<number>
    */
   public static async restore(): Promise<number> {
     try {
@@ -634,8 +665,14 @@ export default class Model extends Relation {
     return this.aggregation(field, "avg");
   }
 
+  /**
+   * @note This method retrieves the average value of a specified field.
+   *
+   * @param field - The field to get the average value of.
+   * @return Promise<number>
+   */
   public static async average(field: string) {
-    return this.avg(field)
+    return this.avg(field);
   }
 
   /**
@@ -684,63 +721,94 @@ export default class Model extends Relation {
     }
   }
 
+  /**
+   * @note This method checks if a document contains a specific value.
+   *
+   * @param value - The value to check.
+   * @return Promise<boolean>
+   */
   public static async contains(value: any): Promise<boolean> {
-    const collection = this.getCollection()
-    const exist = await collection.findOne({
-      $expr: {
-        $gt: [
-          {
-            $size: {
-              $filter: {
-                input: { $objectToArray: "$$ROOT" },
-                as: "field",
-                cond: { $eq: ["$$field.v", value] }
-              }
-            }
-          },
-          0
-        ]
-      }
-    }) !== null;
+    const collection = this.getCollection();
+    const exist =
+      (await collection.findOne({
+        $expr: {
+          $gt: [
+            {
+              $size: {
+                $filter: {
+                  input: { $objectToArray: "$$ROOT" },
+                  as: "field",
+                  cond: { $eq: ["$$field.v", value] },
+                },
+              },
+            },
+            0,
+          ],
+        },
+      })) !== null;
 
-    return exist
+    return exist;
   }
 
+  /**
+   * @note This method checks if a document has a specific field.
+   *
+   * @param field - The field to check.
+   * @return Promise<boolean>
+   */
   public static async has(field: string): Promise<boolean> {
-    const collection = this.getCollection()
-    const exist = await collection.findOne({
-      $expr: {
-        $gt: [
-          {
-            $size: {
-              $filter: {
-                input: { $objectToArray: "$$ROOT" },
-                as: "field",
-                cond: { $eq: ["$$field.k", field] }
-              }
-            }
-          },
-          0
-        ]
-      }
-    }) !== null;
+    const collection = this.getCollection();
+    const exist =
+      (await collection.findOne({
+        $expr: {
+          $gt: [
+            {
+              $size: {
+                $filter: {
+                  input: { $objectToArray: "$$ROOT" },
+                  as: "field",
+                  cond: { $eq: ["$$field.k", field] },
+                },
+              },
+            },
+            0,
+          ],
+        },
+      })) !== null;
 
-    return exist
+    return exist;
   }
 
+  /**
+   * @note This method retrieves the last document that matches the query criteria.
+   *
+   * @return Promise<Document|null>
+   */
   public static async last() {
-    const data = await this.get()
-    if (data.length < 1) return null
+    const data = await this.get();
+    if (data.length < 1) return null;
 
-    return data[data.length - 1]
+    return data[data.length - 1];
   }
 
+  /**
+   * @note This method retrieves documents with only the specified fields.
+   *
+   * @param fields - The fields to retrieve.
+   * @return Promise<Document[]>
+   */
   public static async only(fields: string | string[]) {
-    return this.get(fields)
+    return this.get(fields);
   }
 
+  /**
+   * @note This method searches for documents that contain a specific value.
+   *
+   * @param value - The value to search for.
+   * @return Promise<number|boolean>
+   */
   public static async search(value: any) {
-    const collection = this.getCollection()
+    const collection = this.getCollection();
     const count = await collection.countDocuments({
       $expr: {
         $gt: [
@@ -749,13 +817,13 @@ export default class Model extends Relation {
               $filter: {
                 input: { $objectToArray: "$$ROOT" },
                 as: "field",
-                cond: { $eq: ["$$field.v", value] }
-              }
-            }
+                cond: { $eq: ["$$field.v", value] },
+              },
+            },
           },
-          0
-        ]
-      }
+          0,
+        ],
+      },
     });
 
     return count > 0 ? count : false;
