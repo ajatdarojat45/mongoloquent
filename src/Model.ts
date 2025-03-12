@@ -18,7 +18,7 @@ export default class Model extends Relation {
    *
    * @var string
    */
-  protected static $useTimestamps: boolean = false;
+  protected static $useTimestamps: boolean = true;
 
   /**
    * @note This property defines timezones for the document.
