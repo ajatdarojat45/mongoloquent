@@ -397,51 +397,29 @@ export default class Model extends Relation {
   }
 
   /**
-   * @note This method deletes a document from the collection, applying soft delete if applicable.
+   * @note This method deletes documents by their IDs, applying soft delete if applicable.
    *
-   * @return Promise<WithId<Document> | null>
+   * @param ids - The ids of the documents to destroy.
+   * @return Promise<{ deletedCount: number }>
    */
-  public static async delete() {
+  public static async destroy(
+    ids: string | string[] | ObjectId | ObjectId[]
+  ): Promise<number> {
     try {
-      // Get the collection from the database
-      const collection = this.getCollection();
+      let filter = [];
 
-      // Generate the where conditions for the query
-      this.generateWheres();
-      const stages = this.getStages();
-      let filter = {};
-      if (stages.length > 0) filter = stages[0].$match;
-
-      // If soft delete is enabled, update the document to mark it as deleted
-      if (this.$useSoftDelete) {
-        let doc = this.checkUseTimestamps({}, false);
-        doc = this.checkUseSoftdelete(doc, true);
-
-        // Update the document in the collection
-        const data = await collection.findOneAndUpdate(
-          { ...filter },
-          {
-            $set: {
-              ...doc,
-            },
-          },
-          {
-            returnDocument: "after",
-          }
-        );
-        this.reset();
-        return data;
+      // Convert the IDs to ObjectId instances if necessary
+      if (!Array.isArray(ids)) {
+        filter = [new ObjectId(ids)];
+      } else {
+        filter = ids.map((el) => new ObjectId(el));
       }
 
-      // Delete the document from the collection
-      const data = await collection.findOneAndDelete(filter);
-      // Reset the query state
-      this.reset();
-
-      return data || null;
+      // Delete the documents from the collection
+      return await this.whereIn("_id", filter).delete();
     } catch (error) {
       console.log(error);
-      throw new Error(`Deleting document failed`);
+      throw new Error(`Destroying documents failed`);
     }
   }
 
@@ -450,7 +428,7 @@ export default class Model extends Relation {
    *
    * @return Promise<{ deletedCount: number }>
    */
-  public static async deleteMany(): Promise<{ deletedCount: number }> {
+  public static async delete(): Promise<number> {
     try {
       // Get the collection from the database
       const collection = this.getCollection();
@@ -476,9 +454,7 @@ export default class Model extends Relation {
 
         this.reset();
 
-        return {
-          deletedCount: data.modifiedCount,
-        };
+        return data.modifiedCount
       }
 
       // Delete the documents from the collection
@@ -486,39 +462,10 @@ export default class Model extends Relation {
       // Reset the query state
       this.reset();
 
-      return {
-        deletedCount: data.deletedCount,
-      };
+      return data.deletedCount
     } catch (error) {
       console.log(error);
       throw new Error(`Deleting multiple documents failed`);
-    }
-  }
-
-  /**
-   * @note This method deletes documents by their IDs, applying soft delete if applicable.
-   *
-   * @param ids - The ids of the documents to destroy.
-   * @return Promise<{ deletedCount: number }>
-   */
-  public static async destroy(
-    ids: string | string[] | ObjectId | ObjectId[]
-  ): Promise<{ deletedCount: number }> {
-    try {
-      let filter = [];
-
-      // Convert the IDs to ObjectId instances if necessary
-      if (!Array.isArray(ids)) {
-        filter = [new ObjectId(ids)];
-      } else {
-        filter = ids.map((el) => new ObjectId(el));
-      }
-
-      // Delete the documents from the collection
-      return await this.whereIn("_id", filter).deleteMany();
-    } catch (error) {
-      console.log(error);
-      throw new Error(`Destroying documents failed`);
     }
   }
 
