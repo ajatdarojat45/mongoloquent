@@ -686,6 +686,28 @@ export default class Model extends Relation {
     }
   }
 
+  public static async contains(value: any): Promise<boolean> {
+    const collection = this.getCollection()
+    const exists = await collection.findOne({
+      $expr: {
+        $gt: [
+          {
+            $size: {
+              $filter: {
+                input: { $objectToArray: "$$ROOT" },
+                as: "field",
+                cond: { $eq: ["$$field.v", value] }
+              }
+            }
+          },
+          0
+        ]
+      }
+    }) !== null;
+
+    return exists
+  }
+
   /**
    * @note This method aggregates the query stages and lookups, then executes the aggregation pipeline.
    *
