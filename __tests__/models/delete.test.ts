@@ -55,11 +55,7 @@ describe("User Model - delete method", () => {
     const user = await User.where("name", "Udin").first();
 
     // Check if the user was deleted successfully
-    expect(result).toEqual(expect.any(Object));
-    expect(result).toHaveProperty("_id");
-    expect(result).toHaveProperty("name", "Udin");
-    expect(result).toHaveProperty("age", 20);
-    expect(result).toHaveProperty("address", "Bogor");
+    expect(result).toEqual(1);
     expect(user).toEqual(null);
   });
 
@@ -77,12 +73,7 @@ describe("User Model - delete method", () => {
     const user = await User.where("name", "Udin").withTrashed().first();
 
     // Check if the user was soft deleted successfully
-    expect(result).toEqual(expect.any(Object));
-    expect(result).toHaveProperty("_id");
-    expect(result).toHaveProperty("name", "Udin");
-    expect(result).toHaveProperty("age", 20);
-    expect(result).toHaveProperty("address", "Bogor");
-    expect(result).toHaveProperty(User.getIsDeleted(), true);
+    expect(result).toEqual(1);
     expect(user).not.toEqual(null);
   });
 
@@ -93,6 +84,6 @@ describe("User Model - delete method", () => {
     const result = await User.where("name", "Udin").delete();
 
     // Check if the result is null for non-existent user
-    expect(result).toEqual(null);
+    expect(result).toEqual(0);
   });
 });

@@ -860,8 +860,18 @@ export default class Model extends Relation {
    */
   public static async contains(value: any): Promise<boolean> {
     const collection = this.getCollection();
+
+    // Check if soft delete is enabled and apply necessary filters
+    this.checkSoftDelete();
+    // Generate the columns to be selected in the query
+    this.generateWheres();
+    const stages = this.getStages();
+    let filter = {};
+    if (stages.length > 0) filter = stages[0].$match;
+
     const exist =
       (await collection.findOne({
+        ...filter,
         $expr: {
           $gt: [
             {
@@ -893,8 +903,18 @@ export default class Model extends Relation {
    */
   public static async has(field: string): Promise<boolean> {
     const collection = this.getCollection();
+
+    // Check if soft delete is enabled and apply necessary filters
+    this.checkSoftDelete();
+    // Generate the columns to be selected in the query
+    this.generateWheres();
+    const stages = this.getStages();
+    let filter = {};
+    if (stages.length > 0) filter = stages[0].$match;
+
     const exist =
       (await collection.findOne({
+        ...filter,
         $expr: {
           $gt: [
             {
@@ -942,38 +962,6 @@ export default class Model extends Relation {
    */
   public static async only(fields: string | string[]) {
     return this.get(fields);
-  }
-
-  /**
-   * Searches for documents that contain a specific value
-   *
-   * @public
-   * @static
-   * @async
-   * @param {any} value - The value to search for
-   * @returns {Promise<number|boolean>} The count of matching documents or false if none found
-   * @throws {Error} When searching fails
-   */
-  public static async search(value: any) {
-    const collection = this.getCollection();
-    const count = await collection.countDocuments({
-      $expr: {
-        $gt: [
-          {
-            $size: {
-              $filter: {
-                input: { $objectToArray: "$$ROOT" },
-                as: "field",
-                cond: { $eq: ["$$field.v", value] },
-              },
-            },
-          },
-          0,
-        ],
-      },
-    });
-
-    return count > 0 ? count : false;
   }
 
   /**
