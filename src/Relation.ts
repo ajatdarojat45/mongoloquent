@@ -23,8 +23,6 @@ import MorphTo from "./relations/MorphTo";
 import MorphMany from "./relations/MorphMany";
 import MorphToMany from "./relations/MorphToMany";
 import MorphedByMany from "./relations/MorphedByMany";
-import { lookup } from "dns";
-import { time } from "console";
 
 export default class Relation extends Query {
   /**
@@ -83,15 +81,30 @@ export default class Relation extends Query {
     | null = null;
 
   /**
-   * Reference to the model class that this relationship is connected to.
-   * Used to access the related model's properties and methods.
+   * Reference to the model class that is being related to in the current relationship.
+   * This property stores the target model class in a relationship, allowing access to
+   * its properties and methods when needed during relationship operations.
    *
-   * @private
-   * @static
-   * @type {typeof Model | null}
+   * @private Static property accessible only within the Relation class
+   * @type {typeof Model | null} Can be either a Model class or null if no relation is set
+   * @example
+   * // Internal usage
+   * this.$relatedModel = UserModel;
    */
   private static $relatedModel: typeof Model | null = null;
 
+  /**
+   * Stores a reference to the parent model in a relationship chain.
+   * Used to maintain relationship hierarchy and enable nested relationship operations.
+   * This is particularly useful in scenarios where we need to track the origin model
+   * in complex relationship chains.
+   *
+   * @private Static property for internal relationship management
+   * @type {typeof Model | null} The parent model class or null if this is the root
+   * @example
+   * // Internal usage in relationship chains
+   * ChildModel.$parentModel = ParentModel;
+   */
   private static $parentModel: typeof Model | null = null;
 
   /**
