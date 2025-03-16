@@ -52,10 +52,9 @@ afterAll(async () => {
   await userCollection.deleteMany({});
 });
 
-describe("QueryResult - skip method", () => {
-  it("skip without condition", async () => {
-    const result: any[] = await User.skip(3).get();
-
+describe("QueryResult - forPage method", () => {
+  it("forPage", async () => {
+    const result: any[] = await User.forPage(1, 2).get();
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(2);
   });

@@ -2,6 +2,7 @@ import Model from "../../src/Model";
 
 class User extends Model {
   static $collection = "users";
+  static $useSoftDelete: boolean = true;
 }
 
 const userCollection = User["getCollection"]();
@@ -52,11 +53,11 @@ afterAll(async () => {
   await userCollection.deleteMany({});
 });
 
-describe("QueryResult - skip method", () => {
-  it("skip without condition", async () => {
-    const result: any[] = await User.skip(3).get();
+describe("QueryResult - onlyTrashed method", () => {
+  it("single condition with operator", async () => {
+    const onlyTrashed = await User.onlyTrashed().get();
 
-    expect(result).toEqual(expect.any(Array));
-    expect(result).toHaveLength(2);
+    expect(onlyTrashed).toEqual(expect.any(Array));
+    expect(onlyTrashed).toHaveLength(1);
   });
 });

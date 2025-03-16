@@ -723,6 +723,10 @@ export default class Query extends Database {
     let $and: Document[] = [];
     let $or: Document[] = [];
 
+    if (this.$id) {
+      this.setStages({ $match: { _id: new ObjectId(this.$id) } });
+    }
+
     // sort by type(E/R/S) for better peformace query in MongoDB
     this.$wheres.sort().forEach((el) => {
       const op = this.$operators.find(

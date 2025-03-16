@@ -15,35 +15,35 @@ beforeAll(async () => {
       email: "john@mail.com",
       age: 10,
       balance: 100,
-      IS_DELETED: false,
+      [User.getIsDeleted()]: false,
     },
     {
       name: "doe",
       email: "doe@mail.com",
       age: 30,
       balance: 200,
-      IS_DELETED: false,
+      [User.getIsDeleted()]: false,
     },
     {
       name: "Udin",
       email: "udin@mail.com",
       age: 5,
       balance: 500,
-      IS_DELETED: false,
+      [User.getIsDeleted()]: false,
     },
     {
       name: "Kosasih",
       email: "kosasih@mail.com",
       age: 5,
       balance: 400,
-      IS_DELETED: false,
+      [User.getIsDeleted()]: false,
     },
     {
       name: "Joko",
       email: "joko@mail.com",
       age: 45,
       balance: 500,
-      IS_DELETED: true,
+      [User.getIsDeleted()]: true,
     },
   ]);
 });
@@ -67,7 +67,7 @@ describe("QueryResult - offset method", () => {
   });
 
   it("offset with or condition", async () => {
-    const result: any[] = await User.orWhere("IS_DELETED", false)
+    const result: any[] = await User.orWhere(User.getIsDeleted(), false)
       .offset(1)
       .get();
 
@@ -77,7 +77,7 @@ describe("QueryResult - offset method", () => {
 
   it("offset with and condition", async () => {
     const result: any[] = await User.where("age", 5)
-      .where("IS_DELETED", false)
+      .where(User.getIsDeleted(), false)
       .offset(1)
       .get();
 
@@ -87,7 +87,7 @@ describe("QueryResult - offset method", () => {
 
   it("offset with and & or condition", async () => {
     const result: any[] = await User.where("age", 5)
-      .where("IS_DELETED", false)
+      .where(User.getIsDeleted(), false)
       .orWhere("balance", 500)
       .offset(1)
       .get();
@@ -157,7 +157,7 @@ describe("QueryResult - offset method", () => {
   it("offset with soft delete & and condition", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.where("age", 5)
-      .where("IS_DELETED", false)
+      .where(User.getIsDeleted(), false)
       .offset(1)
       .get();
 
@@ -218,7 +218,7 @@ describe("QueryResult - offset method", () => {
 
   it("offset with soft delete, withTrashed & or condition", async () => {
     User["$useSoftDelete"] = true;
-    const result: any[] = await User.orWhere("IS_DELETED", false)
+    const result: any[] = await User.orWhere(User.getIsDeleted(), false)
       .withTrashed()
       .offset(1)
       .get();
@@ -232,7 +232,7 @@ describe("QueryResult - offset method", () => {
   it("offset with soft delete, withTrashed & and condition", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.where("age", 5)
-      .where("IS_DELETED", false)
+      .where(User.getIsDeleted(), false)
       .withTrashed()
       .offset(1)
       .get();
