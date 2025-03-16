@@ -92,6 +92,8 @@ export default class Relation extends Query {
    */
   private static $relatedModel: typeof Model | null = null;
 
+  private static $parentModel: typeof Model | null = null;
+
   /**
    * Sets up a relationship between models.
    * This method initializes the relationship configuration and executes the corresponding relation method.
@@ -212,7 +214,7 @@ export default class Relation extends Query {
       localKey,
       alias: this.$alias,
       options: this.$options,
-      parentId: this.getParentId(),
+      parentId: this.getId(),
       parentModelName: this.name,
       parentCollectionName: this.$collection,
     };
@@ -255,7 +257,7 @@ export default class Relation extends Query {
       localKeyThrough,
       alias: this.$alias,
       options: this.$options,
-      parentId: this.getParentId(),
+      parentId: this.getId(),
       parentModelName: this.name,
       parentCollectionName: this.$collection,
     };
@@ -297,7 +299,7 @@ export default class Relation extends Query {
       relatedKey,
       alias: this.$alias,
       options: this.$options,
-      parentId: this.getParentId(),
+      parentId: this.getId(),
       parentModelName: this.name,
       parentCollectionName: this.$collection,
     };
@@ -307,6 +309,7 @@ export default class Relation extends Query {
 
     this.setRelatedModel(model);
     model.setRelationship(belongsToMany);
+    model.$parentModel = this as unknown as typeof Model;
     return model;
   }
 
@@ -329,7 +332,7 @@ export default class Relation extends Query {
       morphCollectionName: `${name}s`,
       alias: this.$alias,
       options: this.$options,
-      parentId: this.getParentId(),
+      parentId: this.getId(),
       parentModelName: this.name,
       parentCollectionName: this.$collection,
     };
@@ -361,7 +364,7 @@ export default class Relation extends Query {
       morphCollectionName: `${name}s`,
       alias: this.$alias,
       options: this.$options,
-      parentId: this.getParentId(),
+      parentId: this.getId(),
       parentModelName: this.name,
       parentCollectionName: this.$collection,
     };
@@ -371,6 +374,7 @@ export default class Relation extends Query {
     this.setLookups(lookup);
     this.setRelatedModel(model);
     model.setRelationship(morphMany);
+    model.$parentModel = this as unknown as typeof Model;
 
     return model;
   }
@@ -394,7 +398,7 @@ export default class Relation extends Query {
       morphCollectionName: `${name}s`,
       alias: this.$alias,
       options: this.$options,
-      parentId: this.getParentId(),
+      parentId: this.getId(),
       parentModelName: this.name,
       parentCollectionName: this.$collection,
     };
@@ -404,6 +408,7 @@ export default class Relation extends Query {
     this.setLookups(lookup);
     this.setRelatedModel(model);
     model.setRelationship(morphToMany);
+    model.$parentModel = this as unknown as typeof Model;
 
     return model;
   }
@@ -429,7 +434,7 @@ export default class Relation extends Query {
       morphCollectionName: `${name}s`,
       alias: this.$alias,
       options: this.$options,
-      parentId: this.getParentId(),
+      parentId: this.getId(),
       parentModelName: this.name,
       parentCollectionName: this.$collection,
     };
@@ -439,6 +444,7 @@ export default class Relation extends Query {
     this.setLookups(lookup);
     // this.setRelatedModel(target);
     model.setRelationship(morphedByMany);
+    model.$parentModel = this as unknown as typeof Model;
     return model;
   }
 
@@ -910,5 +916,8 @@ export default class Relation extends Query {
     this.$lookups = [];
     this.$relationship = null;
     this.$relatedModel = null;
+    this.$parentModel?.resetRelation();
+    this.$parentModel?.resetQuery();
+    this.$parentModel = null;
   }
 }

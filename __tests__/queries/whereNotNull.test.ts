@@ -85,7 +85,6 @@ describe("Model - whereNotNull Query Tests", () => {
       .where("age", 5)
       .orWhereNotNull("subscription")
       .get();
-    console.log(result);
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(3);
   });
