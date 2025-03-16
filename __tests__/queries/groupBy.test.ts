@@ -52,15 +52,15 @@ afterAll(async () => {
   await userCollection.deleteMany({});
 });
 
-describe("QueryResult - groupBy method", () => {
-  it("with single groupBy", async () => {
+describe("Model - groupBy Query Method", () => {
+  it("should group records by a single field", async () => {
     const result: any[] = await User.groupBy("age").get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(4);
   });
 
-  it("with multiple groupBy", async () => {
+  it("should group records by multiple fields", async () => {
     const result: any[] = await User.groupBy("age").groupBy("name").get();
 
     expect(result).toEqual(expect.any(Array));

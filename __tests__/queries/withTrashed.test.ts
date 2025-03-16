@@ -53,8 +53,8 @@ afterAll(async () => {
   await userCollection.deleteMany({});
 });
 
-describe("QueryResult - withTrashed method", () => {
-  it("single condition with operator", async () => {
+describe("Query Builder - withTrashed() method", () => {
+  it("should include soft deleted records when using withTrashed() and exclude them by default", async () => {
     const withTrashed = await User.withTrashed().get();
     const withoutTrashed = await User.get();
 

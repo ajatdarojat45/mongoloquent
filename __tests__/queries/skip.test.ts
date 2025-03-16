@@ -52,8 +52,8 @@ afterAll(async () => {
   await userCollection.deleteMany({});
 });
 
-describe("QueryResult - skip method", () => {
-  it("skip without condition", async () => {
+describe("Skip Method - skips the specified number of documents in query results", () => {
+  it("should skip first 3 documents and return remaining 2 documents", async () => {
     const result: any[] = await User.skip(3).get();
 
     expect(result).toEqual(expect.any(Array));

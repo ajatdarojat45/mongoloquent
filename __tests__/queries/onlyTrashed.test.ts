@@ -53,8 +53,8 @@ afterAll(async () => {
   await userCollection.deleteMany({});
 });
 
-describe("QueryResult - onlyTrashed method", () => {
-  it("single condition with operator", async () => {
+describe("Model - onlyTrashed() method", () => {
+  it("should return only soft deleted records", async () => {
     const onlyTrashed = await User.onlyTrashed().get();
 
     expect(onlyTrashed).toEqual(expect.any(Array));

@@ -52,8 +52,8 @@ afterAll(async () => {
   await userCollection.deleteMany({});
 });
 
-describe("QueryResult - exclude method", () => {
-  it("single exclude with string", async () => {
+describe("Query Builder - exclude() method", () => {
+  it("should exclude a single field when passing a string parameter", async () => {
     const result = await User.exclude("name").first();
 
     expect(result).toEqual(expect.any(Object));
@@ -64,7 +64,7 @@ describe("QueryResult - exclude method", () => {
     expect(result?.IS_DELETED).toBeDefined();
   });
 
-  it("single exclude with array", async () => {
+  it("should exclude multiple fields when passing an array parameter", async () => {
     const result = await User.exclude(["name", "age"]).first();
 
     expect(result).toEqual(expect.any(Object));
@@ -75,7 +75,7 @@ describe("QueryResult - exclude method", () => {
     expect(result?.IS_DELETED).toBeDefined();
   });
 
-  it("multiple exclude", async () => {
+  it("should exclude fields when chaining multiple exclude() calls", async () => {
     const result = await User.exclude("name").exclude(["age", "email"]).first();
 
     expect(result).toEqual(expect.any(Object));

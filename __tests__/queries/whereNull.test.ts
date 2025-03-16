@@ -57,14 +57,14 @@ afterAll(async () => {
   await userCollection.deleteMany({});
 });
 
-describe("QueryResult - whereNull method", () => {
-  it("single condition with operator", async () => {
+describe("Model.whereNull() - Filtering null values", () => {
+  it("should return records where specified field is null", async () => {
     const result = await User.whereNull("subscription").get();
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(3);
   });
 
-  it("with and condition", async () => {
+  it("should combine whereNull with where clause using AND", async () => {
     const result: any[] = await User.where("balance", 500)
       .whereNull("subscription")
       .get();
@@ -72,7 +72,7 @@ describe("QueryResult - whereNull method", () => {
     expect(result).toHaveLength(1);
   });
 
-  it("with or condition", async () => {
+  it("should combine whereNull with orWhere clause", async () => {
     const result: any[] = await User.whereNull("subscription")
       .orWhere("age", 5)
       .get();
@@ -80,7 +80,7 @@ describe("QueryResult - whereNull method", () => {
     expect(result).toHaveLength(4);
   });
 
-  it("with and & or condition", async () => {
+  it("should handle multiple where conditions with OR", async () => {
     const result: any[] = await User.where("balance", 500)
       .where("age", 5)
       .orWhere("name", "Kosasih")
@@ -89,7 +89,7 @@ describe("QueryResult - whereNull method", () => {
     expect(result).toHaveLength(2);
   });
 
-  it("with soft delete", async () => {
+  it("should respect soft delete when querying records", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.where("balance", 500).get();
     expect(result).toEqual(expect.any(Array));
@@ -97,7 +97,7 @@ describe("QueryResult - whereNull method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("with soft delete & or condition", async () => {
+  it("should combine soft delete with OR conditions", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.where("balance", 500)
       .orWhere("name", "Kosasih")
@@ -107,7 +107,7 @@ describe("QueryResult - whereNull method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("with soft delete & and condition", async () => {
+  it("should combine soft delete with AND conditions", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.where("balance", 500)
       .where("age", 5)
@@ -117,7 +117,7 @@ describe("QueryResult - whereNull method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("with soft delete & withTrashed", async () => {
+  it("should include deleted records when using withTrashed", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.where("balance", 500).withTrashed().get();
     expect(result).toEqual(expect.any(Array));
@@ -125,7 +125,7 @@ describe("QueryResult - whereNull method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("with soft delete, withTrashed & or condition", async () => {
+  it("should combine withTrashed and OR conditions", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.where("balance", 500)
       .orWhere("name", "Kosasih")
@@ -136,7 +136,7 @@ describe("QueryResult - whereNull method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("with soft delete, withTrashed & and condition", async () => {
+  it("should combine withTrashed and AND conditions", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.where("balance", 500)
       .where("age", 45)
@@ -147,7 +147,7 @@ describe("QueryResult - whereNull method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("with soft delete & onlyTrashed", async () => {
+  it("should only return deleted records with onlyTrashed", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.onlyTrashed().get();
     expect(result).toEqual(expect.any(Array));
@@ -155,7 +155,7 @@ describe("QueryResult - whereNull method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("with soft delete, onlyTrashed & or condition", async () => {
+  it("should combine onlyTrashed with OR conditions", async () => {
     User["$useSoftDelete"] = true;
     const result = await User.where("balance", 500)
       .orWhere("name", "Kosasih")
@@ -166,7 +166,7 @@ describe("QueryResult - whereNull method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("with soft delete, onlyTrashed & and condition", async () => {
+  it("should combine onlyTrashed with AND conditions", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.where("balance", 500)
       .where("age", 100)

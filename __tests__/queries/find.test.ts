@@ -1,4 +1,3 @@
-import { ObjectId } from "mongodb";
 import Model from "../../src/Model";
 
 class User extends Model {
@@ -55,8 +54,8 @@ afterAll(async () => {
   await userCollection.deleteMany({});
 });
 
-describe("QueryResult - where method", () => {
-  it("find method with first method", async () => {
+describe("Find Method Tests", () => {
+  it("should find and return a single document using first() method", async () => {
     const user = await User.find(userIds["0"]);
     const result = await user.first();
     expect(result).toEqual(expect.any(Object));
@@ -66,7 +65,7 @@ describe("QueryResult - where method", () => {
     expect(result).toHaveProperty("balance", 100);
   });
 
-  it("find method with get method", async () => {
+  it("should find and return an array with one document using get() method", async () => {
     const user = await User.find(userIds["0"]);
     const result: any = await user.get();
     expect(result).toEqual(expect.any(Array));
@@ -77,7 +76,7 @@ describe("QueryResult - where method", () => {
     expect(result[0]).toHaveProperty("balance", 100);
   });
 
-  it("find method with first method with softDelete", async () => {
+  it("should return null when finding soft deleted document using first() method", async () => {
     User["$useSoftDelete"] = true;
     const user = await User.find(userIds["4"]);
     const result = await user.first();
@@ -85,7 +84,7 @@ describe("QueryResult - where method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("find method with get method with softDelete", async () => {
+  it("should return empty array when finding soft deleted document using get() method", async () => {
     User["$useSoftDelete"] = true;
     const user = await User.find(userIds["4"]);
     const result: any = await user.get();

@@ -52,8 +52,8 @@ afterAll(async () => {
   await userCollection.deleteMany({});
 });
 
-describe("QueryResult - whereIn method", () => {
-  it("whereIn with single condition", async () => {
+describe("Model - whereIn query method", () => {
+  it("should return records when using whereIn with single condition", async () => {
     const result: any[] = await User.whereIn("balance", [500, 200]).get();
 
     expect(result).toEqual(expect.any(Array));

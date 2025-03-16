@@ -52,8 +52,8 @@ afterAll(async () => {
   await userCollection.deleteMany({});
 });
 
-describe("QueryResult - forPage method", () => {
-  it("forPage", async () => {
+describe("Model - Pagination", () => {
+  it("should return paginated results with specified page and limit", async () => {
     const result: any[] = await User.forPage(1, 2).get();
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(2);

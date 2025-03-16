@@ -52,15 +52,15 @@ afterAll(async () => {
   await userCollection.deleteMany({});
 });
 
-describe("QueryResult - whereNot method", () => {
-  it("whereNot with single condition", async () => {
+describe("QueryBuilder - whereNot() method tests", () => {
+  it("should return records that don't match the given value", async () => {
     const result: any[] = await User.whereNot("balance", 500).get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(3);
   });
 
-  it("whereNot with whereNot", async () => {
+  it("should handle multiple whereNot conditions with AND operator", async () => {
     const result: any[] = await User.whereNot("balance", 500)
       .whereNot("name", "Kosasih")
       .get();
@@ -69,7 +69,7 @@ describe("QueryResult - whereNot method", () => {
     expect(result).toHaveLength(2);
   });
 
-  it("whereNot with where", async () => {
+  it("should combine where and whereNot conditions correctly", async () => {
     const result: any[] = await User.where("balance", 500)
       .whereNot("name", "Udin")
       .get();
@@ -78,7 +78,7 @@ describe("QueryResult - whereNot method", () => {
     expect(result).toHaveLength(1);
   });
 
-  it("whereNot with orWhereNot", async () => {
+  it("should handle whereNot with orWhereNot conditions", async () => {
     const result: any[] = await User.whereNot("balance", 500)
       .orWhereNot("name", "Kosasih")
       .get();
@@ -87,7 +87,7 @@ describe("QueryResult - whereNot method", () => {
     expect(result).toHaveLength(5);
   });
 
-  it("whereNot with orWhere", async () => {
+  it("should combine whereNot with orWhere conditions", async () => {
     const result: any[] = await User.whereNot("balance", 500)
       .orWhere("name", "Kosasih")
       .get();
@@ -96,7 +96,7 @@ describe("QueryResult - whereNot method", () => {
     expect(result).toHaveLength(3);
   });
 
-  it("whereNot with soft delete", async () => {
+  it("should respect soft delete when using whereNot", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.whereNot("balance", 400).get();
 
@@ -106,7 +106,7 @@ describe("QueryResult - whereNot method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("whereNot with soft delete & and condition", async () => {
+  it("should handle soft delete with whereNot and where conditions", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.whereNot("balance", 500)
       .where("name", "Kosasih")
@@ -118,7 +118,7 @@ describe("QueryResult - whereNot method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("whereNot with soft delete & or condition", async () => {
+  it("should handle soft delete with whereNot and orWhere conditions", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.whereNot("balance", 500)
       .orWhere("name", "Kosasih")
@@ -130,7 +130,7 @@ describe("QueryResult - whereNot method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("whereNot with soft delete, withTrashed & or condition", async () => {
+  it("should include trashed records when using withTrashed and orWhere", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.whereNot("balance", 100)
       .orWhere("name", "Kosasih")
@@ -143,7 +143,7 @@ describe("QueryResult - whereNot method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("whereNot with soft delete, withTrashed & and condition", async () => {
+  it("should include trashed records when using withTrashed and where", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.whereNot("balance", 500)
       .where("age", 5)
@@ -156,7 +156,7 @@ describe("QueryResult - whereNot method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("whereNot with soft delete & onlyTrashed", async () => {
+  it("should only return trashed records with whereNot", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.whereNot("balance", 200)
       .onlyTrashed()
@@ -168,7 +168,7 @@ describe("QueryResult - whereNot method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("whereNot with soft delete, onlyTrashed & or condition", async () => {
+  it("should handle onlyTrashed with whereNot and orWhere conditions", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.whereNot("balance", 200)
       .orWhere("name", "Kosasih")
@@ -181,7 +181,7 @@ describe("QueryResult - whereNot method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("whereNot with soft delete, onlyTrashed & and condition", async () => {
+  it("should handle onlyTrashed with whereNot and where conditions", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.whereNot("balance", 200)
       .where("age", 100)

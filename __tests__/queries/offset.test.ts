@@ -52,21 +52,21 @@ afterAll(async () => {
   await userCollection.deleteMany({});
 });
 
-describe("QueryResult - offset method", () => {
-  it("offset without condition", async () => {
+describe("Offset Query Tests - Pagination and Result Skipping", () => {
+  it("should skip first 2 records when using offset without conditions", async () => {
     const result: any[] = await User.offset(2).get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(3);
   });
 
-  it("offset with where condition", async () => {
+  it("should skip first record when using offset with where condition", async () => {
     const result: any[] = await User.where("age", 5).offset(1).get();
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
   });
 
-  it("offset with or condition", async () => {
+  it("should skip first record when using offset with or condition", async () => {
     const result: any[] = await User.orWhere(User.getIsDeleted(), false)
       .offset(1)
       .get();
@@ -75,7 +75,7 @@ describe("QueryResult - offset method", () => {
     expect(result).toHaveLength(3);
   });
 
-  it("offset with and condition", async () => {
+  it("should skip first record when using offset with and condition", async () => {
     const result: any[] = await User.where("age", 5)
       .where(User.getIsDeleted(), false)
       .offset(1)
@@ -85,7 +85,7 @@ describe("QueryResult - offset method", () => {
     expect(result).toHaveLength(1);
   });
 
-  it("offset with and & or condition", async () => {
+  it("should skip first record when using offset with and & or condition", async () => {
     const result: any[] = await User.where("age", 5)
       .where(User.getIsDeleted(), false)
       .orWhere("balance", 500)
@@ -96,7 +96,7 @@ describe("QueryResult - offset method", () => {
     expect(result).toHaveLength(2);
   });
 
-  it("offset with whereBetween", async () => {
+  it("should skip first record when using offset with whereBetween", async () => {
     const result: any[] = await User.whereBetween("age", [5, 10])
       .offset(1)
       .get();
@@ -105,14 +105,14 @@ describe("QueryResult - offset method", () => {
     expect(result).toHaveLength(2);
   });
 
-  it("offset with limit", async () => {
+  it("should skip first record when using offset with limit", async () => {
     const result: any[] = await User.limit(2).offset(1).get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(2);
   });
 
-  it("offset with limit soft delete", async () => {
+  it("should skip first 3 records when using offset with limit and soft delete", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.limit(2).offset(3).get();
 
@@ -122,7 +122,7 @@ describe("QueryResult - offset method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("offset with soft delete", async () => {
+  it("should skip first 2 records when using offset with soft delete", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.offset(2).get();
 
@@ -132,7 +132,7 @@ describe("QueryResult - offset method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("offset with soft delete & where condition", async () => {
+  it("should skip first record when using offset with soft delete and where condition", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.where("age", 5).offset(1).get();
 
@@ -142,7 +142,7 @@ describe("QueryResult - offset method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("offset with soft delete & or condition", async () => {
+  it("should skip first record when using offset with soft delete and or condition", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.orWhere("IS_DELETED", false)
       .offset(1)
@@ -154,7 +154,7 @@ describe("QueryResult - offset method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("offset with soft delete & and condition", async () => {
+  it("should skip first record when using offset with soft delete and and condition", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.where("age", 5)
       .where(User.getIsDeleted(), false)
@@ -167,7 +167,7 @@ describe("QueryResult - offset method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("offset with soft delete & and & or condition", async () => {
+  it("should skip first record when using offset with soft delete and and & or condition", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.where("age", 5)
       .where("Name", "Udin")
@@ -181,7 +181,7 @@ describe("QueryResult - offset method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("offset with soft delete & whereBetween", async () => {
+  it("should skip first record when using offset with soft delete and whereBetween", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.whereBetween("age", [5, 10])
       .offset(1)
@@ -193,7 +193,7 @@ describe("QueryResult - offset method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("offset with soft delete & withTrashed", async () => {
+  it("should skip first record when using offset with soft delete and withTrashed", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.withTrashed().offset(1).get();
 
@@ -203,7 +203,7 @@ describe("QueryResult - offset method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("offset with soft delete, withTrashed & where condition", async () => {
+  it("should skip first record when using offset with soft delete, withTrashed and where condition", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.where("age", 5)
       .withTrashed()
@@ -216,7 +216,7 @@ describe("QueryResult - offset method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("offset with soft delete, withTrashed & or condition", async () => {
+  it("should skip first record when using offset with soft delete, withTrashed and or condition", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.orWhere(User.getIsDeleted(), false)
       .withTrashed()
@@ -229,7 +229,7 @@ describe("QueryResult - offset method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("offset with soft delete, withTrashed & and condition", async () => {
+  it("should skip first record when using offset with soft delete, withTrashed and and condition", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.where("age", 5)
       .where(User.getIsDeleted(), false)
@@ -243,7 +243,7 @@ describe("QueryResult - offset method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("offset with soft delete, withTrashed & and & or condition", async () => {
+  it("should skip first record when using offset with soft delete, withTrashed and and & or condition", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.where("age", 5)
       .where("name", "Kosasih")
@@ -258,7 +258,7 @@ describe("QueryResult - offset method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("offset with soft delete & onlyTrashed", async () => {
+  it("should skip first record when using offset with soft delete and onlyTrashed", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.onlyTrashed().offset(1).get();
 
@@ -268,7 +268,7 @@ describe("QueryResult - offset method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("offset with soft delete, onlyTrashed & where condition", async () => {
+  it("should skip first record when using offset with soft delete, onlyTrashed and where condition", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.where("age", 45)
       .onlyTrashed()
@@ -281,7 +281,7 @@ describe("QueryResult - offset method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("offset with soft delete, onlyTrashed & or condition", async () => {
+  it("should skip first record when using offset with soft delete, onlyTrashed and or condition", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.orWhere("balance", 500)
       .onlyTrashed()
@@ -294,7 +294,7 @@ describe("QueryResult - offset method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("offset with soft delete, onlyTrashed & and condition", async () => {
+  it("should skip first record when using offset with soft delete, onlyTrashed and and condition", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.where("age", 45)
       .where("balance", 500)

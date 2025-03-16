@@ -52,22 +52,22 @@ afterAll(async () => {
   await userCollection.deleteMany({});
 });
 
-describe("QueryResult - orWhere method", () => {
-  it("single condition with operator", async () => {
+describe("Query Builder - orWhere Clause Tests", () => {
+  it("should return records matching single condition with comparison operator", async () => {
     const result: any[] = await User.orWhere("balance", ">=", 500).get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(2);
   });
 
-  it("single condition without operator", async () => {
+  it("should return records matching single equality condition", async () => {
     const result: any[] = await User.orWhere("balance", 500).get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(2);
   });
 
-  it("with and condition", async () => {
+  it("should return records matching multiple orWhere conditions", async () => {
     const result: any[] = await User.orWhere("balance", 500)
       .orWhere("age", "<=", 10)
       .get();
@@ -76,7 +76,7 @@ describe("QueryResult - orWhere method", () => {
     expect(result).toHaveLength(4);
   });
 
-  it("with or condition", async () => {
+  it("should combine where and orWhere conditions correctly", async () => {
     const result: any[] = await User.where("balance", 500)
       .orWhere("name", "Kosasih")
       .get();
@@ -85,7 +85,7 @@ describe("QueryResult - orWhere method", () => {
     expect(result).toHaveLength(3);
   });
 
-  it("with and & or condition", async () => {
+  it("should handle multiple where and orWhere conditions in sequence", async () => {
     const result: any[] = await User.where("balance", 500)
       .where("age", 5)
       .orWhere("name", "Kosasih")
@@ -95,7 +95,7 @@ describe("QueryResult - orWhere method", () => {
     expect(result).toHaveLength(2);
   });
 
-  it("with soft delete", async () => {
+  it("should respect soft delete when using orWhere", async () => {
     User["$useSoftDelete"] = true;
 
     const result: any[] = await User.where("name", "Kosasih")
@@ -108,7 +108,7 @@ describe("QueryResult - orWhere method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("with soft delete & or condition", async () => {
+  it("should combine soft delete with orWhere conditions", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.where("balance", 500)
       .orWhere("name", "Kosasih")
@@ -120,7 +120,7 @@ describe("QueryResult - orWhere method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("with soft delete & and condition", async () => {
+  it("should apply soft delete with multiple where and orWhere conditions", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.where("balance", 500)
       .where("age", 45)
@@ -133,7 +133,7 @@ describe("QueryResult - orWhere method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("with soft delete & withTrashed", async () => {
+  it("should include soft deleted records when using withTrashed", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.where("balance", 500).withTrashed().get();
 
@@ -143,7 +143,7 @@ describe("QueryResult - orWhere method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("with soft delete, withTrashed & or condition", async () => {
+  it("should combine withTrashed with where and orWhere conditions", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.where("balance", 500)
       .orWhere("name", "Kosasih")
@@ -156,7 +156,7 @@ describe("QueryResult - orWhere method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("with soft delete, withTrashed & and condition", async () => {
+  it("should handle complex queries with withTrashed and multiple conditions", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.where("balance", 500)
       .where("age", 5)
@@ -170,7 +170,7 @@ describe("QueryResult - orWhere method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("with soft delete & onlyTrashed", async () => {
+  it("should return only soft deleted records with onlyTrashed", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.onlyTrashed().get();
 
@@ -180,7 +180,7 @@ describe("QueryResult - orWhere method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("with soft delete, onlyTrashed & or condition", async () => {
+  it("should filter soft deleted records with orWhere and onlyTrashed", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.where("balance", 500)
       .orWhere("name", "Kosasih")
@@ -193,7 +193,7 @@ describe("QueryResult - orWhere method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("with soft delete, onlyTrashed & and condition", async () => {
+  it("should handle complex queries with onlyTrashed and multiple conditions", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.where("balance", 500)
       .where("age", 100)

@@ -52,8 +52,8 @@ afterAll(async () => {
   await userCollection.deleteMany({});
 });
 
-describe("QueryResult - take method", () => {
-  it("take without condition", async () => {
+describe("Take Query Builder - Limit Results", () => {
+  it("should return first N records when take method is used", async () => {
     const result: any[] = await User.take(2).get();
 
     expect(result).toEqual(expect.any(Array));
