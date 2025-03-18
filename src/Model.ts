@@ -294,10 +294,11 @@ export default class Model extends Relation {
    * @param options - Optional insert options.
    * @return Promise<WithId<Document>>
    */
-  public static async save(
-    doc: object,
+  public static async save<T extends typeof Model>(
+    this: T,
+    doc: T["$schema"],
     options?: InsertOneOptions
-  ): Promise<object> {
+  ) {
     return this.insert(doc, options);
   }
 
@@ -308,10 +309,11 @@ export default class Model extends Relation {
    * @param options - Optional insert options.
    * @return Promise<WithId<Document>>
    */
-  public static async create(
-    doc: object,
+  public static async create<T extends typeof Model>(
+    this: T,
+    doc: T["$schema"],
     options?: InsertOneOptions
-  ): Promise<object> {
+  ) {
     return this.insert(doc, options);
   }
 
@@ -322,8 +324,9 @@ export default class Model extends Relation {
    * @param options - Optional bulk write options.
    * @return Promise<ObjectId[]>
    */
-  public static async insertMany(
-    docs: object[],
+  public static async insertMany<T extends typeof Model>(
+    this: T,
+    docs: T["$schema"][],
     options?: BulkWriteOptions
   ): Promise<ObjectId[]> {
     try {
@@ -364,8 +367,9 @@ export default class Model extends Relation {
    * @param options - Optional update options.
    * @return Promise<WithId<Document> | null>
    */
-  public static async update(
-    doc: UpdateFilter<Document>,
+  public static async update<T extends typeof Model>(
+    this: T,
+    doc: Partial<T["$schema"]>,
     options?: FindOneAndUpdateOptions
   ) {
     try {
@@ -399,7 +403,7 @@ export default class Model extends Relation {
 
       // Reset the query and relation states
       this.reset();
-      return data;
+      return data as WithId<T["$schema"]> | null;
     } catch (error) {
       console.log(error);
       throw new Error(`Updating document failed`);
@@ -413,8 +417,9 @@ export default class Model extends Relation {
    * @param options - Optional update options.
    * @return Promise<{ modifiedCount: number }>
    */
-  public static async updateMany(
-    doc: UpdateFilter<Document>,
+  public static async updateMany<T extends typeof Model>(
+    this: T,
+    doc: Partial<T["$schema"]>,
     options?: UpdateOptions
   ): Promise<{ modifiedCount: number }> {
     try {
