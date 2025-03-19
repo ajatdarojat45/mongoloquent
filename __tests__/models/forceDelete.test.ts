@@ -54,21 +54,20 @@ describe("Model - forceDelete method", () => {
         name: "Udin",
         age: 20,
         address: "Bogor",
-        IS_DELETED: true,
+        [User.getIsDeleted()]: true,
       },
       {
         name: "Kosasih",
         age: 20,
         address: "Bogor",
-        IS_DELETED: true,
+        [User.getIsDeleted()]: true,
       },
     ]);
 
     const result = await User.forceDelete();
     const users = await User.withTrashed().get();
-
-    expect(result).toEqual(expect.any(Object));
-    expect(result).toHaveProperty("deletedCount", 2);
+    expect(result).toEqual(expect.any(Number));
+    expect(result).toEqual(2);
     expect(users).toEqual([]);
   });
 
@@ -81,21 +80,19 @@ describe("Model - forceDelete method", () => {
         name: "Udin",
         age: 20,
         address: "Bogor",
-        IS_DELETED: true,
+        [User.getIsDeleted()]: true,
       },
       {
         name: "Kosasih",
         age: 20,
         address: "Bogor",
-        IS_DELETED: true,
+        [User.getIsDeleted()]: true,
       },
     ]);
 
     const result = await User.where("name", "Udin").forceDelete();
     const user = await User.where("name", "Udin").withTrashed().first();
-
-    expect(result).toEqual(expect.any(Object));
-    expect(result).toHaveProperty("deletedCount", 1);
+    expect(result).toEqual(1);
     expect(user).toEqual(null);
   });
 
@@ -105,7 +102,7 @@ describe("Model - forceDelete method", () => {
 
     const result = await User.where("name", "Udin").forceDelete();
 
-    expect(result).toEqual(expect.any(Object));
-    expect(result).toHaveProperty("deletedCount", 0);
+    expect(result).toEqual(expect.any(Number));
+    expect(result).toEqual(0);
   });
 });

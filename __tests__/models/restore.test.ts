@@ -54,21 +54,21 @@ describe("User Model - restore method", () => {
         name: "Udin",
         age: 20,
         address: "Bogor",
-        IS_DELETED: true,
+        [User.getIsDeleted()]: true,
       },
       {
         name: "Kosasih",
         age: 20,
         address: "Bogor",
-        IS_DELETED: true,
+        [User.getIsDeleted()]: true,
       },
     ]);
 
     const result = await User.restore();
     const users = await User.get();
 
-    expect(result).toEqual(expect.any(Object));
-    expect(result).toHaveProperty("modifiedCount", 2);
+    expect(result).toEqual(expect.any(Number));
+    expect(result).toEqual(2);
     expect(users).toHaveLength(2);
   });
 
@@ -81,21 +81,21 @@ describe("User Model - restore method", () => {
         name: "Udin",
         age: 20,
         address: "Bogor",
-        IS_DELETED: true,
+        [User.getIsDeleted()]: true,
       },
       {
         name: "Kosasih",
         age: 20,
         address: "Bogor",
-        IS_DELETED: true,
+        [User.getIsDeleted()]: true,
       },
     ]);
 
     const result = await User.where("name", "Udin").restore();
     const user = await User.where("name", "Udin").first();
 
-    expect(result).toEqual(expect.any(Object));
-    expect(result).toHaveProperty("modifiedCount", 1);
+    expect(result).toEqual(expect.any(Number));
+    expect(result).toEqual(1);
     expect(user).toEqual(expect.any(Object));
   });
 
@@ -105,7 +105,7 @@ describe("User Model - restore method", () => {
 
     const result = await User.where("name", "Udin").restore();
 
-    expect(result).toEqual(expect.any(Object));
-    expect(result).toHaveProperty("modifiedCount", 0);
+    expect(result).toEqual(expect.any(Number));
+    expect(result).toEqual(0);
   });
 });

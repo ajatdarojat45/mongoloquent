@@ -52,8 +52,8 @@ afterAll(async () => {
   await userCollection.deleteMany({});
 });
 
-describe("QueryResult - select method", () => {
-  it("single select with string", async () => {
+describe("Select Query - Field Selection Methods", () => {
+  it("should select single field using string parameter", async () => {
     const result = await User.select("name").first();
 
     expect(result).toEqual(expect.any(Object));
@@ -64,7 +64,7 @@ describe("QueryResult - select method", () => {
     expect(result?.IS_DELETED).toBeUndefined();
   });
 
-  it("single select with array", async () => {
+  it("should select multiple fields using array parameter", async () => {
     const result = await User.select(["name", "age"]).first();
 
     expect(result).toEqual(expect.any(Object));
@@ -75,7 +75,7 @@ describe("QueryResult - select method", () => {
     expect(result?.IS_DELETED).toBeUndefined();
   });
 
-  it("multiple select", async () => {
+  it("should combine multiple select calls to get multiple fields", async () => {
     const result = await User.select("name").select(["age", "email"]).first();
 
     expect(result).toEqual(expect.any(Object));

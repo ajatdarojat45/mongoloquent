@@ -15,35 +15,35 @@ beforeAll(async () => {
       email: "john@mail.com",
       age: 10,
       balance: 100,
-      IS_DELETED: false,
+      [User.getIsDeleted()]: false,
     },
     {
       name: "doe",
       email: "doe@mail.com",
       age: 30,
       balance: 200,
-      IS_DELETED: false,
+      [User.getIsDeleted()]: false,
     },
     {
       name: "Udin",
       email: "udin@mail.com",
       age: 5,
       balance: 500,
-      IS_DELETED: false,
+      [User.getIsDeleted()]: false,
     },
     {
       name: "Kosasih",
       email: "kosasih@mail.com",
       age: 5,
       balance: 400,
-      IS_DELETED: false,
+      [User.getIsDeleted()]: false,
     },
     {
       name: "Joko",
       email: "joko@mail.com",
       age: 45,
       balance: 500,
-      IS_DELETED: true,
+      [User.getIsDeleted()]: true,
     },
   ]);
 });
@@ -52,15 +52,15 @@ afterAll(async () => {
   await userCollection.deleteMany({});
 });
 
-describe("QueryResult - orWhereNotIn method", () => {
-  it("orWhereNotIn with single condition", async () => {
+describe("Model - orWhereNotIn Query Builder Method", () => {
+  it("should filter records not in given array using orWhereNotIn", async () => {
     const result: any[] = await User.orWhereNotIn("balance", [500, 200]).get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(2);
   });
 
-  it("orWhereNotIn with and condition", async () => {
+  it("should combine where and orWhereNotIn conditions", async () => {
     const result: any[] = await User.where("age", 5)
       .orWhereNotIn("balance", [500, 200])
       .get();
@@ -69,7 +69,7 @@ describe("QueryResult - orWhereNotIn method", () => {
     expect(result).toHaveLength(3);
   });
 
-  it("orWhereNotIn with or condition", async () => {
+  it("should combine orWhereNotIn with orWhere conditions", async () => {
     const result: any[] = await User.orWhereNotIn("balance", [500, 200])
       .orWhere("name", "doe")
       .get();
@@ -78,7 +78,7 @@ describe("QueryResult - orWhereNotIn method", () => {
     expect(result).toHaveLength(3);
   });
 
-  it("orWhereNotIn with and & or condition", async () => {
+  it("should combine where, orWhereNotIn and orWhere conditions", async () => {
     const result: any[] = await User.where("age", 5)
       .orWhereNotIn("balance", [500, 200])
       .orWhere("name", "doe")
@@ -88,7 +88,7 @@ describe("QueryResult - orWhereNotIn method", () => {
     expect(result).toHaveLength(4);
   });
 
-  it("orWhereNotIn with whereIn", async () => {
+  it("should combine whereIn with orWhereNotIn conditions", async () => {
     const result: any[] = await User.whereIn("balance", [500, 200])
       .orWhereNotIn("age", [5, 10, 30])
       .get();
@@ -97,7 +97,7 @@ describe("QueryResult - orWhereNotIn method", () => {
     expect(result).toHaveLength(3);
   });
 
-  it("orWhereNotIn with whereNotIn", async () => {
+  it("should combine whereNotIn with orWhereNotIn conditions", async () => {
     const result: any[] = await User.whereNotIn("balance", [500, 200])
       .orWhereNotIn("name", ["doe"])
       .get();
@@ -106,7 +106,7 @@ describe("QueryResult - orWhereNotIn method", () => {
     expect(result).toHaveLength(4);
   });
 
-  it("orWhereNotIn with soft delete", async () => {
+  it("should handle orWhereNotIn with soft delete enabled", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.whereNotIn("balance", [100, 200, 400])
       .orWhereNotIn("name", ["John"])
@@ -118,7 +118,7 @@ describe("QueryResult - orWhereNotIn method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("orWhereNotIn with soft delete & and condition", async () => {
+  it("should combine where and orWhereNotIn with soft delete enabled", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.where("age", 5)
       .orWhereNotIn("balance", [100, 200, 400])
@@ -130,7 +130,7 @@ describe("QueryResult - orWhereNotIn method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("orWhereNotIn with soft delete & or condition", async () => {
+  it("should combine orWhereNotIn and orWhere with soft delete enabled", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.whereNotIn("balance", [100, 200, 400])
       .orWhere("name", "doe")
@@ -142,7 +142,7 @@ describe("QueryResult - orWhereNotIn method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("orWhereNotIn with soft delete & withTrashed", async () => {
+  it("should handle orWhereNotIn with withTrashed option", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.orWhereNotIn("balance", [100, 200, 400])
       .withTrashed()
@@ -154,7 +154,7 @@ describe("QueryResult - orWhereNotIn method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("orWhereNotIn with soft delete, withTrashed & and condition", async () => {
+  it("should combine where and orWhereNotIn with withTrashed option", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.orWhereNotIn(
       "balance",
@@ -170,7 +170,7 @@ describe("QueryResult - orWhereNotIn method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("orWhereNotIn with soft delete, withTrashed & or condition", async () => {
+  it("should combine orWhereNotIn and orWhere with withTrashed option", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.orWhereNotIn("balance", [100, 200, 400])
       .orWhere("name", "Kosasih")
@@ -183,7 +183,7 @@ describe("QueryResult - orWhereNotIn method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("orWhereNotIn with soft delete, onlyTrashed", async () => {
+  it("should handle orWhereNotIn with onlyTrashed option", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.orWhereNotIn("balance", [100, 200, 400])
       .onlyTrashed()
@@ -195,7 +195,7 @@ describe("QueryResult - orWhereNotIn method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("orWhereNotIn with soft delete, onlyTrashed & and condition", async () => {
+  it("should combine where and orWhereNotIn with onlyTrashed option", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.where("age", 5)
       .orWhereNotIn("balance", [100, 200, 400, 500])
@@ -208,7 +208,7 @@ describe("QueryResult - orWhereNotIn method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("orWhereNotIn with soft delete, onlyTrashed & or condition", async () => {
+  it("should combine orWhereNotIn and orWhere with onlyTrashed option", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.whereNotIn("balance", [100, 200, 400])
       .orWhere("name", "Kosasih")

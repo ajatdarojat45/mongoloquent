@@ -158,7 +158,6 @@ describe("morphMany Relation", () => {
 
   it("add data from related model", async () => {
     let post = await Post.with("comments").where("_id", postIds[2]).first();
-
     expect(post).toEqual(expect.any(Object));
     expect(post).toHaveProperty("comments");
     expect(post?.comments).toHaveLength(0);

@@ -1,31 +1,31 @@
 import Model from "../../src/Model";
 
+// Define User model extending from Model
+class User extends Model {
+  static $collection = "users";
+}
+
 // Sample user data for testing
 const users = [
   {
     name: "John Doe",
     email: "jhon@mail.com",
     age: 20,
-    IS_DELETED: false,
+    [User["$isDeleted"]]: false,
   },
   {
     name: "Udin",
     email: "udin@mail.com",
-    IS_DELETED: false,
+    [User["$isDeleted"]]: false,
     age: 10,
   },
   {
     name: "Kosasih",
     email: "kosasih@mail.com",
-    IS_DELETED: true,
+    [User["$isDeleted"]]: true,
     age: 50,
   },
 ];
-
-// Define User model extending from Model
-class User extends Model {
-  static $collection = "users";
-}
 
 // Clean up the collection before all tests
 beforeAll(async () => {

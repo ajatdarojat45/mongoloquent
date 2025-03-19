@@ -1,40 +1,40 @@
 import Model from "../../src/Model";
 
+class User extends Model {
+  static $collection = "users";
+}
+
 const users = [
   {
     name: "John Doe",
     email: "jhon@mail.com",
     age: 20,
-    IS_DELETED: false,
+    [User.getIsDeleted()]: false,
   },
   {
     name: "Udin",
     email: "udin@mail.com",
-    IS_DELETED: false,
+    [User.getIsDeleted()]: false,
     age: 10,
   },
   {
     name: "Kosasih",
     email: "kosasih@mail.com",
-    IS_DELETED: true,
+    [User.getIsDeleted()]: true,
     age: 50,
   },
 ];
 
-class User extends Model {
-  static $collection = "users";
-}
-
-beforeAll(async () => {
+beforeEach(async () => {
   try {
     const userCollection = User["getCollection"]();
-    await userCollection.deleteMany({});
+    await userCollection.insertMany(users);
   } catch (error) {
     console.error(error);
   }
 });
 
-afterAll(async () => {
+afterEach(async () => {
   try {
     const userCollection = User["getCollection"]();
     await userCollection.deleteMany({});
@@ -46,25 +46,6 @@ afterAll(async () => {
 describe("User Model - min method", () => {
   const userCollection = User["getCollection"]();
 
-  beforeAll(async () => {
-    try {
-      const _users = JSON.parse(JSON.stringify(users));
-      _users[1].isDeleted = true;
-
-      await userCollection.insertMany(_users);
-    } catch (error) {
-      console.error(error);
-    }
-  });
-
-  afterAll(async () => {
-    try {
-      await userCollection.deleteMany({});
-    } catch (error) {
-      console.error(error);
-    }
-  });
-
   it("should return the minimum value of the specified field", async () => {
     User["$useSoftDelete"] = false;
     const result = await User.min("age");
@@ -75,6 +56,8 @@ describe("User Model - min method", () => {
 
   it("should return the minimum value of the specified field considering soft delete", async () => {
     User["$useSoftDelete"] = true;
+
+    const user = await User.withTrashed().get();
     const result = await User.min("age");
     expect(result).toEqual(expect.any(Number));
     expect(result).toBe(10);

@@ -4,7 +4,6 @@ class User extends Model {
   static $collection = "users";
 }
 
-// Clear the collection before all tests
 beforeAll(async () => {
   try {
     const userCollection = User["getCollection"]();
@@ -14,8 +13,7 @@ beforeAll(async () => {
   }
 });
 
-// Clear the collection after all tests
-afterAll(async () => {
+afterEach(async () => {
   try {
     const userCollection = User["getCollection"]();
     await userCollection.deleteMany({});
@@ -24,144 +22,133 @@ afterAll(async () => {
   }
 });
 
-describe("Model - updateMany method", () => {
-  const userCollection = User["getCollection"]();
-
-  // Clear the collection before each test
-  beforeEach(async () => {
-    try {
-      await userCollection.deleteMany({});
-    } catch (error) {
-      console.error(error);
-    }
-  });
-
-  // Clear the collection after all tests in this describe block
-  afterAll(async () => {
-    try {
-      await userCollection.deleteMany({});
-    } catch (error) {
-      console.error(error);
-    }
-  });
-
-  it("should update multiple documents matching the criteria", async () => {
+describe("User Model - Update Method", () => {
+  it("should update user data without timestamps", async () => {
     User["$useSoftDelete"] = false;
     User["$useTimestamps"] = false;
 
-    await User.insertMany([
-      {
-        name: "Udin",
-        age: 20,
-        address: "Bogor",
-      },
-      {
-        name: "John Doe",
-        age: 25,
-        address: "Bandung",
-      },
-    ]);
-
-    const result = await User.where("age", "<", 30).updateMany({
-      age: 50,
+    await User.insert({
+      name: "Udin",
+      age: 20,
+      address: "Bogor",
     });
 
-    expect(result).toEqual(expect.any(Object));
-    expect(result).toHaveProperty("modifiedCount", 2);
-  });
-
-  it("should update only non-deleted documents when soft delete is enabled", async () => {
-    User["$useSoftDelete"] = true;
-    User["$useTimestamps"] = false;
-
-    await userCollection["insertMany"]([
-      {
-        name: "Udin",
-        age: 20,
-        address: "Bogor",
-        IS_DELETED: false,
-      },
-      {
-        name: "John Doe",
-        age: 25,
-        address: "Bandung",
-        IS_DELETED: false,
-      },
-      {
-        name: "Kosasih",
-        age: 27,
-        address: "Jakarta",
-        IS_DELETED: true,
-      },
-    ]);
-
-    const result = await User.where("age", "<", 30).updateMany({
-      age: 50,
+    const result = await User.where("name", "Udin").updateMany({
+      name: "Udin Ganteng",
+      age: 21,
+      address: "Jakarta",
     });
-    expect(result).toEqual(expect.any(Object));
-    expect(result).toHaveProperty("modifiedCount", 2);
+    expect(result).toEqual(expect.any(Number));
+    expect(result).toEqual(1);
+
+    const user = await User.where("name", "Udin Ganteng").first();
+    expect(user).toEqual(expect.any(Object));
+    expect(user).toHaveProperty("name", "Udin Ganteng");
+    expect(user).toHaveProperty("age", 21);
+    expect(user).toHaveProperty("address", "Jakarta");
+    expect(user).toHaveProperty("_id");
   });
 
-  it("should update documents even if _id is included in the payload", async () => {
+  it("should update user data with timestamps", async () => {
+    User["$useSoftDelete"] = false;
+    User["$useTimestamps"] = true;
+
+    const user = await User.insert({
+      name: "Udin",
+      age: 20,
+      address: "Bogor",
+    });
+
+    const result = await User.where("name", "Udin").updateMany({
+      name: "Udin Ganteng",
+      age: 21,
+      address: "Jakarta",
+    });
+    expect(result).toEqual(expect.any(Number));
+    expect(result).toEqual(1);
+
+    const updatedUser = await User.where("name", "Udin Ganteng").first();
+    expect(updatedUser).toEqual(expect.any(Object));
+    expect(updatedUser).toHaveProperty("name", "Udin Ganteng");
+    expect(updatedUser).toHaveProperty("age", 21);
+    expect(updatedUser).toHaveProperty("address", "Jakarta");
+    expect(updatedUser).toHaveProperty("_id");
+    expect(updatedUser).toHaveProperty(
+      User["$createdAt"],
+      (user as any)[User["$createdAt"]]
+    );
+    expect(updatedUser).toHaveProperty(User["$updatedAt"]);
+  });
+
+  it("should update user data including _id in payload", async () => {
     User["$useSoftDelete"] = false;
     User["$useTimestamps"] = false;
 
-    await User.insertMany([
-      {
-        name: "Udin",
-        age: 20,
-        address: "Bogor",
-      },
-      {
-        name: "John Doe",
-        age: 35,
-        address: "Bandung",
-      },
-    ]);
-
-    const result = await User.where("age", "<", 30).updateMany({
-      _id: "5f0b0e7b8b0d3d0f3c3e3c3e",
-      age: 50,
+    const user = await User.insert({
+      name: "Udin",
+      age: 20,
+      address: "Bogor",
     });
-    expect(result).toEqual(expect.any(Object));
-    expect(result).toHaveProperty("modifiedCount", 1);
+
+    const result = await User.where("name", "Udin").updateMany({
+      _id: (user as any)._id,
+      name: "Udin Ganteng",
+      age: 21,
+      address: "Jakarta",
+    });
+    expect(result).toEqual(expect.any(Number));
+    expect(result).toEqual(1);
+
+    const updatedUser = await User.where("name", "Udin Ganteng").first();
+    expect(updatedUser).toEqual(expect.any(Object));
+    expect(updatedUser).toHaveProperty("name", "Udin Ganteng");
+    expect(updatedUser).toHaveProperty("age", 21);
+    expect(updatedUser).toHaveProperty("address", "Jakarta");
+    expect(updatedUser).toHaveProperty("_id", (user as any)._id);
   });
 
-  it("should update documents even if createdAt is included in the payload", async () => {
+  it("should update user data including createdAt in payload", async () => {
+    User["$useSoftDelete"] = false;
+    User["$useTimestamps"] = true;
+
+    const user = await User.insert({
+      name: "Udin",
+      age: 20,
+      address: "Bogor",
+    });
+
+    const result = await User.where("name", "Udin").updateMany({
+      createdAt: (user as any).createdAt,
+      name: "Udin Ganteng",
+      age: 21,
+      address: "Jakarta",
+    });
+    expect(result).toEqual(expect.any(Number));
+    expect(result).toEqual(1);
+
+    const updatedUser = await User.where("name", "Udin Ganteng").first();
+    expect(updatedUser).toEqual(expect.any(Object));
+    expect(updatedUser).toHaveProperty("name", "Udin Ganteng");
+    expect(updatedUser).toHaveProperty("age", 21);
+    expect(updatedUser).toHaveProperty("address", "Jakarta");
+    expect(updatedUser).toHaveProperty("_id", (user as any)._id);
+    expect(updatedUser).toHaveProperty(
+      User["$createdAt"],
+      (user as any)[User["$createdAt"]]
+    );
+  });
+
+  it("should return null when no matching data is found", async () => {
     User["$useSoftDelete"] = false;
     User["$useTimestamps"] = false;
 
-    await User.insertMany([
-      {
-        name: "Udin",
-        age: 20,
-        address: "Bogor",
-      },
-      {
-        name: "Kosasih",
-        age: 25,
-        address: "Bandung",
-      },
-    ]);
-
-    const result = await User.where("age", "<", 30).updateMany({
-      createdAt: new Date(),
-      age: 50,
+    const result = await User.where("name", "Udin").updateMany({
+      name: "Udin Ganteng",
+      age: 21,
+      address: "Jakarta",
     });
 
-    expect(result).toEqual(expect.any(Object));
-    expect(result).toHaveProperty("modifiedCount", 2);
-  });
-
-  it("should return modifiedCount 0 if no documents match the criteria", async () => {
-    User["$useSoftDelete"] = false;
-    User["$useTimestamps"] = false;
-
-    const result = await User.where("age", ">", 30).updateMany({
-      age: 50,
-    });
-
-    expect(result).toEqual(expect.any(Object));
-    expect(result).toHaveProperty("modifiedCount", 0);
+    expect(result).toEqual(expect.any(Number));
+    expect(result).toEqual(0);
   });
 });

@@ -15,35 +15,35 @@ beforeAll(async () => {
       email: "john@mail.com",
       age: 10,
       balance: 100,
-      IS_DELETED: false,
+      [User.getIsDeleted()]: false,
     },
     {
       name: "doe",
       email: "doe@mail.com",
       age: 30,
       balance: 200,
-      IS_DELETED: false,
+      [User.getIsDeleted()]: false,
     },
     {
       name: "Udin",
       email: "udin@mail.com",
       age: 5,
       balance: 500,
-      IS_DELETED: false,
+      [User.getIsDeleted()]: false,
     },
     {
       name: "Kosasih",
       email: "kosasih@mail.com",
       age: 5,
       balance: 400,
-      IS_DELETED: false,
+      [User.getIsDeleted()]: false,
     },
     {
       name: "Joko",
       email: "joko@mail.com",
       age: 45,
       balance: 500,
-      IS_DELETED: true,
+      [User.getIsDeleted()]: true,
     },
   ]);
 });
@@ -52,8 +52,8 @@ afterAll(async () => {
   await userCollection.deleteMany({});
 });
 
-describe("QueryResult - whereNotBetween method", () => {
-  it("orWhereBetween with single condition", async () => {
+describe("QueryBuilder - orWhereBetween method", () => {
+  it("should filter records using single orWhereBetween condition", async () => {
     const result: any[] = await User.orWhereBetween(
       "balance",
       [400, 500]
@@ -63,7 +63,7 @@ describe("QueryResult - whereNotBetween method", () => {
     expect(result).toHaveLength(3);
   });
 
-  it("orWhereBetween with and condition", async () => {
+  it("should filter records using multiple orWhereBetween conditions", async () => {
     const result: any[] = await User.orWhereBetween("age", [5, 10])
       .orWhereBetween("balance", [400, 500])
       .get();
@@ -72,7 +72,7 @@ describe("QueryResult - whereNotBetween method", () => {
     expect(result).toHaveLength(4);
   });
 
-  it("orWhereBetween with or condition", async () => {
+  it("should filter records using multiple orWhereBetween conditions with OR logic", async () => {
     const result: any[] = await User.orWhereBetween("age", [5, 10])
       .orWhereBetween("balance", [400, 500])
       .get();
@@ -81,7 +81,7 @@ describe("QueryResult - whereNotBetween method", () => {
     expect(result).toHaveLength(4);
   });
 
-  it("orWhereBetween with and & or condition", async () => {
+  it("should combine orWhereBetween with orWhere conditions", async () => {
     const result: any[] = await User.orWhere("age", 5)
       .orWhereBetween("balance", [400, 500])
       .orWhere("name", "doe")
@@ -91,7 +91,7 @@ describe("QueryResult - whereNotBetween method", () => {
     expect(result).toHaveLength(4);
   });
 
-  it("orWhereBetween with whereBetween", async () => {
+  it("should combine whereBetween with orWhereBetween conditions", async () => {
     const result: any[] = await User.whereBetween("age", [5, 10])
       .orWhereBetween("balance", [400, 500])
       .get();
@@ -100,7 +100,7 @@ describe("QueryResult - whereNotBetween method", () => {
     expect(result).toHaveLength(4);
   });
 
-  it("orWhereBetween with soft delete", async () => {
+  it("should apply soft delete with orWhereBetween", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.orWhereBetween(
       "balance",
@@ -113,7 +113,7 @@ describe("QueryResult - whereNotBetween method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("orWhereBetween with soft delete & and condition", async () => {
+  it("should combine soft delete with multiple orWhereBetween conditions", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.orWhereBetween("age", [5, 10])
       .orWhereBetween("balance", [400, 500])
@@ -125,7 +125,7 @@ describe("QueryResult - whereNotBetween method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("orWhereBetween with soft delete & or condition", async () => {
+  it("should combine soft delete with whereBetween and orWhereBetween", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.whereBetween("age", [5, 10])
       .orWhereBetween("balance", [400, 500])
@@ -137,7 +137,7 @@ describe("QueryResult - whereNotBetween method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("orWhereBetween with soft delete & withTrashed", async () => {
+  it("should include soft deleted records with withTrashed and orWhereBetween", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.orWhereBetween("age", [5, 10])
       .withTrashed()
@@ -149,7 +149,7 @@ describe("QueryResult - whereNotBetween method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("orWhereBetween with soft delete, withTrashed & and condition", async () => {
+  it("should combine withTrashed, soft delete and mixed conditions", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.where("age", 5)
       .orWhereBetween("balance", [400, 500])
@@ -162,7 +162,7 @@ describe("QueryResult - whereNotBetween method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("orWhereBetween with soft delete, withTrashed & or condition", async () => {
+  it("should combine withTrashed, soft delete and multiple between conditions", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.whereBetween("age", [5, 10])
       .orWhereBetween("balance", [400, 500])
@@ -175,7 +175,7 @@ describe("QueryResult - whereNotBetween method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("orWhereBetween with soft delete, onlyTrashed", async () => {
+  it("should filter only soft deleted records with onlyTrashed", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.whereBetween("age", [5, 50])
       .onlyTrashed()
@@ -187,7 +187,7 @@ describe("QueryResult - whereNotBetween method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("orWhereBetween with soft delete, onlyTrashed & and condition", async () => {
+  it("should combine onlyTrashed with mixed conditions", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.where("age", 5)
       .orWhereBetween("balance", [400, 500])
@@ -200,7 +200,7 @@ describe("QueryResult - whereNotBetween method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("orWhereBetween with soft delete, onlyTrashed & or condition", async () => {
+  it("should combine onlyTrashed with multiple between conditions", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.whereBetween("age", [5, 10])
       .orWhereBetween("balance", [200, 500])
@@ -213,7 +213,7 @@ describe("QueryResult - whereNotBetween method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("orWhereBetween with values length < 2", async () => {
+  it("should handle orWhereBetween with incomplete range values", async () => {
     const result = await User.orWhereBetween("age", [5]).get();
 
     expect(result).toEqual(expect.any(Array));
