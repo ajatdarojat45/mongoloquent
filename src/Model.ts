@@ -1,5 +1,6 @@
 import {
   BulkWriteOptions,
+  FindOneAndUpdateOptions,
   InsertOneOptions,
   ObjectId,
   UpdateFilter,
@@ -455,6 +456,51 @@ export default class Model extends Relation {
     return this.insert(doc);
   }
 
+  public static async update(
+    doc: UpdateFilter<Document>,
+    options: FindOneAndUpdateOptions = {}
+  ) {
+    try {
+      // Get the collection from the database
+      const collection = this.getCollection();
+
+      // Generate the where conditions for the query
+      await this.checkRelation();
+      // Check if soft delete is enabled and apply necessary filters
+      this.checkSoftDelete();
+      // Generate the columns to be selected in the query
+      this.generateWheres();
+      const stages = this.getStages();
+      let filter = {};
+      if (stages.length > 0) filter = stages[0].$match;
+      // Apply timestamps and soft delete fields to the documents if enabled
+      let newDoc = this.checkUseTimestamps(doc, false);
+      newDoc = this.checkUseSoftdelete(newDoc);
+      delete (newDoc as any)._id;
+
+      // Update the documents in the collection
+      const data = await collection.findOneAndUpdate(
+        { ...filter },
+        {
+          $set: {
+            ...newDoc,
+          },
+        },
+        {
+          ...options,
+          returnDocument: "after",
+        }
+      );
+
+      // Reset the query and relation states
+      this.reset();
+      return data;
+    } catch (error) {
+      console.log(error);
+      throw new Error(`Updating documents failed`);
+    }
+  }
+
   /**
    * Updates multiple documents in the collection, applying timestamps and soft delete if applicable
    *
@@ -466,7 +512,7 @@ export default class Model extends Relation {
    * @returns {Promise<number>} The number of modified documents
    * @throws {Error} When updating fails
    */
-  public static async update(
+  public static async updateMany(
     doc: UpdateFilter<Document>,
     options?: UpdateOptions
   ): Promise<number> {
@@ -681,7 +727,7 @@ export default class Model extends Relation {
       this.onlyTrashed();
 
       // Update the documents to mark them as not deleted
-      return await this.update({ [this.$isDeleted]: false });
+      return await this.updateMany({ [this.$isDeleted]: false });
     } catch (error) {
       console.log(error);
       throw new Error(`Restoring documents failed`);

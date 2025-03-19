@@ -4,6 +4,27 @@ class User extends Model {
   static $collection = "users";
 }
 
+const users = [
+  {
+    name: "John Doe",
+    email: "jhon@mail.com",
+    age: 20,
+    [User.getIsDeleted()]: false,
+  },
+  {
+    name: "Udin",
+    email: "udin@mail.com",
+    [User.getIsDeleted()]: false,
+    age: 10,
+  },
+  {
+    name: "Kosasih",
+    email: "kosasih@mail.com",
+    [User.getIsDeleted()]: true,
+    age: 50,
+  },
+];
+
 beforeAll(async () => {
   try {
     const userCollection = User["getCollection"]();
@@ -13,7 +34,7 @@ beforeAll(async () => {
   }
 });
 
-afterEach(async () => {
+afterAll(async () => {
   try {
     const userCollection = User["getCollection"]();
     await userCollection.deleteMany({});
@@ -22,8 +43,25 @@ afterEach(async () => {
   }
 });
 
-describe("User Model - Update Method", () => {
-  it("should update user data without timestamps", async () => {
+describe("Model - update method", () => {
+  const userCollection = User["getCollection"]();
+
+  beforeAll(async () => {
+    try {
+    } catch (error) {
+      console.error(error);
+    }
+  });
+
+  afterAll(async () => {
+    try {
+      await userCollection.deleteMany({});
+    } catch (error) {
+      console.error(error);
+    }
+  });
+
+  it("should update data", async () => {
     User["$useSoftDelete"] = false;
     User["$useTimestamps"] = false;
 
@@ -38,18 +76,15 @@ describe("User Model - Update Method", () => {
       age: 21,
       address: "Jakarta",
     });
-    expect(result).toEqual(expect.any(Number));
-    expect(result).toEqual(1);
 
-    const user = await User.where("name", "Udin Ganteng").first();
-    expect(user).toEqual(expect.any(Object));
-    expect(user).toHaveProperty("name", "Udin Ganteng");
-    expect(user).toHaveProperty("age", 21);
-    expect(user).toHaveProperty("address", "Jakarta");
-    expect(user).toHaveProperty("_id");
+    expect(result).toEqual(expect.any(Object));
+    expect(result).toHaveProperty("name", "Udin Ganteng");
+    expect(result).toHaveProperty("age", 21);
+    expect(result).toHaveProperty("address", "Jakarta");
+    expect(result).toHaveProperty("_id");
   });
 
-  it("should update user data with timestamps", async () => {
+  it("should update data with timestamps", async () => {
     User["$useSoftDelete"] = false;
     User["$useTimestamps"] = true;
 
@@ -64,25 +99,20 @@ describe("User Model - Update Method", () => {
       age: 21,
       address: "Jakarta",
     });
-    expect(result).toEqual(expect.any(Number));
-    expect(result).toEqual(1);
 
-    const updatedUser = await User.where("name", "Udin Ganteng").first();
-    expect(updatedUser).toEqual(expect.any(Object));
-    expect(updatedUser).toHaveProperty("name", "Udin Ganteng");
-    expect(updatedUser).toHaveProperty("age", 21);
-    expect(updatedUser).toHaveProperty("address", "Jakarta");
-    expect(updatedUser).toHaveProperty("_id");
-    expect(updatedUser).toHaveProperty(
-      User["$createdAt"],
-      (user as any)[User["$createdAt"]]
-    );
-    expect(updatedUser).toHaveProperty(User["$updatedAt"]);
+    expect(result).toEqual(expect.any(Object));
+    expect(result).toHaveProperty("name", "Udin Ganteng");
+    expect(result).toHaveProperty("age", 21);
+    expect(result).toHaveProperty("address", "Jakarta");
+    expect(result).toHaveProperty("_id");
+    expect(result).toHaveProperty("createdAt", (user as any).createdAt);
+    expect(result).toHaveProperty("updatedAt");
+    // expect((result as any).updatedAt).not.toEqual((user as any).updatedAt);
   });
 
-  it("should update user data including _id in payload", async () => {
+  it("with send _id in payload", async () => {
     User["$useSoftDelete"] = false;
-    User["$useTimestamps"] = false;
+    User["$useSoftDelete"] = false;
 
     const user = await User.insert({
       name: "Udin",
@@ -96,18 +126,15 @@ describe("User Model - Update Method", () => {
       age: 21,
       address: "Jakarta",
     });
-    expect(result).toEqual(expect.any(Number));
-    expect(result).toEqual(1);
 
-    const updatedUser = await User.where("name", "Udin Ganteng").first();
-    expect(updatedUser).toEqual(expect.any(Object));
-    expect(updatedUser).toHaveProperty("name", "Udin Ganteng");
-    expect(updatedUser).toHaveProperty("age", 21);
-    expect(updatedUser).toHaveProperty("address", "Jakarta");
-    expect(updatedUser).toHaveProperty("_id", (user as any)._id);
+    expect(result).toEqual(expect.any(Object));
+    expect(result).toHaveProperty("name", "Udin Ganteng");
+    expect(result).toHaveProperty("age", 21);
+    expect(result).toHaveProperty("address", "Jakarta");
+    expect(result).toHaveProperty("_id", (user as any)._id);
   });
 
-  it("should update user data including createdAt in payload", async () => {
+  it("with send createdAt at in payload", async () => {
     User["$useSoftDelete"] = false;
     User["$useTimestamps"] = true;
 
@@ -123,22 +150,16 @@ describe("User Model - Update Method", () => {
       age: 21,
       address: "Jakarta",
     });
-    expect(result).toEqual(expect.any(Number));
-    expect(result).toEqual(1);
 
-    const updatedUser = await User.where("name", "Udin Ganteng").first();
-    expect(updatedUser).toEqual(expect.any(Object));
-    expect(updatedUser).toHaveProperty("name", "Udin Ganteng");
-    expect(updatedUser).toHaveProperty("age", 21);
-    expect(updatedUser).toHaveProperty("address", "Jakarta");
-    expect(updatedUser).toHaveProperty("_id", (user as any)._id);
-    expect(updatedUser).toHaveProperty(
-      User["$createdAt"],
-      (user as any)[User["$createdAt"]]
-    );
+    expect(result).toEqual(expect.any(Object));
+    expect(result).toHaveProperty("name", "Udin Ganteng");
+    expect(result).toHaveProperty("age", 21);
+    expect(result).toHaveProperty("address", "Jakarta");
+    expect(result).toHaveProperty("_id", (user as any)._id);
+    expect(result).toHaveProperty("createdAt", (user as any).createdAt);
   });
 
-  it("should return null when no matching data is found", async () => {
+  it("with not found data", async () => {
     User["$useSoftDelete"] = false;
     User["$useTimestamps"] = false;
 
@@ -148,7 +169,6 @@ describe("User Model - Update Method", () => {
       address: "Jakarta",
     });
 
-    expect(result).toEqual(expect.any(Number));
-    expect(result).toEqual(0);
+    expect(result).toEqual(null);
   });
 });

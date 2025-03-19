@@ -53,11 +53,8 @@ describe("User Model - updateOrCreate Method", () => {
       address: "San Francisco",
     };
 
-    const result = await User.updateOrCreate(userData, updatedData);
-    expect(result).toEqual(expect.any(Number));
-    expect(result).toEqual(1);
-
-    const updated = await User.where("name", "Jane Doe").first();
+    const updated = await User.updateOrCreate(userData, updatedData);
+    expect(updated).toEqual(expect.any(Object));
     expect(updated).toEqual(expect.any(Object));
     expect(updated).toHaveProperty("_id", createdUser._id);
     expect(updated).toHaveProperty("name", "Jane Doe");
@@ -96,11 +93,8 @@ describe("User Model - updateOrCreate Method", () => {
       address: "Dallas",
     };
 
-    const result = await User.updateOrCreate({ name: "Bob" }, updatedData);
-    expect(result).toEqual(expect.any(Number));
-    expect(result).toEqual(1);
-
-    const updated = await User.where("name", "Bob").first();
+    const updated = await User.updateOrCreate({ name: "Bob" }, updatedData);
+    expect(updated).toEqual(expect.any(Object));
     expect(updated).toEqual(expect.any(Object));
     expect(updated).toHaveProperty("_id", createdUser._id);
     expect(updated).toHaveProperty("name", "Bob");
@@ -144,11 +138,7 @@ describe("User Model - updateOrCreate Method", () => {
       address: "Portland",
     };
 
-    const result = await User.updateOrCreate({ name: "David" }, updatedData);
-    expect(result).toEqual(expect.any(Number));
-    expect(result).toEqual(1);
-
-    const updated = await User.where("name", "David").first();
+    const updated = await User.updateOrCreate({ name: "David" }, updatedData);
     expect(updated).toEqual(expect.any(Object));
     expect(updated).toHaveProperty("_id", createdUser._id);
     expect(updated).toHaveProperty("name", "David");
