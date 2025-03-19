@@ -456,6 +456,29 @@ export default class Model extends Relation {
     return this.insert(doc);
   }
 
+  /**
+   * Updates a single document in the collection that matches the query criteria
+   * - Applies timestamps if enabled
+   * - Handles soft delete state
+   * - Supports relationship-aware updates
+   * - Returns the updated document
+   *
+   * @public
+   * @static
+   * @async
+   * @param {UpdateFilter<Document>} doc - The update operations to apply
+   * @param {FindOneAndUpdateOptions} [options={}] - MongoDB update options
+   * @returns {Promise<Document|null>} The updated document or null if not found
+   * @throws {Error} When update operation fails
+   * @example
+   * ```typescript
+   * // Update a document
+   * await Model.where('_id', id).update({ name: 'updated' });
+   *
+   * // Update with options
+   * await Model.update(doc, { upsert: true });
+   * ```
+   */
   public static async update(
     doc: UpdateFilter<Document>,
     options: FindOneAndUpdateOptions = {}
@@ -1055,13 +1078,24 @@ export default class Model extends Relation {
   }
 
   /**
-   * Applies created_at and updated_at timestamps to the document if $useTimestamps is true
+   * Helper function to validate and apply timestamps to documents
+   * Handles both creation and update timestamps based on the model's configuration
    *
    * @private
    * @static
-   * @param {object} doc - The document to check
-   * @param {boolean} [isNew=true] - Whether the document is new
-   * @returns {object} The document with timestamps applied
+   * @param {object} doc - The document to which timestamps should be applied
+   * @param {boolean} [isNew=true] - Whether this is a new document (true) or an update (false)
+   * @returns {object} The document with appropriate timestamps applied
+   * @example
+   * ```typescript
+   * // For a new document:
+   * checkUseTimestamps({ name: 'test' }, true)
+   * // Returns { name: 'test', createdAt: Date, updatedAt: Date }
+   *
+   * // For an update:
+   * checkUseTimestamps({ name: 'updated' }, false)
+   * // Returns { name: 'updated', updatedAt: Date }
+   * ```
    */
   private static checkUseTimestamps(
     doc: object,
@@ -1080,13 +1114,24 @@ export default class Model extends Relation {
   }
 
   /**
-   * Applies isDeleted and deleted_at fields to the document if $useSoftDelete is true
+   * Helper function to handle soft delete functionality
+   * Manages the isDeleted flag and deletedAt timestamp for soft-deletable models
    *
    * @private
    * @static
-   * @param {object} doc - The document to check
-   * @param {boolean} [isDeleted=false] - Whether the document is deleted
-   * @returns {object} The document with soft delete fields applied
+   * @param {object} doc - The document to which soft delete fields should be applied
+   * @param {boolean} [isDeleted=false] - Whether to mark the document as deleted
+   * @returns {object} The document with appropriate soft delete fields applied
+   * @example
+   * ```typescript
+   * // When marking as deleted:
+   * checkUseSoftdelete({ name: 'test' }, true)
+   * // Returns { name: 'test', isDeleted: true, deletedAt: Date }
+   *
+   * // When not deleted:
+   * checkUseSoftdelete({ name: 'test' }, false)
+   * // Returns { name: 'test', isDeleted: false }
+   * ```
    */
   private static checkUseSoftdelete(
     doc: object,
@@ -1107,12 +1152,23 @@ export default class Model extends Relation {
   }
 
   /**
-   * Checks and applies relationship fields to the document
+   * Helper function to process relationships during document operations
+   * Applies the necessary relationship fields based on the relationship type
    *
    * @private
    * @static
-   * @param {object} doc - The document to check
+   * @param {object} doc - The document to process for relationships
    * @returns {object} The document with relationship fields applied
+   * @example
+   * ```typescript
+   * // For hasMany relationship:
+   * checkRelationship({ name: 'test' })
+   * // Returns { name: 'test', parentId: ObjectId }
+   *
+   * // For morphMany relationship:
+   * checkRelationship({ name: 'test' })
+   * // Returns { name: 'test', morphType: 'ParentModel', morphId: ObjectId }
+   * ```
    */
   private static checkRelationship(doc: object): object {
     const relationship = this.getRelationship();
@@ -1158,10 +1214,17 @@ export default class Model extends Relation {
   }
 
   /**
-   * Resets the query and relation states
+   * Utility method to reset query builder and relationship states
+   * Ensures clean state for subsequent queries
    *
    * @private
    * @static
+   * @returns {void}
+   * @example
+   * ```typescript
+   * // After completing a query:
+   * Model.reset();
+   * ```
    */
   private static reset(): void {
     const relatedModel = this.getRelatedModel();
@@ -1172,11 +1235,17 @@ export default class Model extends Relation {
   }
 
   /**
-   * Checks and applies relationship conditions to the query
+   * Helper function to process relationship conditions
+   * Applies the appropriate filters based on relationship type
    *
    * @private
    * @static
-   * @async
+   * @returns {Promise<void>}
+   * @example
+   * ```typescript
+   * // Before executing a query:
+   * await Model.checkRelation();
+   * ```
    */
   private static async checkRelation() {
     const relationship = this.getRelationship();
