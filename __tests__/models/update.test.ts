@@ -4,6 +4,27 @@ class User extends Model {
   static $collection = "users";
 }
 
+const users = [
+  {
+    name: "John Doe",
+    email: "jhon@mail.com",
+    age: 20,
+    [User.getIsDeleted()]: false,
+  },
+  {
+    name: "Udin",
+    email: "udin@mail.com",
+    [User.getIsDeleted()]: false,
+    age: 10,
+  },
+  {
+    name: "Kosasih",
+    email: "kosasih@mail.com",
+    [User.getIsDeleted()]: true,
+    age: 50,
+  },
+];
+
 beforeAll(async () => {
   try {
     const userCollection = User["getCollection"]();
@@ -22,12 +43,11 @@ afterAll(async () => {
   }
 });
 
-describe("User Model - Update Method", () => {
+describe("Model - update method", () => {
   const userCollection = User["getCollection"]();
 
   beforeAll(async () => {
     try {
-      // Setup before all tests
     } catch (error) {
       console.error(error);
     }
@@ -41,7 +61,7 @@ describe("User Model - Update Method", () => {
     }
   });
 
-  it("should update user data without timestamps", async () => {
+  it("should update data", async () => {
     User["$useSoftDelete"] = false;
     User["$useTimestamps"] = false;
 
@@ -64,7 +84,7 @@ describe("User Model - Update Method", () => {
     expect(result).toHaveProperty("_id");
   });
 
-  it("should update user data with timestamps", async () => {
+  it("should update data with timestamps", async () => {
     User["$useSoftDelete"] = false;
     User["$useTimestamps"] = true;
 
@@ -94,9 +114,9 @@ describe("User Model - Update Method", () => {
     expect(result).toHaveProperty(User["$updatedAt"], (latestUser as any)[User["$updatedAt"]]);
   });
 
-  it("should update user data including _id in payload", async () => {
+  it("with send _id in payload", async () => {
     User["$useSoftDelete"] = false;
-    User["$useTimestamps"] = false;
+    User["$useSoftDelete"] = false;
 
     const user = await User.insert({
       name: "Udin",
@@ -118,7 +138,7 @@ describe("User Model - Update Method", () => {
     expect(result).toHaveProperty("_id", (user as any)._id);
   });
 
-  it("should update user data including createdAt in payload", async () => {
+  it("with send createdAt at in payload", async () => {
     User["$useSoftDelete"] = false;
     User["$useTimestamps"] = true;
 
@@ -140,13 +160,10 @@ describe("User Model - Update Method", () => {
     expect(result).toHaveProperty("age", 21);
     expect(result).toHaveProperty("address", "Jakarta");
     expect(result).toHaveProperty("_id", (user as any)._id);
-    expect(result).toHaveProperty(
-      User["$createdAt"],
-      (user as any)[User["$createdAt"]]
-    );
+    expect(result).toHaveProperty("createdAt", (user as any).createdAt);
   });
 
-  it("should return null when no matching data is found", async () => {
+  it("with not found data", async () => {
     User["$useSoftDelete"] = false;
     User["$useTimestamps"] = false;
 

@@ -15,35 +15,35 @@ beforeAll(async () => {
       email: "john@mail.com",
       age: 10,
       balance: 100,
-      [Model["$isDeleted"]]: false,
+      [User.getIsDeleted()]: false,
     },
     {
       name: "doe",
       email: "doe@mail.com",
       age: 30,
       balance: 200,
-      [Model["$isDeleted"]]: false,
+      [User.getIsDeleted()]: false,
     },
     {
       name: "Udin",
       email: "udin@mail.com",
       age: 5,
       balance: 500,
-      [Model["$isDeleted"]]: false,
+      [User.getIsDeleted()]: false,
     },
     {
       name: "Kosasih",
       email: "kosasih@mail.com",
       age: 5,
       balance: 400,
-      [Model["$isDeleted"]]: false,
+      [User.getIsDeleted()]: false,
     },
     {
       name: "Joko",
       email: "joko@mail.com",
       age: 45,
       balance: 500,
-      [Model["$isDeleted"]]: true,
+      [User.getIsDeleted()]: true,
     },
   ]);
 });
@@ -52,8 +52,8 @@ afterAll(async () => {
   await userCollection.deleteMany({});
 });
 
-describe("QueryResult - orderBy method", () => {
-  it("orderBy without define order", async () => {
+describe("Model - orderBy() Method: Sorting and Ordering Results", () => {
+  it("should sort documents by single field in implicit ascending order", async () => {
     const result: any[] = await User.orderBy("age").get();
 
     expect(result).toEqual(expect.any(Array));
@@ -61,7 +61,7 @@ describe("QueryResult - orderBy method", () => {
     expect(result[0].age).toBe(5);
   });
 
-  it("orderBy with asc order", async () => {
+  it("should sort documents by single field in explicit ascending order", async () => {
     const result: any[] = await User.orderBy("age", "asc").get();
 
     expect(result).toEqual(expect.any(Array));
@@ -69,7 +69,7 @@ describe("QueryResult - orderBy method", () => {
     expect(result[0].age).toBe(5);
   });
 
-  it("orderBy with desc order", async () => {
+  it("should sort documents by single field in descending order", async () => {
     const result: any[] = await User.orderBy("age", "desc").get();
 
     expect(result).toEqual(expect.any(Array));
@@ -77,7 +77,7 @@ describe("QueryResult - orderBy method", () => {
     expect(result[0].age).toBe(45);
   });
 
-  it("orderBy with string field", async () => {
+  it("should sort documents by string field with case-sensitive comparison", async () => {
     const result: any[] = await User.orderBy("name").get();
 
     expect(result).toEqual(expect.any(Array));
@@ -85,7 +85,7 @@ describe("QueryResult - orderBy method", () => {
     expect(result[0].name).not.toBe("Doe");
   });
 
-  it("orderBy with insensitive", async () => {
+  it("should order results by string field in case-insensitive ascending order", async () => {
     const result: any[] = await User.orderBy("name", "asc", true).get();
 
     expect(result).toEqual(expect.any(Array));
@@ -93,7 +93,7 @@ describe("QueryResult - orderBy method", () => {
     expect(result[0].name).toBe("doe");
   });
 
-  it("orderBy with insensitive and desc order", async () => {
+  it("should order results by string field in case-insensitive descending order", async () => {
     const result: any[] = await User.orderBy("name", "desc", true).get();
 
     expect(result).toEqual(expect.any(Array));
@@ -101,7 +101,7 @@ describe("QueryResult - orderBy method", () => {
     expect(result[0].name).toBe("Udin");
   });
 
-  it("orderBy with multiple orderBy", async () => {
+  it("should order results by multiple fields with specified directions", async () => {
     const result: any[] = await User.orderBy("age", "asc")
       .orderBy("balance", "desc")
       .get();

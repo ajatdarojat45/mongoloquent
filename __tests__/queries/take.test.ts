@@ -15,35 +15,35 @@ beforeAll(async () => {
       email: "john@mail.com",
       age: 10,
       balance: 100,
-      [Model["$isDeleted"]]: false,
+      [User.getIsDeleted()]: false,
     },
     {
       name: "doe",
       email: "doe@mail.com",
       age: 30,
       balance: 200,
-      [Model["$isDeleted"]]: false,
+      [User.getIsDeleted()]: false,
     },
     {
       name: "Udin",
       email: "udin@mail.com",
       age: 5,
       balance: 500,
-      [Model["$isDeleted"]]: false,
+      [User.getIsDeleted()]: false,
     },
     {
       name: "Kosasih",
       email: "kosasih@mail.com",
       age: 5,
       balance: 400,
-      [Model["$isDeleted"]]: false,
+      [User.getIsDeleted()]: false,
     },
     {
       name: "Joko",
       email: "joko@mail.com",
       age: 45,
       balance: 500,
-      [Model["$isDeleted"]]: true,
+      [User.getIsDeleted()]: true,
     },
   ]);
 });
@@ -52,8 +52,8 @@ afterAll(async () => {
   await userCollection.deleteMany({});
 });
 
-describe("QueryResult - take method", () => {
-  it("take without condition", async () => {
+describe("Take Query Builder - Limit Results", () => {
+  it("should return first N records when take method is used", async () => {
     const result: any[] = await User.take(2).get();
 
     expect(result).toEqual(expect.any(Array));

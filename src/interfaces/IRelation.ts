@@ -16,6 +16,9 @@ export enum IRelationTypes {
 export interface IRelationOptions {
   select?: string | string[];
   exclude?: string | string[];
+  sort?: [string, "asc" | "desc"];
+  skip?: number;
+  limit?: number;
 }
 
 export interface IRelationHasOne {
@@ -66,7 +69,7 @@ export interface IRelationHasManyThrough {
   options: IRelationOptions;
   parentId: string | ObjectId | null;
   parentModelName: string;
-  parentCollectionName: string
+  parentCollectionName: string;
 }
 
 export interface IRelationBelongsToMany {
@@ -95,7 +98,7 @@ export interface IRelationMorphTo {
   options: IRelationOptions;
   parentId: string | ObjectId | null;
   parentModelName: string;
-  parentCollectionName: string
+  parentCollectionName: string;
 }
 
 export interface IRelationMorphMany {
@@ -109,7 +112,7 @@ export interface IRelationMorphMany {
   options: IRelationOptions;
   parentId: string | ObjectId | null;
   parentModelName: string;
-  parentCollectionName: string
+  parentCollectionName: string;
 }
 
 export interface IRelationMorphToMany {
@@ -124,7 +127,7 @@ export interface IRelationMorphToMany {
   options: IRelationOptions;
   parentId: string | ObjectId | null;
   parentModelName: string;
-  parentCollectionName: string
+  parentCollectionName: string;
 }
 
 export interface IRelationMorphedByMany {

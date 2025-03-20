@@ -1,4 +1,8 @@
 import Model from "../../src/Model";
+// Define User model extending from Model
+class User extends Model {
+  static $collection = "users";
+}
 
 // Sample user data for testing
 const users = [
@@ -6,26 +10,21 @@ const users = [
     name: "John Doe",
     email: "jhon@mail.com",
     age: 20,
-    [Model["$isDeleted"]]: false,
+    [User["$isDeleted"]]: false,
   },
   {
     name: "Udin",
     email: "udin@mail.com",
-    [Model["$isDeleted"]]: false,
+    [User["$isDeleted"]]: false,
     age: 10,
   },
   {
     name: "Kosasih",
     email: "kosasih@mail.com",
-    [Model["$isDeleted"]]: true,
+    [User["$isDeleted"]]: true,
     age: 50,
   },
 ];
-
-// Define User model extending from Model
-class User extends Model {
-  static $collection = "users";
-}
 
 // Clean up the collection before all tests
 beforeAll(async () => {
@@ -84,6 +83,15 @@ describe("User Model - all method", () => {
 
     const result = await User.all();
     expect(result.length).toBe(2);
+    expect(result).toEqual(expect.any(Array));
+    expect(result[0]).toEqual(expect.any(Object));
+  });
+
+  it("all method with condition", async () => {
+    User["$useSoftDelete"] = true;
+
+    const result = await User.where("age", 20).all();
+    expect(result.length).toBe(1);
     expect(result).toEqual(expect.any(Array));
     expect(result[0]).toEqual(expect.any(Object));
   });

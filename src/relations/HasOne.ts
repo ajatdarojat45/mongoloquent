@@ -1,8 +1,8 @@
 import { Document } from "mongodb";
-import Relation from "../Relation";
 import { IRelationHasOne } from "../interfaces/IRelation";
+import LookupBuilder from "./LookupBuilder.ts";
 
-export default class HasOne {
+export default class HasOne extends LookupBuilder {
   /**
    * Generates the lookup, select, and exclude stages for the hasOne relation.
    * @param {IRelationHasOne} hasOne - The hasOne relation configuration.
@@ -11,25 +11,21 @@ export default class HasOne {
   static generate(hasOne: IRelationHasOne): Document[] {
     // Generate the lookup stages for the hasOne relationship
     const lookup = this.lookup(hasOne);
-    let select: any = [];
-    let exclude: any = [];
 
     // Generate the select stages if options.select is provided
-    if (hasOne.options?.select)
-      select = Relation.selectRelationColumns(
-        hasOne.options.select,
-        hasOne.alias
-      );
+    if (hasOne.options?.select) {
+      const select = this.select(hasOne.options.select, hasOne.alias);
+      lookup.push(...select);
+    }
 
     // Generate the exclude stages if options.exclude is provided
-    if (hasOne.options?.exclude)
-      exclude = Relation.excludeRelationColumns(
-        hasOne.options.exclude,
-        hasOne.alias
-      );
+    if (hasOne.options?.exclude) {
+      const exclude = this.exclude(hasOne.options.exclude, hasOne.alias);
+      lookup.push(...exclude);
+    }
 
     // Return the combined lookup, select, and exclude stages
-    return [...lookup, ...select, ...exclude];
+    return lookup;
   }
 
   /**
@@ -40,6 +36,7 @@ export default class HasOne {
   static lookup(hasOne: IRelationHasOne): Document[] {
     const lookup: Document[] = [];
     const pipeline: Document[] = [];
+
     // Add soft delete condition to the pipeline if enabled
     if (hasOne.model.$useSoftDelete) {
       pipeline.push({
@@ -63,7 +60,7 @@ export default class HasOne {
     // Add the $lookup stage to the lookup array
     lookup.push({ $lookup });
 
-    // Define the $unwind stage
+    // Define the $unwind stage to deconstruct the array field
     lookup.push({
       $unwind: {
         path: `$${hasOne.alias}`,

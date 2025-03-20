@@ -15,35 +15,35 @@ beforeAll(async () => {
       email: "john@mail.com",
       age: 10,
       balance: 100,
-      [Model["$isDeleted"]]: false,
+      [User.getIsDeleted()]: false,
     },
     {
       name: "doe",
       email: "doe@mail.com",
       age: 30,
       balance: 200,
-      [Model["$isDeleted"]]: false,
+      [User.getIsDeleted()]: false,
     },
     {
       name: "Udin",
       email: "udin@mail.com",
       age: 5,
       balance: 500,
-      [Model["$isDeleted"]]: false,
+      [User.getIsDeleted()]: false,
     },
     {
       name: "Kosasih",
       email: "kosasih@mail.com",
       age: 5,
       balance: 400,
-      [Model["$isDeleted"]]: false,
+      [User.getIsDeleted()]: false,
     },
     {
       name: "Joko",
       email: "joko@mail.com",
       age: 45,
       balance: 500,
-      [Model["$isDeleted"]]: true,
+      [User.getIsDeleted()]: true,
     },
   ]);
 });
@@ -52,17 +52,17 @@ afterAll(async () => {
   await userCollection.deleteMany({});
 });
 
-describe("QueryResult - limit method", () => {
-  it("limit without condition", async () => {
+describe("Model - limit() method", () => {
+  it("should limit result to 2 records without any conditions", async () => {
     const result: any[] = await User.limit(2).get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(2);
   });
 
-  it("limit with and condition", async () => {
+  it("should limit result to 1 record with AND conditions", async () => {
     const result: any[] = await User.where("age", 5)
-      .where(Model["$isDeleted"], false)
+      .where(User.getIsDeleted(), false)
       .limit(1)
       .get();
 
@@ -70,7 +70,7 @@ describe("QueryResult - limit method", () => {
     expect(result).toHaveLength(1);
   });
 
-  it("limit with or condition", async () => {
+  it("should limit result to 2 records with OR conditions", async () => {
     const result: any[] = await User.where("balance", 500)
       .orWhere("age", 30)
       .limit(2)
@@ -80,7 +80,7 @@ describe("QueryResult - limit method", () => {
     expect(result).toHaveLength(2);
   });
 
-  it("limit with and & or condition", async () => {
+  it("should limit result to 2 records with mixed AND & OR conditions", async () => {
     const result: any[] = await User.where("age", 5)
       .orWhere("balance", 500)
       .limit(2)
@@ -90,7 +90,7 @@ describe("QueryResult - limit method", () => {
     expect(result).toHaveLength(2);
   });
 
-  it("limit with whereBetween", async () => {
+  it("should limit result to 2 records with whereBetween condition", async () => {
     const result: any[] = await User.whereBetween("age", [5, 10])
       .limit(2)
       .get();
@@ -99,7 +99,7 @@ describe("QueryResult - limit method", () => {
     expect(result).toHaveLength(2);
   });
 
-  it("limit with soft delete", async () => {
+  it("should limit result to 2 records with soft delete enabled", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.limit(2).get();
 
@@ -109,10 +109,10 @@ describe("QueryResult - limit method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("limit with soft delete & and condition", async () => {
+  it("should limit result to 1 record with soft delete and AND conditions", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.where("age", 5)
-      .where(Model["$isDeleted"], false)
+      .where(User.getIsDeleted(), false)
       .limit(1)
       .get();
 
@@ -122,7 +122,7 @@ describe("QueryResult - limit method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("limit with soft delete & or condition", async () => {
+  it("should limit result to 1 record with soft delete and OR conditions", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.where("balance", 500)
       .orWhere("age", 30)
@@ -135,7 +135,7 @@ describe("QueryResult - limit method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("limit with soft delete & and & or condition", async () => {
+  it("should limit result to 1 record with soft delete and mixed AND & OR conditions", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.where("age", 5)
       .orWhere("balance", 500)
@@ -148,7 +148,7 @@ describe("QueryResult - limit method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("limit with soft delete & whereBetween", async () => {
+  it("should limit result to 2 records with soft delete and whereBetween", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.whereBetween("age", [5, 10])
       .limit(2)
@@ -160,7 +160,7 @@ describe("QueryResult - limit method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("limit with soft delete, withTrashed", async () => {
+  it("should limit result to 2 records with withTrashed option", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.limit(2).withTrashed().get();
 
@@ -170,7 +170,7 @@ describe("QueryResult - limit method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("limit with soft delete, withTrashed & and condition", async () => {
+  it("should limit result to 1 record with withTrashed and AND conditions", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.where("age", 45)
       .where("balance", 500)
@@ -184,7 +184,7 @@ describe("QueryResult - limit method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("limit with soft delete, withTrashed & or condition", async () => {
+  it("should limit result to 1 record with withTrashed and OR conditions", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.where("age", 45)
       .orWhere("balance", 500)
@@ -198,7 +198,7 @@ describe("QueryResult - limit method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("limit with soft delete, onlyTrashed", async () => {
+  it("should limit result to 1 record with onlyTrashed option", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.limit(2).onlyTrashed().get();
 
@@ -208,7 +208,7 @@ describe("QueryResult - limit method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("limit with soft delete, onlyTrashed & and condition", async () => {
+  it("should limit result to 1 record with onlyTrashed and AND conditions", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.where("age", 45)
       .where("balance", 500)
@@ -222,7 +222,7 @@ describe("QueryResult - limit method", () => {
     User["$useSoftDelete"] = false;
   });
 
-  it("limit with soft delete, onlyTrashed & or condition", async () => {
+  it("should limit result to 1 record with onlyTrashed and OR conditions", async () => {
     User["$useSoftDelete"] = true;
     const result: any[] = await User.where("age", 45)
       .orWhere("balance", 500)

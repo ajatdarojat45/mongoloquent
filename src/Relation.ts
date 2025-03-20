@@ -32,20 +32,41 @@ export default class Relation extends Query {
   private static $alias: string = "";
 
   /**
-   * @note This property is used to store the options for the relationship.
-   * @var IRelationOptions
+   * Configuration options for the relationship.
+   * Used to customize how the relationship behaves.
+   *
+   * @private
+   * @static
+   * @type {IRelationOptions}
    */
   private static $options: IRelationOptions;
 
   /**
-   * @note This property stores the lookup stages for the relationship.
-   * @var Document[]
+   * Stores MongoDB aggregation lookup stages for the relationship.
+   * These stages define how collections are joined together.
+   *
+   * @private
+   * @static
+   * @type {Document[]}
    */
   private static $lookups: Document[] = [];
 
   /**
-   * @note This property stores the current relationship details.
-   * @var IRelationHasMany | IRelationBelongsToMany | IRelationHasManyThrough | IRelationMorphMany | IRelationMorphToMany | IRelationMorphByMany | null
+   * Stores the details of the current relationship.
+   * This can be any of the supported relationship types:
+   * - HasOne
+   * - BelongsTo
+   * - HasMany
+   * - HasManyThrough
+   * - BelongsToMany
+   * - MorphTo
+   * - MorphMany
+   * - MorphToMany
+   * - MorphedByMany
+   *
+   * @private
+   * @static
+   * @type {IRelationHasOne | IRelationBelongsTo | IRelationHasMany | IRelationHasManyThrough | IRelationBelongsToMany | IRelationMorphTo | IRelationMorphMany | IRelationMorphToMany | IRelationMorphedByMany | null}
    */
   private static $relationship:
     | IRelationHasOne
@@ -60,16 +81,46 @@ export default class Relation extends Query {
     | null = null;
 
   /**
-   * @note This property stores the related model.
-   * @var typeof Model | null
+   * Reference to the model class that is being related to in the current relationship.
+   * This property stores the target model class in a relationship, allowing access to
+   * its properties and methods when needed during relationship operations.
+   *
+   * @private Static property accessible only within the Relation class
+   * @type {typeof Model | null} Can be either a Model class or null if no relation is set
+   * @example
+   * // Internal usage
+   * this.$relatedModel = UserModel;
    */
   private static $relatedModel: typeof Model | null = null;
 
   /**
-   * @note This method sets up the relationship and calls the corresponding relation method.
-   * @param {string} relation - The name of the relation.
-   * @param {IRelationOptions} options - The options for the relation.
-   * @return {this} The current relation instance.
+   * Stores a reference to the parent model in a relationship chain.
+   * Used to maintain relationship hierarchy and enable nested relationship operations.
+   * This is particularly useful in scenarios where we need to track the origin model
+   * in complex relationship chains.
+   *
+   * @private Static property for internal relationship management
+   * @type {typeof Model | null} The parent model class or null if this is the root
+   * @example
+   * // Internal usage in relationship chains
+   * ChildModel.$parentModel = ParentModel;
+   */
+  private static $parentModel: typeof Model | null = null;
+
+  /**
+   * Sets up a relationship between models.
+   * This method initializes the relationship configuration and executes the corresponding relation method.
+   *
+   * @template T
+   * @static
+   * @param {keyof T} relation - Name of the relationship method to call
+   * @param {IRelationOptions} [options={}] - Optional configuration for the relationship
+   * @throws {Error} If the specified relation method doesn't exist
+   * @returns {T} Returns the current relation instance for method chaining
+   *
+   * @example
+   * // Set up a "posts" relationship with options
+   * User.with('posts', { select: ['title', 'content'] })
    */
   public static with<T extends typeof Relation>(
     this: T,
@@ -91,21 +142,6 @@ export default class Relation extends Query {
     }
 
     return this;
-  }
-
-  /**
-   * @note This method is an alias for the with method.
-   * @param {string} relation - The name of the relation.
-   * @param {IRelationOptions} options - The options for the relation.
-   * @return {this} The current relation instance.
-   */
-  public static has<T extends typeof Relation>(
-    this: T,
-    relation: keyof T,
-    options: IRelationOptions = {}
-  ): T {
-    // Call the with method
-    return this.with(relation, options);
   }
 
   /**
@@ -191,7 +227,7 @@ export default class Relation extends Query {
       localKey,
       alias: this.$alias,
       options: this.$options,
-      parentId: this.getParentId(),
+      parentId: this.getId(),
       parentModelName: this.name,
       parentCollectionName: this.$collection,
     };
@@ -234,7 +270,7 @@ export default class Relation extends Query {
       localKeyThrough,
       alias: this.$alias,
       options: this.$options,
-      parentId: this.getParentId(),
+      parentId: this.getId(),
       parentModelName: this.name,
       parentCollectionName: this.$collection,
     };
@@ -276,7 +312,7 @@ export default class Relation extends Query {
       relatedKey,
       alias: this.$alias,
       options: this.$options,
-      parentId: this.getParentId(),
+      parentId: this.getId(),
       parentModelName: this.name,
       parentCollectionName: this.$collection,
     };
@@ -286,6 +322,7 @@ export default class Relation extends Query {
 
     this.setRelatedModel(model);
     model.setRelationship(belongsToMany);
+    model.$parentModel = this as unknown as typeof Model;
     return model;
   }
 
@@ -308,7 +345,7 @@ export default class Relation extends Query {
       morphCollectionName: `${name}s`,
       alias: this.$alias,
       options: this.$options,
-      parentId: this.getParentId(),
+      parentId: this.getId(),
       parentModelName: this.name,
       parentCollectionName: this.$collection,
     };
@@ -340,7 +377,7 @@ export default class Relation extends Query {
       morphCollectionName: `${name}s`,
       alias: this.$alias,
       options: this.$options,
-      parentId: this.getParentId(),
+      parentId: this.getId(),
       parentModelName: this.name,
       parentCollectionName: this.$collection,
     };
@@ -350,6 +387,7 @@ export default class Relation extends Query {
     this.setLookups(lookup);
     this.setRelatedModel(model);
     model.setRelationship(morphMany);
+    model.$parentModel = this as unknown as typeof Model;
 
     return model;
   }
@@ -373,7 +411,7 @@ export default class Relation extends Query {
       morphCollectionName: `${name}s`,
       alias: this.$alias,
       options: this.$options,
-      parentId: this.getParentId(),
+      parentId: this.getId(),
       parentModelName: this.name,
       parentCollectionName: this.$collection,
     };
@@ -383,16 +421,19 @@ export default class Relation extends Query {
     this.setLookups(lookup);
     this.setRelatedModel(model);
     model.setRelationship(morphToMany);
+    model.$parentModel = this as unknown as typeof Model;
 
     return model;
   }
 
   /**
-   * @note This method defines a morphByMany relationship.
-   * @param Model target - The target model.
-   * @param {string} name - The name of the morph.
-   * @param {string} [ownerKey="_id"] - The owner key.
-   * @return {Model} The target model.
+   * @note This method defines a morphedByMany relationship, which is the inverse of morphToMany.
+   * It allows a model to belong to multiple instances of another model, using a polymorphic pivot table.
+   * For example: A Tag model might be morphedByMany to both Posts and Videos.
+   *
+   * @param {typeof Model} model - The related model that this model belongs to polymorphically
+   * @param {string} name - The name of the polymorphic relationship that will be used in the pivot table
+   * @returns {typeof Model} Returns the related model instance for method chaining
    */
   static morphedByMany(model: typeof Model, name: string): typeof Model {
     // Generate the lookup stages for the morphByMany relationship
@@ -406,7 +447,7 @@ export default class Relation extends Query {
       morphCollectionName: `${name}s`,
       alias: this.$alias,
       options: this.$options,
-      parentId: this.getParentId(),
+      parentId: this.getId(),
       parentModelName: this.name,
       parentCollectionName: this.$collection,
     };
@@ -416,66 +457,19 @@ export default class Relation extends Query {
     this.setLookups(lookup);
     // this.setRelatedModel(target);
     model.setRelationship(morphedByMany);
+    model.$parentModel = this as unknown as typeof Model;
     return model;
   }
 
   /**
-   * @note This method selects columns in a has one relation.
-   * @param {string|string[]} columns - The columns to select.
-   * @param {string} alias - The alias for the relation.
-   * @param {boolean} [isSelect=true] - Whether to select or exclude the columns.
-   * @return {Document[]} The lookup stages.
-   */
-  static selectRelationColumns(
-    columns: string | string[],
-    alias: string
-  ): Document[] {
-    const lookup = [];
-    const _columns: string[] = [];
-    const additionals: any = [];
-    let project = {
-      $project: {},
-    };
-
-    // Convert columns to an array if it's a string
-    if (typeof columns === "string") _columns.push(columns);
-    else _columns.push(...columns);
-
-    // Add the columns to the project stage
-    _columns.forEach((el) => {
-      project = {
-        ...project,
-        $project: {
-          ...project.$project,
-          [`${alias}.${el}`]: 1,
-        },
-      };
-    });
-
-    // Add additional stages if selecting columns
-    additionals.push(
-      {
-        $set: {
-          [`document.${alias}`]: `$${alias}`,
-        },
-      },
-      {
-        $replaceRoot: {
-          newRoot: "$document",
-        },
-      }
-    );
-
-    // Add the project and additional stages to the lookup array
-    lookup.push(project, ...additionals);
-
-    return lookup;
-  }
-
-  /**
-   * @note This method sets the lookup stages.
-   * @param {Document} doc - The lookup stages.
-   * @return {void}
+   * @note This method adds lookup stages to the relationship pipeline.
+   * Lookup stages are used in MongoDB aggregation to perform JOIN-like operations
+   * between collections.
+   *
+   * @param {Document} doc - A single lookup stage or an array of lookup stages to be added
+   *                        to the relationship pipeline. Each lookup defines how to join
+   *                        with another collection.
+   * @returns {void}
    */
   private static setLookups(doc: Document): void {
     if (Array.isArray(doc)) this.$lookups = [...this.$lookups, ...doc];
@@ -549,38 +543,6 @@ export default class Relation extends Query {
    */
   protected static getRelationship() {
     return this.$relationship;
-  }
-
-  /**
-   * @note This method excludes columns in a has one relation.
-   * @param {string|string[]} columns - The columns to exclude.
-   * @param {string} alias - The alias for the relation.
-   * @return {Document[]} The lookup stages.
-   */
-  static excludeRelationColumns(columns: string | string[], alias: string) {
-    const lookup: Document = [];
-    const _columns: string[] = [];
-    // Convert columns to an array if it's a string
-    if (typeof columns === "string") _columns.push(columns);
-    else _columns.push(...columns);
-
-    let project = {
-      $project: {},
-    };
-
-    _columns.forEach((field: any) => {
-      project = {
-        ...project,
-        $project: {
-          ...project.$project,
-          [`${alias}.${field}`]: 0,
-        },
-      };
-    });
-
-    lookup.push(project);
-
-    return lookup;
   }
 
   /**
@@ -967,5 +929,8 @@ export default class Relation extends Query {
     this.$lookups = [];
     this.$relationship = null;
     this.$relatedModel = null;
+    this.$parentModel?.resetRelation();
+    this.$parentModel?.resetQuery();
+    this.$parentModel = null;
   }
 }

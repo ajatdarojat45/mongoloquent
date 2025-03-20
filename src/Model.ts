@@ -11,9 +11,10 @@ import {
 } from "mongodb";
 import Relation from "./Relation";
 import dayjs from "./utils/dayjs";
-import { TIME_ZONE } from "./configs/app";
+import { TIMEZONE } from "./configs/app";
 import { IModelPaginate } from "./interfaces/IModel";
 import { IRelationTypes } from "./interfaces/IRelation";
+import ModelNotFoundException from "./exceptions/ModelNotFoundException";
 
 /**
  * Type utility that handles schema field selection for MongoDB documents
@@ -35,54 +36,77 @@ type SelectResult<K, T extends { $schema: unknown }> = K extends
     : Pick<T["$schema"], K[number]>
   : T["$schema"];
 
+/*
+ * Base Model class that provides MongoDB operations and relationship functionality
+ * Extends the Relation class to support various types of relationships between models
+ *
+ * @class
+ * @extends {Relation}
+ * @description Core database operations and model functionality:
+ * - CRUD operations (Create, Read, Update, Delete)
+ * - Soft deletes
+ * - Timestamps
+ * - Query building
+ * - Aggregations
+ * - Pagination
+ * - Model relationships
+ */
 export default class Model extends Relation {
   /**
-   * @note This property defines timestamps for the document.
+   * Controls whether timestamps are automatically managed
+   * When true, timestamps will be automatically set on document creation and updates
    *
-   * @var string
+   * @protected
+   * @static
+   * @type {boolean}
+   * @default true
    */
-  protected static $useTimestamps: boolean = false;
+  protected static $useTimestamps: boolean = true;
 
   /**
-   * @note This property defines timezones for the document.
+   * Defines the timezone for timestamp fields
    *
-   * @var string
+   * @protected
+   * @static
+   * @type {string}
+   * @default TIMEZONE
    */
-  protected static $timezone: string = TIME_ZONE;
+  protected static $timezone: string = TIMEZONE;
 
   /**
-   * @note This property defines the name of the "created at" column.
+   * Field name for creation timestamp
    *
-   * @var string
+   * @protected
+   * @static
+   * @type {string}
+   * @default "createdAt"
    */
   protected static $createdAt = "createdAt";
 
   /**
-   * @note This property defines the name of the "updated at" column.
+   * Field name for update timestamp
    *
-   * @var string
+   * @protected
+   * @static
+   * @type {string}
+   * @default "updatedAt"
    */
   protected static $updatedAt = "updatedAt";
 
   /**
-   * @note This method retrieves all documents from the collection, excluding soft-deleted ones if applicable.
+   * Retrieves all documents from the collection, excluding soft-deleted ones if applicable
    *
-   * @return Promise<T["$schema"][]>
+   * @public
+   * @static
+   * @async
+   * @return Promise<T["$schema"][]> Array of documents
+   * @throws {Error} When fetching fails
    */
   public static async all<T extends typeof Model>(
     this: T
   ): Promise<T["$schema"][]> {
     try {
-      // Get the collection from the database
-      const collection = this.getCollection();
-
-      let query = {};
-
-      // If soft delete is enabled, exclude soft-deleted documents
-      if (this.$useSoftDelete) query = { [this.getIsDeleted()]: false };
-
-      // Retrieve all documents matching the query
-      return await collection.find(query).toArray();
+      return this.get();
     } catch (error) {
       console.log(error);
       throw new Error(`Fetching all documents failed`);
@@ -90,10 +114,14 @@ export default class Model extends Relation {
   }
 
   /**
-   * @note This method retrieves documents based on the specified columns and query stages.
+   * Retrieves documents based on the specified columns and query stages
    *
-   * @param columns - The columns to retrieve.
-   * @return Promise<Document[]>
+   * @public
+   * @static
+   * @async
+   * @param {string|string[]} [columns=[]] - The columns to retrieve
+   * @returns {Promise<Document[]>} Array of documents
+   * @throws {Error} When fetching fails
    */
   public static async get<
     T extends typeof Model,
@@ -118,11 +146,15 @@ export default class Model extends Relation {
   }
 
   /**
-   * @note This method retrieves paginated documents from the collection.
+   * Retrieves paginated documents from the collection
    *
-   * @param page - The page number to retrieve.
-   * @param perPage - The number of documents per page.
-   * @return Promise<IPaginate>
+   * @public
+   * @static
+   * @async
+   * @param {number} [page=1] - The page number to retrieve
+   * @param {number} [limit=this.$limit] - The number of documents per page
+   * @returns {Promise<IModelPaginate>} Paginated result
+   * @throws {Error} When pagination fails
    */
   public static async paginate<T extends typeof Model>(
     this: T,
@@ -189,10 +221,14 @@ export default class Model extends Relation {
   }
 
   /**
-   * @note This method retrieves the first document that matches the query criteria.
+   * Retrieves the first document that matches the query criteria
    *
-   * @param columns - The columns to retrieve.
-   * @return Promise<Document|null>
+   * @public
+   * @static
+   * @async
+   * @param {string|string[]} [columns=[]] - The columns to retrieve
+   * @returns {Promise<Document|null>} The first document or null if not found
+   * @throws {Error} When fetching fails
    */
   public static async first<
     T extends typeof Model,
@@ -218,23 +254,94 @@ export default class Model extends Relation {
   }
 
   /**
-   * @note This method set id and retrieve Model
+   * Retrieves the first document that matches the specified condition
    *
-   * @param id - The id of the item to retrieve.
-   * @return this
+   * @public
+   * @static
+   * @async
+   * @param {string} column - The column to check
+   * @param {any} operator - The operator to use
+   * @param {any} [value=null] - The value to compare
+   * @returns {Promise<Document|null>} The first document or null if not found
+   * @throws {Error} When fetching fails
    */
-  public static find<T extends typeof Model>(this: T, id: string | ObjectId) {
-    const parentId = new ObjectId(id);
-    this.setParentId(parentId);
-
-    return this;
+  public static async firstWhere(
+    column: string,
+    operator: any,
+    value: any = null
+  ) {
+    this.where(column, operator, value);
+    return this.first();
   }
 
   /**
-   * @note This method retrieves the values of a specific column from the query results.
+   * Retrieves the first document that matches the query criteria or throws an exception if not found
    *
-   * @param column - The column to pluck.
-   * @return Promise<any>
+   * @public
+   * @static
+   * @async
+   * @param {string|string[]} [columns=[]] - The columns to retrieve
+   * @returns {Promise<Document>} The first document
+   * @throws {ModelNotFoundException} When no document is found
+   */
+  public static async firstOrFailfirst<
+    T extends typeof Model,
+    K extends
+      | keyof T["$schema"]
+      | [keyof T["$schema"], ...(keyof T["$schema"])[]]
+      | undefined = undefined
+  >(this: T, columns?: K) {
+    const data = await this.first(columns);
+    if (!data) throw new ModelNotFoundException();
+    return data;
+  }
+
+  /**
+   * Retrieves the first document that matches the specified condition or creates a new one
+   *
+   * @public
+   * @static
+   * @async
+   * @param {object} doc - The document to check or create
+   * @returns {Promise<Document>} The first document or the newly created document
+   * @throws {Error} When fetching or creating fails
+   */
+  public static async firstOrCreate(doc: object) {
+    const collection = this.getCollection();
+
+    if (this.$useSoftDelete) {
+      doc = { ...doc, [this.$isDeleted]: false };
+    }
+
+    const data = await collection.findOne(doc);
+    if (!data) return await this.insert(doc);
+
+    return data;
+  }
+
+  /**
+   * Retrieves the first document that matches the specified condition or creates a new one
+   *
+   * @public
+   * @static
+   * @async
+   * @param {object} doc - The document to check or create
+   * @returns {Promise<Document>} The first document or the newly created document
+   * @throws {Error} When fetching or creating fails
+   */
+  public static async firstOrNew(doc: object) {
+    return this.firstOrCreate(doc);
+  }
+
+  /**
+   * Retrieves the values of a specific column from the query results
+   *
+   * @public
+   * @static
+   * @async
+   * @param {string} column - The column to pluck
+   * @returns {Promise<any>} Array of values
+   * @throws {Error} When plucking fails
    */
   public static async pluck<
     T extends typeof Model,
@@ -253,11 +360,15 @@ export default class Model extends Relation {
   }
 
   /**
-   * @note This method inserts a new document into the collection, applying timestamps and soft delete if applicable.
+   * Inserts a new document into the collection, applying timestamps and soft delete if applicable
    *
-   * @param doc - The document to insert.
-   * @param options - Optional insert options.
-   * @return Promise<WithId<Document>>
+   * @public
+   * @static
+   * @async
+   * @param {object} doc - The document to insert
+   * @param {InsertOneOptions} [options] - Optional insert options
+   * @returns {Promise<WithId<Document>>} The inserted document with its ID
+   * @throws {Error} When inserting fails
    */
   public static async insert<T extends typeof Model>(
     this: T,
@@ -274,7 +385,6 @@ export default class Model extends Relation {
       newDoc = this.checkUseSoftdelete(newDoc);
 
       newDoc = this.checkRelationship(newDoc);
-
       // Insert the document into the collection
       const data = await collection.insertOne(newDoc, options);
 
@@ -288,11 +398,15 @@ export default class Model extends Relation {
   }
 
   /**
-   * @note This method is an alias for the insert method.
+   * Alias for the insert method
    *
-   * @param doc - The document to save.
-   * @param options - Optional insert options.
-   * @return Promise<WithId<Document>>
+   * @public
+   * @static
+   * @async
+   * @param {object} doc - The document to save
+   * @param {InsertOneOptions} [options] - Optional insert options
+   * @returns {Promise<WithId<Document>>} The inserted document with its ID
+   * @throws {Error} When inserting fails
    */
   public static async save<T extends typeof Model>(
     this: T,
@@ -303,11 +417,15 @@ export default class Model extends Relation {
   }
 
   /**
-   * @note This method is an alias for the insert method.
+   * Alias for the insert method
    *
-   * @param doc - The document to create.
-   * @param options - Optional insert options.
-   * @return Promise<WithId<Document>>
+   * @public
+   * @static
+   * @async
+   * @param {object} doc - The document to create
+   * @param {InsertOneOptions} [options] - Optional insert options
+   * @returns {Promise<WithId<Document>>} The inserted document with its ID
+   * @throws {Error} When inserting fails
    */
   public static async create<T extends typeof Model>(
     this: T,
@@ -318,11 +436,15 @@ export default class Model extends Relation {
   }
 
   /**
-   * @note This method inserts multiple documents into the collection, applying timestamps and soft delete if applicable.
+   * Inserts multiple documents into the collection, applying timestamps and soft delete if applicable
    *
-   * @param docs - The documents to insert.
-   * @param options - Optional bulk write options.
-   * @return Promise<ObjectId[]>
+   * @public
+   * @static
+   * @async
+   * @param {object[]} docs - The documents to insert
+   * @param {BulkWriteOptions} [options] - Optional bulk write options
+   * @returns {Promise<ObjectId[]>} Array of inserted document IDs
+   * @throws {Error} When inserting fails
    */
   public static async insertMany<T extends typeof Model>(
     this: T,
@@ -361,11 +483,53 @@ export default class Model extends Relation {
   }
 
   /**
-   * @note This method updates a document in the collection, applying timestamps and soft delete if applicable.
+   * Updates or creates a document based on the specified condition
    *
-   * @param doc - The document to update.
-   * @param options - Optional update options.
-   * @return Promise<WithId<Document> | null>
+   * @public
+   * @static
+   * @async
+   * @param {object} doc - The document to update or create
+   * @returns {Promise<Document>} The updated or newly created document
+   * @throws {Error} When updating or creating fails
+   */
+  static async updateOrCreate(
+    filter: { [key: string]: any },
+    doc: { [key: string]: any }
+  ) {
+    for (var key in filter) {
+      if (doc.hasOwnProperty(key)) {
+        this.where(key, filter[key]);
+      }
+    }
+
+    const data = await this.update(doc);
+    if (data) return data;
+
+    return this.insert(doc);
+  }
+
+  /**
+   * Updates a single document in the collection that matches the query criteria
+   * - Applies timestamps if enabled
+   * - Handles soft delete state
+   * - Supports relationship-aware updates
+   * - Returns the updated document
+   *
+   * @public
+   * @static
+   * @async
+   * @param {UpdateFilter<Document>} doc - The update operations to apply
+   * @param {FindOneAndUpdateOptions} [options={}] - MongoDB update options
+   * @returns {Promise<Document|null>} The updated document or null if not found
+   * @throws {Error} When update operation fails
+   * @example
+   * ```typescript
+   * // Update a document
+   * await Model.where('_id', id).update({ name: 'updated' });
+   *
+   * // Update with options
+   * await Model.update(doc, { upsert: true });
+   * ```
    */
   public static async update<T extends typeof Model>(
     this: T,
@@ -377,17 +541,20 @@ export default class Model extends Relation {
       const collection = this.getCollection();
 
       // Generate the where conditions for the query
+      await this.checkRelation();
+      // Check if soft delete is enabled and apply necessary filters
+      this.checkSoftDelete();
+      // Generate the columns to be selected in the query
       this.generateWheres();
-      this.generateOrders();
-      let filter = {};
       const stages = this.getStages();
+      let filter = {};
       if (stages.length > 0) filter = stages[0].$match;
-
-      // Apply timestamps and soft delete fields to the document if enabled
+      // Apply timestamps and soft delete fields to the documents if enabled
       let newDoc = this.checkUseTimestamps(doc, false);
       newDoc = this.checkUseSoftdelete(newDoc);
+      delete (newDoc as any)._id;
 
-      // Update the document in the collection
+      // Update the documents in the collection
       const data = await collection.findOneAndUpdate(
         { ...filter },
         {
@@ -406,22 +573,26 @@ export default class Model extends Relation {
       return data as WithId<T["$schema"]> | null;
     } catch (error) {
       console.log(error);
-      throw new Error(`Updating document failed`);
+      throw new Error(`Updating documents failed`);
     }
   }
 
   /**
-   * @note This method updates multiple documents in the collection, applying timestamps and soft delete if applicable.
+   * Updates multiple documents in the collection, applying timestamps and soft delete if applicable
    *
-   * @param doc - The documents to update.
-   * @param options - Optional update options.
-   * @return Promise<{ modifiedCount: number }>
+   * @public
+   * @static
+   * @async
+   * @param {UpdateFilter<Document>} doc - The documents to update
+   * @param {UpdateOptions} [options] - Optional update options
+   * @returns {Promise<number>} The number of modified documents
+   * @throws {Error} When updating fails
    */
   public static async updateMany<T extends typeof Model>(
     this: T,
     doc: Partial<T["$schema"]>,
     options?: UpdateOptions
-  ): Promise<{ modifiedCount: number }> {
+  ): Promise<number> {
     try {
       // Get the collection from the database
       const collection = this.getCollection();
@@ -453,9 +624,7 @@ export default class Model extends Relation {
 
       // Reset the query and relation states
       this.reset();
-      return {
-        modifiedCount: data.modifiedCount,
-      };
+      return data.modifiedCount;
     } catch (error) {
       console.log(error);
       throw new Error(`Updating multiple documents failed`);
@@ -463,60 +632,46 @@ export default class Model extends Relation {
   }
 
   /**
-   * @note This method deletes a document from the collection, applying soft delete if applicable.
+   * Deletes documents by their IDs, applying soft delete if applicable
    *
-   * @return Promise<WithId<Document> | null>
+   * @public
+   * @static
+   * @async
+   * @param {string|string[]|ObjectId|ObjectId[]} ids - The ids of the documents to destroy
+   * @returns {Promise<number>} The number of deleted documents
+   * @throws {Error} When deleting fails
    */
-  public static async delete() {
+  public static async destroy(
+    ids: string | string[] | ObjectId | ObjectId[]
+  ): Promise<number> {
     try {
-      // Get the collection from the database
-      const collection = this.getCollection();
+      let filter = [];
 
-      // Generate the where conditions for the query
-      this.generateWheres();
-      const stages = this.getStages();
-      let filter = {};
-      if (stages.length > 0) filter = stages[0].$match;
-
-      // If soft delete is enabled, update the document to mark it as deleted
-      if (this.$useSoftDelete) {
-        let doc = this.checkUseTimestamps({}, false);
-        doc = this.checkUseSoftdelete(doc, true);
-
-        // Update the document in the collection
-        const data = await collection.findOneAndUpdate(
-          { ...filter },
-          {
-            $set: {
-              ...doc,
-            },
-          },
-          {
-            returnDocument: "after",
-          }
-        );
-        this.reset();
-        return data;
+      // Convert the IDs to ObjectId instances if necessary
+      if (!Array.isArray(ids)) {
+        filter = [new ObjectId(ids)];
+      } else {
+        filter = ids.map((el) => new ObjectId(el));
       }
 
-      // Delete the document from the collection
-      const data = await collection.findOneAndDelete(filter);
-      // Reset the query state
-      this.reset();
-
-      return data || null;
+      // Delete the documents from the collection
+      return await this.whereIn("_id", filter).delete();
     } catch (error) {
       console.log(error);
-      throw new Error(`Deleting document failed`);
+      throw new Error(`Destroying documents failed`);
     }
   }
 
   /**
-   * @note This method deletes multiple documents from the collection, applying soft delete if applicable.
+   * Deletes multiple documents from the collection, applying soft delete if applicable
    *
-   * @return Promise<{ deletedCount: number }>
+   * @public
+   * @static
+   * @async
+   * @returns {Promise<number>} The number of deleted documents
+   * @throws {Error} When deleting fails
    */
-  public static async deleteMany(): Promise<{ deletedCount: number }> {
+  public static async delete(): Promise<number> {
     try {
       // Get the collection from the database
       const collection = this.getCollection();
@@ -542,9 +697,7 @@ export default class Model extends Relation {
 
         this.reset();
 
-        return {
-          deletedCount: data.modifiedCount,
-        };
+        return data.modifiedCount;
       }
 
       // Delete the documents from the collection
@@ -552,9 +705,7 @@ export default class Model extends Relation {
       // Reset the query state
       this.reset();
 
-      return {
-        deletedCount: data.deletedCount,
-      };
+      return data.deletedCount;
     } catch (error) {
       console.log(error);
       throw new Error(`Deleting multiple documents failed`);
@@ -562,40 +713,15 @@ export default class Model extends Relation {
   }
 
   /**
-   * @note This method deletes documents by their IDs, applying soft delete if applicable.
+   * Forcefully deletes documents from the collection, bypassing soft delete
    *
-   * @param ids - The ids of the documents to destroy.
-   * @return Promise<{ deletedCount: number }>
+   * @public
+   * @static
+   * @async
+   * @returns {Promise<number>} The number of deleted documents
+   * @throws {Error} When deleting fails
    */
-  public static async destroy(
-    ids: string | string[] | ObjectId | ObjectId[]
-  ): Promise<{ deletedCount: number }> {
-    try {
-      let filter = [];
-
-      // Convert the IDs to ObjectId instances if necessary
-      if (!Array.isArray(ids)) {
-        filter = [new ObjectId(ids)];
-      } else {
-        filter = ids.map((el) => new ObjectId(el));
-      }
-
-      // Delete the documents from the collection
-      return await this.whereIn("_id", filter).deleteMany();
-    } catch (error) {
-      console.log(error);
-      throw new Error(`Destroying documents failed`);
-    }
-  }
-
-  /**
-   * @note This method forcefully deletes documents from the collection, bypassing soft delete.
-   *
-   * This method protects developers from running forceDelete when the trait is missing.
-   *
-   * @return Promise<{ deletedCount: number }>
-   */
-  public static async forceDelete(): Promise<{ deletedCount: number }> {
+  public static async forceDelete(): Promise<number> {
     try {
       // Get the collection from the database
       const collection = this.getCollection();
@@ -612,9 +738,7 @@ export default class Model extends Relation {
 
       // Reset the query state
       this.reset();
-      return {
-        deletedCount: data.deletedCount,
-      };
+      return data.deletedCount;
     } catch (error) {
       console.log(error);
       throw new Error(`Force deleting documents failed`);
@@ -622,16 +746,18 @@ export default class Model extends Relation {
   }
 
   /**
-   * @note This method forcefully deletes documents by their IDs, bypassing soft delete.
+   * Forcefully deletes documents by their IDs, bypassing soft delete
    *
-   * This method protects developers from running forceDestroy when the trait is missing.
-   *
-   * @param ids - The ids of the documents to destroy.
-   * @return Promise<{ deletedCount: number }>
+   * @public
+   * @static
+   * @async
+   * @param {string|string[]|ObjectId|ObjectId[]} ids - The ids of the documents to destroy
+   * @returns {Promise<number>} The number of deleted documents
+   * @throws {Error} When deleting fails
    */
   public static async forceDestroy(
     ids: string | string[] | ObjectId | ObjectId[]
-  ): Promise<{ deletedCount: number }> {
+  ): Promise<number> {
     try {
       const collection = this.getCollection();
       let id = [];
@@ -656,9 +782,7 @@ export default class Model extends Relation {
 
       this.reset();
 
-      return {
-        deletedCount: data.deletedCount,
-      };
+      return data.deletedCount;
     } catch (error) {
       console.log(error);
       throw new Error(`Force destroying documents failed`);
@@ -666,11 +790,15 @@ export default class Model extends Relation {
   }
 
   /**
-   * @note This method restores soft deleted documents by setting isDeleted to false.
+   * Restores soft deleted documents by setting isDeleted to false
    *
-   * @return Promise<{ modifiedCount: number }>
+   * @public
+   * @static
+   * @async
+   * @returns {Promise<number>} The number of restored documents
+   * @throws {Error} When restoring fails
    */
-  public static async restore(): Promise<{ modifiedCount: number }> {
+  public static async restore(): Promise<number> {
     try {
       // Only include soft-deleted documents in the query
       this.onlyTrashed();
@@ -684,11 +812,15 @@ export default class Model extends Relation {
   }
 
   /**
-   * @note This method performs aggregation operations on a specified field.
+   * Performs aggregation operations on a specified field
    *
-   * @param field - The field to aggregate.
-   * @param type - The type of aggregation (e.g., "max", "min", "avg", "sum").
-   * @return Promise<number>
+   * @private
+   * @static
+   * @async
+   * @param {string} field - The field to aggregate
+   * @param {string} type - The type of aggregation (e.g., "max", "min", "avg", "sum")
+   * @returns {Promise<number>} The aggregated value
+   * @throws {Error} When aggregation fails
    */
   private static async aggregation<
     T extends typeof Model,
@@ -730,10 +862,14 @@ export default class Model extends Relation {
   }
 
   /**
-   * @note This method retrieves the maximum value of a specified field.
+   * Retrieves the maximum value of a specified field
    *
-   * @param field - The field to get the maximum value of.
-   * @return Promise<number>
+   * @public
+   * @static
+   * @async
+   * @param {string} field - The field to get the maximum value of
+   * @returns {Promise<number>} The maximum value
+   * @throws {Error} When fetching fails
    */
   public static async max<T extends typeof Model, K extends keyof T["$schema"]>(
     this: T,
@@ -743,10 +879,14 @@ export default class Model extends Relation {
   }
 
   /**
-   * @note This method retrieves the minimum value of a specified field.
+   * Retrieves the minimum value of a specified field
    *
-   * @param field - The field to get the minimum value of.
-   * @return Promise<number>
+   * @public
+   * @static
+   * @async
+   * @param {string} field - The field to get the minimum value of
+   * @returns {Promise<number>} The minimum value
+   * @throws {Error} When fetching fails
    */
   public static async min<T extends typeof Model, K extends keyof T["$schema"]>(
     this: T,
@@ -756,10 +896,14 @@ export default class Model extends Relation {
   }
 
   /**
-   * @note This method retrieves the average value of a specified field.
+   * Retrieves the average value of a specified field
    *
-   * @param field - The field to get the average value of.
-   * @return Promise<number>
+   * @public
+   * @static
+   * @async
+   * @param {string} field - The field to get the average value of
+   * @returns {Promise<number>} The average value
+   * @throws {Error} When fetching fails
    */
   public static async avg<T extends typeof Model, K extends keyof T["$schema"]>(
     this: T,
@@ -769,10 +913,28 @@ export default class Model extends Relation {
   }
 
   /**
-   * @note This method retrieves the sum of a specified field.
+   * Retrieves the average value of a specified field
    *
-   * @param field - The field to get the sum of.
-   * @return Promise<number>
+   * @public
+   * @static
+   * @async
+   * @param {string} field - The field to get the average value of
+   * @returns {Promise<number>} The average value
+   * @throws {Error} When fetching fails
+   */
+  public static async average(field: string) {
+    return this.avg(field);
+  }
+
+  /**
+   * Retrieves the sum of a specified field
+   *
+   * @public
+   * @static
+   * @async
+   * @param {string} field - The field to get the sum of
+   * @returns {Promise<number>} The sum
+   * @throws {Error} When fetching fails
    */
   public static async sum<T extends typeof Model, K extends keyof T["$schema"]>(
     this: T,
@@ -782,9 +944,13 @@ export default class Model extends Relation {
   }
 
   /**
-   * @note This method retrieves the count of documents in the collection.
+   * Retrieves the count of documents in the collection
    *
-   * @return Promise<number>
+   * @public
+   * @static
+   * @async
+   * @returns {Promise<number>} The count of documents
+   * @throws {Error} When fetching fails
    */
   public static async count(): Promise<number> {
     try {
@@ -818,9 +984,129 @@ export default class Model extends Relation {
   }
 
   /**
-   * @note This method aggregates the query stages and lookups, then executes the aggregation pipeline.
+   * Checks if a document contains a specific value
    *
-   * @return Promise<AggregationCursor<Document>>
+   * @public
+   * @static
+   * @async
+   * @param {any} value - The value to check
+   * @returns {Promise<boolean>} True if the value exists, false otherwise
+   * @throws {Error} When checking fails
+   */
+  public static async contains(value: any): Promise<boolean> {
+    const collection = this.getCollection();
+
+    // Check if soft delete is enabled and apply necessary filters
+    this.checkSoftDelete();
+    // Generate the columns to be selected in the query
+    this.generateWheres();
+    const stages = this.getStages();
+    let filter = {};
+    if (stages.length > 0) filter = stages[0].$match;
+
+    const exist =
+      (await collection.findOne({
+        ...filter,
+        $expr: {
+          $gt: [
+            {
+              $size: {
+                $filter: {
+                  input: { $objectToArray: "$$ROOT" },
+                  as: "field",
+                  cond: { $eq: ["$$field.v", value] },
+                },
+              },
+            },
+            0,
+          ],
+        },
+      })) !== null;
+
+    return exist;
+  }
+
+  /**
+   * Checks if a document has a specific field
+   *
+   * @public
+   * @static
+   * @async
+   * @param {string} field - The field to check
+   * @returns {Promise<boolean>} True if the field exists, false otherwise
+   * @throws {Error} When checking fails
+   */
+  public static async has(field: string): Promise<boolean> {
+    const collection = this.getCollection();
+
+    // Check if soft delete is enabled and apply necessary filters
+    this.checkSoftDelete();
+    // Generate the columns to be selected in the query
+    this.generateWheres();
+    const stages = this.getStages();
+    let filter = {};
+    if (stages.length > 0) filter = stages[0].$match;
+
+    const exist =
+      (await collection.findOne({
+        ...filter,
+        $expr: {
+          $gt: [
+            {
+              $size: {
+                $filter: {
+                  input: { $objectToArray: "$$ROOT" },
+                  as: "field",
+                  cond: { $eq: ["$$field.k", field] },
+                },
+              },
+            },
+            0,
+          ],
+        },
+      })) !== null;
+
+    return exist;
+  }
+
+  /**
+   * Retrieves the last document that matches the query criteria
+   *
+   * @public
+   * @static
+   * @async
+   * @returns {Promise<Document|null>} The last document or null if not found
+   * @throws {Error} When fetching fails
+   */
+  public static async last() {
+    const data = await this.get();
+    if (data.length < 1) return null;
+
+    return data[data.length - 1];
+  }
+
+  /**
+   * Retrieves documents with only the specified fields
+   *
+   * @public
+   * @static
+   * @async
+   * @param {string|string[]} fields - The fields to retrieve
+   * @returns {Promise<Document[]>} Array of documents
+   * @throws {Error} When fetching fails
+   */
+  public static async only(fields: string | string[]) {
+    return this.get(fields);
+  }
+
+  /**
+   * Aggregates the query stages and lookups, then executes the aggregation pipeline
+   *
+   * @private
+   * @static
+   * @async
+   * @returns {Promise<AggregationCursor<Document>>} The aggregation cursor
+   * @throws {Error} When aggregation fails
    */
   private static async aggregate<T extends typeof Model>(this: T) {
     try {
@@ -861,11 +1147,24 @@ export default class Model extends Relation {
   }
 
   /**
-   * @note This method applies created_at and updated_at timestamps to the document if $useTimestamps is true.
+   * Helper function to validate and apply timestamps to documents
+   * Handles both creation and update timestamps based on the model's configuration
    *
-   * @param doc - The document to check.
-   * @param isNew - Whether the document is new.
-   * @return object
+   * @private
+   * @static
+   * @param {object} doc - The document to which timestamps should be applied
+   * @param {boolean} [isNew=true] - Whether this is a new document (true) or an update (false)
+   * @returns {object} The document with appropriate timestamps applied
+   * @example
+   * ```typescript
+   * // For a new document:
+   * checkUseTimestamps({ name: 'test' }, true)
+   * // Returns { name: 'test', createdAt: Date, updatedAt: Date }
+   *
+   * // For an update:
+   * checkUseTimestamps({ name: 'updated' }, false)
+   * // Returns { name: 'updated', updatedAt: Date }
+   * ```
    */
   private static checkUseTimestamps(
     doc: object,
@@ -884,11 +1183,24 @@ export default class Model extends Relation {
   }
 
   /**
-   * @note This method applies isDeleted and deleted_at fields to the document if $useSoftDelete is true.
+   * Helper function to handle soft delete functionality
+   * Manages the isDeleted flag and deletedAt timestamp for soft-deletable models
    *
-   * @param doc - The document to check.
-   * @param isDeleted - Whether the document is deleted.
-   * @return object
+   * @private
+   * @static
+   * @param {object} doc - The document to which soft delete fields should be applied
+   * @param {boolean} [isDeleted=false] - Whether to mark the document as deleted
+   * @returns {object} The document with appropriate soft delete fields applied
+   * @example
+   * ```typescript
+   * // When marking as deleted:
+   * checkUseSoftdelete({ name: 'test' }, true)
+   * // Returns { name: 'test', isDeleted: true, deletedAt: Date }
+   *
+   * // When not deleted:
+   * checkUseSoftdelete({ name: 'test' }, false)
+   * // Returns { name: 'test', isDeleted: false }
+   * ```
    */
   private static checkUseSoftdelete(
     doc: object,
@@ -909,10 +1221,23 @@ export default class Model extends Relation {
   }
 
   /**
-   * @note This method checks and applies relationship fields to the document.
+   * Helper function to process relationships during document operations
+   * Applies the necessary relationship fields based on the relationship type
    *
-   * @param doc - The document to check.
-   * @return object
+   * @private
+   * @static
+   * @param {object} doc - The document to process for relationships
+   * @returns {object} The document with relationship fields applied
+   * @example
+   * ```typescript
+   * // For hasMany relationship:
+   * checkRelationship({ name: 'test' })
+   * // Returns { name: 'test', parentId: ObjectId }
+   *
+   * // For morphMany relationship:
+   * checkRelationship({ name: 'test' })
+   * // Returns { name: 'test', morphType: 'ParentModel', morphId: ObjectId }
+   * ```
    */
   private static checkRelationship(doc: object): object {
     const relationship = this.getRelationship();
@@ -958,7 +1283,17 @@ export default class Model extends Relation {
   }
 
   /**
-   * @note This method resets the query and relation states.
+   * Utility method to reset query builder and relationship states
+   * Ensures clean state for subsequent queries
+   *
+   * @private
+   * @static
+   * @returns {void}
+   * @example
+   * ```typescript
+   * // After completing a query:
+   * Model.reset();
+   * ```
    */
   private static reset(): void {
     const relatedModel = this.getRelatedModel();
@@ -969,7 +1304,17 @@ export default class Model extends Relation {
   }
 
   /**
-   * @note This method checks and applies relationship conditions to the query.
+   * Helper function to process relationship conditions
+   * Applies the appropriate filters based on relationship type
+   *
+   * @private
+   * @static
+   * @returns {Promise<void>}
+   * @example
+   * ```typescript
+   * // Before executing a query:
+   * await Model.checkRelation();
+   * ```
    */
   private static async checkRelation() {
     const relationship = this.getRelationship();

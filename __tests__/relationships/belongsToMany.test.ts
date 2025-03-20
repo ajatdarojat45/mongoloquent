@@ -32,17 +32,17 @@ let roleIds: ObjectId[];
 
 beforeAll(async () => {
   userIds = await User.insertMany([
-    { name: "Udin", age: 10, [Model["$isDeleted"]]: false },
-    { name: "Kosasih", age: 11, [Model["$isDeleted"]]: false },
-    { name: "Jhon", age: 12, [Model["$isDeleted"]]: false },
+    { name: "Udin", age: 10, [User.getIsDeleted()]: false },
+    { name: "Kosasih", age: 11, [User.getIsDeleted()]: false },
+    { name: "Jhon", age: 12, [User.getIsDeleted()]: false },
   ]);
 
   roleIds = await Role.insertMany([
-    { name: "Role 1", type: "Full", [Model["$isDeleted"]]: false },
-    { name: "Role 2", type: "Half", [Model["$isDeleted"]]: false },
-    { name: "Role 3", type: "Empty", [Model["$isDeleted"]]: false },
-    { name: "Role 4", type: "Empty", [Model["$isDeleted"]]: false },
-    { name: "Role 5", type: "Empty", [Model["$isDeleted"]]: false },
+    { name: "Role 1", type: "Full", [User.getIsDeleted()]: false },
+    { name: "Role 2", type: "Half", [User.getIsDeleted()]: false },
+    { name: "Role 3", type: "Empty", [User.getIsDeleted()]: false },
+    { name: "Role 4", type: "Empty", [User.getIsDeleted()]: false },
+    { name: "Role 5", type: "Empty", [User.getIsDeleted()]: false },
   ]);
 
   const udin = await User.find(userIds[0]);
@@ -65,7 +65,6 @@ afterAll(async () => {
 describe("belongsToMany Relation", () => {
   it("Should return related data", async () => {
     const user = await User.with("roles").where("_id", userIds[0]).first();
-
     expect(user).toEqual(expect.any(Object));
     expect(user).toHaveProperty("roles");
 

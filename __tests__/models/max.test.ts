@@ -1,29 +1,29 @@
 import Model from "../../src/Model";
 
+class User extends Model {
+  static $collection = "users";
+}
+
 const users = [
   {
     name: "John Doe",
     email: "jhon@mail.com",
     age: 20,
-    [Model["$isDeleted"]]: false,
+    [User.getIsDeleted()]: false,
   },
   {
     name: "Udin",
     email: "udin@mail.com",
-    [Model["$isDeleted"]]: false,
+    [User.getIsDeleted()]: false,
     age: 10,
   },
   {
     name: "Kosasih",
     email: "kosasih@mail.com",
-    [Model["$isDeleted"]]: true,
+    [User.getIsDeleted()]: true,
     age: 50,
   },
 ];
-
-class User extends Model {
-  static $collection = "users";
-}
 
 // Clear the collection before all tests
 beforeAll(async () => {

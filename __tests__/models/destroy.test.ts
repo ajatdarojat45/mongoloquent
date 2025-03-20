@@ -62,8 +62,7 @@ describe("Model - destroy method", () => {
     const result = await User.destroy(userIds[0].toString());
     const users = await User.all();
 
-    expect(result).toEqual(expect.any(Object));
-    expect(result).toHaveProperty("deletedCount", 1);
+    expect(result).toEqual(1);
     expect(users.length).toEqual(1);
   });
 
@@ -90,8 +89,7 @@ describe("Model - destroy method", () => {
     const result = await User.destroy(ids);
     const users = await User.all();
 
-    expect(result).toEqual(expect.any(Object));
-    expect(result).toHaveProperty("deletedCount", 2);
+    expect(result).toEqual(2);
     expect(users.length).toEqual(0);
   });
 
@@ -116,8 +114,7 @@ describe("Model - destroy method", () => {
     const result = await User.destroy(userIds[0]);
     const users = await User.all();
 
-    expect(result).toEqual(expect.any(Object));
-    expect(result).toHaveProperty("deletedCount", 1);
+    expect(result).toEqual(1);
     expect(users.length).toEqual(1);
   });
 
@@ -142,8 +139,7 @@ describe("Model - destroy method", () => {
     const result = await User.destroy(userIds);
     const users = await User.all();
 
-    expect(result).toEqual(expect.any(Object));
-    expect(result).toHaveProperty("deletedCount", 2);
+    expect(result).toEqual(2);
     expect(users.length).toEqual(0);
   });
 });
