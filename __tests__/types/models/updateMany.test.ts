@@ -29,6 +29,6 @@ describe("Model Typesafety", () => {
     const updatedUsers = await User.where("age", ">", 10).updateMany({
       old: true,
     });
-    expectTypeOf(updatedUsers).toEqualTypeOf<{ modifiedCount: number }>();
+    expectTypeOf(updatedUsers).toEqualTypeOf<number>();
   });
 });

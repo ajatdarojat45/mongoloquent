@@ -284,7 +284,7 @@ export default class Model extends Relation {
    * @returns {Promise<Document>} The first document
    * @throws {ModelNotFoundException} When no document is found
    */
-  public static async firstOrFailfirst<
+  public static async firstOrFail<
     T extends typeof Model,
     K extends
       | keyof T["$schema"]
