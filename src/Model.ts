@@ -4,10 +4,7 @@ import {
   FindOneAndUpdateOptions,
   InsertOneOptions,
   ObjectId,
-  UpdateFilter,
   UpdateOptions,
-  Document,
-  WithId,
 } from "mongodb";
 import Relation from "./Relation";
 import dayjs from "./utils/dayjs";
@@ -15,6 +12,7 @@ import { TIMEZONE } from "./configs/app";
 import { IModelPaginate } from "./interfaces/IModel";
 import { IRelationTypes } from "./interfaces/IRelation";
 import ModelNotFoundException from "./exceptions/ModelNotFoundException";
+import { IMongoloquentSchema } from "./interfaces/ISchema";
 
 /**
  * Type utility that handles schema field selection for MongoDB documents
@@ -35,6 +33,12 @@ type SelectResult<K, T extends { $schema: unknown }> = K extends
     ? T["$schema"]
     : Pick<T["$schema"], K[number]>
   : T["$schema"];
+
+type FormSchema<T> = Omit<T, keyof IMongoloquentSchema>;
+/**
+ * Type utility that handles schema field selection for MongoDB documents
+ * @template K - Key(s) to select from schema
+ * @template T - Model type with schema definition
 
 /*
  * Base Model class that provides MongoDB operations and relationship functionality
@@ -372,7 +376,7 @@ export default class Model extends Relation {
    */
   public static async insert<T extends typeof Model>(
     this: T,
-    doc: T["$schema"],
+    doc: FormSchema<T["$schema"]>,
     options?: InsertOneOptions
   ) {
     try {
@@ -390,7 +394,7 @@ export default class Model extends Relation {
 
       this.reset();
       // Return the inserted document with its ID
-      return { _id: data.insertedId, ...newDoc } as WithId<T["$schema"]>;
+      return { _id: data.insertedId, ...newDoc } as T["$schema"];
     } catch (error) {
       console.log(error);
       throw new Error(`Inserting document failed`);
@@ -410,7 +414,7 @@ export default class Model extends Relation {
    */
   public static async save<T extends typeof Model>(
     this: T,
-    doc: T["$schema"],
+    doc: FormSchema<T["$schema"]>,
     options?: InsertOneOptions
   ) {
     return this.insert(doc, options);
@@ -429,7 +433,7 @@ export default class Model extends Relation {
    */
   public static async create<T extends typeof Model>(
     this: T,
-    doc: T["$schema"],
+    doc: FormSchema<T["$schema"]>,
     options?: InsertOneOptions
   ) {
     return this.insert(doc, options);
@@ -570,7 +574,7 @@ export default class Model extends Relation {
 
       // Reset the query and relation states
       this.reset();
-      return data as WithId<T["$schema"]> | null;
+      return data as T["$schema"] | null;
     } catch (error) {
       console.log(error);
       throw new Error(`Updating documents failed`);

@@ -3,9 +3,4 @@ import Model from "./Model";
 
 export const Mongoloquent = Model;
 
-export interface IMongoloquentSchema {
-    createdAt?: Date;
-    updatedAt?: Date;
-    deletedAt?: Date;
-    isDeleted?: boolean;
-}
+export { IMongoloquentSchema } from './interfaces/ISchema'
