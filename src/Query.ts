@@ -158,11 +158,14 @@ export default class Query extends Database {
    * @param {string|string[]} columns Columns to be selected
    * @returns {this} Current query instance for chaining
    */
-  public static select<T extends typeof Query>(
-    this: T,
-    columns: string | string[]
-  ): T {
-    this.setColumns(columns);
+  public static select<
+    T extends typeof Query,
+    K extends
+      | keyof T["$schema"]
+      | [keyof T["$schema"], ...(keyof T["$schema"])[]]
+      | undefined = undefined
+  >(this: T, columns?: K): T {
+    this.setColumns(columns as string[]);
     return this;
   }
 
@@ -613,7 +616,7 @@ export default class Query extends Database {
    * @param {string | string[]} columns Columns to be selected
    * @private
    */
-  protected static setColumns(columns: string | string[]): void {
+  protected static setColumns(columns: string | string[] = []): void {
     if (Array.isArray(columns)) this.$columns = [...this.$columns, ...columns];
     else this.$columns = [...this.$columns, columns];
   }

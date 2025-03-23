@@ -591,7 +591,7 @@ export default class Relation extends Query {
     else objectIds = ids.map((el) => new ObjectId(el));
 
     const collection = this.getCollection(relationship.pivotModel.$collection);
-    const _payload: object[] = [];
+    const _payload: Document[] = [];
 
     query = {
       [relationship.foreignPivotKey]: {

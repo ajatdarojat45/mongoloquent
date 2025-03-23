@@ -144,7 +144,7 @@ describe("Offset Query Tests - Pagination and Result Skipping", () => {
 
   it("should skip first record when using offset with soft delete and or condition", async () => {
     User["$useSoftDelete"] = true;
-    const result: any[] = await User.orWhere("IS_DELETED", false)
+    const result: any[] = await User.orWhere(Model["$isDeleted"], false)
       .offset(1)
       .get();
 

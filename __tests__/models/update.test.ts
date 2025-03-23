@@ -100,14 +100,18 @@ describe("Model - update method", () => {
       address: "Jakarta",
     });
 
+    const latestUser = await User.where("_id", result?._id).first();
+
     expect(result).toEqual(expect.any(Object));
     expect(result).toHaveProperty("name", "Udin Ganteng");
     expect(result).toHaveProperty("age", 21);
     expect(result).toHaveProperty("address", "Jakarta");
     expect(result).toHaveProperty("_id");
-    expect(result).toHaveProperty("createdAt", (user as any).createdAt);
-    expect(result).toHaveProperty("updatedAt");
-    // expect((result as any).updatedAt).not.toEqual((user as any).updatedAt);
+    expect(result).toHaveProperty(
+      User["$createdAt"],
+      (user as any)[User["$createdAt"]]
+    );
+    expect(result).toHaveProperty(User["$updatedAt"], (latestUser as any)[User["$updatedAt"]]);
   });
 
   it("with send _id in payload", async () => {

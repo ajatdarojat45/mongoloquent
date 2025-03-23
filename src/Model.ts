@@ -1,9 +1,9 @@
 import {
+  AggregationCursor,
   BulkWriteOptions,
   FindOneAndUpdateOptions,
   InsertOneOptions,
   ObjectId,
-  UpdateFilter,
   UpdateOptions,
 } from "mongodb";
 import Relation from "./Relation";
@@ -12,8 +12,35 @@ import { TIMEZONE } from "./configs/app";
 import { IModelPaginate } from "./interfaces/IModel";
 import { IRelationTypes } from "./interfaces/IRelation";
 import ModelNotFoundException from "./exceptions/ModelNotFoundException";
+import { IMongoloquentSchema } from "./interfaces/ISchema";
 
 /**
+ * Type utility that handles schema field selection for MongoDB documents
+ * @template K - Key(s) to select from schema
+ * @template T - Model type with schema definition
+ * @returns Selected fields from schema type
+ */
+type SelectResult<K, T extends { $schema: unknown }> = K extends
+  | undefined
+  | void
+  ? T["$schema"]
+  : K extends [] | readonly []
+  ? T["$schema"]
+  : K extends keyof T["$schema"]
+  ? Pick<T["$schema"], K>
+  : K extends (keyof T["$schema"])[] | readonly (keyof T["$schema"])[]
+  ? K extends { length: 0 }
+    ? T["$schema"]
+    : Pick<T["$schema"], K[number]>
+  : T["$schema"];
+
+type FormSchema<T> = Omit<T, keyof IMongoloquentSchema>;
+/**
+ * Type utility that handles schema field selection for MongoDB documents
+ * @template K - Key(s) to select from schema
+ * @template T - Model type with schema definition
+
+/*
  * Base Model class that provides MongoDB operations and relationship functionality
  * Extends the Relation class to support various types of relationships between models
  *
@@ -76,10 +103,12 @@ export default class Model extends Relation {
    * @public
    * @static
    * @async
-   * @returns {Promise<WithId<Document>[]>} Array of documents
+   * @return Promise<T["$schema"][]> Array of documents
    * @throws {Error} When fetching fails
    */
-  public static async all() {
+  public static async all<T extends typeof Model>(
+    this: T
+  ): Promise<T["$schema"][]> {
     try {
       return this.get();
     } catch (error) {
@@ -98,16 +127,22 @@ export default class Model extends Relation {
    * @returns {Promise<Document[]>} Array of documents
    * @throws {Error} When fetching fails
    */
-  public static async get(columns: string | string[] = []) {
+  public static async get<
+    T extends typeof Model,
+    K extends
+      | keyof T["$schema"]
+      | (keyof T["$schema"])[]
+      | undefined = undefined
+  >(this: T, columns?: K) {
     try {
       // Add the specified columns to the query
-      this.setColumns(columns);
+      this.setColumns(columns as string[]);
 
       // Execute the aggregation pipeline
       const aggregate = await this.aggregate();
 
       // Convert the aggregation cursor to an array of documents
-      return await aggregate.toArray();
+      return (await aggregate.toArray()) as SelectResult<K, T>[];
     } catch (error) {
       console.log(error);
       throw new Error(`Fetching documents failed`);
@@ -125,10 +160,11 @@ export default class Model extends Relation {
    * @returns {Promise<IModelPaginate>} Paginated result
    * @throws {Error} When pagination fails
    */
-  public static async paginate(
+  public static async paginate<T extends typeof Model>(
+    this: T,
     page: number = 1,
     limit: number = this.$limit
-  ): Promise<IModelPaginate> {
+  ): Promise<IModelPaginate<T["$schema"]>> {
     try {
       await this.checkRelation();
       // Check if soft delete is enabled and apply necessary filters
@@ -198,10 +234,17 @@ export default class Model extends Relation {
    * @returns {Promise<Document|null>} The first document or null if not found
    * @throws {Error} When fetching fails
    */
-  public static async first(columns: string | string[] = []) {
+  public static async first<
+    T extends typeof Model,
+    K extends
+      | keyof T["$schema"]
+      | [keyof T["$schema"], ...(keyof T["$schema"])[]]
+      | undefined = undefined
+  >(this: T, columns?: K) {
     try {
       // Retrieve the documents based on the specified columns
       const data = await this.get(columns);
+
       // Return the first document if it exists, otherwise return null
       if (data.length > 0) {
         return data[0];
@@ -245,7 +288,13 @@ export default class Model extends Relation {
    * @returns {Promise<Document>} The first document
    * @throws {ModelNotFoundException} When no document is found
    */
-  public static async firstOrFail(columns: string | string[] = []) {
+  public static async firstOrFail<
+    T extends typeof Model,
+    K extends
+      | keyof T["$schema"]
+      | [keyof T["$schema"], ...(keyof T["$schema"])[]]
+      | undefined = undefined
+  >(this: T, columns?: K) {
     const data = await this.first(columns);
     if (!data) throw new ModelNotFoundException();
     return data;
@@ -298,10 +347,13 @@ export default class Model extends Relation {
    * @returns {Promise<any>} Array of values
    * @throws {Error} When plucking fails
    */
-  public static async pluck(column: string): Promise<any> {
+  public static async pluck<
+    T extends typeof Model,
+    K extends keyof T["$schema"]
+  >(this: T, column: K) {
     try {
       // Retrieve the documents matching the query
-      const data = (await this.get()) as any[];
+      const data = await this.get();
 
       // Map the documents to extract the values of the specified column
       return data.map((el) => el[column]);
@@ -322,10 +374,11 @@ export default class Model extends Relation {
    * @returns {Promise<WithId<Document>>} The inserted document with its ID
    * @throws {Error} When inserting fails
    */
-  public static async insert(
-    doc: object,
+  public static async insert<T extends typeof Model>(
+    this: T,
+    doc: FormSchema<T["$schema"]>,
     options?: InsertOneOptions
-  ): Promise<object> {
+  ) {
     try {
       // Get the collection from the database
       const collection = this.getCollection();
@@ -341,7 +394,7 @@ export default class Model extends Relation {
 
       this.reset();
       // Return the inserted document with its ID
-      return { _id: data.insertedId, ...newDoc };
+      return { _id: data.insertedId, ...newDoc } as T["$schema"];
     } catch (error) {
       console.log(error);
       throw new Error(`Inserting document failed`);
@@ -359,10 +412,11 @@ export default class Model extends Relation {
    * @returns {Promise<WithId<Document>>} The inserted document with its ID
    * @throws {Error} When inserting fails
    */
-  public static async save(
-    doc: object,
+  public static async save<T extends typeof Model>(
+    this: T,
+    doc: FormSchema<T["$schema"]>,
     options?: InsertOneOptions
-  ): Promise<object> {
+  ) {
     return this.insert(doc, options);
   }
 
@@ -377,10 +431,11 @@ export default class Model extends Relation {
    * @returns {Promise<WithId<Document>>} The inserted document with its ID
    * @throws {Error} When inserting fails
    */
-  public static async create(
-    doc: object,
+  public static async create<T extends typeof Model>(
+    this: T,
+    doc: FormSchema<T["$schema"]>,
     options?: InsertOneOptions
-  ): Promise<object> {
+  ) {
     return this.insert(doc, options);
   }
 
@@ -395,8 +450,9 @@ export default class Model extends Relation {
    * @returns {Promise<ObjectId[]>} Array of inserted document IDs
    * @throws {Error} When inserting fails
    */
-  public static async insertMany(
-    docs: object[],
+  public static async insertMany<T extends typeof Model>(
+    this: T,
+    docs: T["$schema"][],
     options?: BulkWriteOptions
   ): Promise<ObjectId[]> {
     try {
@@ -479,9 +535,10 @@ export default class Model extends Relation {
    * await Model.update(doc, { upsert: true });
    * ```
    */
-  public static async update(
-    doc: UpdateFilter<Document>,
-    options: FindOneAndUpdateOptions = {}
+  public static async update<T extends typeof Model>(
+    this: T,
+    doc: Partial<T["$schema"]>,
+    options?: FindOneAndUpdateOptions
   ) {
     try {
       // Get the collection from the database
@@ -517,7 +574,7 @@ export default class Model extends Relation {
 
       // Reset the query and relation states
       this.reset();
-      return data;
+      return data as T["$schema"] | null;
     } catch (error) {
       console.log(error);
       throw new Error(`Updating documents failed`);
@@ -535,8 +592,9 @@ export default class Model extends Relation {
    * @returns {Promise<number>} The number of modified documents
    * @throws {Error} When updating fails
    */
-  public static async updateMany(
-    doc: UpdateFilter<Document>,
+  public static async updateMany<T extends typeof Model>(
+    this: T,
+    doc: Partial<T["$schema"]>,
     options?: UpdateOptions
   ): Promise<number> {
     try {
@@ -768,10 +826,10 @@ export default class Model extends Relation {
    * @returns {Promise<number>} The aggregated value
    * @throws {Error} When aggregation fails
    */
-  private static async aggregation(
-    field: string,
-    type: string
-  ): Promise<number> {
+  private static async aggregation<
+    T extends typeof Model,
+    K extends keyof T["$schema"]
+  >(this: T, field: K, type: string): Promise<number> {
     try {
       // Get the collection from the database
       const collection = this.getCollection();
@@ -790,7 +848,7 @@ export default class Model extends Relation {
             $group: {
               _id: null,
               [type]: {
-                [`$${type}`]: `$${field}`,
+                [`$${String(type)}`]: `$${String(field)}`,
               },
             },
           },
@@ -817,7 +875,10 @@ export default class Model extends Relation {
    * @returns {Promise<number>} The maximum value
    * @throws {Error} When fetching fails
    */
-  public static async max(field: string): Promise<number> {
+  public static async max<T extends typeof Model, K extends keyof T["$schema"]>(
+    this: T,
+    field: K
+  ): Promise<number> {
     return this.aggregation(field, "max");
   }
 
@@ -831,7 +892,10 @@ export default class Model extends Relation {
    * @returns {Promise<number>} The minimum value
    * @throws {Error} When fetching fails
    */
-  public static async min(field: string): Promise<number> {
+  public static async min<T extends typeof Model, K extends keyof T["$schema"]>(
+    this: T,
+    field: K
+  ): Promise<number> {
     return this.aggregation(field, "min");
   }
 
@@ -845,7 +909,10 @@ export default class Model extends Relation {
    * @returns {Promise<number>} The average value
    * @throws {Error} When fetching fails
    */
-  public static async avg(field: string): Promise<number> {
+  public static async avg<T extends typeof Model, K extends keyof T["$schema"]>(
+    this: T,
+    field: K
+  ): Promise<number> {
     return this.aggregation(field, "avg");
   }
 
@@ -873,7 +940,10 @@ export default class Model extends Relation {
    * @returns {Promise<number>} The sum
    * @throws {Error} When fetching fails
    */
-  public static async sum(field: string): Promise<number> {
+  public static async sum<T extends typeof Model, K extends keyof T["$schema"]>(
+    this: T,
+    field: K
+  ): Promise<number> {
     return this.aggregation(field, "sum");
   }
 
@@ -1042,7 +1112,7 @@ export default class Model extends Relation {
    * @returns {Promise<AggregationCursor<Document>>} The aggregation cursor
    * @throws {Error} When aggregation fails
    */
-  private static async aggregate() {
+  private static async aggregate<T extends typeof Model>(this: T) {
     try {
       await this.checkRelation();
       // Check if soft delete is enabled and apply necessary filters
@@ -1065,7 +1135,10 @@ export default class Model extends Relation {
       // Execute the aggregation pipeline with the generated stages and lookups
       const stages = this.getStages();
       const lookups = this.getLookups();
-      const aggregate = collection.aggregate([...stages, ...lookups]);
+      const aggregate = collection.aggregate([
+        ...stages,
+        ...lookups,
+      ]) as AggregationCursor<T["$schema"]>;
 
       // Reset the query and relation states
       this.reset();

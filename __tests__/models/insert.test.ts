@@ -106,7 +106,7 @@ describe("User Model - insert method", () => {
     expect(result).toHaveProperty("age", 20);
     expect(result).toHaveProperty("address", "Jakarta");
     expect(result).toHaveProperty(User.getIsDeleted(), false);
-    expect(result).toHaveProperty(User["$createdAt"]);
-    expect(result).toHaveProperty(User["$updatedAt"]);
+    expect(result).toHaveProperty(User["$createdAt"], expect.any(Date));
+    expect(result).toHaveProperty(User["$updatedAt"], expect.any(Date));
   });
 });
