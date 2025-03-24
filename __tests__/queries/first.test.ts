@@ -1,26 +1,27 @@
 import Model from "../../src/Model";
 
-class User extends Model {
-  static $collection = "users";
-}
+class User extends Model {}
+
+const builder = User["build"]();
+const userCollection = builder["getCollection"]();
 
 const users = [
   {
     name: "John Doe",
     email: "jhon@mail.com",
     age: 20,
-    [User["$isDeleted"]]: false,
+    [builder["$isDeleted"]]: false,
   },
   {
     name: "Udin",
     email: "udin@mail.com",
-    [User["$isDeleted"]]: false,
+    [builder["$isDeleted"]]: false,
     age: 10,
   },
   {
     name: "Kosasih",
     email: "kosasih@mail.com",
-    [User["$isDeleted"]]: true,
+    [builder["$isDeleted"]]: true,
     age: 50,
   },
 ];
@@ -28,8 +29,7 @@ const users = [
 // Clear the collection before all tests
 beforeAll(async () => {
   try {
-    const userCollection = User["getCollection"]();
-    await userCollection.deleteMany({});
+    await userCollection?.deleteMany({});
   } catch (error) {
     console.error(error);
   }
@@ -38,8 +38,7 @@ beforeAll(async () => {
 // Clear the collection after all tests
 afterAll(async () => {
   try {
-    const userCollection = User["getCollection"]();
-    await userCollection.deleteMany({});
+    await userCollection?.deleteMany({});
   } catch (error) {
     console.error(error);
   }
@@ -49,8 +48,7 @@ describe("User Model - first method", () => {
   // Insert test data before each test
   beforeAll(async () => {
     try {
-      const userCollection = User["getCollection"]();
-      await userCollection.insertMany(users);
+      await userCollection?.insertMany(users);
     } catch (error) {
       console.error(error);
     }
@@ -59,8 +57,7 @@ describe("User Model - first method", () => {
   // Clear test data after each test
   afterAll(async () => {
     try {
-      const userCollection = User["getCollection"]();
-      await userCollection.deleteMany({});
+      await userCollection?.deleteMany({});
     } catch (error) {
       console.error(error);
     }

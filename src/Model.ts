@@ -1,4 +1,3 @@
-import { time } from "console";
 import QueryBuilder from "./QueryBuilder";
 import { ObjectId } from "mongodb";
 

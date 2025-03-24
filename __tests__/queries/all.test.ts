@@ -1,8 +1,9 @@
 import Model from "../../src/Model";
 // Define User model extending from Model
-class User extends Model {
-  static $collection = "users";
-}
+class User extends Model {}
+
+const builder = User["build"]();
+const userCollection = builder["getCollection"]();
 
 // Sample user data for testing
 const users = [
@@ -10,18 +11,18 @@ const users = [
     name: "John Doe",
     email: "jhon@mail.com",
     age: 20,
-    [User["$isDeleted"]]: false,
+    [builder["$isDeleted"]]: false,
   },
   {
     name: "Udin",
     email: "udin@mail.com",
-    [User["$isDeleted"]]: false,
+    [builder["$isDeleted"]]: false,
     age: 10,
   },
   {
     name: "Kosasih",
     email: "kosasih@mail.com",
-    [User["$isDeleted"]]: true,
+    [builder["$isDeleted"]]: true,
     age: 50,
   },
 ];
@@ -29,8 +30,7 @@ const users = [
 // Clean up the collection before all tests
 beforeAll(async () => {
   try {
-    const userCollection = User["getCollection"]();
-    await userCollection.deleteMany({});
+    await userCollection?.deleteMany({});
   } catch (error) {
     console.error("Error in beforeAll:", error);
   }
@@ -39,20 +39,17 @@ beforeAll(async () => {
 // Clean up the collection after all tests
 afterAll(async () => {
   try {
-    const userCollection = User["getCollection"]();
-    await userCollection.deleteMany({});
+    await userCollection?.deleteMany({});
   } catch (error) {
     console.error("Error in afterAll:", error);
   }
 });
 
 describe("User Model - all method", () => {
-  const userCollection = User["getCollection"]();
-
   // Insert sample data before each test in this describe block
   beforeAll(async () => {
     try {
-      await userCollection.insertMany(users);
+      await userCollection?.insertMany(users);
     } catch (error) {
       console.error("Error in beforeAll (describe):", error);
     }
@@ -61,7 +58,7 @@ describe("User Model - all method", () => {
   // Clean up the collection after each test in this describe block
   afterAll(async () => {
     try {
-      await userCollection.deleteMany({});
+      await userCollection?.deleteMany({});
     } catch (error) {
       console.error("Error in afterAll (describe):", error);
     }
@@ -72,9 +69,9 @@ describe("User Model - all method", () => {
     User["$useSoftDelete"] = false;
 
     const result = await User.all();
-    expect(result.length).toBe(3);
+    expect(result?.length).toBe(3);
     expect(result).toEqual(expect.any(Array));
-    expect(result[0]).toEqual(expect.any(Object));
+    expect(result?.[0]).toEqual(expect.any(Object));
   });
 
   // Test case: should return all users including soft deleted users
@@ -82,17 +79,17 @@ describe("User Model - all method", () => {
     User["$useSoftDelete"] = true;
 
     const result = await User.all();
-    expect(result.length).toBe(2);
+    expect(result?.length).toBe(2);
     expect(result).toEqual(expect.any(Array));
-    expect(result[0]).toEqual(expect.any(Object));
+    expect(result?.[0]).toEqual(expect.any(Object));
   });
 
   it("all method with condition", async () => {
     User["$useSoftDelete"] = true;
 
     const result = await User.where("age", 20).all();
-    expect(result.length).toBe(1);
+    expect(result?.length).toBe(1);
     expect(result).toEqual(expect.any(Array));
-    expect(result[0]).toEqual(expect.any(Object));
+    expect(result?.[0]).toEqual(expect.any(Object));
   });
 });

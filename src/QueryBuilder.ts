@@ -1,8 +1,9 @@
-import { Db, Document, ObjectId } from "mongodb";
+import { Db, Document, InsertOneOptions, ObjectId } from "mongodb";
 import { IQueryBuilder, IQueryOrder, IQueryWhere } from "./interfaces/IQuery";
 import { MONGOLOQUENT_DATABASE_NAME, MONGOLOQUENT_DATABASE_URI, TIMEZONE } from "./configs/app";
 import Database from "./Database";
 import operators from "./utils/operators"
+import dayjs from "dayjs";
 
 export default class QueryBuilder {
   private $connection: string = "";
@@ -92,6 +93,79 @@ export default class QueryBuilder {
 
   private getCollection() {
     return this.$db?.collection(this.$collection)
+  }
+
+
+  /**
+   * Inserts a new document into the collection, applying timestamps and soft delete if applicable
+   */
+  public async insert(
+    doc: object,
+    options?: InsertOneOptions
+  ): Promise<object> {
+    try {
+      // Get the collection from the database
+      const collection = this.getCollection();
+
+      // Apply timestamps to the document if enabled
+      let newDoc = this.checkUseTimestamps(doc);
+      // Apply soft delete fields to the document if enabled
+      newDoc = this.checkUseSoftdelete(newDoc);
+
+      //      newDoc = this.checkRelationship(newDoc);
+      // Insert the document into the collection
+      const data = await collection?.insertOne(newDoc, options);
+
+      this.resetQuery();
+      // Return the inserted document with its ID
+      return { _id: data?.insertedId, ...newDoc };
+    } catch (error) {
+      console.log(error);
+      throw new Error(`Inserting document failed`);
+    }
+  }
+
+  /**
+   * Helper function to validate and apply timestamps to documents
+   * Handles both creation and update timestamps based on the model's configuration
+   */
+  private checkUseTimestamps(
+    doc: object,
+    isNew: boolean = true
+  ): object {
+    if (this.$useTimestamps) {
+      const current = dayjs().format("YYYY/MM/DD HH:mm:ss");
+      const now = dayjs.utc(current).tz(this.$timezone).toDate();
+
+      if (!isNew) return { ...doc, [this.$updatedAt]: now };
+
+      return { ...doc, [this.$createdAt]: now, [this.$updatedAt]: now };
+    }
+
+    return doc;
+  }
+
+
+  /**
+   * Helper function to handle soft delete functionality
+   * Manages the isDeleted flag and deletedAt timestamp for soft-deletable models
+   */
+  private checkUseSoftdelete(
+    doc: object,
+    isDeleted: boolean = false
+  ): object {
+    if (this.$useSoftDelete) {
+      if (isDeleted) {
+        const current = dayjs().format("YYYY/MM/DD HH:mm:ss");
+        const now = dayjs.utc(current).tz(this.$timezone).toDate();
+
+        return { ...doc, [this.$isDeleted]: true, [this.$deletedAt]: now };
+      }
+
+      return { ...doc, [this.$isDeleted]: false };
+    }
+
+    return doc;
   }
 
   /**

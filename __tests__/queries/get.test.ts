@@ -1,34 +1,34 @@
 import Model from "../../src/Model";
 
-class User extends Model {
-  static $collection = "users";
-}
+class User extends Model {}
+
+const builder = User["build"]();
+const userCollection = builder["getCollection"]();
 
 const users = [
   {
     name: "John Doe",
     email: "jhon@mail.com",
     age: 20,
-    [User["$isDeleted"]]: false,
+    [builder["$isDeleted"]]: false,
   },
   {
     name: "Udin",
     email: "udin@mail.com",
-    [User["$isDeleted"]]: false,
+    [builder["$isDeleted"]]: false,
     age: 10,
   },
   {
     name: "Kosasih",
     email: "kosasih@mail.com",
-    [User["$isDeleted"]]: true,
+    [builder["$isDeleted"]]: true,
     age: 50,
   },
 ];
 
 beforeAll(async () => {
   try {
-    const userCollection = User["getCollection"]();
-    await userCollection.deleteMany({});
+    await userCollection?.deleteMany({});
   } catch (error) {
     console.error(error);
   }
@@ -36,19 +36,16 @@ beforeAll(async () => {
 
 afterAll(async () => {
   try {
-    const userCollection = User["getCollection"]();
-    await userCollection.deleteMany({});
+    await userCollection?.deleteMany({});
   } catch (error) {
     console.error(error);
   }
 });
 
 describe("Model - get method", () => {
-  const userCollection = User["getCollection"]();
-
   beforeAll(async () => {
     try {
-      await userCollection.insertMany(users);
+      await userCollection?.insertMany(users);
     } catch (error) {
       console.error(error);
     }
@@ -56,7 +53,7 @@ describe("Model - get method", () => {
 
   afterAll(async () => {
     try {
-      await userCollection.deleteMany({});
+      await userCollection?.deleteMany({});
     } catch (error) {
       console.error(error);
     }
@@ -66,40 +63,40 @@ describe("Model - get method", () => {
     User["$useSoftDelete"] = false;
     const result = await User.get();
 
-    expect(result.length).toBe(3);
+    expect(result?.length).toBe(3);
     expect(result).toEqual(expect.any(Array));
-    expect(result[0]).toEqual(expect.any(Object));
+    expect(result?.[0]).toEqual(expect.any(Object));
   });
 
   it("should return all users excluding soft deleted ones", async () => {
     User["$useSoftDelete"] = true;
     const result = await User.get();
-    expect(result.length).toBe(2);
+    expect(result?.length).toBe(2);
     expect(result).toEqual(expect.any(Array));
-    expect(result[0]).toEqual(expect.any(Object));
+    expect(result?.[0]).toEqual(expect.any(Object));
   });
 
   it("should return all users with only the 'name' field", async () => {
     User["$useSoftDelete"] = false;
     const result = await User.get("name");
 
-    expect(result.length).toBe(3);
+    expect(result?.length).toBe(3);
     expect(result).toEqual(expect.any(Array));
-    expect(result[0]).toEqual(expect.any(Object));
-    expect(result[0]).toHaveProperty("name");
-    expect(result[0]).not.toHaveProperty("age");
-    expect(result[0]).not.toHaveProperty("email");
+    expect(result?.[0]).toEqual(expect.any(Object));
+    expect(result?.[0]).toHaveProperty("name");
+    expect(result?.[0]).not.toHaveProperty("age");
+    expect(result?.[0]).not.toHaveProperty("email");
   });
 
   it("should return all users with 'name' and 'age' fields", async () => {
     User["$useSoftDelete"] = false;
     const result = await User.get(["name", "age"]);
 
-    expect(result.length).toBe(3);
+    expect(result?.length).toBe(3);
     expect(result).toEqual(expect.any(Array));
-    expect(result[0]).toEqual(expect.any(Object));
-    expect(result[0]).toHaveProperty("name");
-    expect(result[0]).toHaveProperty("age");
-    expect(result[0]).not.toHaveProperty("email");
+    expect(result?.[0]).toEqual(expect.any(Object));
+    expect(result?.[0]).toHaveProperty("name");
+    expect(result?.[0]).toHaveProperty("age");
+    expect(result?.[0]).not.toHaveProperty("email");
   });
 });
