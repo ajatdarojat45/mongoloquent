@@ -1,3 +1,4 @@
+import { time } from "console";
 import QueryBuilder from "./QueryBuilder";
 import { BulkWriteOptions, Document, FindOneAndUpdateOptions, InsertOneOptions, ObjectId, UpdateFilter, UpdateOptions } from "mongodb";
 
@@ -8,311 +9,170 @@ export default class Model {
   protected static $useSoftDelete: boolean = false;
   protected static $useTimestamps: boolean = true;
 
-  public static async insert(
-    doc: object,
-    options?: InsertOneOptions
-  ): Promise<any> {
-    const builder = this.build();
-    const data = await builder.insert(doc, options);
-
-    return data;
+  public static async insert(doc: object, options?: InsertOneOptions): Promise<any> {
+    return this.query().insert(doc, options);
   }
 
-  public static async insertMany(
-    docs: object[],
-    options?: BulkWriteOptions
-  ): Promise<ObjectId[]> {
-    const builder = this.build();
-    const data = await builder.insertMany(docs, options);
-
-    return data;
+  public static async insertMany(docs: object[], options?: BulkWriteOptions): Promise<ObjectId[]> {
+    return this.query().insertMany(docs, options);
   }
 
-  public static async update(
-    doc: UpdateFilter<Document>,
-    options: FindOneAndUpdateOptions = {}
-  ) {
-    const builder = this.build()
-    const data = await builder.update(doc, options)
-
-    return data
+  public static async update(doc: UpdateFilter<Document>, options: FindOneAndUpdateOptions = {}) {
+    return this.query().update(doc, options)
   }
 
-  public static async updateOrCreate(
-    filter: { [key: string]: any },
-    doc: { [key: string]: any }
-  ) {
-    const builder = this.build()
-    const data = await builder.updateOrCreate(filter, doc)
-
-    return data
+  public static async updateOrCreate(filter: { [key: string]: any }, doc: { [key: string]: any }) {
+    return this.query().updateOrCreate(filter, doc)
   }
 
-  public static async updateMany(
-    doc: UpdateFilter<Document>,
-    options?: UpdateOptions
-  ): Promise<number> {
-    const builder = this.build()
-    const data = builder.updateMany(doc, options)
-
-    return data
+  public static async updateMany(doc: UpdateFilter<Document>, options?: UpdateOptions): Promise<number> {
+    return this.query().updateMany(doc, options)
   }
 
-  public static async destroy(
-    ids: string | string[] | ObjectId | ObjectId[]
-  ): Promise<number> {
-    const builder = this.build();
-    const data = await builder.destroy(ids);
-
-    return data;
+  public static async destroy(ids: string | string[] | ObjectId | ObjectId[]): Promise<number> {
+    return this.query().destroy(ids);
   }
 
   public static async delete(): Promise<number> {
-    const builder = this.build();
-    const data = await builder.delete();
-
-    return data;
+    return this.query().delete();
   }
 
   public static select(columns: string | string[]): QueryBuilder {
-    const builder = this.build();
-    builder.select(columns);
-
-    return builder;
+    return this.query().select(columns);
   }
 
   public static exclude(columns: string | string[]): QueryBuilder {
-    const builder = this.build();
-    builder.exclude(columns);
-
-    return builder;
+    return this.query().exclude(columns);
   }
 
-  public static where(
-    column: string,
-    operator: any,
-    value: any = null
-  ): QueryBuilder {
-    const builder = this.build();
-    builder.where(column, operator, value);
-
-    return builder;
+  public static where(column: string, operator: any, value: any = null): QueryBuilder {
+    return this.query().where(column, operator, value);
   }
 
   public static orWhere(column: string, operator: any, value: any = null) {
-    const builder = this.build();
-    builder.orWhere(column, operator, value);
-
-    return builder;
+    return this.query().orWhere(column, operator, value);
   }
 
   public static whereNot(column: string, value: any): QueryBuilder {
-    const builder = this.build();
-    builder.whereNot(column, value);
-
-    return builder;
+    return this.query().whereNot(column, value);
   }
 
   public static orWhereNot(column: string, value: any): QueryBuilder {
-    const builder = this.build();
-    builder.whereNot(column, value);
-
-    return builder;
+    return this.query().whereNot(column, value);
   }
 
   public static whereIn(column: string, values: any[]): QueryBuilder {
-    const builder = this.build();
-    builder.whereIn(column, values);
-
-    return builder;
+    return this.query().whereIn(column, values);
   }
 
   public static orWhereIn(column: string, values: any[]): QueryBuilder {
-    const builder = this.build();
-    builder.orWhereIn(column, values);
-
-    return builder;
+    return this.query().orWhereIn(column, values);
   }
 
   public static whereNotIn(column: string, values: any[]): QueryBuilder {
-    const builder = this.build();
-    builder.whereNotIn(column, values);
-
-    return builder;
+    return this.query().whereNotIn(column, values);
   }
 
   public static orWhereNotIn(column: string, values: any[]): QueryBuilder {
-    const builder = this.build();
-    builder.orWhereNotIn(column, values);
-
-    return builder;
+    return this.query().orWhereNotIn(column, values);
   }
 
-  public static whereBetween(
-    column: string,
-    values: [number, number?]
-  ): QueryBuilder {
-    const builder = this.build();
-    builder.whereBetween(column, values);
-
-    return builder;
+  public static whereBetween(column: string, values: [number, number?]): QueryBuilder {
+    return this.query().whereBetween(column, values);
   }
 
-  public static orWhereBetween(
-    column: string,
-    values: [number, number?]
-  ): QueryBuilder {
-    const builder = this.build();
-    builder.orWhereBetween(column, values);
-
-    return builder;
+  public static orWhereBetween(column: string, values: [number, number?]): QueryBuilder {
+    return this.query().orWhereBetween(column, values);
   }
 
   public static whereNull(column: string): QueryBuilder {
-    const builder = this.build();
-    builder.whereNull(column);
-
-    return builder;
+    return this.query().whereNull(column);
   }
 
   public static OrWhereNull(column: string): QueryBuilder {
-    const builder = this.build();
-    builder.OrWhereNull(column);
-
-    return builder;
+    return this.query().OrWhereNull(column);
   }
 
   public static whereNotNull(column: string): QueryBuilder {
-    const builder = this.build();
-    builder.whereNotNull(column);
-
-    return builder;
+    return this.query().whereNotNull(column);
   }
 
   public static orWhereNotNull(column: string): QueryBuilder {
-    const builder = this.build();
-    builder.orWhereNotNull(column);
-
-    return builder;
+    return this.query().orWhereNotNull(column);
   }
 
   public static withTrashed(): QueryBuilder {
-    const builder = this.build();
-    builder.withTrashed();
-
-    return builder;
+    return this.query().withTrashed();
   }
 
   public static onlyTrashed(): QueryBuilder {
-    const builder = this.build();
-    builder.onlyTrashed();
-
-    return builder;
+    return this.query().onlyTrashed();
   }
 
   public static offset(value: number): QueryBuilder {
-    const builder = this.build();
-    builder.offset(value);
-
-    return builder;
+    return this.query().offset(value);
   }
 
   public static skip(value: number): QueryBuilder {
-    const builder = this.build();
-    builder.skip(value);
-
-    return builder;
+    return this.query().skip(value);
   }
 
   public static limit(value: number): QueryBuilder {
-    const builder = this.build();
-    builder.limit(value);
-
-    return builder;
+    return this.query().limit(value);
   }
 
   public static take(value: number): QueryBuilder {
-    const builder = this.build();
-    builder.take(value);
-
-    return builder;
+    return this.query().take(value);
   }
 
   public static forPage(page: number, limit: number = 15): QueryBuilder {
-    const builder = this.build();
-    builder.forPage(page, limit);
-
-    return builder;
+    return this.query().forPage(page, limit);
   }
 
-  public static orderBy(
-    column: string,
-    order: string = "asc",
-    caseSensitive: boolean = false
-  ): QueryBuilder {
-    const builder = this.build();
-    builder.orderBy(column, order, caseSensitive);
-
-    return builder;
+  public static orderBy(column: string, order: string = "asc", caseSensitive: boolean = false): QueryBuilder {
+    return this.query().orderBy(column, order, caseSensitive);
   }
 
   public static groupBy(column: string): QueryBuilder {
-    const builder = this.build();
-    builder.groupBy(column);
+    return this.query().groupBy(column);
 
-    return builder;
   }
 
   public static async find(id: string | ObjectId) {
-    const builder = this.build();
-    await builder.find(id);
-
-    return builder;
+    return this.query().find(id);
   }
 
   public static async all() {
-    const builder = this.build();
-    const data = await builder.all();
-
-    return data;
+    return this.query().all();
   }
 
   public static async get(columns: string | string[] = []) {
-    const builder = this.build();
-    const data = await builder.get(columns);
-
-    return data;
+    return this.query().get(columns);
   }
 
   public static async first(columns: string | string[] = []) {
-    const builder = this.build();
-    const data = await builder.first(columns);
-
-    return data;
+    return this.query().first(columns);
   }
 
   public static async firstOrFail(columns: string | string[] = []) {
-    const builder = this.build();
-    const data = await builder.firstOrFail(columns);
-
-    return data;
+    return this.query().firstOrFail(columns);
   }
 
   public static async firstOrCreate(doc: object) {
-    const builder = this.build();
-    const data = await builder.firstOrCreate(doc);
-
-    return data;
+    return this.query().firstOrCreate(doc);
   }
 
-  private static build(): QueryBuilder {
-    const builder = new QueryBuilder({
+  public static async count(): Promise<number> {
+    return this.query().count()
+  }
+
+  private static query(): QueryBuilder {
+    return new QueryBuilder({
       connection: this.$connection,
       databaseName: this.$databaseName,
       collection: this.$collection || `${this.name.toLowerCase()}s`,
       useSoftDelete: this.$useSoftDelete,
       useTimestamps: this.$useTimestamps,
     });
-    return builder;
   }
 }
