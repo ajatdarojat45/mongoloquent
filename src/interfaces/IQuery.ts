@@ -12,3 +12,11 @@ export interface IQueryOrder {
   order: string | number
   isSensitive: boolean
 }
+
+export interface IQueryBuilder {
+  collection: string
+  connection?: string
+  databaseName?: string
+  useSoftDelete?: boolean
+  useTimestamps?: boolean
+}

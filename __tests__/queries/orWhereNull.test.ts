@@ -1,21 +1,20 @@
 import Model from "../../src/Model";
 
-class User extends Model {
-  static $collection = "users";
-}
+class User extends Model {}
 
-const userCollection = User["getCollection"]();
+const builder = User["build"]();
+const userCollection = builder["getCollection"]();
 
 beforeAll(async () => {
-  await userCollection.deleteMany({});
+  await userCollection?.deleteMany({});
 
-  await userCollection.insertMany([
+  await userCollection?.insertMany([
     {
       name: "John",
       email: "john@mail.com",
       age: 10,
       balance: 100,
-      [User.getIsDeleted()]: false,
+      [builder.getIsDeleted()]: false,
       subscription: null,
     },
     {
@@ -23,7 +22,7 @@ beforeAll(async () => {
       email: "doe@mail.com",
       age: 30,
       balance: 200,
-      [User.getIsDeleted()]: false,
+      [builder.getIsDeleted()]: false,
       subscription: null,
     },
     {
@@ -31,7 +30,7 @@ beforeAll(async () => {
       email: "udin@mail.com",
       age: 5,
       balance: 500,
-      [User.getIsDeleted()]: false,
+      [builder.getIsDeleted()]: false,
       subscription: null,
     },
     {
@@ -39,7 +38,7 @@ beforeAll(async () => {
       email: "kosasih@mail.com",
       age: 5,
       balance: 400,
-      [User.getIsDeleted()]: false,
+      [builder.getIsDeleted()]: false,
       subscription: true,
     },
     {
@@ -47,14 +46,14 @@ beforeAll(async () => {
       email: "joko@mail.com",
       age: 45,
       balance: 500,
-      [User.getIsDeleted()]: true,
+      [builder.getIsDeleted()]: true,
       subscription: true,
     },
   ]);
 });
 
 afterAll(async () => {
-  await userCollection.deleteMany({});
+  await userCollection?.deleteMany({});
 });
 
 describe("QueryResult - orWhereNull method", () => {
@@ -65,7 +64,7 @@ describe("QueryResult - orWhereNull method", () => {
   });
 
   it("should combine where condition with orWhereNull", async () => {
-    const result: any[] = await User.where("balance", 500)
+    const result = await User.where("balance", 500)
       .orWhereNotNull("subscription")
       .get();
     expect(result).toEqual(expect.any(Array));
@@ -73,7 +72,7 @@ describe("QueryResult - orWhereNull method", () => {
   });
 
   it("should combine multiple or conditions with orWhereNull", async () => {
-    const result: any[] = await User.orWhereNotNull("subscription")
+    const result = await User.orWhereNotNull("subscription")
       .orWhere("age", 5)
       .get();
     expect(result).toEqual(expect.any(Array));
@@ -81,7 +80,7 @@ describe("QueryResult - orWhereNull method", () => {
   });
 
   it("should combine where and or conditions with orWhereNull", async () => {
-    const result: any[] = await User.where("balance", 500)
+    const result = await User.where("balance", 500)
       .where("age", 5)
       .orWhereNotNull("subscription")
       .get();
@@ -91,7 +90,7 @@ describe("QueryResult - orWhereNull method", () => {
 
   it("should handle soft delete with orWhereNull", async () => {
     User["$useSoftDelete"] = true;
-    const result: any[] = await User.where("balance", 500)
+    const result = await User.where("balance", 500)
       .orWhereNotNull("subscription")
       .get();
     expect(result).toEqual(expect.any(Array));
@@ -101,7 +100,7 @@ describe("QueryResult - orWhereNull method", () => {
 
   it("should combine soft delete and or conditions with orWhereNull", async () => {
     User["$useSoftDelete"] = true;
-    const result: any[] = await User.where("balance", 500)
+    const result = await User.where("balance", 500)
       .orWhereNotNull("subscription")
       .get();
     expect(result).toEqual(expect.any(Array));
@@ -111,7 +110,7 @@ describe("QueryResult - orWhereNull method", () => {
 
   it("should combine soft delete and and conditions with orWhereNull", async () => {
     User["$useSoftDelete"] = true;
-    const result: any[] = await User.where("balance", 500)
+    const result = await User.where("balance", 500)
       .where("age", 5)
       .orWhereNotNull("subscription")
       .get();
@@ -122,7 +121,7 @@ describe("QueryResult - orWhereNull method", () => {
 
   it("should include trashed records with orWhereNull when using withTrashed", async () => {
     User["$useSoftDelete"] = true;
-    const result: any[] = await User.where("balance", 500)
+    const result = await User.where("balance", 500)
       .orWhereNotNull("subscription")
       .withTrashed()
       .get();
@@ -133,7 +132,7 @@ describe("QueryResult - orWhereNull method", () => {
 
   it("should combine withTrashed and or conditions with orWhereNull", async () => {
     User["$useSoftDelete"] = true;
-    const result: any[] = await User.where("balance", 500)
+    const result = await User.where("balance", 500)
       .orWhereNotNull("subscription")
       .withTrashed()
       .get();
@@ -144,7 +143,7 @@ describe("QueryResult - orWhereNull method", () => {
 
   it("should combine withTrashed and and conditions with orWhereNull", async () => {
     User["$useSoftDelete"] = true;
-    const result: any[] = await User.where("balance", 500)
+    const result = await User.where("balance", 500)
       .where("age", 45)
       .orWhereNotNull("subscription")
       .withTrashed()
@@ -156,7 +155,7 @@ describe("QueryResult - orWhereNull method", () => {
 
   it("should return only trashed records with orWhereNull when using onlyTrashed", async () => {
     User["$useSoftDelete"] = true;
-    const result: any[] = await User.onlyTrashed()
+    const result = await User.onlyTrashed()
       .orWhereNotNull("subscription")
       .get();
     expect(result).toEqual(expect.any(Array));
@@ -177,7 +176,7 @@ describe("QueryResult - orWhereNull method", () => {
 
   it("should combine onlyTrashed and and conditions with orWhereNull", async () => {
     User["$useSoftDelete"] = true;
-    const result: any[] = await User.where("balance", 500)
+    const result = await User.where("balance", 500)
       .where("age", 100)
       .orWhereNotNull("subscription")
       .onlyTrashed()

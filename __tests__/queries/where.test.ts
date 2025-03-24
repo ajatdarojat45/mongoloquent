@@ -1,55 +1,54 @@
 import Model from "../../src/Model";
 
-class User extends Model {
-  static $collection = "users";
-}
+class User extends Model {}
 
-const userCollection = User["getCollection"]();
+const builder = User["build"]();
+const userCollection = builder["getCollection"]();
 
 beforeAll(async () => {
-  await userCollection.deleteMany({});
+  await userCollection?.deleteMany({});
 
-  await userCollection.insertMany([
+  await userCollection?.insertMany([
     {
       name: "John",
       email: "john@mail.com",
       age: 10,
       balance: 100,
-      [User.getIsDeleted()]: false,
+      [builder.getIsDeleted()]: false,
     },
     {
       name: "doe",
       email: "doe@mail.com",
       age: 30,
       balance: 200,
-      [User.getIsDeleted()]: false,
+      [builder.getIsDeleted()]: false,
     },
     {
       name: "Udin",
       email: "udin@mail.com",
       age: 5,
       balance: 500,
-      [User.getIsDeleted()]: false,
+      [builder.getIsDeleted()]: false,
     },
     {
       name: "Kosasih",
       email: "kosasih@mail.com",
       age: 5,
       balance: 400,
-      [User.getIsDeleted()]: false,
+      [builder.getIsDeleted()]: false,
     },
     {
       name: "Joko",
       email: "joko@mail.com",
       age: 45,
       balance: 500,
-      [User.getIsDeleted()]: true,
+      [builder.getIsDeleted()]: true,
     },
   ]);
 });
 
 afterAll(async () => {
-  await userCollection.deleteMany({});
+  await userCollection?.deleteMany({});
 });
 
 describe("Query Builder - Where Clause Tests", () => {
@@ -61,32 +60,28 @@ describe("Query Builder - Where Clause Tests", () => {
   });
 
   it("should filter records using where clause with equality check", async () => {
-    const result: any[] = await User.where("balance", 500).get();
+    const result = await User.where("balance", 500).get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(2);
   });
 
   it("should combine multiple where clauses with AND operator", async () => {
-    const result: any[] = await User.where("balance", 500)
-      .where("age", 5)
-      .get();
+    const result = await User.where("balance", 500).where("age", 5).get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
   });
 
   it("should combine conditions using OR operator", async () => {
-    const result: any[] = await User.where("balance", 500)
-      .orWhere("age", 5)
-      .get();
+    const result = await User.where("balance", 500).orWhere("age", 5).get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(3);
   });
 
   it("should handle combination of AND and OR conditions", async () => {
-    const result: any[] = await User.where("balance", 500)
+    const result = await User.where("balance", 500)
       .where("age", 5)
       .orWhere("name", "Kosasih")
       .get();
@@ -97,7 +92,7 @@ describe("Query Builder - Where Clause Tests", () => {
 
   it("should respect soft delete when filtering records", async () => {
     User["$useSoftDelete"] = true;
-    const result: any[] = await User.where("balance", 500).get();
+    const result = await User.where("balance", 500).get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
@@ -107,7 +102,7 @@ describe("Query Builder - Where Clause Tests", () => {
 
   it("should handle OR conditions with soft delete enabled", async () => {
     User["$useSoftDelete"] = true;
-    const result: any[] = await User.where("balance", 500)
+    const result = await User.where("balance", 500)
       .orWhere("name", "Kosasih")
       .get();
 
@@ -119,9 +114,7 @@ describe("Query Builder - Where Clause Tests", () => {
 
   it("should handle AND conditions with soft delete enabled", async () => {
     User["$useSoftDelete"] = true;
-    const result: any[] = await User.where("balance", 500)
-      .where("age", 5)
-      .get();
+    const result = await User.where("balance", 500).where("age", 5).get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
@@ -129,7 +122,7 @@ describe("Query Builder - Where Clause Tests", () => {
 
   it("should include soft deleted records when using withTrashed", async () => {
     User["$useSoftDelete"] = true;
-    const result: any[] = await User.where("balance", 500).withTrashed().get();
+    const result = await User.where("balance", 500).withTrashed().get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(2);
@@ -139,7 +132,7 @@ describe("Query Builder - Where Clause Tests", () => {
 
   it("should combine withTrashed and OR conditions", async () => {
     User["$useSoftDelete"] = true;
-    const result: any[] = await User.where("balance", 500)
+    const result = await User.where("balance", 500)
       .orWhere("name", "Kosasih")
       .withTrashed()
       .get();
@@ -152,7 +145,7 @@ describe("Query Builder - Where Clause Tests", () => {
 
   it("should combine withTrashed and AND conditions", async () => {
     User["$useSoftDelete"] = true;
-    const result: any[] = await User.where("balance", 500)
+    const result = await User.where("balance", 500)
       .where("age", 45)
       .withTrashed()
       .get();
@@ -165,7 +158,7 @@ describe("Query Builder - Where Clause Tests", () => {
 
   it("should retrieve only soft deleted records with onlyTrashed", async () => {
     User["$useSoftDelete"] = true;
-    const result: any[] = await User.onlyTrashed().get();
+    const result = await User.onlyTrashed().get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
@@ -188,7 +181,7 @@ describe("Query Builder - Where Clause Tests", () => {
 
   it("should combine onlyTrashed with AND conditions", async () => {
     User["$useSoftDelete"] = true;
-    const result: any[] = await User.where("balance", 500)
+    const result = await User.where("balance", 500)
       .where("age", 100)
       .onlyTrashed()
       .get();

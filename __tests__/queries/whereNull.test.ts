@@ -1,21 +1,20 @@
 import Model from "../../src/Model";
 
-class User extends Model {
-  static $collection = "users";
-}
+class User extends Model {}
 
-const userCollection = User["getCollection"]();
+const builder = User["build"]();
+const userCollection = builder["getCollection"]();
 
 beforeAll(async () => {
-  await userCollection.deleteMany({});
+  await userCollection?.deleteMany({});
 
-  await userCollection.insertMany([
+  await userCollection?.insertMany([
     {
       name: "John",
       email: "john@mail.com",
       age: 10,
       balance: 100,
-      [User.getIsDeleted()]: false,
+      [builder.getIsDeleted()]: false,
       subscription: null,
     },
     {
@@ -23,7 +22,7 @@ beforeAll(async () => {
       email: "doe@mail.com",
       age: 30,
       balance: 200,
-      [User.getIsDeleted()]: false,
+      [builder.getIsDeleted()]: false,
       subscription: null,
     },
     {
@@ -31,7 +30,7 @@ beforeAll(async () => {
       email: "udin@mail.com",
       age: 5,
       balance: 500,
-      [User.getIsDeleted()]: false,
+      [builder.getIsDeleted()]: false,
       subscription: null,
     },
     {
@@ -39,7 +38,7 @@ beforeAll(async () => {
       email: "kosasih@mail.com",
       age: 5,
       balance: 400,
-      [User.getIsDeleted()]: false,
+      [builder.getIsDeleted()]: false,
       subscription: true,
     },
     {
@@ -47,14 +46,14 @@ beforeAll(async () => {
       email: "joko@mail.com",
       age: 45,
       balance: 500,
-      [User.getIsDeleted()]: true,
+      [builder.getIsDeleted()]: true,
       subscription: true,
     },
   ]);
 });
 
 afterAll(async () => {
-  await userCollection.deleteMany({});
+  await userCollection?.deleteMany({});
 });
 
 describe("Model.whereNull() - Filtering null values", () => {
@@ -65,7 +64,7 @@ describe("Model.whereNull() - Filtering null values", () => {
   });
 
   it("should combine whereNull with where clause using AND", async () => {
-    const result: any[] = await User.where("balance", 500)
+    const result = await User.where("balance", 500)
       .whereNull("subscription")
       .get();
     expect(result).toEqual(expect.any(Array));
@@ -73,15 +72,13 @@ describe("Model.whereNull() - Filtering null values", () => {
   });
 
   it("should combine whereNull with orWhere clause", async () => {
-    const result: any[] = await User.whereNull("subscription")
-      .orWhere("age", 5)
-      .get();
+    const result = await User.whereNull("subscription").orWhere("age", 5).get();
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(4);
   });
 
   it("should handle multiple where conditions with OR", async () => {
-    const result: any[] = await User.where("balance", 500)
+    const result = await User.where("balance", 500)
       .where("age", 5)
       .orWhere("name", "Kosasih")
       .get();
@@ -91,7 +88,7 @@ describe("Model.whereNull() - Filtering null values", () => {
 
   it("should respect soft delete when querying records", async () => {
     User["$useSoftDelete"] = true;
-    const result: any[] = await User.where("balance", 500).get();
+    const result = await User.where("balance", 500).get();
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
     User["$useSoftDelete"] = false;
@@ -99,7 +96,7 @@ describe("Model.whereNull() - Filtering null values", () => {
 
   it("should combine soft delete with OR conditions", async () => {
     User["$useSoftDelete"] = true;
-    const result: any[] = await User.where("balance", 500)
+    const result = await User.where("balance", 500)
       .orWhere("name", "Kosasih")
       .get();
     expect(result).toEqual(expect.any(Array));
@@ -109,9 +106,7 @@ describe("Model.whereNull() - Filtering null values", () => {
 
   it("should combine soft delete with AND conditions", async () => {
     User["$useSoftDelete"] = true;
-    const result: any[] = await User.where("balance", 500)
-      .where("age", 5)
-      .get();
+    const result = await User.where("balance", 500).where("age", 5).get();
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
     User["$useSoftDelete"] = false;
@@ -119,7 +114,7 @@ describe("Model.whereNull() - Filtering null values", () => {
 
   it("should include deleted records when using withTrashed", async () => {
     User["$useSoftDelete"] = true;
-    const result: any[] = await User.where("balance", 500).withTrashed().get();
+    const result = await User.where("balance", 500).withTrashed().get();
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(2);
     User["$useSoftDelete"] = false;
@@ -127,7 +122,7 @@ describe("Model.whereNull() - Filtering null values", () => {
 
   it("should combine withTrashed and OR conditions", async () => {
     User["$useSoftDelete"] = true;
-    const result: any[] = await User.where("balance", 500)
+    const result = await User.where("balance", 500)
       .orWhere("name", "Kosasih")
       .withTrashed()
       .get();
@@ -138,7 +133,7 @@ describe("Model.whereNull() - Filtering null values", () => {
 
   it("should combine withTrashed and AND conditions", async () => {
     User["$useSoftDelete"] = true;
-    const result: any[] = await User.where("balance", 500)
+    const result = await User.where("balance", 500)
       .where("age", 45)
       .withTrashed()
       .get();
@@ -149,7 +144,7 @@ describe("Model.whereNull() - Filtering null values", () => {
 
   it("should only return deleted records with onlyTrashed", async () => {
     User["$useSoftDelete"] = true;
-    const result: any[] = await User.onlyTrashed().get();
+    const result = await User.onlyTrashed().get();
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
     User["$useSoftDelete"] = false;
@@ -168,7 +163,7 @@ describe("Model.whereNull() - Filtering null values", () => {
 
   it("should combine onlyTrashed with AND conditions", async () => {
     User["$useSoftDelete"] = true;
-    const result: any[] = await User.where("balance", 500)
+    const result = await User.where("balance", 500)
       .where("age", 100)
       .onlyTrashed()
       .get();

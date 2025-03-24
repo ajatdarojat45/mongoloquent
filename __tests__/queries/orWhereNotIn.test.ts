@@ -1,67 +1,66 @@
 import Model from "../../src/Model";
 
-class User extends Model {
-  static $collection = "users";
-}
+class User extends Model {}
 
-const userCollection = User["getCollection"]();
+const builder = User["build"]();
+const userCollection = builder["getCollection"]();
 
 beforeAll(async () => {
-  await userCollection.deleteMany({});
+  await userCollection?.deleteMany({});
 
-  await userCollection.insertMany([
+  await userCollection?.insertMany([
     {
       name: "John",
       email: "john@mail.com",
       age: 10,
       balance: 100,
-      [User.getIsDeleted()]: false,
+      [builder.getIsDeleted()]: false,
     },
     {
       name: "doe",
       email: "doe@mail.com",
       age: 30,
       balance: 200,
-      [User.getIsDeleted()]: false,
+      [builder.getIsDeleted()]: false,
     },
     {
       name: "Udin",
       email: "udin@mail.com",
       age: 5,
       balance: 500,
-      [User.getIsDeleted()]: false,
+      [builder.getIsDeleted()]: false,
     },
     {
       name: "Kosasih",
       email: "kosasih@mail.com",
       age: 5,
       balance: 400,
-      [User.getIsDeleted()]: false,
+      [builder.getIsDeleted()]: false,
     },
     {
       name: "Joko",
       email: "joko@mail.com",
       age: 45,
       balance: 500,
-      [User.getIsDeleted()]: true,
+      [builder.getIsDeleted()]: true,
     },
   ]);
 });
 
 afterAll(async () => {
-  await userCollection.deleteMany({});
+  await userCollection?.deleteMany({});
 });
 
 describe("Model - orWhereNotIn Query Builder Method", () => {
   it("should filter records not in given array using orWhereNotIn", async () => {
-    const result: any[] = await User.orWhereNotIn("balance", [500, 200]).get();
+    const result = await User.orWhereNotIn("balance", [500, 200]).get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(2);
   });
 
   it("should combine where and orWhereNotIn conditions", async () => {
-    const result: any[] = await User.where("age", 5)
+    const result = await User.where("age", 5)
       .orWhereNotIn("balance", [500, 200])
       .get();
 
@@ -70,7 +69,7 @@ describe("Model - orWhereNotIn Query Builder Method", () => {
   });
 
   it("should combine orWhereNotIn with orWhere conditions", async () => {
-    const result: any[] = await User.orWhereNotIn("balance", [500, 200])
+    const result = await User.orWhereNotIn("balance", [500, 200])
       .orWhere("name", "doe")
       .get();
 
@@ -79,7 +78,7 @@ describe("Model - orWhereNotIn Query Builder Method", () => {
   });
 
   it("should combine where, orWhereNotIn and orWhere conditions", async () => {
-    const result: any[] = await User.where("age", 5)
+    const result = await User.where("age", 5)
       .orWhereNotIn("balance", [500, 200])
       .orWhere("name", "doe")
       .get();
@@ -89,7 +88,7 @@ describe("Model - orWhereNotIn Query Builder Method", () => {
   });
 
   it("should combine whereIn with orWhereNotIn conditions", async () => {
-    const result: any[] = await User.whereIn("balance", [500, 200])
+    const result = await User.whereIn("balance", [500, 200])
       .orWhereNotIn("age", [5, 10, 30])
       .get();
 
@@ -98,7 +97,7 @@ describe("Model - orWhereNotIn Query Builder Method", () => {
   });
 
   it("should combine whereNotIn with orWhereNotIn conditions", async () => {
-    const result: any[] = await User.whereNotIn("balance", [500, 200])
+    const result = await User.whereNotIn("balance", [500, 200])
       .orWhereNotIn("name", ["doe"])
       .get();
 
@@ -108,7 +107,7 @@ describe("Model - orWhereNotIn Query Builder Method", () => {
 
   it("should handle orWhereNotIn with soft delete enabled", async () => {
     User["$useSoftDelete"] = true;
-    const result: any[] = await User.whereNotIn("balance", [100, 200, 400])
+    const result = await User.whereNotIn("balance", [100, 200, 400])
       .orWhereNotIn("name", ["John"])
       .get();
 
@@ -120,7 +119,7 @@ describe("Model - orWhereNotIn Query Builder Method", () => {
 
   it("should combine where and orWhereNotIn with soft delete enabled", async () => {
     User["$useSoftDelete"] = true;
-    const result: any[] = await User.where("age", 5)
+    const result = await User.where("age", 5)
       .orWhereNotIn("balance", [100, 200, 400])
       .get();
 
@@ -132,7 +131,7 @@ describe("Model - orWhereNotIn Query Builder Method", () => {
 
   it("should combine orWhereNotIn and orWhere with soft delete enabled", async () => {
     User["$useSoftDelete"] = true;
-    const result: any[] = await User.whereNotIn("balance", [100, 200, 400])
+    const result = await User.whereNotIn("balance", [100, 200, 400])
       .orWhere("name", "doe")
       .get();
 
@@ -144,7 +143,7 @@ describe("Model - orWhereNotIn Query Builder Method", () => {
 
   it("should handle orWhereNotIn with withTrashed option", async () => {
     User["$useSoftDelete"] = true;
-    const result: any[] = await User.orWhereNotIn("balance", [100, 200, 400])
+    const result = await User.orWhereNotIn("balance", [100, 200, 400])
       .withTrashed()
       .get();
 
@@ -156,10 +155,7 @@ describe("Model - orWhereNotIn Query Builder Method", () => {
 
   it("should combine where and orWhereNotIn with withTrashed option", async () => {
     User["$useSoftDelete"] = true;
-    const result: any[] = await User.orWhereNotIn(
-      "balance",
-      [100, 200, 400, 500]
-    )
+    const result = await User.orWhereNotIn("balance", [100, 200, 400, 500])
       .where("name", "Joko")
       .withTrashed()
       .get();
@@ -172,7 +168,7 @@ describe("Model - orWhereNotIn Query Builder Method", () => {
 
   it("should combine orWhereNotIn and orWhere with withTrashed option", async () => {
     User["$useSoftDelete"] = true;
-    const result: any[] = await User.orWhereNotIn("balance", [100, 200, 400])
+    const result = await User.orWhereNotIn("balance", [100, 200, 400])
       .orWhere("name", "Kosasih")
       .withTrashed()
       .get();
@@ -185,7 +181,7 @@ describe("Model - orWhereNotIn Query Builder Method", () => {
 
   it("should handle orWhereNotIn with onlyTrashed option", async () => {
     User["$useSoftDelete"] = true;
-    const result: any[] = await User.orWhereNotIn("balance", [100, 200, 400])
+    const result = await User.orWhereNotIn("balance", [100, 200, 400])
       .onlyTrashed()
       .get();
 
@@ -197,7 +193,7 @@ describe("Model - orWhereNotIn Query Builder Method", () => {
 
   it("should combine where and orWhereNotIn with onlyTrashed option", async () => {
     User["$useSoftDelete"] = true;
-    const result: any[] = await User.where("age", 5)
+    const result = await User.where("age", 5)
       .orWhereNotIn("balance", [100, 200, 400, 500])
       .onlyTrashed()
       .get();
@@ -210,7 +206,7 @@ describe("Model - orWhereNotIn Query Builder Method", () => {
 
   it("should combine orWhereNotIn and orWhere with onlyTrashed option", async () => {
     User["$useSoftDelete"] = true;
-    const result: any[] = await User.whereNotIn("balance", [100, 200, 400])
+    const result = await User.whereNotIn("balance", [100, 200, 400])
       .orWhere("name", "Kosasih")
       .onlyTrashed()
       .get();

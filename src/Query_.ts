@@ -8,112 +8,112 @@ export default class Query extends Database {
    * @private
    * @type {ObjectId | null}
    */
-  private static $parentId: ObjectId | null = null;
+  private $parentId: ObjectId | null = null;
 
   /**
    * Stores the ID of the document to be retrieved
    * @private
    * @type {ObjectId | null}
    */
-  private static $id: ObjectId | null = null;
+  private $id: ObjectId | null = null;
 
   /**
    * Stores the current aggregation pipeline stages
    * @private
    * @type {Document[]}
    */
-  private static $stages: Document[] = [];
+  private $stages: Document[] = [];
 
   /**
    * Stores the columns that should be returned
    * @private
    * @type {string[]}
    */
-  private static $columns: string[] = [];
+  private $columns: string[] = [];
 
   /**
    * Stores the columns that should be excluded
    * @private
    * @type {string[]}
    */
-  private static $excludes: string[] = [];
+  private $excludes: string[] = [];
 
   /**
    * Stores the where constraints for the query
    * @private
    * @type {IQueryWhere[]}
    */
-  private static $wheres: IQueryWhere[] = [];
+  private $wheres: IQueryWhere[] = [];
 
   /**
    * Stores the orderings for the query
    * @private
    * @type {IQueryOrder[]}
    */
-  private static $orders: IQueryOrder[] = [];
+  private $orders: IQueryOrder[] = [];
 
   /**
    * Stores the groupings for the query
    * @private
    * @type {string[]}
    */
-  private static $groups: string[] = [];
+  private $groups: string[] = [];
 
   /**
    * Identifies if the soft delete feature is enabled
    * @public
    * @type {boolean}
    */
-  public static $useSoftDelete: boolean = false;
+  public $useSoftDelete: boolean = false;
 
   /**
    * Stores the field name for the soft delete flag
    * @protected
    * @type {string}
    */
-  protected static $isDeleted: string = "isDeleted";
+  protected $isDeleted: string = "isDeleted";
 
   /**
    * Stores the field name for the soft delete timestamp
    * @protected
    * @type {string}
    */
-  protected static $deletedAt: string = "deletedAt";
+  protected $deletedAt: string = "deletedAt";
 
   /**
    * Identifies if querying soft deleted data is enabled
    * @private
    * @type {boolean}
    */
-  private static $withTrashed: boolean = false;
+  private $withTrashed: boolean = false;
 
   /**
    * Identifies if querying only soft deleted data is enabled
    * @private
    * @type {boolean}
    */
-  private static $onlyTrashed: boolean = false;
+  private $onlyTrashed: boolean = false;
 
   /**
    * Stores the maximum number of records to return
    * @protected
    * @type {number}
    */
-  protected static $limit: number = 0;
+  protected $limit: number = 0;
 
   /**
    * Stores the number of records to skip
    * @private
    * @type {number}
    */
-  private static $offset: number = 0;
+  private $offset: number = 0;
 
   /**
    * Stores all of the available clause operators
    * @private
    * @type {Array<{operator: string, mongoOperator: string, options?: string}>}
    */
-  private static $operators = [
+  private $operators = [
     {
       operator: "=",
       mongoOperator: "eq",
@@ -158,10 +158,7 @@ export default class Query extends Database {
    * @param {string|string[]} columns Columns to be selected
    * @returns {this} Current query instance for chaining
    */
-  public static select<T extends typeof Query>(
-    this: T,
-    columns: string | string[]
-  ): T {
+  public select(columns: string | string[]): this {
     this.setColumns(columns);
     return this;
   }
@@ -171,10 +168,7 @@ export default class Query extends Database {
    * @param {string|string[]} columns Columns to be excluded
    * @returns {this} Current query instance for chaining
    */
-  public static exclude<T extends typeof Query>(
-    this: T,
-    columns: string | string[]
-  ): T {
+  public exclude(columns: string | string[]): this {
     this.setExcludes(columns);
     return this;
   }
@@ -186,12 +180,7 @@ export default class Query extends Database {
    * @param {any} [value] Value to compare against if operator is provided
    * @returns {this} Current query instance for chaining
    */
-  public static where<T extends typeof Query>(
-    this: T,
-    column: string,
-    operator: any,
-    value: any = null
-  ): T {
+  public where(column: string, operator: any, value: any = null): this {
     // Determine the value and operator
     let _value = value || operator;
     let _operator = value ? operator : "eq";
@@ -209,12 +198,7 @@ export default class Query extends Database {
    * @param {any} [value] Value to compare against if operator is provided
    * @returns {this} Current query instance for chaining
    */
-  public static orWhere<T extends typeof Query>(
-    this: T,
-    column: string,
-    operator: any,
-    value: any = null
-  ): T {
+  public orWhere(column: string, operator: any, value: any = null): this {
     // Determine the value and operator
     let _value = value || operator;
     let _operator = value ? operator : "eq";
@@ -231,11 +215,7 @@ export default class Query extends Database {
    * @param {any} value Value to compare against
    * @returns {this} Current query instance for chaining
    */
-  public static whereNot<T extends typeof Query>(
-    this: T,
-    column: string,
-    value: any
-  ): T {
+  public whereNot(column: string, value: any): this {
     // Add the where clause to the $wheres array
     this.setWheres(column, "ne", value, "and");
 
@@ -248,11 +228,7 @@ export default class Query extends Database {
    * @param {any} value Value to compare against
    * @returns {this} Current query instance for chaining
    */
-  public static orWhereNot<T extends typeof Query>(
-    this: T,
-    column: string,
-    value: any
-  ): T {
+  public orWhereNot(column: string, value: any): this {
     // Add the where clause to the $wheres array
     this.setWheres(column, "ne", value, "or");
 
@@ -265,11 +241,7 @@ export default class Query extends Database {
    * @param {any[]} values Values to compare against
    * @returns {this} Current query instance for chaining
    */
-  public static whereIn<T extends typeof Query>(
-    this: T,
-    column: string,
-    values: any[]
-  ): T {
+  public whereIn(column: string, values: any[]): this {
     // Add the where clause to the $wheres array
     this.setWheres(column, "in", values, "and");
 
@@ -282,11 +254,7 @@ export default class Query extends Database {
    * @param {any[]} values Values to compare against
    * @returns {this} Current query instance for chaining
    */
-  public static orWhereIn<T extends typeof Query>(
-    this: T,
-    column: string,
-    values: any[]
-  ): T {
+  public orWhereIn(column: string, values: any[]): this {
     // Add the where clause to the $wheres array
     this.setWheres(column, "in", values, "or");
 
@@ -299,11 +267,7 @@ export default class Query extends Database {
    * @param {any[]} values Values to compare against
    * @returns {this} Current query instance for chaining
    */
-  public static whereNotIn<T extends typeof Query>(
-    this: T,
-    column: string,
-    values: any[]
-  ): T {
+  public whereNotIn(column: string, values: any[]): this {
     // Add the where clause to the $wheres array
     this.setWheres(column, "nin", values, "and");
 
@@ -316,11 +280,7 @@ export default class Query extends Database {
    * @param {any[]} values Values to compare against
    * @returns {this} Current query instance for chaining
    */
-  public static orWhereNotIn<T extends typeof Query>(
-    this: T,
-    column: string,
-    values: any[]
-  ): T {
+  public orWhereNotIn(column: string, values: any[]): this {
     // Add the where clause to the $wheres array
     this.setWheres(column, "nin", values, "or");
 
@@ -333,11 +293,7 @@ export default class Query extends Database {
    * @param {[any, any]} values Range of values to compare against
    * @returns {this} Current query instance for chaining
    */
-  public static whereBetween<T extends typeof Query>(
-    this: T,
-    column: string,
-    values: [number, number?]
-  ): T {
+  public whereBetween(column: string, values: [number, number?]): this {
     // Add the where clause to the $wheres array
     this.setWheres(column, "between", values, "and");
 
@@ -350,11 +306,7 @@ export default class Query extends Database {
    * @param {[any, any]} values Range of values to compare against
    * @returns {this} Current query instance for chaining
    */
-  public static orWhereBetween<T extends typeof Query>(
-    this: T,
-    column: string,
-    values: [number, number?]
-  ): T {
+  public orWhereBetween(column: string, values: [number, number?]): this {
     // Add the where clause to the $wheres array
     this.setWheres(column, "between", values, "or");
 
@@ -366,7 +318,7 @@ export default class Query extends Database {
    * @param {string} column Column name to check for null
    * @returns {this} Current query instance for chaining
    */
-  public static whereNull<T extends typeof Query>(this: T, column: string): T {
+  public whereNull(column: string): this {
     // Add the where clause to the $wheres array
     this.setWheres(column, "eq", null, "and");
 
@@ -378,10 +330,7 @@ export default class Query extends Database {
    * @param {string} column Column name to check for null
    * @returns {this} Current query instance for chaining
    */
-  public static OrWhereNull<T extends typeof Query>(
-    this: T,
-    column: string
-  ): T {
+  public OrWhereNull(column: string): this {
     // Add the where clause to the $wheres array
     this.setWheres(column, "eq", null, "or");
 
@@ -393,10 +342,7 @@ export default class Query extends Database {
    * @param {string} column Column name to check for not null
    * @returns {this} Current query instance for chaining
    */
-  public static whereNotNull<T extends typeof Query>(
-    this: T,
-    column: string
-  ): T {
+  public whereNotNull(column: string): this {
     // Add the where clause to the $wheres array
     this.setWheres(column, "ne", null, "and");
 
@@ -408,10 +354,7 @@ export default class Query extends Database {
    * @param {string} column Column name to check for not null
    * @returns {this} Current query instance for chaining
    */
-  public static orWhereNotNull<T extends typeof Query>(
-    this: T,
-    column: string
-  ): T {
+  public orWhereNotNull(column: string): this {
     // Add the where clause to the $wheres array
     this.setWheres(column, "ne", null, "or");
 
@@ -422,7 +365,7 @@ export default class Query extends Database {
    * Sets the query to include trashed data
    * @returns {this} Current query instance for chaining
    */
-  public static withTrashed<T extends typeof Query>(this: T): T {
+  public withTrashed(): this {
     // Set the $withTrashed property to true
     this.$withTrashed = true;
 
@@ -433,7 +376,7 @@ export default class Query extends Database {
    * Sets the query to include only trashed data
    * @returns {this} Current query instance for chaining
    */
-  public static onlyTrashed<T extends typeof Query>(this: T): T {
+  public onlyTrashed(): this {
     // Set the $onlyTrashed property to true
     this.$onlyTrashed = true;
     return this;
@@ -444,7 +387,7 @@ export default class Query extends Database {
    * @param {number} value Number of records to skip
    * @returns {this} Current query instance for chaining
    */
-  public static offset<T extends typeof Query>(this: T, value: number): T {
+  public offset(value: number): this {
     // Add the $skip stage to the $stages array
     this.$offset = value;
 
@@ -456,7 +399,7 @@ export default class Query extends Database {
    * @param {number} value Number of records to skip
    * @returns {this} Current query instance for chaining
    */
-  public static skip<T extends typeof Query>(this: T, value: number): T {
+  public skip(value: number): this {
     // Call the offset method
     return this.offset(value);
   }
@@ -466,7 +409,7 @@ export default class Query extends Database {
    * @param {number} value Maximum number of records to return
    * @returns {this} Current query instance for chaining
    */
-  public static limit<T extends typeof Query>(this: T, value: number): T {
+  public limit(value: number): this {
     // Add the $limit stage to the $stages array
     this.$limit = value;
 
@@ -478,7 +421,7 @@ export default class Query extends Database {
    * @param {number} value Maximum number of records to return
    * @returns {this} Current query instance for chaining
    */
-  public static take<T extends typeof Query>(this: T, value: number): T {
+  public take(value: number): this {
     // Call the limit method
     return this.limit(value);
   }
@@ -486,16 +429,12 @@ export default class Query extends Database {
   /**
    * Sets the limit and offset for a given page
    * @param {number} page Page number
-   * @param {number} [perPage=15] Number of records per page
+   * @param {number} [limit=15] Number of records per page
    * @returns {this} Current query instance for chaining
    */
-  public static forPage<T extends typeof Query>(
-    this: T,
-    page: number,
-    perPage: number = 15
-  ): T {
+  public forPage(page: number, limit: number = 15): this {
     // Set the offset and limit for the given page
-    return this.offset((page - 1) * perPage).limit(perPage);
+    return this.offset((page - 1) * limit).limit(limit);
   }
 
   /**
@@ -505,12 +444,7 @@ export default class Query extends Database {
    * @param {boolean} [isSensitive=false] Whether the order is case-sensitive
    * @returns {this} Current query instance for chaining
    */
-  public static orderBy<T extends typeof Query>(
-    this: T,
-    column: string,
-    order: string = "asc",
-    isSensitive: boolean = false
-  ): T {
+  public orderBy(column: string, order: string = "asc", isSensitive: boolean = false): this {
     // Add the order by clause to the $orders array
     this.setOrders({ column, order, isSensitive });
 
@@ -522,7 +456,7 @@ export default class Query extends Database {
    * @param {string} column Column to group by
    * @returns {this} Current query instance for chaining
    */
-  public static groupBy<T extends typeof Query>(this: T, column: string): T {
+  public groupBy(column: string): this {
     // Add the group by clause to the $groups array
     this.setGroups(column);
 
@@ -534,7 +468,7 @@ export default class Query extends Database {
    * @param {ObjectId | null} id Parent ID
    * @protected
    */
-  protected static setParentId(id: ObjectId | null): void {
+  protected setParentId(id: ObjectId | null): void {
     this.$parentId = id;
   }
 
@@ -543,7 +477,7 @@ export default class Query extends Database {
    * @returns {ObjectId | null} Parent ID
    * @protected
    */
-  protected static getParentId(): ObjectId | null {
+  protected getParentId(): ObjectId | null {
     return this.$parentId;
   }
 
@@ -552,7 +486,7 @@ export default class Query extends Database {
    * @param {ObjectId | null} id ID to set
    * @protected
    */
-  protected static setId(id: ObjectId | null): void {
+  protected setId(id: ObjectId | null): void {
     this.$id = id;
   }
 
@@ -561,7 +495,7 @@ export default class Query extends Database {
    * @returns {ObjectId | null} Current document ID
    * @protected
    */
-  protected static getId(): ObjectId | null {
+  protected getId(): ObjectId | null {
     return this.$id;
   }
 
@@ -570,10 +504,7 @@ export default class Query extends Database {
    * @param {string | ObjectId} id ID of the item to retrieve
    * @returns {this} Current query instance for chaining
    */
-  public static find<T extends typeof Query>(
-    this: T,
-    id: string | ObjectId
-  ): T {
+  public find(id: string | ObjectId): this {
     const _id = new ObjectId(id);
     this.setId(_id);
 
@@ -585,7 +516,7 @@ export default class Query extends Database {
    * @param {Document | Document[]} doc Stages to be set
    * @private
    */
-  private static setStages(doc: Document | Document[]): void {
+  private setStages(doc: Document | Document[]): void {
     if (Array.isArray(doc)) this.$stages = [...this.$stages, ...doc];
     else this.$stages = [...this.$stages, doc];
   }
@@ -595,7 +526,7 @@ export default class Query extends Database {
    * @returns {Document[]} Stages
    * @protected
    */
-  protected static getStages(): Document[] {
+  protected getStages(): Document[] {
     return this.$stages;
   }
 
@@ -604,7 +535,7 @@ export default class Query extends Database {
    * @returns {string} Field name for the soft delete flag
    * @public
    */
-  public static getIsDeleted(): string {
+  public getIsDeleted(): string {
     return this.$isDeleted;
   }
 
@@ -613,7 +544,7 @@ export default class Query extends Database {
    * @param {string | string[]} columns Columns to be selected
    * @private
    */
-  protected static setColumns(columns: string | string[]): void {
+  protected setColumns(columns: string | string[]): void {
     if (Array.isArray(columns)) this.$columns = [...this.$columns, ...columns];
     else this.$columns = [...this.$columns, columns];
   }
@@ -623,7 +554,7 @@ export default class Query extends Database {
    * @param {string | string[]} columns Columns to be excluded
    * @private
    */
-  private static setExcludes(columns: string | string[]): void {
+  private setExcludes(columns: string | string[]): void {
     if (Array.isArray(columns))
       this.$excludes = [...this.$excludes, ...columns];
     else this.$excludes = [...this.$excludes, columns];
@@ -637,7 +568,7 @@ export default class Query extends Database {
    * @param {string} [boolean="and"] Boolean operator to use (and/or)
    * @private
    */
-  private static setWheres(
+  private setWheres(
     column: string,
     operator: any,
     value: any,
@@ -660,7 +591,7 @@ export default class Query extends Database {
    * @param {IQueryOrder} doc Orders to be set
    * @private
    */
-  private static setOrders(doc: IQueryOrder): void {
+  private setOrders(doc: IQueryOrder): void {
     if (Array.isArray(doc)) this.$orders = [...this.$orders, ...doc];
     else this.$orders = [...this.$orders, doc];
   }
@@ -670,7 +601,7 @@ export default class Query extends Database {
    * @param {string} doc Groups to be set
    * @private
    */
-  private static setGroups(doc: string): void {
+  private setGroups(doc: string): void {
     if (Array.isArray(doc)) this.$groups = [...this.$groups, ...doc];
     else this.$groups = [...this.$groups, doc];
   }
@@ -679,7 +610,7 @@ export default class Query extends Database {
    * Checks if the soft delete feature is enabled and applies the necessary conditions
    * @public
    */
-  public static checkSoftDelete(): void {
+  public checkSoftDelete(): void {
     // Check if soft delete is enabled and apply the necessary conditions
     if (!this.$withTrashed && !this.$onlyTrashed && this.$useSoftDelete)
       this.where(this.$isDeleted, false);
@@ -689,7 +620,7 @@ export default class Query extends Database {
    * Generates the selected columns for a query
    * @public
    */
-  public static generateColumns(): void {
+  public generateColumns(): void {
     let $project = {};
     // Add each selected column to the $project stage
     this.$columns.forEach((el) => {
@@ -704,7 +635,7 @@ export default class Query extends Database {
    * Generates the excluded columns for a query
    * @public
    */
-  public static generateExcludes(): void {
+  public generateExcludes(): void {
     let $project = {};
     // Add each excluded column to the $project stage
     this.$excludes.forEach((el) => {
@@ -719,7 +650,7 @@ export default class Query extends Database {
    * Generates the conditions for a query
    * @public
    */
-  public static generateWheres(): void {
+  public generateWheres(): void {
     let $and: Document[] = [];
     let $or: Document[] = [];
 
@@ -810,7 +741,7 @@ export default class Query extends Database {
    * Generates the orders for a query
    * @protected
    */
-  protected static generateOrders(): void {
+  protected generateOrders(): void {
     let $project = {
       document: "$$ROOT",
     };
@@ -850,7 +781,7 @@ export default class Query extends Database {
    * Generates the groups for a query
    * @protected
    */
-  protected static generateGroups(): void {
+  protected generateGroups(): void {
     let _id = {};
 
     this.$groups.forEach((el) => {
@@ -869,7 +800,7 @@ export default class Query extends Database {
    * Generates the limit for a query
    * @protected
    */
-  protected static generateLimit(): void {
+  protected generateLimit(): void {
     if (this.$limit > 0) this.setStages({ $limit: this.$limit });
   }
 
@@ -877,7 +808,7 @@ export default class Query extends Database {
    * Generates the offset for a query
    * @protected
    */
-  protected static generateOffset(): void {
+  protected generateOffset(): void {
     if (this.$offset > 0) this.setStages({ $skip: this.$offset });
   }
 
@@ -885,7 +816,7 @@ export default class Query extends Database {
    * Resets all query parameters to their default values
    * @protected
    */
-  protected static resetQuery(): void {
+  protected resetQuery(): void {
     this.$withTrashed = false;
     this.$onlyTrashed = false;
     this.$stages = [];
