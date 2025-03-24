@@ -1,33 +1,12 @@
 import Model from "../../src/Model";
 
-class User extends Model {
-  static $collection = "users";
-}
+class User extends Model {}
 
-const users = [
-  {
-    name: "John Doe",
-    email: "jhon@mail.com",
-    age: 20,
-    [User.getIsDeleted()]: false,
-  },
-  {
-    name: "Udin",
-    email: "udin@mail.com",
-    [User.getIsDeleted()]: false,
-    age: 10,
-  },
-  {
-    name: "Kosasih",
-    email: "kosasih@mail.com",
-    [User.getIsDeleted()]: true,
-    age: 50,
-  },
-];
+const builder = User["build"]();
+const userCollection = builder["getCollection"]();
 
 beforeAll(async () => {
   try {
-    const userCollection = User["getCollection"]();
     await userCollection.deleteMany({});
   } catch (error) {
     console.error(error);
@@ -36,7 +15,6 @@ beforeAll(async () => {
 
 afterAll(async () => {
   try {
-    const userCollection = User["getCollection"]();
     await userCollection.deleteMany({});
   } catch (error) {
     console.error(error);
@@ -44,8 +22,6 @@ afterAll(async () => {
 });
 
 describe("Model - update method", () => {
-  const userCollection = User["getCollection"]();
-
   beforeAll(async () => {
     try {
     } catch (error) {

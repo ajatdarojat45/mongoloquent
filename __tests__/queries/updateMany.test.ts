@@ -1,12 +1,12 @@
 import Model from "../../src/Model";
 
-class User extends Model {
-  static $collection = "users";
-}
+class User extends Model {}
+
+const builder = User["build"]();
+const userCollection = builder["getCollection"]();
 
 beforeAll(async () => {
   try {
-    const userCollection = User["getCollection"]();
     await userCollection.deleteMany({});
   } catch (error) {
     console.error(error);
@@ -15,7 +15,6 @@ beforeAll(async () => {
 
 afterEach(async () => {
   try {
-    const userCollection = User["getCollection"]();
     await userCollection.deleteMany({});
   } catch (error) {
     console.error(error);
@@ -74,10 +73,10 @@ describe("User Model - Update Method", () => {
     expect(updatedUser).toHaveProperty("address", "Jakarta");
     expect(updatedUser).toHaveProperty("_id");
     expect(updatedUser).toHaveProperty(
-      User["$createdAt"],
-      (user as any)[User["$createdAt"]]
+      builder["$createdAt"],
+      (user as any)[builder["$createdAt"]]
     );
-    expect(updatedUser).toHaveProperty(User["$updatedAt"]);
+    expect(updatedUser).toHaveProperty(builder["$updatedAt"]);
   });
 
   it("should update user data including _id in payload", async () => {
@@ -133,8 +132,8 @@ describe("User Model - Update Method", () => {
     expect(updatedUser).toHaveProperty("address", "Jakarta");
     expect(updatedUser).toHaveProperty("_id", (user as any)._id);
     expect(updatedUser).toHaveProperty(
-      User["$createdAt"],
-      (user as any)[User["$createdAt"]]
+      builder["$createdAt"],
+      (user as any)[builder["$createdAt"]]
     );
   });
 

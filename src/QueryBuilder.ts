@@ -2,8 +2,11 @@ import {
   BulkWriteOptions,
   Db,
   Document,
+  FindOneAndUpdateOptions,
   InsertOneOptions,
   ObjectId,
+  UpdateFilter,
+  UpdateOptions,
 } from "mongodb";
 import { IQueryBuilder, IQueryOrder, IQueryWhere } from "./interfaces/IQuery";
 import {
@@ -171,6 +174,118 @@ export default class QueryBuilder {
     } catch (error) {
       console.log(error);
       throw new Error(`Inserting multiple documents failed`);
+    }
+  }
+
+  /**
+   * Updates a single document in the collection that matches the query criteria
+   */
+  public async update(
+    doc: UpdateFilter<Document>,
+    options: FindOneAndUpdateOptions = {}
+  ) {
+    try {
+      // Get the collection from the database
+      const collection = this.getCollection();
+
+      // Generate the where conditions for the query
+      //     await this.checkRelation();
+      // Check if soft delete is enabled and apply necessary filters
+      this.checkSoftDelete();
+      // Generate the columns to be selected in the query
+      this.generateWheres();
+      const stages = this.getStages();
+      let filter = {};
+      if (stages.length > 0) filter = stages[0].$match;
+      // Apply timestamps and soft delete fields to the documents if enabled
+      let newDoc = this.checkUseTimestamps(doc, false);
+      newDoc = this.checkUseSoftdelete(newDoc);
+      delete (newDoc as any)._id;
+
+      // Update the documents in the collection
+      const data = await collection.findOneAndUpdate(
+        { ...filter },
+        {
+          $set: {
+            ...newDoc,
+          },
+        },
+        {
+          ...options,
+          returnDocument: "after",
+        }
+      );
+
+      // Reset the query and relation states
+      this.resetQuery();
+      return data;
+    } catch (error) {
+      console.log(error);
+      throw new Error(`Updating documents failed`);
+    }
+  }
+
+  /**
+   * Updates or creates a document based on the specified condition
+   */
+  async updateOrCreate(
+    filter: { [key: string]: any },
+    doc: { [key: string]: any }
+  ) {
+    for (var key in filter) {
+      if (doc.hasOwnProperty(key)) {
+        this.where(key, filter[key]);
+      }
+    }
+
+    const data = await this.update(doc);
+    if (data) return data;
+
+    return this.insert(doc);
+  }
+
+  /**
+   * Updates multiple documents in the collection, applying timestamps and soft delete if applicable
+   */
+  public async updateMany(
+    doc: UpdateFilter<Document>,
+    options?: UpdateOptions
+  ): Promise<number> {
+    try {
+      // Get the collection from the database
+      const collection = this.getCollection();
+
+      // Generate the where conditions for the query
+      //     await this.checkRelation();
+      // Check if soft delete is enabled and apply necessary filters
+      this.checkSoftDelete();
+      // Generate the columns to be selected in the query
+      this.generateWheres();
+      const stages = this.getStages();
+      let filter = {};
+      if (stages.length > 0) filter = stages[0].$match;
+      // Apply timestamps and soft delete fields to the documents if enabled
+      let newDoc = this.checkUseTimestamps(doc, false);
+      newDoc = this.checkUseSoftdelete(newDoc);
+      delete (newDoc as any)._id;
+
+      // Update the documents in the collection
+      const data = await collection.updateMany(
+        { ...filter },
+        {
+          $set: {
+            ...newDoc,
+          },
+        },
+        options
+      );
+
+      // Reset the query and relation states
+      this.resetQuery();
+      return data.modifiedCount;
+    } catch (error) {
+      console.log(error);
+      throw new Error(`Updating multiple documents failed`);
     }
   }
 

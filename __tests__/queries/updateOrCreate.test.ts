@@ -1,12 +1,12 @@
 import Model from "../../src/Model";
 
-class User extends Model {
-  static $collection = "users";
-}
+class User extends Model {}
+
+const builder = User["build"]();
+const userCollection = builder["getCollection"]();
 
 beforeAll(async () => {
   try {
-    const userCollection = User["getCollection"]();
     await userCollection.deleteMany({});
   } catch (error) {
     console.error(error);
@@ -15,7 +15,6 @@ beforeAll(async () => {
 
 afterEach(async () => {
   try {
-    const userCollection = User["getCollection"]();
     await userCollection.deleteMany({});
   } catch (error) {
     console.error(error);
@@ -117,8 +116,8 @@ describe("User Model - updateOrCreate Method", () => {
     expect(result).toHaveProperty("name", "Charlie");
     expect(result).toHaveProperty("age", 40);
     expect(result).toHaveProperty("address", "Miami");
-    expect(result).toHaveProperty(User["$createdAt"]);
-    expect(result).toHaveProperty(User["$updatedAt"]);
+    expect(result).toHaveProperty(builder["$createdAt"]);
+    expect(result).toHaveProperty(builder["$updatedAt"]);
   });
 
   it("should handle timestamps correctly when updating an existing user", async () => {
@@ -145,9 +144,9 @@ describe("User Model - updateOrCreate Method", () => {
     expect(updated).toHaveProperty("age", 46);
     expect(updated).toHaveProperty("address", "Portland");
     expect(updated).toHaveProperty(
-      User["$createdAt"],
-      createdUser[User["$createdAt"]]
+      builder["$createdAt"],
+      createdUser[builder["$createdAt"]]
     );
-    expect(updated).toHaveProperty(User["$updatedAt"]);
+    expect(updated).toHaveProperty(builder["$updatedAt"]);
   });
 });

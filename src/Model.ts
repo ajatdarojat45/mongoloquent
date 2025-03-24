@@ -1,5 +1,5 @@
 import QueryBuilder from "./QueryBuilder";
-import { BulkWriteOptions, InsertOneOptions, ObjectId } from "mongodb";
+import { BulkWriteOptions, Document, FindOneAndUpdateOptions, InsertOneOptions, ObjectId, UpdateFilter, UpdateOptions } from "mongodb";
 
 export default class Model {
   protected static $connection: string;
@@ -26,6 +26,36 @@ export default class Model {
     const data = await builder.insertMany(docs, options);
 
     return data;
+  }
+
+  public static async update(
+    doc: UpdateFilter<Document>,
+    options: FindOneAndUpdateOptions = {}
+  ) {
+    const builder = this.build()
+    const data = await builder.update(doc, options)
+
+    return data
+  }
+
+  public static async updateOrCreate(
+    filter: { [key: string]: any },
+    doc: { [key: string]: any }
+  ) {
+    const builder = this.build()
+    const data = await builder.updateOrCreate(filter, doc)
+
+    return data
+  }
+
+  public static async updateMany(
+    doc: UpdateFilter<Document>,
+    options?: UpdateOptions
+  ): Promise<number> {
+    const builder = this.build()
+    const data = builder.updateMany(doc, options)
+
+    return data
   }
 
   public static async destroy(
