@@ -11,7 +11,7 @@ import dayjs from "./utils/dayjs";
 import { TIMEZONE } from "./configs/app";
 import { IModelPaginate } from "./interfaces/IModel";
 import { IRelationTypes } from "./interfaces/IRelation";
-import ModelNotFoundException from "./exceptions/ModelNotFoundException";
+import ModelNotFoundException from "./exceptions/MongoloquentNotFoundException";
 
 /**
  * Base Model class that provides MongoDB operations and relationship functionality

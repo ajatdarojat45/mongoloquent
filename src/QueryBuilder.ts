@@ -17,13 +17,13 @@ import {
 import Database from "./Database";
 import operators from "./utils/operators";
 import dayjs from "./utils/dayjs";
-import ModelNotFoundException from "./exceptions/ModelNotFoundException";
+import MongoloquentNotFoundException from "./exceptions/MongoloquentNotFoundException";
 import Collection from "./Collection";
 export default class QueryBuilder {
   private $connection: string = "";
   private $databaseName: string | null = null;
   private $collection: string = "mongoloquent";
-  private $db: Db
+  private $db: Db;
   private $useTimestamps: boolean = true;
   private $timezone: string = TIMEZONE;
   private $createdAt: string = "createdAt";
@@ -683,8 +683,8 @@ export default class QueryBuilder {
       // Convert the aggregation cursor to an array of documents
       const data = await aggregate.toArray();
 
-      const collection = new Collection(data)
-      return collection
+      const collection = new Collection(data);
+      return collection;
     } catch (error) {
       console.log(error);
       throw new Error(`Fetching documents failed`);
@@ -715,7 +715,7 @@ export default class QueryBuilder {
    */
   public async firstOrFail(columns: string | string[] = []) {
     const data = await this.first(columns);
-    if (!data) throw new ModelNotFoundException();
+    if (!data) throw new MongoloquentNotFoundException();
     return data;
   }
 
