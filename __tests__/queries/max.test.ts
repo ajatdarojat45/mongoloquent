@@ -1,26 +1,27 @@
 import Model from "../../src/Model";
 
-class User extends Model {
-  static $collection = "users";
-}
+class User extends Model {}
+
+const query = User["query"]();
+const userCollection = query["getCollection"]();
 
 const users = [
   {
     name: "John Doe",
     email: "jhon@mail.com",
     age: 20,
-    [User.getIsDeleted()]: false,
+    [query.getIsDeleted()]: false,
   },
   {
     name: "Udin",
     email: "udin@mail.com",
-    [User.getIsDeleted()]: false,
+    [query.getIsDeleted()]: false,
     age: 10,
   },
   {
     name: "Kosasih",
     email: "kosasih@mail.com",
-    [User.getIsDeleted()]: true,
+    [query.getIsDeleted()]: true,
     age: 50,
   },
 ];
@@ -28,7 +29,6 @@ const users = [
 // Clear the collection before all tests
 beforeAll(async () => {
   try {
-    const userCollection = User["getCollection"]();
     await userCollection.deleteMany({});
   } catch (error) {
     console.error(error);
@@ -38,7 +38,6 @@ beforeAll(async () => {
 // Clear the collection after all tests
 afterAll(async () => {
   try {
-    const userCollection = User["getCollection"]();
     await userCollection.deleteMany({});
   } catch (error) {
     console.error(error);
@@ -46,8 +45,6 @@ afterAll(async () => {
 });
 
 describe("User Model - max method", () => {
-  const userCollection = User["getCollection"]();
-
   // Insert test data before each test
   beforeAll(async () => {
     try {

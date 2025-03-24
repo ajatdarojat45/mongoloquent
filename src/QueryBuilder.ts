@@ -735,6 +735,106 @@ export default class QueryBuilder {
     return data;
   }
 
+  /**
+   * Retrieves the count of documents in the collection
+   */
+  public async count(): Promise<number> {
+    try {
+      // Get the collection from the database
+      const collection = this.getCollection();
+
+      //     await this.checkRelation();
+      // Check if soft delete is enabled and apply necessary filters
+      this.checkSoftDelete();
+      // Generate the columns to be selected in the query
+      this.generateWheres();
+
+      const stages = this.getStages();
+      // Execute the aggregation pipeline to get the count of documents
+      const aggregate = await collection
+        .aggregate([
+          ...stages,
+          {
+            $count: "total",
+          },
+        ])
+        .next();
+
+      // Reset the query state
+      this.resetQuery();
+      return aggregate?.total || 0;
+    } catch (error) {
+      console.log(error);
+      throw new Error(`Fetching document count failed`);
+    }
+  }
+
+  /**
+   * Retrieves the maximum value of a specified field
+   */
+  public async max(field: string): Promise<number> {
+    return this.aggregation(field, "max");
+  }
+
+  /**
+   * Retrieves the minimum value of a specified field
+   */
+  public async min(field: string): Promise<number> {
+    return this.aggregation(field, "min");
+  }
+
+  /**
+   * Retrieves the average value of a specified field
+   */
+  public async avg(field: string): Promise<number> {
+    return this.aggregation(field, "avg");
+  }
+
+  /**
+   * Retrieves the sum of a specified field
+   */
+  public async sum(field: string): Promise<number> {
+    return this.aggregation(field, "sum");
+  }
+
+  /**
+   * Performs aggregation operations on a specified field
+   */
+  private async aggregation(field: string, type: string): Promise<number> {
+    try {
+      // Get the collection from the database
+      const collection = this.getCollection();
+      //await this.checkRelation();
+      // Check if soft delete is enabled and apply necessary filters
+      this.checkSoftDelete();
+      // Generate the columns to be selected in the query
+      this.generateWheres();
+
+      const stages = this.getStages();
+      // Execute the aggregation pipeline to get the maximum value of the specified field
+      const aggregate = await collection
+        .aggregate([
+          ...stages,
+          {
+            $group: {
+              _id: null,
+              [type]: {
+                [`$${type}`]: `$${field}`,
+              },
+            },
+          },
+        ])
+        .next();
+
+      // Reset the query state
+      this.resetQuery();
+      return typeof aggregate?.[type] === "number" ? aggregate[type] : 0;
+    } catch (error) {
+      console.log(error);
+      throw new Error(`Fetching maximum value failed`);
+    }
+  }
+
   private setId(id: ObjectId | string) {
     this.$id = id;
   }

@@ -1,9 +1,10 @@
 import Model from "../../src/Model";
 
 // Define User model extending from Model
-class User extends Model {
-  static $collection = "users";
-}
+class User extends Model {}
+
+const query = User["query"]();
+const userCollection = query["getCollection"]();
 
 // Sample user data for testing
 const users = [
@@ -11,18 +12,18 @@ const users = [
     name: "John Doe",
     email: "jhon@mail.com",
     age: 20,
-    [User["$isDeleted"]]: false,
+    [query["$isDeleted"]]: false,
   },
   {
     name: "Udin",
     email: "udin@mail.com",
-    [User["$isDeleted"]]: false,
+    [query["$isDeleted"]]: false,
     age: 10,
   },
   {
     name: "Kosasih",
     email: "kosasih@mail.com",
-    [User["$isDeleted"]]: true,
+    [query["$isDeleted"]]: true,
     age: 50,
   },
 ];
@@ -30,7 +31,6 @@ const users = [
 // Clean up the collection before all tests
 beforeAll(async () => {
   try {
-    const userCollection = User["getCollection"]();
     await userCollection.deleteMany({});
   } catch (error) {
     console.error(error);
@@ -40,7 +40,6 @@ beforeAll(async () => {
 // Clean up the collection after all tests
 afterAll(async () => {
   try {
-    const userCollection = User["getCollection"]();
     await userCollection.deleteMany({});
   } catch (error) {
     console.error(error);
@@ -48,8 +47,6 @@ afterAll(async () => {
 });
 
 describe("User Model - avg method", () => {
-  const userCollection = User["getCollection"]();
-
   // Insert sample data before each test in this describe block
   beforeAll(async () => {
     try {

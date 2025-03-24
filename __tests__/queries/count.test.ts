@@ -1,9 +1,10 @@
 import Model from "../../src/Model";
 
 // Define a User model extending the base Model
-class User extends Model {
-  static $collection = "users";
-}
+class User extends Model {}
+
+const query = User["query"]();
+const userCollection = query["getCollection"]();
 
 // Sample user data for testing
 const users = [
@@ -11,18 +12,18 @@ const users = [
     name: "John Doe",
     email: "jhon@mail.com",
     age: 20,
-    [User.getIsDeleted()]: false,
+    [query.getIsDeleted()]: false,
   },
   {
     name: "Udin",
     email: "udin@mail.com",
-    [User.getIsDeleted()]: false,
+    [query.getIsDeleted()]: false,
     age: 10,
   },
   {
     name: "Kosasih",
     email: "kosasih@mail.com",
-    [User.getIsDeleted()]: true,
+    [query.getIsDeleted()]: true,
     age: 50,
   },
 ];
@@ -30,7 +31,6 @@ const users = [
 // Clear the user collection before all tests
 beforeAll(async () => {
   try {
-    const userCollection = User["getCollection"]();
     await userCollection.deleteMany({});
   } catch (error) {
     console.error(error);
@@ -40,7 +40,6 @@ beforeAll(async () => {
 // Clear the user collection after all tests
 afterAll(async () => {
   try {
-    const userCollection = User["getCollection"]();
     await userCollection.deleteMany({});
   } catch (error) {
     console.error(error);
@@ -48,8 +47,6 @@ afterAll(async () => {
 });
 
 describe("User Model - count method", () => {
-  const userCollection = User["getCollection"]();
-
   // Insert sample users before each test suite
   beforeAll(async () => {
     try {

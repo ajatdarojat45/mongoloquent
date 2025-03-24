@@ -166,6 +166,22 @@ export default class Model {
     return this.query().count()
   }
 
+  public static async max(column: string): Promise<number> {
+    return this.query().max(column)
+  }
+
+  public static async min(column: string): Promise<number> {
+    return this.query().min(column)
+  }
+
+  public static async avg(column: string): Promise<number> {
+    return this.query().avg(column)
+  }
+
+  public static async sum(column: string): Promise<number> {
+    return this.query().sum(column)
+  }
+
   private static query(): QueryBuilder {
     return new QueryBuilder({
       connection: this.$connection,

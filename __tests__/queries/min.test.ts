@@ -1,33 +1,33 @@
 import Model from "../../src/Model";
 
-class User extends Model {
-  static $collection = "users";
-}
+class User extends Model {}
+
+const query = User["query"]();
+const userCollection = query["getCollection"]();
 
 const users = [
   {
     name: "John Doe",
     email: "jhon@mail.com",
     age: 20,
-    [User.getIsDeleted()]: false,
+    [query.getIsDeleted()]: false,
   },
   {
     name: "Udin",
     email: "udin@mail.com",
-    [User.getIsDeleted()]: false,
+    [query.getIsDeleted()]: false,
     age: 10,
   },
   {
     name: "Kosasih",
     email: "kosasih@mail.com",
-    [User.getIsDeleted()]: true,
+    [query.getIsDeleted()]: true,
     age: 50,
   },
 ];
 
 beforeEach(async () => {
   try {
-    const userCollection = User["getCollection"]();
     await userCollection.insertMany(users);
   } catch (error) {
     console.error(error);
@@ -36,7 +36,6 @@ beforeEach(async () => {
 
 afterEach(async () => {
   try {
-    const userCollection = User["getCollection"]();
     await userCollection.deleteMany({});
   } catch (error) {
     console.error(error);
@@ -44,8 +43,6 @@ afterEach(async () => {
 });
 
 describe("User Model - min method", () => {
-  const userCollection = User["getCollection"]();
-
   it("should return the minimum value of the specified field", async () => {
     User["$useSoftDelete"] = false;
     const result = await User.min("age");
