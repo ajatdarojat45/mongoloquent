@@ -6,6 +6,9 @@ class TestModel extends Model {
   static $collection = "testCollection";
 }
 
+const builder = TestModel["build"]();
+const testCollection = builder["getCollection"]();
+
 let documentId: ObjectId;
 
 beforeAll(async () => {
@@ -19,8 +22,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   // Clean up the test collection
-  const collection = TestModel["getCollection"]();
-  await collection.deleteMany({});
+  await testCollection?.deleteMany({});
 });
 
 describe("Model.firstOrFail", () => {

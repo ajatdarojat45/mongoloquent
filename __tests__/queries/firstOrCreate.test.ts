@@ -7,6 +7,9 @@ class User extends Model {
   static $useTimestamps = true;
 }
 
+const builder = User["build"]();
+const userCollection = builder["getCollection"]();
+
 describe("Model.firstOrCreate", () => {
   let userIds: ObjectId[];
 
@@ -24,8 +27,7 @@ describe("Model.firstOrCreate", () => {
   });
 
   afterAll(async () => {
-    const userCollection = User["getCollection"]();
-    await userCollection.deleteMany({});
+    await userCollection?.deleteMany({});
   });
 
   it("should return the existing document if it matches the condition", async () => {
@@ -44,8 +46,7 @@ describe("Model.firstOrCreate", () => {
     expect(newUser).toHaveProperty("name", "Alice");
     expect(newUser).toHaveProperty("email", "alice@example.com");
 
-    const userCollection = User["getCollection"]();
-    const userInDb = await userCollection.findOne({
+    const userInDb = await userCollection?.findOne({
       email: "alice@example.com",
     });
     expect(userInDb).toEqual(expect.any(Object));
@@ -59,7 +60,7 @@ describe("Model.firstOrCreate", () => {
     const user: any = await User.firstOrCreate({ email: "john@example.com" });
     expect(user).toEqual(expect.any(Object));
     expect(user).toHaveProperty("email", "john@example.com");
-    expect(user).toHaveProperty(User.getIsDeleted(), false);
+    expect(user).toHaveProperty(builder.getIsDeleted(), false);
     expect(user._id).not.toEqual(userIds[0]);
   });
 });

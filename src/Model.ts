@@ -1,5 +1,5 @@
 import QueryBuilder from "./QueryBuilder";
-import { InsertOneOptions, ObjectId } from "mongodb";
+import { BulkWriteOptions, InsertOneOptions, ObjectId } from "mongodb";
 
 export default class Model {
   protected static $connection: string;
@@ -14,6 +14,32 @@ export default class Model {
   ): Promise<any> {
     const builder = this.build();
     const data = await builder.insert(doc, options);
+
+    return data;
+  }
+
+  public static async insertMany(
+    docs: object[],
+    options?: BulkWriteOptions
+  ): Promise<ObjectId[]> {
+    const builder = this.build();
+    const data = await builder.insertMany(docs, options);
+
+    return data;
+  }
+
+  public static async destroy(
+    ids: string | string[] | ObjectId | ObjectId[]
+  ): Promise<number> {
+    const builder = this.build();
+    const data = await builder.destroy(ids);
+
+    return data;
+  }
+
+  public static async delete(): Promise<number> {
+    const builder = this.build();
+    const data = await builder.delete();
 
     return data;
   }
@@ -231,6 +257,20 @@ export default class Model {
   public static async first(columns: string | string[] = []) {
     const builder = this.build();
     const data = await builder.first(columns);
+
+    return data;
+  }
+
+  public static async firstOrFail(columns: string | string[] = []) {
+    const builder = this.build();
+    const data = await builder.firstOrFail(columns);
+
+    return data;
+  }
+
+  public static async firstOrCreate(doc: object) {
+    const builder = this.build();
+    const data = await builder.firstOrCreate(doc);
 
     return data;
   }

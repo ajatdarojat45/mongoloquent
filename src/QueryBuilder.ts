@@ -1,4 +1,10 @@
-import { Db, Document, InsertOneOptions, ObjectId } from "mongodb";
+import {
+  BulkWriteOptions,
+  Db,
+  Document,
+  InsertOneOptions,
+  ObjectId,
+} from "mongodb";
 import { IQueryBuilder, IQueryOrder, IQueryWhere } from "./interfaces/IQuery";
 import {
   MONGOLOQUENT_DATABASE_NAME,
@@ -8,6 +14,7 @@ import {
 import Database from "./Database";
 import operators from "./utils/operators";
 import dayjs from "./utils/dayjs";
+import ModelNotFoundException from "./exceptions/ModelNotFoundException";
 
 export default class QueryBuilder {
   private $connection: string = "";
@@ -124,6 +131,114 @@ export default class QueryBuilder {
       return { _id: data?.insertedId, ...newDoc };
     } catch (error) {
       throw new Error(`Inserting document failed`);
+    }
+  }
+
+  /**
+   * Inserts multiple documents into the collection, applying timestamps and soft delete if applicable
+   */
+  public async insertMany(
+    docs: object[],
+    options?: BulkWriteOptions
+  ): Promise<ObjectId[]> {
+    try {
+      // Get the collection from the database
+      const collection = this.getCollection();
+
+      // Apply timestamps and soft delete fields to each document if enabled
+      const newDocs = docs.map((el) => {
+        let newEl = this.checkUseTimestamps(el);
+        newEl = this.checkUseSoftdelete(newEl);
+        // newEl = this.checkRelationship(newEl);
+
+        return newEl;
+      });
+
+      // Insert the documents into the collection
+      const data = await collection?.insertMany(newDocs, options);
+
+      const result: ObjectId[] = [];
+
+      // Extract the inserted IDs from the result
+      for (const key in data?.insertedIds) {
+        result.push(
+          data?.insertedIds[key as unknown as keyof typeof data.insertedIds]
+        );
+      }
+
+      this.resetQuery();
+      return result;
+    } catch (error) {
+      console.log(error);
+      throw new Error(`Inserting multiple documents failed`);
+    }
+  }
+
+  /**
+   * Deletes documents by their IDs, applying soft delete if applicable
+   */
+  public async destroy(
+    ids: string | string[] | ObjectId | ObjectId[]
+  ): Promise<number> {
+    try {
+      let filter = [];
+
+      // Convert the IDs to ObjectId instances if necessary
+      if (!Array.isArray(ids)) {
+        filter = [new ObjectId(ids)];
+      } else {
+        filter = ids.map((el) => new ObjectId(el));
+      }
+
+      // Delete the documents from the collection
+      return await this.whereIn("_id", filter).delete();
+    } catch (error) {
+      console.log(error);
+      throw new Error(`Destroying documents failed`);
+    }
+  }
+
+  /**
+   * Deletes multiple documents from the collection, applying soft delete if applicable
+   */
+  public async delete(): Promise<number> {
+    try {
+      // Get the collection from the database
+      const collection = this.getCollection();
+      // Generate the where conditions for the query
+      this.generateWheres();
+      const stages = this.getStages();
+      let filter = {};
+      if (stages.length > 0) filter = stages[0].$match;
+
+      // If soft delete is enabled, update the documents to mark them as deleted
+      if (this.$useSoftDelete) {
+        let doc = this.checkUseTimestamps({}, false);
+        doc = this.checkUseSoftdelete(doc, true);
+
+        const data = await collection?.updateMany(
+          { ...filter },
+          {
+            $set: {
+              ...doc,
+            },
+          }
+        );
+
+        this.resetQuery();
+
+        return data?.modifiedCount || 0;
+      }
+
+      // Delete the documents from the collection
+      const data = await collection?.deleteMany(filter);
+      // Reset the query state
+      this.resetQuery();
+
+      return data?.deletedCount || 0;
+    } catch (error) {
+      console.log(error);
+      throw new Error(`Deleting multiple documents failed`);
     }
   }
 
@@ -475,6 +590,31 @@ export default class QueryBuilder {
       console.log(error);
       throw new Error(`Fetching first document failed`);
     }
+  }
+
+  /**
+   * Retrieves the first document that matches the query criteria or throws an exception if not found
+   */
+  public async firstOrFail(columns: string | string[] = []) {
+    const data = await this.first(columns);
+    if (!data) throw new ModelNotFoundException();
+    return data;
+  }
+
+  /**
+   * Retrieves the first document that matches the specified condition or creates a new one
+   */
+  public async firstOrCreate(doc: object) {
+    const collection = this.getCollection();
+
+    if (this.$useSoftDelete) {
+      doc = { ...doc, [this.getIsDeleted()]: false };
+    }
+
+    const data = await collection?.findOne(doc);
+    if (!data) return await this.insert(doc);
+
+    return data;
   }
 
   private setId(id: ObjectId | string) {

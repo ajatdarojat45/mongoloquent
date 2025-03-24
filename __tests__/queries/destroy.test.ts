@@ -1,13 +1,13 @@
 import Model from "../../src/Model";
 
-class User extends Model {
-  static $collection = "users";
-}
+class User extends Model {}
+
+const builder = User["build"]();
+const userCollection = builder["getCollection"]();
 
 beforeAll(async () => {
   try {
-    const userCollection = User["getCollection"]();
-    await userCollection.deleteMany({});
+    await userCollection?.deleteMany({});
   } catch (error) {
     console.error(error);
   }
@@ -15,19 +15,16 @@ beforeAll(async () => {
 
 afterAll(async () => {
   try {
-    const userCollection = User["getCollection"]();
-    await userCollection.deleteMany({});
+    await userCollection?.deleteMany({});
   } catch (error) {
     console.error(error);
   }
 });
 
 describe("Model - destroy method", () => {
-  const userCollection = User["getCollection"]();
-
   beforeEach(async () => {
     try {
-      await userCollection.deleteMany({});
+      await userCollection?.deleteMany({});
     } catch (error) {
       console.error(error);
     }
@@ -35,7 +32,7 @@ describe("Model - destroy method", () => {
 
   afterAll(async () => {
     try {
-      await userCollection.deleteMany({});
+      await userCollection?.deleteMany({});
     } catch (error) {
       console.error(error);
     }
@@ -63,7 +60,7 @@ describe("Model - destroy method", () => {
     const users = await User.all();
 
     expect(result).toEqual(1);
-    expect(users.length).toEqual(1);
+    expect(users?.length).toEqual(1);
   });
 
   // Test case for deleting multiple users by an array of string IDs
@@ -90,7 +87,7 @@ describe("Model - destroy method", () => {
     const users = await User.all();
 
     expect(result).toEqual(2);
-    expect(users.length).toEqual(0);
+    expect(users?.length).toEqual(0);
   });
 
   // Test case for deleting a single user by ObjectId
@@ -115,7 +112,7 @@ describe("Model - destroy method", () => {
     const users = await User.all();
 
     expect(result).toEqual(1);
-    expect(users.length).toEqual(1);
+    expect(users?.length).toEqual(1);
   });
 
   // Test case for deleting multiple users by an array of ObjectIds
@@ -140,6 +137,6 @@ describe("Model - destroy method", () => {
     const users = await User.all();
 
     expect(result).toEqual(2);
-    expect(users.length).toEqual(0);
+    expect(users?.length).toEqual(0);
   });
 });
