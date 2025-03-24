@@ -1,21 +1,24 @@
 import { Db, Document, InsertOneOptions, ObjectId } from "mongodb";
 import { IQueryBuilder, IQueryOrder, IQueryWhere } from "./interfaces/IQuery";
-import { MONGOLOQUENT_DATABASE_NAME, MONGOLOQUENT_DATABASE_URI, TIMEZONE } from "./configs/app";
+import {
+  MONGOLOQUENT_DATABASE_NAME,
+  MONGOLOQUENT_DATABASE_URI,
+  TIMEZONE,
+} from "./configs/app";
 import Database from "./Database";
-import operators from "./utils/operators"
-import dayjs from "dayjs";
+import operators from "./utils/operators";
+import dayjs from "./utils/dayjs";
 
 export default class QueryBuilder {
   private $connection: string = "";
   private $databaseName: string | null = null;
-  private $collection: string = "mongoloquent"
-  private $db: Db | null = null
+  private $collection: string = "mongoloquent";
+  private $db: Db | null = null;
   private $useTimestamps: boolean = true;
   private $timezone: string = TIMEZONE;
   private $createdAt: string = "createdAt";
   private $updatedAt: string = "updatedAt";
-  private $id: string | ObjectId | null = null
-
+  private $id: string | ObjectId | null = null;
 
   /**
    * Stores the current aggregation pipeline stages
@@ -83,18 +86,18 @@ export default class QueryBuilder {
   private $offset: number = 0;
 
   constructor(builder: IQueryBuilder) {
-    this.$connection = builder.connection || MONGOLOQUENT_DATABASE_URI
-    this.$databaseName = builder.databaseName || MONGOLOQUENT_DATABASE_NAME
-    this.$collection = builder.collection || this.constructor.name.toLowerCase()
-    this.$useSoftDelete = builder.useSoftDelete || false
-    this.$useTimestamps = builder.useTimestamps || true
-    this.$db = Database.getDb(this.$connection, this.$databaseName)
+    this.$connection = builder.connection || MONGOLOQUENT_DATABASE_URI;
+    this.$databaseName = builder.databaseName || MONGOLOQUENT_DATABASE_NAME;
+    this.$collection =
+      builder.collection || this.constructor.name.toLowerCase();
+    this.$useSoftDelete = builder.useSoftDelete || false;
+    this.$useTimestamps = builder.useTimestamps || true;
+    this.$db = Database.getDb(this.$connection, this.$databaseName);
   }
 
   private getCollection() {
-    return this.$db?.collection(this.$collection)
+    return this.$db?.collection(this.$collection);
   }
-
 
   /**
    * Inserts a new document into the collection, applying timestamps and soft delete if applicable
@@ -120,7 +123,6 @@ export default class QueryBuilder {
       // Return the inserted document with its ID
       return { _id: data?.insertedId, ...newDoc };
     } catch (error) {
-      console.log(error);
       throw new Error(`Inserting document failed`);
     }
   }
@@ -129,10 +131,7 @@ export default class QueryBuilder {
    * Helper function to validate and apply timestamps to documents
    * Handles both creation and update timestamps based on the model's configuration
    */
-  private checkUseTimestamps(
-    doc: object,
-    isNew: boolean = true
-  ): object {
+  private checkUseTimestamps(doc: object, isNew: boolean = true): object {
     if (this.$useTimestamps) {
       const current = dayjs().format("YYYY/MM/DD HH:mm:ss");
       const now = dayjs.utc(current).tz(this.$timezone).toDate();
@@ -145,15 +144,11 @@ export default class QueryBuilder {
     return doc;
   }
 
-
   /**
    * Helper function to handle soft delete functionality
    * Manages the isDeleted flag and deletedAt timestamp for soft-deletable models
    */
-  private checkUseSoftdelete(
-    doc: object,
-    isDeleted: boolean = false
-  ): object {
+  private checkUseSoftdelete(doc: object, isDeleted: boolean = false): object {
     if (this.$useSoftDelete) {
       if (isDeleted) {
         const current = dayjs().format("YYYY/MM/DD HH:mm:ss");
@@ -398,7 +393,11 @@ export default class QueryBuilder {
   /**
    * Adds an order by clause to the query
    */
-  public orderBy(column: string, order: string = "asc", isSensitive: boolean = false): this {
+  public orderBy(
+    column: string,
+    order: string = "asc",
+    isSensitive: boolean = false
+  ): this {
     // Add the order by clause to the $orders array
     this.setOrders({ column, order, isSensitive });
 
@@ -422,8 +421,8 @@ export default class QueryBuilder {
     const _id = new ObjectId(id);
     this.setId(_id);
 
-    const data = await this.first()
-    Object.assign(this, data)
+    const data = await this.first();
+    Object.assign(this, data);
 
     return this;
   }
@@ -465,7 +464,7 @@ export default class QueryBuilder {
   public async first(columns: string | string[] = []) {
     try {
       // Retrieve the documents based on the specified columns
-      const data = await this.get(columns)
+      const data = await this.get(columns);
       // Return the first document if it exists, otherwise return null
       if (data && data.length > 0) {
         return data[0];
@@ -479,7 +478,7 @@ export default class QueryBuilder {
   }
 
   private setId(id: ObjectId | string) {
-    this.$id = id
+    this.$id = id;
   }
 
   /**
@@ -496,7 +495,6 @@ export default class QueryBuilder {
   protected getStages(): Document[] {
     return this.$stages;
   }
-
 
   /**
    * Sets the columns to be selected

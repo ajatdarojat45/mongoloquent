@@ -1,5 +1,5 @@
 import QueryBuilder from "./QueryBuilder";
-import { ObjectId } from "mongodb";
+import { InsertOneOptions, ObjectId } from "mongodb";
 
 export default class Model {
   protected static $connection: string;
@@ -7,6 +7,16 @@ export default class Model {
   protected static $collection: string;
   protected static $useSoftDelete: boolean = false;
   protected static $useTimestamps: boolean = true;
+
+  public static async insert(
+    doc: object,
+    options?: InsertOneOptions
+  ): Promise<any> {
+    const builder = this.build();
+    const data = await builder.insert(doc, options);
+
+    return data;
+  }
 
   public static select(columns: string | string[]): QueryBuilder {
     const builder = this.build();
@@ -198,10 +208,10 @@ export default class Model {
   }
 
   public static async find(id: string | ObjectId) {
-    const builder = this.build()
-    await builder.find(id)
+    const builder = this.build();
+    await builder.find(id);
 
-    return builder
+    return builder;
   }
 
   public static async all() {
