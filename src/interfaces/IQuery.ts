@@ -10,7 +10,7 @@ export interface IQueryWhere {
 export interface IQueryOrder {
   column: string
   order: string | number
-  isSensitive: boolean
+  caseSensitive: boolean
 }
 
 export interface IQueryBuilder {

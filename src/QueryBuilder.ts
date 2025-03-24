@@ -626,10 +626,10 @@ export default class QueryBuilder {
   public orderBy(
     column: string,
     order: string = "asc",
-    isSensitive: boolean = false
+    caseSensitive: boolean = false
   ): this {
     // Add the order by clause to the $orders array
-    this.setOrders({ column, order, isSensitive });
+    this.setOrders({ column, order, caseSensitive });
 
     return this;
   }
@@ -956,7 +956,7 @@ export default class QueryBuilder {
       $project = { ...$project, [el.column]: 1 };
       const direction = el.order === "asc" ? 1 : -1;
 
-      if (el.isSensitive) {
+      if (el.caseSensitive) {
         $project = {
           ...$project,
           [`lowercase_${el.column}`]: { $toLower: `$${el.column}` },

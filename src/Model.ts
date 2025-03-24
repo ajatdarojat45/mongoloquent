@@ -248,10 +248,10 @@ export default class Model {
   public static orderBy(
     column: string,
     order: string = "asc",
-    isSensitive: boolean = false
+    caseSensitive: boolean = false
   ): QueryBuilder {
     const builder = this.build();
-    builder.orderBy(column, order, isSensitive);
+    builder.orderBy(column, order, caseSensitive);
 
     return builder;
   }
