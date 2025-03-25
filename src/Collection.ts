@@ -63,16 +63,16 @@ export default class Collection<T> extends Array<T> {
     return index > 0 ? this[index - 1] : null;
   }
 
-  // chunk(size: number): Collection<T>[] {
-  //   if (size <= 0) return [];
+  chunk(size: number): Collection<T>[] {
+    if (size <= 0) return [];
 
-  //   const chunks: Collection<T>[] = [];
-  //   for (let i = 0; i < this.length; i += size) {
-  //     chunks.push(new Collection(this.slice(i, i + size)));
-  //   }
+    const chunks: Collection<T>[] = [];
+    for (let i = 0; i < this.length; i += size) {
+      chunks.push(new Collection(...this.slice(i, i + size)));
+    }
 
-  //   return chunks;
-  // }
+    return chunks;
+  }
 
   // collect(): Collection<T> {
   //   return new Collection(this);
