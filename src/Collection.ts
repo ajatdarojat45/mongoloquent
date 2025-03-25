@@ -29,8 +29,8 @@ export default class Collection<T> extends Array<T> {
     return [...this]; // Returns a copy of the array to prevent mutation
   }
 
-  average(keyOrCallback: keyof T | ((item: T) => number)) {
-    this.avg(keyOrCallback);
+  average(keyOrCallback: keyof T | ((item: T) => number)): number | null {
+    return this.avg(keyOrCallback);
   }
 
   avg(keyOrCallback: keyof T | ((item: T) => number)): number | null {
@@ -74,8 +74,6 @@ export default class Collection<T> extends Array<T> {
     return chunks;
   }
 
-  collapse() {}
-
   collect(): Collection<T> {
     return new Collection(this);
   }
@@ -107,36 +105,17 @@ export default class Collection<T> extends Array<T> {
     return this.length;
   }
 
-  countBy(
-    keyOrCallback?: keyof T | ((item: T) => any)
-  ): Record<string, number> {
-    const counts: Record<string, number> = {};
+  countBy(callback?: (item: T) => any): Record<string, number> {
+    const result: Record<string, number> = {};
 
-    for (const item of this) {
-      const key =
-        typeof keyOrCallback === "function"
-          ? keyOrCallback(item)
-          : keyOrCallback
-          ? item?.[keyOrCallback]
-          : item;
+    this.forEach((item) => {
+      const key = callback ? callback(item) : (item as any);
+      const keyStr = String(key); // Ensure key is a string
 
-      const keyStr = String(key);
-      counts[keyStr] = (counts[keyStr] || 0) + 1;
-    }
+      result[keyStr] = (result[keyStr] || 0) + 1;
+    });
 
-    return counts;
-  }
-
-  dd(): never {
-    console.log(this);
-    process.exit(1);
-  }
-
-  diff(items: Collection<T> | T[]): Collection<T> {
-    const comparisonSet = new Set(items.map((item) => JSON.stringify(item)));
-    return new Collection(
-      this.filter((item) => !comparisonSet.has(JSON.stringify(item)))
-    );
+    return result;
   }
 
   doesntContain(
@@ -155,25 +134,20 @@ export default class Collection<T> extends Array<T> {
     return this;
   }
 
-  duplicates(key?: string): Collection<T> {
-    const seen = new Map<any, number>();
-    const duplicates = new Set<any>();
+  duplicates(key: keyof T) {
+    let result: any = {};
+    const seen = new Set();
 
     this.forEach((item) => {
-      const value = key ? (item as any)?.[key] : item;
+      const value = item[key];
       if (seen.has(value)) {
-        duplicates.add(value);
+        result[value] = (result[value] || 1) + 1;
       } else {
-        seen.set(value, 1);
+        seen.add(value);
       }
     });
 
-    return new Collection(
-      this.filter((item) => {
-        const value = key ? (item as any)?.[key] : item;
-        return duplicates.has(value);
-      })
-    );
+    return result;
   }
 
   each(
