@@ -101,9 +101,9 @@ export default class Collection<T> extends Array<T> {
     return this.some((item) => item?.[keyOrCallback] === value);
   }
 
-  // count(): number {
-  //   return this.length;
-  // }
+  count(): number {
+    return this.length;
+  }
 
   // countBy(callback?: (item: T) => any): Record<string, number> {
   //   const result: Record<string, number> = {};
