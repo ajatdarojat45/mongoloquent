@@ -2,8 +2,8 @@ import Model from "../../src/Model";
 
 class User extends Model {}
 
-const builder = User["build"]();
-const userCollection = builder["getCollection"]();
+const query = User["query"]();
+const userCollection = query["getCollection"]();
 
 beforeAll(async () => {
   try {
@@ -116,8 +116,8 @@ describe("User Model - updateOrCreate Method", () => {
     expect(result).toHaveProperty("name", "Charlie");
     expect(result).toHaveProperty("age", 40);
     expect(result).toHaveProperty("address", "Miami");
-    expect(result).toHaveProperty(builder["$createdAt"]);
-    expect(result).toHaveProperty(builder["$updatedAt"]);
+    expect(result).toHaveProperty(query["$createdAt"]);
+    expect(result).toHaveProperty(query["$updatedAt"]);
   });
 
   it("should handle timestamps correctly when updating an existing user", async () => {
@@ -144,9 +144,9 @@ describe("User Model - updateOrCreate Method", () => {
     expect(updated).toHaveProperty("age", 46);
     expect(updated).toHaveProperty("address", "Portland");
     expect(updated).toHaveProperty(
-      builder["$createdAt"],
-      createdUser[builder["$createdAt"]]
+      query["$createdAt"],
+      createdUser[query["$createdAt"]]
     );
-    expect(updated).toHaveProperty(builder["$updatedAt"]);
+    expect(updated).toHaveProperty(query["$updatedAt"]);
   });
 });

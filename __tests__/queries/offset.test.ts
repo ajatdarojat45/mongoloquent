@@ -2,8 +2,8 @@ import Model from "../../src/Model";
 
 class User extends Model {}
 
-const builder = User["build"]();
-const userCollection = builder["getCollection"]();
+const query = User["query"]();
+const userCollection = query["getCollection"]();
 
 beforeAll(async () => {
   await userCollection?.deleteMany({});
@@ -14,35 +14,35 @@ beforeAll(async () => {
       email: "john@mail.com",
       age: 10,
       balance: 100,
-      [builder.getIsDeleted()]: false,
+      [query.getIsDeleted()]: false,
     },
     {
       name: "doe",
       email: "doe@mail.com",
       age: 30,
       balance: 200,
-      [builder.getIsDeleted()]: false,
+      [query.getIsDeleted()]: false,
     },
     {
       name: "Udin",
       email: "udin@mail.com",
       age: 5,
       balance: 500,
-      [builder.getIsDeleted()]: false,
+      [query.getIsDeleted()]: false,
     },
     {
       name: "Kosasih",
       email: "kosasih@mail.com",
       age: 5,
       balance: 400,
-      [builder.getIsDeleted()]: false,
+      [query.getIsDeleted()]: false,
     },
     {
       name: "Joko",
       email: "joko@mail.com",
       age: 45,
       balance: 500,
-      [builder.getIsDeleted()]: true,
+      [query.getIsDeleted()]: true,
     },
   ]);
 });
@@ -66,7 +66,7 @@ describe("Offset Query Tests - Pagination and Result Skipping", () => {
   });
 
   it("should skip first record when using offset with or condition", async () => {
-    const result = await User.orWhere(builder.getIsDeleted(), false)
+    const result = await User.orWhere(query.getIsDeleted(), false)
       .offset(1)
       .get();
 
@@ -76,7 +76,7 @@ describe("Offset Query Tests - Pagination and Result Skipping", () => {
 
   it("should skip first record when using offset with and condition", async () => {
     const result = await User.where("age", 5)
-      .where(builder.getIsDeleted(), false)
+      .where(query.getIsDeleted(), false)
       .offset(1)
       .get();
 
@@ -86,7 +86,7 @@ describe("Offset Query Tests - Pagination and Result Skipping", () => {
 
   it("should skip first record when using offset with and & or condition", async () => {
     const result = await User.where("age", 5)
-      .where(builder.getIsDeleted(), false)
+      .where(query.getIsDeleted(), false)
       .orWhere("balance", 500)
       .offset(1)
       .get();
@@ -152,7 +152,7 @@ describe("Offset Query Tests - Pagination and Result Skipping", () => {
   it("should skip first record when using offset with soft delete and and condition", async () => {
     User["$useSoftDelete"] = true;
     const result = await User.where("age", 5)
-      .where(builder.getIsDeleted(), false)
+      .where(query.getIsDeleted(), false)
       .offset(1)
       .get();
 
@@ -208,7 +208,7 @@ describe("Offset Query Tests - Pagination and Result Skipping", () => {
 
   it("should skip first record when using offset with soft delete, withTrashed and or condition", async () => {
     User["$useSoftDelete"] = true;
-    const result = await User.orWhere(builder.getIsDeleted(), false)
+    const result = await User.orWhere(query.getIsDeleted(), false)
       .withTrashed()
       .offset(1)
       .get();
@@ -222,7 +222,7 @@ describe("Offset Query Tests - Pagination and Result Skipping", () => {
   it("should skip first record when using offset with soft delete, withTrashed and and condition", async () => {
     User["$useSoftDelete"] = true;
     const result = await User.where("age", 5)
-      .where(builder.getIsDeleted(), false)
+      .where(query.getIsDeleted(), false)
       .withTrashed()
       .offset(1)
       .get();

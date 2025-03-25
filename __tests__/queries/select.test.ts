@@ -2,8 +2,8 @@ import Model from "../../src/Model";
 
 class User extends Model {}
 
-const builder = User["build"]();
-const userCollection = builder["getCollection"]();
+const query = User["query"]();
+const userCollection = query["getCollection"]();
 
 beforeAll(async () => {
   await userCollection?.deleteMany({});
@@ -14,35 +14,35 @@ beforeAll(async () => {
       email: "john@mail.com",
       age: 10,
       balance: 100,
-      [builder.getIsDeleted()]: false,
+      [query.getIsDeleted()]: false,
     },
     {
       name: "doe",
       email: "doe@mail.com",
       age: 30,
       balance: 200,
-      [builder.getIsDeleted()]: false,
+      [query.getIsDeleted()]: false,
     },
     {
       name: "Udin",
       email: "udin@mail.com",
       age: 5,
       balance: 500,
-      [builder.getIsDeleted()]: false,
+      [query.getIsDeleted()]: false,
     },
     {
       name: "Kosasih",
       email: "kosasih@mail.com",
       age: 5,
       balance: 400,
-      [builder.getIsDeleted()]: false,
+      [query.getIsDeleted()]: false,
     },
     {
       name: "Joko",
       email: "joko@mail.com",
       age: 45,
       balance: 500,
-      [builder.getIsDeleted()]: true,
+      [query.getIsDeleted()]: true,
     },
   ]);
 });
@@ -60,7 +60,7 @@ describe("Select Query - Field Selection Methods", () => {
     expect(result?.email).toBeUndefined();
     expect(result?.age).toBeUndefined();
     expect(result?.balance).toBeUndefined();
-    expect(result?.[builder.getIsDeleted()]).toBeUndefined();
+    expect(result?.[query.getIsDeleted()]).toBeUndefined();
   });
 
   it("should select multiple fields using array parameter", async () => {
@@ -71,7 +71,7 @@ describe("Select Query - Field Selection Methods", () => {
     expect(result?.email).toBeUndefined();
     expect(result?.age).toBeDefined();
     expect(result?.balance).toBeUndefined();
-    expect(result?.[builder.getIsDeleted()]).toBeUndefined();
+    expect(result?.[query.getIsDeleted()]).toBeUndefined();
   });
 
   it("should combine multiple select calls to get multiple fields", async () => {
@@ -82,6 +82,6 @@ describe("Select Query - Field Selection Methods", () => {
     expect(result?.email).toBeDefined();
     expect(result?.age).toBeDefined();
     expect(result?.balance).toBeUndefined();
-    expect(result?.[builder.getIsDeleted()]).toBeUndefined();
+    expect(result?.[query.getIsDeleted()]).toBeUndefined();
   });
 });

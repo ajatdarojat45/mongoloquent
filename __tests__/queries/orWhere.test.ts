@@ -2,8 +2,8 @@ import Model from "../../src/Model";
 
 class User extends Model {}
 
-const builder = User["build"]();
-const userCollection = builder["getCollection"]();
+const query = User["query"]();
+const userCollection = query["getCollection"]();
 
 beforeAll(async () => {
   await userCollection?.deleteMany({});
@@ -14,35 +14,35 @@ beforeAll(async () => {
       email: "john@mail.com",
       age: 10,
       balance: 100,
-      [builder.getIsDeleted()]: false,
+      [query.getIsDeleted()]: false,
     },
     {
       name: "doe",
       email: "doe@mail.com",
       age: 30,
       balance: 200,
-      [builder.getIsDeleted()]: false,
+      [query.getIsDeleted()]: false,
     },
     {
       name: "Udin",
       email: "udin@mail.com",
       age: 5,
       balance: 500,
-      [builder.getIsDeleted()]: false,
+      [query.getIsDeleted()]: false,
     },
     {
       name: "Kosasih",
       email: "kosasih@mail.com",
       age: 5,
       balance: 400,
-      [builder.getIsDeleted()]: false,
+      [query.getIsDeleted()]: false,
     },
     {
       name: "Joko",
       email: "joko@mail.com",
       age: 45,
       balance: 500,
-      [builder.getIsDeleted()]: true,
+      [query.getIsDeleted()]: true,
     },
   ]);
 });
@@ -51,7 +51,7 @@ afterAll(async () => {
   await userCollection?.deleteMany({});
 });
 
-describe("Query Builder - orWhere Clause Tests", () => {
+describe("Query builder - orWhere Clause Tests", () => {
   it("should return records matching single condition with comparison operator", async () => {
     const result = await User.orWhere("balance", ">=", 500).get();
 

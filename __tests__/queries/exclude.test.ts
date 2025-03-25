@@ -2,8 +2,8 @@ import Model from "../../src/Model";
 
 class User extends Model {}
 
-const builder = User["build"]();
-const userCollection = builder["getCollection"]();
+const query = User["query"]();
+const userCollection = query["getCollection"]();
 
 beforeAll(async () => {
   await userCollection?.deleteMany({});
@@ -14,35 +14,35 @@ beforeAll(async () => {
       email: "john@mail.com",
       age: 10,
       balance: 100,
-      [builder.getIsDeleted()]: false,
+      [query.getIsDeleted()]: false,
     },
     {
       name: "doe",
       email: "doe@mail.com",
       age: 30,
       balance: 200,
-      [builder.getIsDeleted()]: false,
+      [query.getIsDeleted()]: false,
     },
     {
       name: "Udin",
       email: "udin@mail.com",
       age: 5,
       balance: 500,
-      [builder.getIsDeleted()]: false,
+      [query.getIsDeleted()]: false,
     },
     {
       name: "Kosasih",
       email: "kosasih@mail.com",
       age: 5,
       balance: 400,
-      [builder.getIsDeleted()]: false,
+      [query.getIsDeleted()]: false,
     },
     {
       name: "Joko",
       email: "joko@mail.com",
       age: 45,
       balance: 500,
-      [builder.getIsDeleted()]: false,
+      [query.getIsDeleted()]: false,
     },
   ]);
 });
@@ -60,7 +60,7 @@ describe("Query Builder - exclude() method", () => {
     expect(result?.email).toBeDefined();
     expect(result?.age).toBeDefined();
     expect(result?.balance).toBeDefined();
-    expect(result?.[builder.getIsDeleted()]).toBeDefined();
+    expect(result?.[query.getIsDeleted()]).toBeDefined();
   });
 
   it("should exclude multiple fields when passing an array parameter", async () => {
@@ -71,7 +71,7 @@ describe("Query Builder - exclude() method", () => {
     expect(result?.email).toBeDefined();
     expect(result?.age).toBeUndefined();
     expect(result?.balance).toBeDefined();
-    expect(result?.[builder.getIsDeleted()]).toBeDefined();
+    expect(result?.[query.getIsDeleted()]).toBeDefined();
   });
 
   it("should exclude fields when chaining multiple exclude() calls", async () => {
@@ -82,6 +82,6 @@ describe("Query Builder - exclude() method", () => {
     expect(result?.email).toBeUndefined();
     expect(result?.age).toBeUndefined();
     expect(result?.balance).toBeDefined();
-    expect(result?.[builder.getIsDeleted()]).toBeDefined();
+    expect(result?.[query.getIsDeleted()]).toBeDefined();
   });
 });

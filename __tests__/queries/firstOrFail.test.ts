@@ -1,13 +1,13 @@
 import { ObjectId } from "mongodb";
 import Model from "../../src/Model";
-import ModelNotFoundException from "../../src/exceptions/ModelNotFoundException";
+import MongoloquentNotFoundException from "../../src/exceptions/MongoloquentNotFoundException";
 
 class TestModel extends Model {
   static $collection = "testCollection";
 }
 
-const builder = TestModel["build"]();
-const testCollection = builder["getCollection"]();
+const query = TestModel["query"]();
+const testCollection = query["getCollection"]();
 
 let documentId: ObjectId;
 
@@ -40,7 +40,7 @@ describe("Model.firstOrFail", () => {
   it("Should throw ModelNotFoundException if no document matches the query criteria", async () => {
     await expect(
       TestModel.where("name", "Nonexistent Document").firstOrFail()
-    ).rejects.toThrow(ModelNotFoundException);
+    ).rejects.toThrow(MongoloquentNotFoundException);
   });
 
   it("Should return the first document with specified column", async () => {
@@ -66,6 +66,6 @@ describe("Model.firstOrFail", () => {
   it("Should throw ModelNotFoundException if no document matches the query criteria with specified columns", async () => {
     await expect(
       TestModel.where("name", "Nonexistent Document").firstOrFail(["name"])
-    ).rejects.toThrow(ModelNotFoundException);
+    ).rejects.toThrow(MongoloquentNotFoundException);
   });
 });

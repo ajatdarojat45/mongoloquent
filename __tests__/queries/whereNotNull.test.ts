@@ -2,8 +2,8 @@ import Model from "../../src/Model";
 
 class User extends Model {}
 
-const builder = User["build"]();
-const userCollection = builder["getCollection"]();
+const query = User["query"]();
+const userCollection = query["getCollection"]();
 
 beforeAll(async () => {
   await userCollection?.deleteMany({});
@@ -14,7 +14,7 @@ beforeAll(async () => {
       email: "john@mail.com",
       age: 10,
       balance: 100,
-      [builder.getIsDeleted()]: false,
+      [query.getIsDeleted()]: false,
       subscription: null,
     },
     {
@@ -22,7 +22,7 @@ beforeAll(async () => {
       email: "doe@mail.com",
       age: 30,
       balance: 200,
-      [builder.getIsDeleted()]: false,
+      [query.getIsDeleted()]: false,
       subscription: null,
     },
     {
@@ -30,7 +30,7 @@ beforeAll(async () => {
       email: "udin@mail.com",
       age: 5,
       balance: 500,
-      [builder.getIsDeleted()]: false,
+      [query.getIsDeleted()]: false,
       subscription: null,
     },
     {
@@ -38,7 +38,7 @@ beforeAll(async () => {
       email: "kosasih@mail.com",
       age: 5,
       balance: 400,
-      [builder.getIsDeleted()]: false,
+      [query.getIsDeleted()]: false,
       subscription: true,
     },
     {
@@ -46,7 +46,7 @@ beforeAll(async () => {
       email: "joko@mail.com",
       age: 45,
       balance: 500,
-      [builder.getIsDeleted()]: true,
+      [query.getIsDeleted()]: true,
       subscription: true,
     },
   ]);

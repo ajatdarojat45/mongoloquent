@@ -3,8 +3,8 @@ import Model from "../../src/Model";
 
 class User extends Model {}
 
-const builder = User["build"]();
-const userCollection = builder["getCollection"]();
+const query = User["query"]();
+const userCollection = query["getCollection"]();
 
 // Clear the users collection before all tests
 beforeAll(async () => {
@@ -83,8 +83,8 @@ describe("User Model - insert method", () => {
     expect(user).toHaveProperty("name", "Udin");
     expect(user).toHaveProperty("age", 20);
     expect(user).toHaveProperty("address", "Jakarta");
-    expect(user).toHaveProperty(builder["$createdAt"]);
-    expect(user).toHaveProperty(builder["$updatedAt"]);
+    expect(user).toHaveProperty(query["$createdAt"]);
+    expect(user).toHaveProperty(query["$updatedAt"]);
   });
 
   it("should insert data with soft delete but without timestamps", async () => {
@@ -113,7 +113,7 @@ describe("User Model - insert method", () => {
     expect(user).toHaveProperty("name", "Udin");
     expect(user).toHaveProperty("age", 20);
     expect(user).toHaveProperty("address", "Jakarta");
-    expect(user).toHaveProperty(builder.getIsDeleted(), false);
+    expect(user).toHaveProperty(query.getIsDeleted(), false);
   });
 
   it("should insert data with both soft delete and timestamps", async () => {
@@ -142,8 +142,8 @@ describe("User Model - insert method", () => {
     expect(user).toHaveProperty("name", "Udin");
     expect(user).toHaveProperty("age", 20);
     expect(user).toHaveProperty("address", "Jakarta");
-    expect(user).toHaveProperty(builder.getIsDeleted(), false);
-    expect(user).toHaveProperty(builder["$createdAt"]);
-    expect(user).toHaveProperty(builder["$updatedAt"]);
+    expect(user).toHaveProperty(query.getIsDeleted(), false);
+    expect(user).toHaveProperty(query["$createdAt"]);
+    expect(user).toHaveProperty(query["$updatedAt"]);
   });
 });

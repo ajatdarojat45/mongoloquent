@@ -2,8 +2,8 @@ import Model from "../../src/Model";
 
 class User extends Model {}
 
-const builder = User["build"]();
-const userCollection = builder["getCollection"]();
+const query = User["query"]();
+const userCollection = query["getCollection"]();
 
 beforeAll(async () => {
   try {
@@ -73,10 +73,10 @@ describe("User Model - Update Method", () => {
     expect(updatedUser).toHaveProperty("address", "Jakarta");
     expect(updatedUser).toHaveProperty("_id");
     expect(updatedUser).toHaveProperty(
-      builder["$createdAt"],
-      (user as any)[builder["$createdAt"]]
+      query["$createdAt"],
+      (user as any)[query["$createdAt"]]
     );
-    expect(updatedUser).toHaveProperty(builder["$updatedAt"]);
+    expect(updatedUser).toHaveProperty(query["$updatedAt"]);
   });
 
   it("should update user data including _id in payload", async () => {
@@ -132,8 +132,8 @@ describe("User Model - Update Method", () => {
     expect(updatedUser).toHaveProperty("address", "Jakarta");
     expect(updatedUser).toHaveProperty("_id", (user as any)._id);
     expect(updatedUser).toHaveProperty(
-      builder["$createdAt"],
-      (user as any)[builder["$createdAt"]]
+      query["$createdAt"],
+      (user as any)[query["$createdAt"]]
     );
   });
 

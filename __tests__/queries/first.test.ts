@@ -2,26 +2,26 @@ import Model from "../../src/Model";
 
 class User extends Model {}
 
-const builder = User["build"]();
-const userCollection = builder["getCollection"]();
+const query = User["query"]();
+const userCollection = query["getCollection"]();
 
 const users = [
   {
     name: "John Doe",
     email: "jhon@mail.com",
     age: 20,
-    [builder["$isDeleted"]]: false,
+    [query["$isDeleted"]]: false,
   },
   {
     name: "Udin",
     email: "udin@mail.com",
-    [builder["$isDeleted"]]: false,
+    [query["$isDeleted"]]: false,
     age: 10,
   },
   {
     name: "Kosasih",
     email: "kosasih@mail.com",
-    [builder["$isDeleted"]]: true,
+    [query["$isDeleted"]]: true,
     age: 50,
   },
 ];

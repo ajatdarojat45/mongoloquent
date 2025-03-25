@@ -7,8 +7,8 @@ class User extends Model {
   static $useTimestamps = true;
 }
 
-const builder = User["build"]();
-const userCollection = builder["getCollection"]();
+const query = User["query"]();
+const userCollection = query["getCollection"]();
 
 describe("Model.firstOrCreate", () => {
   let userIds: ObjectId[];
@@ -60,7 +60,7 @@ describe("Model.firstOrCreate", () => {
     const user: any = await User.firstOrCreate({ email: "john@example.com" });
     expect(user).toEqual(expect.any(Object));
     expect(user).toHaveProperty("email", "john@example.com");
-    expect(user).toHaveProperty(builder.getIsDeleted(), false);
+    expect(user).toHaveProperty(query.getIsDeleted(), false);
     expect(user._id).not.toEqual(userIds[0]);
   });
 });
