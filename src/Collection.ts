@@ -198,21 +198,21 @@ export default class Collection<T> extends Array<T> {
     });
   }
 
-  // first(
-  //   predicate?: (item: T, index: number, collection: this) => boolean
-  // ): T | null {
-  //   if (!predicate) {
-  //     return this.length > 0 ? this[0] : null;
-  //   }
+  first(
+    predicate?: (item: T, index: number, collection: this) => boolean
+  ): T | null {
+    if (!predicate) {
+      return this.length > 0 ? this[0] : null;
+    }
 
-  //   for (let i = 0; i < this.length; i++) {
-  //     if (predicate(this[i], i, this)) {
-  //       return this[i];
-  //     }
-  //   }
+    for (let i = 0; i < this.length; i++) {
+      if (predicate(this[i], i, this)) {
+        return this[i];
+      }
+    }
 
-  //   return null;
-  // }
+    return null;
+  }
 
   // firstOrFail(
   //   predicate?: (item: T, index: number, collection: this) => boolean
