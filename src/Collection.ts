@@ -93,13 +93,13 @@ export default class Collection<T> extends Array<T> {
     return this.some((item) => item?.[keyOrCallback] == value);
   }
 
-  // containsStrict(keyOrCallback: keyof T | ((item: T) => boolean), value?: any) {
-  //   if (typeof keyOrCallback === "function") {
-  //     return this.some(keyOrCallback);
-  //   }
+  containsStrict(keyOrCallback: keyof T | ((item: T) => boolean), value?: any) {
+    if (typeof keyOrCallback === "function") {
+      return this.some(keyOrCallback);
+    }
 
-  //   return this.some((item) => item?.[keyOrCallback] === value);
-  // }
+    return this.some((item) => item?.[keyOrCallback] === value);
+  }
 
   // count(): number {
   //   return this.length;
