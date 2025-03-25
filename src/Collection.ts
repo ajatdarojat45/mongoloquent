@@ -134,21 +134,21 @@ export default class Collection<T> extends Array<T> {
     return this;
   }
 
-  // duplicates(key: keyof T) {
-  //   let result: any = {};
-  //   const seen = new Set();
+  duplicates(key: keyof T) {
+    let result: any = {};
+    const seen = new Set();
 
-  //   this.forEach((item) => {
-  //     const value = item[key];
-  //     if (seen.has(value)) {
-  //       result[value] = (result[value] || 1) + 1;
-  //     } else {
-  //       seen.add(value);
-  //     }
-  //   });
+    this.forEach((item) => {
+      const value = item[key];
+      if (seen.has(value)) {
+        result[value] = (result[value] || 1) + 1;
+      } else {
+        seen.add(value);
+      }
+    });
 
-  //   return result;
-  // }
+    return result;
+  }
 
   // each(
   //   callback: (item: T, index: number, collection: this) => boolean | void
