@@ -129,10 +129,10 @@ export default class Collection<T> extends Array<T> {
     return !this.some((item) => (item as any)?.[predicate] === value);
   }
 
-  // dump(): this {
-  //   console.log(this);
-  //   return this;
-  // }
+  dump(): this {
+    console.log(this);
+    return this;
+  }
 
   // duplicates(key: keyof T) {
   //   let result: any = {};
