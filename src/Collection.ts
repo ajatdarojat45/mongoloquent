@@ -118,16 +118,16 @@ export default class Collection<T> extends Array<T> {
     return result;
   }
 
-  // doesntContain(
-  //   predicate: ((item: T) => boolean) | string,
-  //   value?: any
-  // ): boolean {
-  //   if (typeof predicate === "function") {
-  //     return !this.some(predicate);
-  //   }
+  doesntContain(
+    predicate: ((item: T) => boolean) | string,
+    value?: any
+  ): boolean {
+    if (typeof predicate === "function") {
+      return !this.some(predicate);
+    }
 
-  //   return !this.some((item) => (item as any)?.[predicate] === value);
-  // }
+    return !this.some((item) => (item as any)?.[predicate] === value);
+  }
 
   // dump(): this {
   //   console.log(this);
