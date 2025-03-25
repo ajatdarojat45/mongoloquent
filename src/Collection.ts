@@ -105,18 +105,18 @@ export default class Collection<T> extends Array<T> {
     return this.length;
   }
 
-  // countBy(callback?: (item: T) => any): Record<string, number> {
-  //   const result: Record<string, number> = {};
+  countBy(callback?: (item: T) => any): Record<string, number> {
+    const result: Record<string, number> = {};
 
-  //   this.forEach((item) => {
-  //     const key = callback ? callback(item) : (item as any);
-  //     const keyStr = String(key); // Ensure key is a string
+    this.forEach((item) => {
+      const key = callback ? callback(item) : (item as any);
+      const keyStr = String(key); // Ensure key is a string
 
-  //     result[keyStr] = (result[keyStr] || 0) + 1;
-  //   });
+      result[keyStr] = (result[keyStr] || 0) + 1;
+    });
 
-  //   return result;
-  // }
+    return result;
+  }
 
   // doesntContain(
   //   predicate: ((item: T) => boolean) | string,
