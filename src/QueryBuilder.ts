@@ -683,7 +683,7 @@ export default class QueryBuilder {
       // Convert the aggregation cursor to an array of documents
       const data = await aggregate.toArray();
 
-      const collection = new Collection(data);
+      const collection = new Collection(...data);
       return collection;
     } catch (error) {
       console.log(error);
