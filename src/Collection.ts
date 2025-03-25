@@ -48,20 +48,20 @@ export default class Collection<T> extends Array<T> {
     return sum / this.length;
   }
 
-  // before(
-  //   keyOrCallback: keyof T | ((item: T) => boolean),
-  //   value?: any,
-  //   strict: boolean = true
-  // ): T | null {
-  //   const index = this.findIndex((item) =>
-  //     typeof keyOrCallback === "function"
-  //       ? keyOrCallback(item) // Custom callback function
-  //       : strict
-  //       ? item[keyOrCallback] === value
-  //       : item[keyOrCallback] == value
-  //   );
-  //   return index > 0 ? this[index - 1] : null;
-  // }
+  before(
+    keyOrCallback: keyof T | ((item: T) => boolean),
+    value?: any,
+    strict: boolean = true
+  ): T | null {
+    const index = this.findIndex((item) =>
+      typeof keyOrCallback === "function"
+        ? keyOrCallback(item) // Custom callback function
+        : strict
+        ? item[keyOrCallback] === value
+        : item[keyOrCallback] == value
+    );
+    return index > 0 ? this[index - 1] : null;
+  }
 
   // chunk(size: number): Collection<T>[] {
   //   if (size <= 0) return [];
