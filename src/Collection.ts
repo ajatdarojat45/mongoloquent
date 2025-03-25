@@ -78,9 +78,9 @@ export default class Collection<T> extends Array<T> {
     return new Collection(...this);
   }
 
-  // concat(items: T[] | Collection<T>): Collection<T> {
-  //   return new Collection([...this, ...items]);
-  // }
+  concat(items: T[] | Collection<T>): Collection<T> {
+    return new Collection(...this, ...items);
+  }
 
   // contains(
   //   keyOrCallback: keyof T | ((item: T) => boolean),
