@@ -74,9 +74,9 @@ export default class Collection<T> extends Array<T> {
     return chunks;
   }
 
-  // collect(): Collection<T> {
-  //   return new Collection(this);
-  // }
+  collect(): Collection<T> {
+    return new Collection(...this);
+  }
 
   // concat(items: T[] | Collection<T>): Collection<T> {
   //   return new Collection([...this, ...items]);
