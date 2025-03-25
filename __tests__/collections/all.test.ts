@@ -4,12 +4,14 @@ describe("Collection - after method", () => {
   let collection: Collection<{ id: number; name: string }>;
 
   beforeEach(() => {
-    collection = new Collection([
-      { id: 1, name: "Alice" },
-      { id: 2, name: "Bob" },
-      { id: 3, name: "Charlie" },
-      { id: 4, name: "David" },
-    ]);
+    collection = new Collection(
+      ...[
+        { id: 1, name: "Alice" },
+        { id: 2, name: "Bob" },
+        { id: 3, name: "Charlie" },
+        { id: 4, name: "David" },
+      ]
+    );
   });
 
   it("should return the item after the matching key with strict comparison", () => {

@@ -4,11 +4,13 @@ describe("Collection - avg method", () => {
   let collection: Collection<{ id: number; value: number }>;
 
   beforeEach(() => {
-    collection = new Collection([
-      { id: 1, value: 10 },
-      { id: 2, value: 20 },
-      { id: 3, value: 30 },
-    ]);
+    collection = new Collection(
+      ...[
+        { id: 1, value: 10 },
+        { id: 2, value: 20 },
+        { id: 3, value: 30 },
+      ]
+    );
   });
 
   it("should calculate the average of a numeric key", () => {
@@ -22,8 +24,10 @@ describe("Collection - avg method", () => {
   });
 
   it("should return null for an empty collection", () => {
-    const emptyCollection = new Collection([]);
-    const result = emptyCollection.avg("value");
+    const emptyCollection = new Collection(...[]);
+    const result = emptyCollection.avg(
+      "value" as keyof (typeof emptyCollection)[0]
+    );
     expect(result).toBeNull();
   });
 

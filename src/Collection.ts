@@ -10,43 +10,43 @@ export default class Collection<T> extends Array<T> {
     super(...args);
   }
 
-  // after(
-  //   keyOrCallback: keyof T | ((item: T) => boolean),
-  //   value?: any,
-  //   strict: boolean = true
-  // ): T | null {
-  //   const index = this.findIndex((item) =>
-  //     typeof keyOrCallback === "function"
-  //       ? keyOrCallback(item) // Custom callback function
-  //       : strict
-  //       ? item[keyOrCallback] === value
-  //       : item[keyOrCallback] == value
-  //   );
-  //   return index !== -1 && index + 1 < this.length ? this[index + 1] : null;
-  // }
+  after(
+    keyOrCallback: keyof T | ((item: T) => boolean),
+    value?: any,
+    strict: boolean = true
+  ): T | null {
+    const index = this.findIndex((item) =>
+      typeof keyOrCallback === "function"
+        ? keyOrCallback(item) // Custom callback function
+        : strict
+        ? item[keyOrCallback] === value
+        : item[keyOrCallback] == value
+    );
+    return index !== -1 && index + 1 < this.length ? this[index + 1] : null;
+  }
 
-  // all(): T[] {
-  //   return [...this]; // Returns a copy of the array to prevent mutation
-  // }
+  all(): T[] {
+    return this; // Returns a copy of the array to prevent mutation
+  }
 
-  // average(keyOrCallback: keyof T | ((item: T) => number)): number | null {
-  //   return this.avg(keyOrCallback);
-  // }
+  average(keyOrCallback: keyof T | ((item: T) => number)): number | null {
+    return this.avg(keyOrCallback);
+  }
 
-  // avg(keyOrCallback: keyof T | ((item: T) => number)): number | null {
-  //   if (this.length === 0) return null;
+  avg(keyOrCallback: keyof T | ((item: T) => number)): number | null {
+    if (this.length === 0) return null;
 
-  //   const sum = this.reduce((total, item) => {
-  //     const value =
-  //       typeof keyOrCallback === "function"
-  //         ? keyOrCallback(item) // Callback function
-  //         : (item[keyOrCallback] as unknown as number); // Numeric field
+    const sum = this.reduce((total, item) => {
+      const value =
+        typeof keyOrCallback === "function"
+          ? keyOrCallback(item) // Callback function
+          : (item[keyOrCallback] as unknown as number); // Numeric field
 
-  //     return total + (typeof value === "number" ? value : 0);
-  //   }, 0);
+      return total + (typeof value === "number" ? value : 0);
+    }, 0);
 
-  //   return sum / this.length;
-  // }
+    return sum / this.length;
+  }
 
   // before(
   //   keyOrCallback: keyof T | ((item: T) => boolean),
