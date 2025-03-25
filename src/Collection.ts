@@ -150,16 +150,16 @@ export default class Collection<T> extends Array<T> {
     return result;
   }
 
-  // each(
-  //   callback: (item: T, index: number, collection: this) => boolean | void
-  // ): this {
-  //   for (let i = 0; i < this.length; i++) {
-  //     if (callback(this[i], i, this) === false) {
-  //       break;
-  //     }
-  //   }
-  //   return this;
-  // }
+  each(
+    callback: (item: T, index: number, collection: this) => boolean | void
+  ): this {
+    for (let i = 0; i < this.length; i++) {
+      if (callback(this[i], i, this) === false) {
+        break;
+      }
+    }
+    return this;
+  }
 
   isEvery(
     callbackOrKey:
