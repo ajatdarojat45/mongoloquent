@@ -261,20 +261,20 @@ export default class Collection<T> extends Array<T> {
     return null;
   }
 
-  // forget(keys: keyof T | (keyof T)[]): this {
-  //   const keyArray = Array.isArray(keys) ? keys : [keys];
+  forget(keys: keyof T | (keyof T)[]): this {
+    const keyArray = Array.isArray(keys) ? keys : [keys];
 
-  //   this.forEach((item) => {
-  //     if (item && typeof item === "object") {
-  //       keyArray.forEach((key) => {
-  //         if (key in item) {
-  //           delete item[key];
-  //         }
-  //       });
-  //     }
-  //   });
-  //   return this;
-  // }
+    this.forEach((item) => {
+      if (item && typeof item === "object") {
+        keyArray.forEach((key) => {
+          if (key in item) {
+            delete item[key];
+          }
+        });
+      }
+    });
+    return this;
+  }
 
   // forPage(page: number, perPage: number): Collection<T> {
   //   const start = (page - 1) * perPage;
