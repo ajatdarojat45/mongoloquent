@@ -822,67 +822,69 @@ export default class Collection<T> extends Array<T> {
     return new Collection(...Object.values(sortedItems));
   }
 
-  // split(numGroups: number): Collection<T>[] {
-  //   if (numGroups <= 0) {
-  //     throw new Error("The number of groups must be greater than zero.");
-  //   }
+  split(numGroups: number): Collection<T>[] {
+    if (numGroups <= 0) {
+      throw new MongoloquentInvalidArgumentException(
+        "The number of groups must be greater than zero."
+      );
+    }
 
-  //   const groupSize = Math.ceil(this.length / numGroups);
-  //   const result: Collection<T>[] = [];
+    const groupSize = Math.ceil(this.length / numGroups);
+    const result: Collection<T>[] = [];
 
-  //   for (let i = 0; i < this.length; i += groupSize) {
-  //     result.push(new Collection(this.slice(i, i + groupSize)));
-  //   }
+    for (let i = 0; i < this.length; i += groupSize) {
+      result.push(new Collection(...this.slice(i, i + groupSize)));
+    }
 
-  //   return result;
-  // }
+    return result;
+  }
 
-  // splitIn(numGroups: number): Collection<T>[] {
-  //   if (numGroups <= 0) {
-  //     throw new Error("The number of groups must be greater than zero.");
-  //   }
+  splitIn(numGroups: number): Collection<T>[] {
+    if (numGroups <= 0) {
+      throw new Error("The number of groups must be greater than zero.");
+    }
 
-  //   const minGroupSize = Math.floor(this.length / numGroups);
-  //   const remainder = this.length % numGroups;
-  //   const result: Collection<T>[] = [];
+    const minGroupSize = Math.floor(this.length / numGroups);
+    const remainder = this.length % numGroups;
+    const result: Collection<T>[] = [];
 
-  //   let start = 0;
-  //   for (let i = 0; i < numGroups; i++) {
-  //     const groupSize = minGroupSize + (i < remainder ? 1 : 0);
-  //     result.push(new Collection(this.slice(start, start + groupSize)));
-  //     start += groupSize;
-  //   }
+    let start = 0;
+    for (let i = 0; i < numGroups; i++) {
+      const groupSize = minGroupSize + (i < remainder ? 1 : 0);
+      result.push(new Collection(...this.slice(start, start + groupSize)));
+      start += groupSize;
+    }
 
-  //   return result;
-  // }
+    return result;
+  }
 
-  // sum(keyOrCallback?: keyof T | ((item: T) => number)): number {
-  //   if (this.length === 0) return 0;
+  sum(keyOrCallback?: keyof T | ((item: T) => number)): number {
+    if (this.length === 0) return 0;
 
-  //   return this.reduce((acc, item: any) => {
-  //     let value: number = 0;
+    return this.reduce((acc, item: any) => {
+      let value: number = 0;
 
-  //     if (typeof keyOrCallback === "function") {
-  //       // If a callback function is provided, call it with the item
-  //       value = keyOrCallback(item);
-  //     } else if (
-  //       typeof keyOrCallback === "string" &&
-  //       typeof item === "object" &&
-  //       item[keyOrCallback] !== undefined
-  //     ) {
-  //       // If a key is provided, extract the value from the object
-  //       const extractedValue = item[keyOrCallback];
-  //       if (typeof extractedValue === "number") {
-  //         value = extractedValue;
-  //       }
-  //     } else if (typeof item === "number" && keyOrCallback === undefined) {
-  //       // If no key or callback is provided, sum up the numbers directly
-  //       value = item;
-  //     }
+      if (typeof keyOrCallback === "function") {
+        // If a callback function is provided, call it with the item
+        value = keyOrCallback(item);
+      } else if (
+        typeof keyOrCallback === "string" &&
+        typeof item === "object" &&
+        item[keyOrCallback] !== undefined
+      ) {
+        // If a key is provided, extract the value from the object
+        const extractedValue = item[keyOrCallback];
+        if (typeof extractedValue === "number") {
+          value = extractedValue;
+        }
+      } else if (typeof item === "number" && keyOrCallback === undefined) {
+        // If no key or callback is provided, sum up the numbers directly
+        value = item;
+      }
 
-  //     return acc + value;
-  //   }, 0);
-  // }
+      return acc + value;
+    }, 0);
+  }
 
   // take(limit: number): Collection<T> {
   //   if (limit === 0) return new Collection([]);
