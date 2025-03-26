@@ -697,125 +697,130 @@ export default class Collection<T> extends Array<T> {
     return new Collection(...result); // Return a new collection with the remaining items
   }
 
-  // sliding(size: number, step: number = 1): Collection<T[]> {
-  //   let result = [];
-  //   let startIndex = 0;
+  sliding(size: number, step: number = 1): Collection<T[]> {
+    if (size <= 0 || step <= 0) {
+      throw new MongoloquentInvalidArgumentException(
+        "Size and step must be positive numbers."
+      );
+    }
+    let result = [];
+    let startIndex = 0;
 
-  //   while (startIndex + size <= this.length) {
-  //     result.push(this.slice(startIndex, startIndex + size));
-  //     startIndex += step; // Move forward by the given step
-  //   }
+    while (startIndex + size <= this.length) {
+      result.push(this.slice(startIndex, startIndex + size));
+      startIndex += step; // Move forward by the given step
+    }
 
-  //   return new Collection(result);
-  // }
+    return new Collection(...result);
+  }
 
-  // sole(key?: keyof T | ((item: T) => boolean), value?: any): T {
-  //   if (!key) {
-  //     // If no key is provided, return the first element only if there is exactly one element in the collection
-  //     if (this.length === 1) {
-  //       return this[0];
-  //     }
-  //     throw new MongoloquentItemNotFoundException(); // Throw exception if no element found
-  //   }
+  sole(key?: keyof T | ((item: T) => boolean), value?: any): T {
+    if (!key) {
+      // If no key is provided, return the first element only if there is exactly one element in the collection
+      if (this.length === 1) {
+        return this[0];
+      }
+      throw new MongoloquentItemNotFoundException(); // Throw exception if no element found
+    }
 
-  //   // If a key and value are provided, find the element that matches the key/value pair
-  //   if (value !== undefined) {
-  //     const matchedItems = this.filter((item: any) => item[key] === value);
-  //     if (matchedItems.length === 1) {
-  //       return matchedItems[0];
-  //     } else if (matchedItems.length === 0) {
-  //       throw new MongoloquentItemNotFoundException(); // Throw exception if no matching item is found
-  //     } else {
-  //       throw new MongoloquentMultipleItemsFoundException(); // Throw exception if multiple matching items are found
-  //     }
-  //   }
+    // If a key and value are provided, find the element that matches the key/value pair
+    if (value !== undefined) {
+      const matchedItems = this.filter((item: any) => item[key] === value);
+      if (matchedItems.length === 1) {
+        return matchedItems[0];
+      } else if (matchedItems.length === 0) {
+        throw new MongoloquentItemNotFoundException(); // Throw exception if no matching item is found
+      } else {
+        throw new MongoloquentMultipleItemsFoundException(); // Throw exception if multiple matching items are found
+      }
+    }
 
-  //   // If a callback is provided, find the element matching the callback
-  //   if (typeof key === "function") {
-  //     const matchedItems = this.filter(key);
-  //     if (matchedItems.length === 1) {
-  //       return matchedItems[0];
-  //     } else if (matchedItems.length === 0) {
-  //       throw new MongoloquentItemNotFoundException(); // Throw exception if no matching item is found
-  //     } else {
-  //       throw new MongoloquentMultipleItemsFoundException(); // Throw exception if multiple matching items are found
-  //     }
-  //   }
+    // If a callback is provided, find the element matching the callback
+    if (typeof key === "function") {
+      const matchedItems = this.filter(key);
+      if (matchedItems.length === 1) {
+        return matchedItems[0];
+      } else if (matchedItems.length === 0) {
+        throw new MongoloquentItemNotFoundException(); // Throw exception if no matching item is found
+      } else {
+        throw new MongoloquentMultipleItemsFoundException(); // Throw exception if multiple matching items are found
+      }
+    }
 
-  //   throw new MongoloquentItemNotFoundException(); // Default exception if no match
-  // }
+    throw new MongoloquentItemNotFoundException(); // Default exception if no match
+  }
 
-  // sortBy(
-  //   keyOrCallback:
-  //     | keyof T
-  //     | ((a: T, b: T) => number)
-  //     | [keyof T, "asc" | "desc"][],
-  //   direction: "asc" | "desc" = "asc"
-  // ): Collection<T> {
-  //   // Clone the array to avoid mutating the original collection
-  //   const sortedArray = [...this];
+  sortBy(
+    keyOrCallback:
+      | keyof T
+      | ((a: T, b: T) => number)
+      | [keyof T, "asc" | "desc"][],
+    direction: "asc" | "desc" = "asc"
+  ): Collection<T> {
+    // Clone the array to avoid mutating the original collection
+    const sortedArray = [...this];
 
-  //   if (Array.isArray(keyOrCallback)) {
-  //     // Multiple sorting criteria
-  //     sortedArray.sort((a, b) => {
-  //       for (const [key, dir] of keyOrCallback) {
-  //         const valueA = a[key];
-  //         const valueB = b[key];
+    if (Array.isArray(keyOrCallback)) {
+      // Multiple sorting criteria
+      sortedArray.sort((a, b) => {
+        for (const [key, dir] of keyOrCallback) {
+          const valueA = a[key];
+          const valueB = b[key];
 
-  //         if (valueA > valueB) return dir === "asc" ? 1 : -1;
-  //         if (valueA < valueB) return dir === "asc" ? -1 : 1;
-  //       }
-  //       return 0;
-  //     });
-  //   } else if (typeof keyOrCallback === "function") {
-  //     // Custom sorting function
-  //     sortedArray.sort(keyOrCallback);
-  //   } else {
-  //     // Single key sorting
-  //     sortedArray.sort((a, b) => {
-  //       const valueA = a[keyOrCallback];
-  //       const valueB = b[keyOrCallback];
+          if (valueA > valueB) return dir === "asc" ? 1 : -1;
+          if (valueA < valueB) return dir === "asc" ? -1 : 1;
+        }
+        return 0;
+      });
+    } else if (typeof keyOrCallback === "function") {
+      // Custom sorting function
+      sortedArray.sort(keyOrCallback);
+    } else {
+      // Single key sorting
+      sortedArray.sort((a, b) => {
+        const valueA = a[keyOrCallback];
+        const valueB = b[keyOrCallback];
 
-  //       if (valueA > valueB) return direction === "asc" ? 1 : -1;
-  //       if (valueA < valueB) return direction === "asc" ? -1 : 1;
-  //       return 0;
-  //     });
-  //   }
+        if (valueA > valueB) return direction === "asc" ? 1 : -1;
+        if (valueA < valueB) return direction === "asc" ? -1 : 1;
+        return 0;
+      });
+    }
 
-  //   return new Collection(sortedArray);
-  // }
+    return new Collection(...sortedArray);
+  }
 
-  // sortByDesc(
-  //   keyOrCallback:
-  //     | keyof T
-  //     | ((a: T, b: T) => number)
-  //     | [keyof T, "asc" | "desc"][]
-  // ): Collection<T> {
-  //   return this.sortBy(keyOrCallback, "desc");
-  // }
+  sortByDesc(
+    keyOrCallback:
+      | keyof T
+      | ((a: T, b: T) => number)
+      | [keyof T, "asc" | "desc"][]
+  ): Collection<T> {
+    return this.sortBy(keyOrCallback, "desc");
+  }
 
-  // sortDesc(): Collection<T> {
-  //   return new Collection([...this].sort().reverse());
-  // }
+  sortDesc(): Collection<T> {
+    return new Collection(...this.sort().reverse());
+  }
 
-  // sortKeys(): Collection<T> {
-  //   const sortedEntries = Object.entries(this).sort(([keyA], [keyB]) =>
-  //     keyA.localeCompare(keyB)
-  //   );
+  sortKeys(): Collection<T> {
+    const sortedEntries = Object.entries(this).sort(([keyA], [keyB]) =>
+      keyA.localeCompare(keyB)
+    );
 
-  //   const sortedItems = Object.fromEntries(sortedEntries);
-  //   return new Collection(Object.values(sortedItems));
-  // }
+    const sortedItems = Object.fromEntries(sortedEntries);
+    return new Collection(...Object.values(sortedItems));
+  }
 
-  // // Sort the collection by keys in descending order
-  // sortKeysDesc(): Collection<T> {
-  //   const sortedEntries = Object.entries(this).sort(([keyA], [keyB]) =>
-  //     keyB.localeCompare(keyA)
-  //   );
+  // Sort the collection by keys in descending order
+  sortKeysDesc(): Collection<T> {
+    const sortedEntries = Object.entries(this).sort(([keyA], [keyB]) =>
+      keyB.localeCompare(keyA)
+    );
 
-  //   const sortedItems = Object.fromEntries(sortedEntries);
-  //   return new Collection(Object.values(sortedItems));
-  // }
+    const sortedItems = Object.fromEntries(sortedEntries);
+    return new Collection(...Object.values(sortedItems));
+  }
 
   // split(numGroups: number): Collection<T>[] {
   //   if (numGroups <= 0) {
