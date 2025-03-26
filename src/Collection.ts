@@ -886,21 +886,23 @@ export default class Collection<T> extends Array<T> {
     }, 0);
   }
 
-  // take(limit: number): Collection<T> {
-  //   if (limit === 0) return new Collection([]);
-  //   if (limit > 0) return new Collection(this.slice(0, limit));
-  //   return new Collection(this.slice(limit)); // Negative limit → take from the end
-  // }
+  take(limit: number): Collection<T> {
+    if (limit === 0) return new Collection();
+    if (limit > 0) return new Collection(...this.slice(0, limit));
+    return new Collection(...this.slice(limit)); // Negative limit → take from the end
+  }
 
-  // takeUntil(callback: (item: T) => boolean): Collection<T> {
-  //   const index = this.findIndex(callback);
-  //   return new Collection(index === -1 ? this : this.slice(0, index));
-  // }
+  takeUntil(callback: (item: T) => boolean): Collection<T> {
+    const index = this.findIndex(callback);
+    const result = index === -1 ? this : this.slice(0, index);
+    return new Collection(...result);
+  }
 
-  // takeWhile(callback: (item: T) => boolean): Collection<T> {
-  //   const index = this.findIndex((item) => !callback(item));
-  //   return new Collection(index === -1 ? this : this.slice(0, index));
-  // }
+  takeWhile(callback: (item: T) => boolean): Collection<T> {
+    const index = this.findIndex((item) => !callback(item));
+    const result = index === -1 ? this : this.slice(0, index);
+    return new Collection(...result);
+  }
 
   // transform(callback: (item: T, index: number) => T): this {
   //   this.forEach((item, index) => {
