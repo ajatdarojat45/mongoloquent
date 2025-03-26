@@ -20,12 +20,12 @@ describe("Collection.collect", () => {
   });
 
   it("should ensure the new Collection instance is independent of the original", () => {
-    const original = new Collection([1, 2, 3]);
+    const original = new Collection(...[1, 2, 3]);
     const collected = original.collect();
 
     collected.push(4);
 
-    expect(original).toEqual(new Collection([1, 2, 3])); // Original remains unchanged
-    expect(collected).toEqual(new Collection([1, 2, 3, 4])); // Collected is modified
+    expect(original).toEqual(new Collection(...[1, 2, 3])); // Original remains unchanged
+    expect(collected).toEqual(new Collection(...[1, 2, 3, 4])); // Collected is modified
   });
 });

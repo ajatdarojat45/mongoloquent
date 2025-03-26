@@ -74,92 +74,92 @@ export default class Collection<T> extends Array<T> {
     return chunks;
   }
 
-  // collect(): Collection<T> {
-  //   return new Collection(this);
-  // }
+  collect(): Collection<T> {
+    return new Collection(...this);
+  }
 
-  // concat(items: T[] | Collection<T>): Collection<T> {
-  //   return new Collection([...this, ...items]);
-  // }
+  concat(items: T[] | Collection<T>): Collection<T> {
+    return new Collection(...this, ...items);
+  }
 
-  // contains(
-  //   keyOrCallback: keyof T | ((item: T) => boolean),
-  //   value?: any
-  // ): boolean {
-  //   if (typeof keyOrCallback === "function") {
-  //     return this.some(keyOrCallback);
-  //   }
+  contains(
+    keyOrCallback: keyof T | ((item: T) => boolean),
+    value?: any
+  ): boolean {
+    if (typeof keyOrCallback === "function") {
+      return this.some(keyOrCallback);
+    }
 
-  //   return this.some((item) => item?.[keyOrCallback] == value);
-  // }
+    return this.some((item) => item?.[keyOrCallback] == value);
+  }
 
-  // containsStrict(keyOrCallback: keyof T | ((item: T) => boolean), value?: any) {
-  //   if (typeof keyOrCallback === "function") {
-  //     return this.some(keyOrCallback);
-  //   }
+  containsStrict(keyOrCallback: keyof T | ((item: T) => boolean), value?: any) {
+    if (typeof keyOrCallback === "function") {
+      return this.some(keyOrCallback);
+    }
 
-  //   return this.some((item) => item?.[keyOrCallback] === value);
-  // }
+    return this.some((item) => item?.[keyOrCallback] === value);
+  }
 
-  // count(): number {
-  //   return this.length;
-  // }
+  count(): number {
+    return this.length;
+  }
 
-  // countBy(callback?: (item: T) => any): Record<string, number> {
-  //   const result: Record<string, number> = {};
+  countBy(callback?: (item: T) => any): Record<string, number> {
+    const result: Record<string, number> = {};
 
-  //   this.forEach((item) => {
-  //     const key = callback ? callback(item) : (item as any);
-  //     const keyStr = String(key); // Ensure key is a string
+    this.forEach((item) => {
+      const key = callback ? callback(item) : (item as any);
+      const keyStr = String(key); // Ensure key is a string
 
-  //     result[keyStr] = (result[keyStr] || 0) + 1;
-  //   });
+      result[keyStr] = (result[keyStr] || 0) + 1;
+    });
 
-  //   return result;
-  // }
+    return result;
+  }
 
-  // doesntContain(
-  //   predicate: ((item: T) => boolean) | string,
-  //   value?: any
-  // ): boolean {
-  //   if (typeof predicate === "function") {
-  //     return !this.some(predicate);
-  //   }
+  doesntContain(
+    predicate: ((item: T) => boolean) | string,
+    value?: any
+  ): boolean {
+    if (typeof predicate === "function") {
+      return !this.some(predicate);
+    }
 
-  //   return !this.some((item) => (item as any)?.[predicate] === value);
-  // }
+    return !this.some((item) => (item as any)?.[predicate] === value);
+  }
 
-  // dump(): this {
-  //   console.log(this);
-  //   return this;
-  // }
+  dump(): this {
+    console.log(this);
+    return this;
+  }
 
-  // duplicates(key: keyof T) {
-  //   let result: any = {};
-  //   const seen = new Set();
+  duplicates(key: keyof T) {
+    let result: any = {};
+    const seen = new Set();
 
-  //   this.forEach((item) => {
-  //     const value = item[key];
-  //     if (seen.has(value)) {
-  //       result[value] = (result[value] || 1) + 1;
-  //     } else {
-  //       seen.add(value);
-  //     }
-  //   });
+    this.forEach((item) => {
+      const value = item[key];
+      if (seen.has(value)) {
+        result[value] = (result[value] || 1) + 1;
+      } else {
+        seen.add(value);
+      }
+    });
 
-  //   return result;
-  // }
+    return result;
+  }
 
-  // each(
-  //   callback: (item: T, index: number, collection: this) => boolean | void
-  // ): this {
-  //   for (let i = 0; i < this.length; i++) {
-  //     if (callback(this[i], i, this) === false) {
-  //       break;
-  //     }
-  //   }
-  //   return this;
-  // }
+  each(
+    callback: (item: T, index: number, collection: this) => boolean | void
+  ): this {
+    for (let i = 0; i < this.length; i++) {
+      if (callback(this[i], i, this) === false) {
+        break;
+      }
+    }
+    return this;
+  }
 
   isEvery(
     callbackOrKey:
@@ -198,21 +198,21 @@ export default class Collection<T> extends Array<T> {
     });
   }
 
-  // first(
-  //   predicate?: (item: T, index: number, collection: this) => boolean
-  // ): T | null {
-  //   if (!predicate) {
-  //     return this.length > 0 ? this[0] : null;
-  //   }
+  first(
+    predicate?: (item: T, index: number, collection: this) => boolean
+  ): T | null {
+    if (!predicate) {
+      return this.length > 0 ? this[0] : null;
+    }
 
-  //   for (let i = 0; i < this.length; i++) {
-  //     if (predicate(this[i], i, this)) {
-  //       return this[i];
-  //     }
-  //   }
+    for (let i = 0; i < this.length; i++) {
+      if (predicate(this[i], i, this)) {
+        return this[i];
+      }
+    }
 
-  //   return null;
-  // }
+    return null;
+  }
 
   // firstOrFail(
   //   predicate?: (item: T, index: number, collection: this) => boolean
