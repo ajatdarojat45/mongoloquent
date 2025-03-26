@@ -904,38 +904,38 @@ export default class Collection<T> extends Array<T> {
     return new Collection(...result);
   }
 
-  // transform(callback: (item: T, index: number) => T): this {
-  //   this.forEach((item, index) => {
-  //     this[index] = callback(item, index);
-  //   });
-  //   return this;
-  // }
+  transform(callback: (item: T, index: number) => T): this {
+    this.forEach((item, index) => {
+      this[index] = callback(item, index);
+    });
+    return this;
+  }
 
-  // unique(): Collection<T>;
-  // unique<K extends keyof T>(key: K): Collection<T>;
-  // unique(callback: (item: T) => any): Collection<T>;
-  // unique(param?: keyof T | ((item: T) => any)): Collection<T> {
-  //   const seen = new Set();
+  unique(): Collection<T>;
+  unique<K extends keyof T>(key: K): Collection<T>;
+  unique(callback: (item: T) => any): Collection<T>;
+  unique(param?: keyof T | ((item: T) => any)): Collection<T> {
+    const seen = new Set();
 
-  //   const filtered = this.filter((item) => {
-  //     const value =
-  //       typeof param === "function"
-  //         ? param(item)
-  //         : param
-  //         ? (item as any)[param]
-  //         : item;
-  //     if (seen.has(value)) return false;
-  //     seen.add(value);
-  //     return true;
-  //   });
+    const filtered = this.filter((item) => {
+      const value =
+        typeof param === "function"
+          ? param(item)
+          : param
+          ? (item as any)[param]
+          : item;
+      if (seen.has(value)) return false;
+      seen.add(value);
+      return true;
+    });
 
-  //   return new Collection(filtered);
-  // }
+    return new Collection(...filtered);
+  }
 
-  // value<K extends keyof T>(key: K): T[K] | undefined {
-  //   if (this.length === 0) return undefined;
-  //   return this[0][key];
-  // }
+  value<K extends keyof T>(key: K): T[K] | undefined {
+    if (this.length === 0) return undefined;
+    return this[0][key];
+  }
 
   // where<K extends keyof T>(
   //   keyOrCallback: K | ((item: T) => boolean),
