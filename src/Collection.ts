@@ -511,43 +511,43 @@ export default class Collection<T> extends Array<T> {
     );
   }
 
-  // nth(step: number, offset: number = 0): Collection<T> {
-  //   if (step <= 0) return new Collection([]);
-  //   return new Collection(
-  //     this.filter((_, index) => (index - offset) % step === 0)
-  //   );
-  // }
+  nth(step: number, offset: number = 0): Collection<T> {
+    if (step <= 0) return new Collection(...[]);
+    return new Collection(
+      ...this.filter((_, index) => (index - offset) % step === 0)
+    );
+  }
 
-  // only(keys: string[]): Collection<Partial<T>> {
-  //   if (!Array.isArray(this)) return new Collection([]);
+  only(keys: string[]): Collection<Partial<T>> {
+    if (!Array.isArray(this)) return new Collection(...[]);
 
-  //   return new Collection(
-  //     this.map((item) => {
-  //       if (typeof item !== "object" || item === null) return item;
-  //       return Object.keys(item)
-  //         .filter((key) => keys.includes(key))
-  //         .reduce((acc: any, key) => {
-  //           acc[key] = (item as any)[key];
-  //           return acc;
-  //         }, {} as Partial<T>);
-  //     })
-  //   );
-  // }
+    return new Collection(
+      ...this.map((item) => {
+        if (typeof item !== "object" || item === null) return item;
+        return Object.keys(item)
+          .filter((key) => keys.includes(key))
+          .reduce((acc: any, key) => {
+            acc[key] = (item as any)[key];
+            return acc;
+          }, {} as Partial<T>);
+      })
+    );
+  }
 
-  // pluck<K extends keyof T>(keys: K | K[]): Collection<T[K] | Partial<T>> {
-  //   if (Array.isArray(keys)) {
-  //     return new Collection(
-  //       this.map((item) =>
-  //         keys.reduce((acc, key) => {
-  //           acc[key] = item[key];
-  //           return acc;
-  //         }, {} as Partial<T>)
-  //       )
-  //     );
-  //   }
+  pluck<K extends keyof T>(keys: K | K[]): Collection<T[K] | Partial<T>> {
+    if (Array.isArray(keys)) {
+      return new Collection(
+        ...this.map((item) =>
+          keys.reduce((acc, key) => {
+            acc[key] = item[key];
+            return acc;
+          }, {} as Partial<T>)
+        )
+      );
+    }
 
-  //   return new Collection(this.map((item) => item[keys]));
-  // }
+    return new Collection(...this.map((item) => item[keys]));
+  }
 
   // pull<K extends keyof T>(key: K): T[K] | null {
   //   const index = this.findIndex((item: any) => key in item);
