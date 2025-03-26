@@ -549,93 +549,93 @@ export default class Collection<T> extends Array<T> {
     return new Collection(...this.map((item) => item[keys]));
   }
 
-  // pull<K extends keyof T>(key: K): T[K] | null {
-  //   const index = this.findIndex((item: any) => key in item);
-  //   if (index !== -1) {
-  //     const [removedItem] = this.splice(index, 1);
-  //     return removedItem[key];
-  //   }
-  //   return null;
-  // }
+  pull<K extends keyof T>(key: K): T[K] | null {
+    const index = this.findIndex((item: any) => key in item);
+    if (index !== -1) {
+      const [removedItem] = this.splice(index, 1);
+      return removedItem[key];
+    }
+    return null;
+  }
 
-  // random(
-  //   count?: number | ((collection: Collection<T>) => any)
-  // ): T | Collection<T> {
-  //   if (typeof count === "function") {
-  //     return count(this);
-  //   }
+  random(
+    count?: number | ((collection: Collection<T>) => any)
+  ): T | Collection<T> {
+    if (typeof count === "function") {
+      return count(this);
+    }
 
-  //   if (count === undefined) {
-  //     // Return a single random item
-  //     return this[Math.floor(Math.random() * this.length)];
-  //   }
+    if (count === undefined) {
+      // Return a single random item
+      return this[Math.floor(Math.random() * this.length)];
+    }
 
-  //   if (count < 1 || count > this.length) {
-  //     throw new MongoloquentInvalidArgumentException();
-  //   }
+    if (count < 1 || count > this.length) {
+      throw new MongoloquentInvalidArgumentException();
+    }
 
-  //   // Shuffle and take `count` elements
-  //   const shuffled = [...this].sort(() => 0.5 - Math.random());
-  //   return new Collection(shuffled.slice(0, count));
-  // }
+    // Shuffle and take `count` elements
+    const shuffled = [...this].sort(() => 0.5 - Math.random());
+    return new Collection(...shuffled.slice(0, count));
+  }
 
-  // range(key: keyof T, range: [number, number]): Collection<T> {
-  //   const [min, max] = range;
-  //   return new Collection(
-  //     this.filter((item) => {
-  //       const value = item[key];
-  //       return typeof value === "number" && value >= min && value <= max;
-  //     })
-  //   );
-  // }
+  range(key: keyof T, range: [number, number]): Collection<T> {
+    const [min, max] = range;
+    return new Collection(
+      ...this.filter((item) => {
+        const value = item[key];
+        return typeof value === "number" && value >= min && value <= max;
+      })
+    );
+  }
 
-  // search(
-  //   keyOrCallback: keyof T | ((item: T) => boolean),
-  //   value: any,
-  //   strict: boolean = false
-  // ): number | string | false {
-  //   // If keyOrCallback is a function, we use it as a callback for comparison
-  //   const isMatch = (item: T) => {
-  //     // If the keyOrCallback is a string (key), check for strict or loose equality
-  //     if (typeof keyOrCallback === "string") {
-  //       const itemValue = item[keyOrCallback as keyof T];
-  //       if (strict) {
-  //         return itemValue === value; // Strict comparison
-  //       } else {
-  //         return itemValue == value; // Loose comparison
-  //       }
-  //     } else if (typeof keyOrCallback === "function") {
-  //       // If keyOrCallback is a callback function, use it for comparison
-  //       return keyOrCallback(item);
-  //     }
-  //     return false;
-  //   };
+  search(
+    keyOrCallback: keyof T | ((item: T) => boolean),
+    value: any,
+    strict: boolean = false
+  ): number | string | false {
+    // If keyOrCallback is a function, we use it as a callback for comparison
+    const isMatch = (item: T) => {
+      // If the keyOrCallback is a string (key), check for strict or loose equality
+      if (typeof keyOrCallback === "string") {
+        const itemValue = item[keyOrCallback as keyof T];
+        if (strict) {
+          return itemValue === value; // Strict comparison
+        } else {
+          return itemValue == value; // Loose comparison
+        }
+      } else if (typeof keyOrCallback === "function") {
+        // If keyOrCallback is a callback function, use it for comparison
+        return keyOrCallback(item);
+      }
+      return false;
+    };
 
-  //   // Iterate over each item in the collection to find a match
-  //   for (const key in this) {
-  //     if (isMatch(this[key])) {
-  //       return key; // Return the key/index if found
-  //     }
-  //   }
-  //   return false; // Return false if no match is found
-  // }
+    // Iterate over each item in the collection to find a match
+    for (const key in this) {
+      if (isMatch(this[key])) {
+        return key; // Return the key/index if found
+      }
+    }
+    return false; // Return false if no match is found
+  }
 
-  // select(keys: string | string[]): Collection<Partial<T>> {
-  //   // If a single key is provided, convert it into an array
-  //   const keysArray = Array.isArray(keys) ? keys : [keys];
+  select(keys: string | string[]): Collection<Partial<T>> {
+    // If a single key is provided, convert it into an array
+    const keysArray = Array.isArray(keys) ? keys : [keys];
 
-  //   return new Collection(
-  //     this.map((item: any) => {
-  //       const selected: Partial<T> = {};
-  //       keysArray.forEach((key) => {
-  //         if (key in item) {
-  //           (selected as Partial<Record<string, any>>)[key] = item[key];
-  //         }
-  //       });
-  //       return selected;
-  //     })
-  //   );
-  // }
+    return new Collection(
+      ...this.map((item: any) => {
+        const selected: Partial<T> = {};
+        keysArray.forEach((key) => {
+          if (key in item) {
+            (selected as Partial<Record<string, any>>)[key] = item[key];
+          }
+        });
+        return selected;
+      })
+    );
+  }
 
   // shuffle(): Collection<T> {
   //   const shuffled = [...this]; // Create a copy of the collection to avoid mutating the original
