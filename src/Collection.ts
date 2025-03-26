@@ -327,15 +327,15 @@ export default class Collection<T> extends Array<T> {
     );
   }
 
-  // hasAny(keys: string | string[]): boolean {
-  //   if (!Array.isArray(keys)) {
-  //     keys = [keys];
-  //   }
+  hasAny(keys: string | string[]): boolean {
+    if (!Array.isArray(keys)) {
+      keys = [keys];
+    }
 
-  //   return keys.some((key) =>
-  //     this.some((item) => Object.prototype.hasOwnProperty.call(item, key))
-  //   );
-  // }
+    return keys.some((key) =>
+      this.some((item) => Object.prototype.hasOwnProperty.call(item, key))
+    );
+  }
 
   // implode(keyOrGlue: string | ((item: T) => any), glue?: string): string {
   //   if (typeof keyOrGlue === "function") {
