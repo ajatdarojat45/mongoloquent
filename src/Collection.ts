@@ -1,5 +1,6 @@
 import {
   MongoloquentInvalidArgumentException,
+  MongoloquentInvalidOperatorException,
   MongoloquentItemNotFoundException,
   MongoloquentMultipleItemsFoundException,
 } from "./exceptions/MongoloquentException";
@@ -233,30 +234,32 @@ export default class Collection<T> extends Array<T> {
     throw new MongoloquentItemNotFoundException();
   }
 
-  // firstWhere<K extends keyof T>(
-  //   key: K,
-  //   operator: string | T[K],
-  //   value?: any
-  // ): T | null {
-  //   // If only two arguments are provided, assume `=` (equal)
-  //   if (value === undefined) {
-  //     value = operator as T[K];
-  //     operator = "=";
-  //   }
+  firstWhere<K extends keyof T>(
+    key: K,
+    operator: string | T[K],
+    value?: any
+  ): T | null {
+    // If only two arguments are provided, assume `=` (equal)
+    if (value === undefined) {
+      value = operator as T[K];
+      operator = "=";
+    }
 
-  //   const op = operators.find((o) => o.operator === operator);
-  //   if (!op) {
-  //     throw new Error(`Invalid operator: ${operator}`);
-  //   }
+    const op = operators.find(
+      (o) => o.operator === operator || o.mongoOperator === operator
+    );
+    if (!op) {
+      throw new MongoloquentInvalidOperatorException();
+    }
 
-  //   for (const item of this) {
-  //     if (this.compare(item[key], op.mongoOperator, value, op.options)) {
-  //       return item;
-  //     }
-  //   }
+    for (const item of this) {
+      if (this.compare(item[key], op.mongoOperator, value, op.options)) {
+        return item;
+      }
+    }
 
-  //   return null;
-  // }
+    return null;
+  }
 
   // forget(keys: keyof T | (keyof T)[]): this {
   //   const keyArray = Array.isArray(keys) ? keys : [keys];
@@ -972,33 +975,33 @@ export default class Collection<T> extends Array<T> {
   //   return new Collection(this.filter((item) => item[key] === null));
   // }
 
-  // private compare(
-  //   a: any,
-  //   mongoOperator: string,
-  //   b: any,
-  //   options?: string
-  // ): boolean {
-  //   switch (mongoOperator) {
-  //     case "eq":
-  //       return a === b;
-  //     case "ne":
-  //       return a !== b;
-  //     case "gt":
-  //       return a > b;
-  //     case "lt":
-  //       return a < b;
-  //     case "gte":
-  //       return a >= b;
-  //     case "lte":
-  //       return a <= b;
-  //     case "in":
-  //       return Array.isArray(b) && b.includes(a);
-  //     case "nin":
-  //       return Array.isArray(b) && !b.includes(a);
-  //     case "regex":
-  //       return typeof a === "string" && new RegExp(b, options).test(a);
-  //     default:
-  //       throw new Error(`Unsupported MongoDB operator: ${mongoOperator}`);
-  //   }
-  // }
+  private compare(
+    a: any,
+    mongoOperator: string,
+    b: any,
+    options?: string
+  ): boolean {
+    switch (mongoOperator) {
+      case "eq":
+        return a === b;
+      case "ne":
+        return a !== b;
+      case "gt":
+        return a > b;
+      case "lt":
+        return a < b;
+      case "gte":
+        return a >= b;
+      case "lte":
+        return a <= b;
+      case "in":
+        return Array.isArray(b) && b.includes(a);
+      case "nin":
+        return Array.isArray(b) && !b.includes(a);
+      case "regex":
+        return typeof a === "string" && new RegExp(b, options).test(a);
+      default:
+        throw new Error(`Unsupported MongoDB operator: ${mongoOperator}`);
+    }
+  }
 }
