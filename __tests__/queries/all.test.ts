@@ -1,6 +1,14 @@
+import { IMongoloquentSchema } from "../../src/interfaces/ISchema";
 import Model from "../../src/Model";
 // Define User model extending from Model
-class User extends Model {}
+interface IUser extends IMongoloquentSchema {
+  name: string;
+  email: string;
+  age: number;
+}
+class User extends Model {
+  static $schema: IUser;
+}
 
 const query = User["query"]();
 const userCollection = query["getCollection"]();

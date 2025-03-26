@@ -2,10 +2,11 @@ import {
   BulkWriteOptions,
   Db,
   Document,
+  Filter,
   FindOneAndUpdateOptions,
   InsertOneOptions,
   ObjectId,
-  UpdateFilter,
+  OptionalUnlessRequiredId,
   UpdateOptions,
 } from "mongodb";
 import { IQueryBuilder, IQueryOrder, IQueryWhere } from "./interfaces/IQuery";
@@ -19,7 +20,10 @@ import operators from "./utils/operators";
 import dayjs from "./utils/dayjs";
 import MongoloquentNotFoundException from "./exceptions/MongoloquentNotFoundException";
 import Collection from "./Collection";
-export default class QueryBuilder {
+import { FormSchema } from "./types/schema";
+import { IMongoloquentSchema } from "./interfaces/ISchema";
+
+export default class QueryBuilder<Schema extends IMongoloquentSchema> {
   private $connection: string = "";
   private $databaseName: string | null = null;
   private $collection: string = "mongoloquent";
@@ -106,16 +110,16 @@ export default class QueryBuilder {
   }
 
   private getCollection() {
-    return this.$db.collection(this.$collection);
+    return this.$db.collection<FormSchema<Schema>>(this.$collection);
   }
 
   /**
    * Inserts a new document into the collection, applying timestamps and soft delete if applicable
    */
   public async insert(
-    doc: object,
+    doc: FormSchema<Schema>,
     options?: InsertOneOptions
-  ): Promise<object> {
+  ): Promise<Schema> {
     try {
       // Get the collection from the database
       const collection = this.getCollection();
@@ -127,11 +131,14 @@ export default class QueryBuilder {
 
       //      newDoc = this.checkRelationship(newDoc);
       // Insert the document into the collection
-      const data = await collection?.insertOne(newDoc, options);
+      const data = await collection?.insertOne(
+        newDoc as OptionalUnlessRequiredId<FormSchema<Schema>>,
+        options
+      );
 
       this.resetQuery();
       // Return the inserted document with its ID
-      return { _id: data?.insertedId, ...newDoc };
+      return { _id: data?.insertedId as ObjectId, ...newDoc } as Schema;
     } catch (error) {
       throw new Error(`Inserting document failed`);
     }
@@ -141,7 +148,7 @@ export default class QueryBuilder {
    * Inserts multiple documents into the collection, applying timestamps and soft delete if applicable
    */
   public async insertMany(
-    docs: object[],
+    docs: FormSchema<Schema>[],
     options?: BulkWriteOptions
   ): Promise<ObjectId[]> {
     try {
@@ -158,7 +165,10 @@ export default class QueryBuilder {
       });
 
       // Insert the documents into the collection
-      const data = await collection?.insertMany(newDocs, options);
+      const data = await collection?.insertMany(
+        newDocs as OptionalUnlessRequiredId<FormSchema<Schema>>[],
+        options
+      );
 
       const result: ObjectId[] = [];
 
@@ -181,7 +191,7 @@ export default class QueryBuilder {
    * Updates a single document in the collection that matches the query criteria
    */
   public async update(
-    doc: UpdateFilter<Document>,
+    doc: Partial<FormSchema<Schema>>,
     options: FindOneAndUpdateOptions = {}
   ) {
     try {
@@ -198,7 +208,7 @@ export default class QueryBuilder {
       let filter = {};
       if (stages.length > 0) filter = stages[0].$match;
       // Apply timestamps and soft delete fields to the documents if enabled
-      let newDoc = this.checkUseTimestamps(doc, false);
+      let newDoc = this.checkUseTimestamps(doc as Schema, false);
       newDoc = this.checkUseSoftdelete(newDoc);
       delete (newDoc as any)._id;
 
@@ -207,7 +217,7 @@ export default class QueryBuilder {
         { ...filter },
         {
           $set: {
-            ...newDoc,
+            ...(newDoc as Partial<Schema>),
           },
         },
         {
@@ -228,10 +238,7 @@ export default class QueryBuilder {
   /**
    * Updates or creates a document based on the specified condition
    */
-  async updateOrCreate(
-    filter: { [key: string]: any },
-    doc: { [key: string]: any }
-  ) {
+  async updateOrCreate(filter: { [key: string]: any }, doc: Partial<FormSchema<Schema>>) {
     for (var key in filter) {
       if (doc.hasOwnProperty(key)) {
         this.where(key, filter[key]);
@@ -241,14 +248,14 @@ export default class QueryBuilder {
     const data = await this.update(doc);
     if (data) return data;
 
-    return this.insert(doc);
+    return this.insert(doc as Schema);
   }
 
   /**
    * Updates multiple documents in the collection, applying timestamps and soft delete if applicable
    */
   public async updateMany(
-    doc: UpdateFilter<Document>,
+    doc: Partial<FormSchema<Schema>>,
     options?: UpdateOptions
   ): Promise<number> {
     try {
@@ -265,7 +272,7 @@ export default class QueryBuilder {
       let filter = {};
       if (stages.length > 0) filter = stages[0].$match;
       // Apply timestamps and soft delete fields to the documents if enabled
-      let newDoc = this.checkUseTimestamps(doc, false);
+      let newDoc = this.checkUseTimestamps(doc as Schema, false);
       newDoc = this.checkUseSoftdelete(newDoc);
       delete (newDoc as any)._id;
 
@@ -274,7 +281,7 @@ export default class QueryBuilder {
         { ...filter },
         {
           $set: {
-            ...newDoc,
+            ...(newDoc as Partial<Schema>),
           },
         },
         options
@@ -328,14 +335,14 @@ export default class QueryBuilder {
 
       // If soft delete is enabled, update the documents to mark them as deleted
       if (this.$useSoftDelete) {
-        let doc = this.checkUseTimestamps({}, false);
+        let doc = this.checkUseTimestamps({} as Schema, false);
         doc = this.checkUseSoftdelete(doc, true);
 
         const data = await collection?.updateMany(
           { ...filter },
           {
             $set: {
-              ...doc,
+              ...(doc as Partial<Schema>),
             },
           }
         );
@@ -361,7 +368,10 @@ export default class QueryBuilder {
    * Helper function to validate and apply timestamps to documents
    * Handles both creation and update timestamps based on the model's configuration
    */
-  private checkUseTimestamps(doc: object, isNew: boolean = true): object {
+  private checkUseTimestamps(
+    doc: FormSchema<Schema>,
+    isNew: boolean = true
+  ): FormSchema<Schema> {
     if (this.$useTimestamps) {
       const current = dayjs().format("YYYY/MM/DD HH:mm:ss");
       const now = dayjs.utc(current).tz(this.$timezone).toDate();
@@ -378,7 +388,10 @@ export default class QueryBuilder {
    * Helper function to handle soft delete functionality
    * Manages the isDeleted flag and deletedAt timestamp for soft-deletable models
    */
-  private checkUseSoftdelete(doc: object, isDeleted: boolean = false): object {
+  private checkUseSoftdelete(
+    doc: FormSchema<Schema>,
+    isDeleted: boolean = false
+  ): FormSchema<Schema> {
     if (this.$useSoftDelete) {
       if (isDeleted) {
         const current = dayjs().format("YYYY/MM/DD HH:mm:ss");
@@ -681,9 +694,9 @@ export default class QueryBuilder {
       const aggregate = await this.aggregate();
 
       // Convert the aggregation cursor to an array of documents
-      const data = await aggregate.toArray();
+      const data = await aggregate.toArray() as Schema[]
 
-      const collection = new Collection(data);
+      const collection = new Collection(...data);
       return collection;
     } catch (error) {
       console.log(error);
@@ -722,14 +735,14 @@ export default class QueryBuilder {
   /**
    * Retrieves the first document that matches the specified condition or creates a new one
    */
-  public async firstOrCreate(doc: object) {
+  public async firstOrCreate(doc: FormSchema<Schema>) {
     const collection = this.getCollection();
 
     if (this.$useSoftDelete) {
       doc = { ...doc, [this.getIsDeleted()]: false };
     }
 
-    const data = await collection?.findOne(doc);
+    const data = await collection?.findOne(doc as Filter<FormSchema<Schema>>);
     if (!data) return await this.insert(doc);
 
     return data;
