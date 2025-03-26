@@ -276,10 +276,13 @@ export default class Collection<T> extends Array<T> {
     return this;
   }
 
-  // forPage(page: number, perPage: number): Collection<T> {
-  //   const start = (page - 1) * perPage;
-  //   return new Collection(this.slice(start, start + perPage));
-  // }
+  forPage(page: number, perPage: number): Collection<T> {
+    if (page <= 0 || perPage <= 0) {
+      throw new Error("Page and perPage must be positive numbers.");
+    }
+    const start = (page - 1) * perPage;
+    return new Collection(...this.slice(start, start + perPage));
+  }
 
   // get(key: string, defaultValue: T | (() => T) | null = null): T | null {
   //   const item = this.find((obj) => (obj as any)?.[key] !== undefined);
