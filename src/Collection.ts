@@ -397,25 +397,25 @@ export default class Collection<T> extends Array<T> {
     return new Collection(...items);
   }
 
-  // mapToGroups<U>(
-  //   callback: (item: T, index: number) => Record<string, U>
-  // ): Collection<U[]> {
-  //   const grouped = new Map<string, U[]>();
+  mapToGroups<U>(
+    callback: (item: T, index: number) => Record<string, U>
+  ): Collection<U[]> {
+    const grouped = new Map<string, U[]>();
 
-  //   this.forEach((item, index) => {
-  //     const result = callback(item, index);
-  //     const key = Object.keys(result)[0];
-  //     const value = result[key];
+    this.forEach((item, index) => {
+      const result = callback(item, index);
+      const key = Object.keys(result)[0];
+      const value = result[key];
 
-  //     if (!grouped.has(key)) {
-  //       grouped.set(key, []);
-  //     }
+      if (!grouped.has(key)) {
+        grouped.set(key, []);
+      }
 
-  //     grouped.get(key)?.push(value);
-  //   });
+      grouped.get(key)?.push(value);
+    });
 
-  //   return Collection.make(Array.from(grouped.values()));
-  // }
+    return Collection.make(...Array.from(grouped.values()));
+  }
 
   // mapWithKeys<U>(
   //   callback: (item: T, index: number) => Record<string, U>
