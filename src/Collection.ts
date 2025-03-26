@@ -937,73 +937,80 @@ export default class Collection<T> extends Array<T> {
     return this[0][key];
   }
 
-  // where<K extends keyof T>(
-  //   keyOrCallback: K | ((item: T) => boolean),
-  //   operatorOrValue?: string | T[K],
-  //   value?: T[K]
-  // ): Collection<T> {
-  //   // If keyOrCallback is a function, treat it as a filter function
-  //   if (typeof keyOrCallback === "function") {
-  //     return new Collection(this.filter(keyOrCallback));
-  //   }
+  where<K extends keyof T>(
+    keyOrCallback: K | ((item: T) => boolean),
+    operatorOrValue?: string | T[K],
+    value?: T[K]
+  ): Collection<T> {
+    // If keyOrCallback is a function, treat it as a filter function
+    if (typeof keyOrCallback === "function") {
+      return new Collection(...this.filter(keyOrCallback));
+    }
 
-  //   // Determine if the second parameter is a value or an operator
-  //   let operator: string;
-  //   let actualValue: any;
+    // Determine if the second parameter is a value or an operator
+    let operator: string;
+    let actualValue: any;
 
-  //   if (value === undefined) {
-  //     // If only two parameters are provided, assume "=" as the default operator
-  //     operator = "=";
-  //     actualValue = operatorOrValue as T[K];
-  //   } else {
-  //     // If three parameters are provided, the second one is an operator
-  //     operator = operatorOrValue as string;
-  //     actualValue = value;
-  //   }
+    if (value === undefined) {
+      // If only two parameters are provided, assume "=" as the default operator
+      operator = "=";
+      actualValue = operatorOrValue as T[K];
+    } else {
+      // If three parameters are provided, the second one is an operator
+      operator = operatorOrValue as string;
+      actualValue = value;
+    }
 
-  //   // Find corresponding MongoDB operator
-  //   const operatorMapping = operators.find((op) => op.operator === operator);
-  //   if (!operatorMapping) {
-  //     throw new Error(`Unsupported operator: ${operator}`);
-  //   }
+    // Find corresponding MongoDB operator
+    const operatorMapping = operators.find(
+      (op) => op.operator === operator || op.mongoOperator === operator
+    );
+    if (!operatorMapping) {
+      throw new Error(`Unsupported operator: ${operator}`);
+    }
 
-  //   return new Collection(
-  //     this.filter((item) => {
-  //       const itemValue = item[keyOrCallback];
-  //       return this.compare(
-  //         itemValue,
-  //         operatorMapping.mongoOperator,
-  //         actualValue,
-  //         operatorMapping.options
-  //       );
-  //     })
-  //   );
-  // }
+    return new Collection(
+      ...this.filter((item) => {
+        const itemValue = item[keyOrCallback];
+        return this.compare(
+          itemValue,
+          operatorMapping.mongoOperator,
+          actualValue,
+          operatorMapping.options
+        );
+      })
+    );
+  }
 
-  // whereBetween<K extends keyof T>(key: K, range: [T[K], T[K]]): Collection<T> {
-  //   const [min, max] = range;
+  whereBetween<K extends keyof T>(key: K, range: [T[K], T[K]]): Collection<T> {
+    const [min, max] = range;
 
-  //   return new Collection(
-  //     this.filter((item) => {
-  //       const value = item[key];
-  //       return value >= min && value <= max;
-  //     })
-  //   );
-  // }
+    return new Collection(
+      ...this.filter((item) => {
+        const value = item[key];
+        if (typeof value !== "number") return false;
+        return (
+          typeof value === "number" &&
+          value >= (min as number) &&
+          value <= (max as number)
+        );
+      })
+    );
+  }
 
-  // whereIn<K extends keyof T>(key: K, values: T[K][]): Collection<T> {
-  //   return new Collection(this.filter((item) => values.includes(item[key])));
-  // }
+  whereIn<K extends keyof T>(key: K, values: T[K][]): Collection<T> {
+    return new Collection(...this.filter((item) => values.includes(item[key])));
+  }
 
-  // whereNotBetween<K extends keyof T>(
-  //   key: K,
-  //   range: [T[K], T[K]]
-  // ): Collection<T> {
-  //   const [min, max] = range;
-  //   return new Collection(
-  //     this.filter((item) => item[key] < min || item[key] > max)
-  //   );
-  // }
+  whereNotBetween<K extends keyof T>(
+    key: K,
+    range: [T[K], T[K]]
+  ): Collection<T> {
+    const [min, max] = range;
+    return new Collection(
+      ...this.filter((item) => item[key] < min || item[key] > max)
+    );
+  }
 
   // whereNotIn<K extends keyof T>(key: K, values: T[K][]): Collection<T> {
   //   return new Collection(this.filter((item) => !values.includes(item[key])));
