@@ -1012,19 +1012,21 @@ export default class Collection<T> extends Array<T> {
     );
   }
 
-  // whereNotIn<K extends keyof T>(key: K, values: T[K][]): Collection<T> {
-  //   return new Collection(this.filter((item) => !values.includes(item[key])));
-  // }
+  whereNotIn<K extends keyof T>(key: K, values: T[K][]): Collection<T> {
+    return new Collection(
+      ...this.filter((item) => !values.includes(item[key]))
+    );
+  }
 
-  // whereNotNull<K extends keyof T>(key: K): Collection<T> {
-  //   return new Collection(
-  //     this.filter((item) => item[key] !== null && item[key] !== undefined)
-  //   );
-  // }
+  whereNotNull<K extends keyof T>(key: K): Collection<T> {
+    return new Collection(
+      ...this.filter((item) => item[key] !== null && item[key] !== undefined)
+    );
+  }
 
-  // whereNull<K extends keyof T>(key: K): Collection<T> {
-  //   return new Collection(this.filter((item) => item[key] === null));
-  // }
+  whereNull<K extends keyof T>(key: K): Collection<T> {
+    return new Collection(...this.filter((item) => item[key] === null));
+  }
 
   private compare(
     a: any,
