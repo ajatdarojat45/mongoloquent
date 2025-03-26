@@ -359,43 +359,43 @@ export default class Collection<T> extends Array<T> {
     return this.length > 0;
   }
 
-  // keyBy(keyOrCallback: string | ((item: T) => string)): Collection<T> {
-  //   const result: Record<string, T> = {};
+  keyBy(keyOrCallback: string | ((item: T) => string)): Collection<T> {
+    const result: Record<string, T> = {};
 
-  //   this.forEach((item) => {
-  //     const key =
-  //       typeof keyOrCallback === "function"
-  //         ? keyOrCallback(item)
-  //         : (item as any)[keyOrCallback];
-  //     if (key !== undefined) {
-  //       result[key] = item;
-  //     }
-  //   });
+    this.forEach((item) => {
+      const key =
+        typeof keyOrCallback === "function"
+          ? keyOrCallback(item)
+          : (item as any)[keyOrCallback];
+      if (key !== undefined) {
+        result[key] = item;
+      }
+    });
 
-  //   return new Collection(Object.values(result));
-  // }
+    return new Collection(...Object.values(result));
+  }
 
-  // last(predicate?: (item: T) => boolean): T | null {
-  //   if (this.length === 0) return null;
+  last(predicate?: (item: T) => boolean): T | null {
+    if (this.length === 0) return null;
 
-  //   if (!predicate) {
-  //     // Return the last item if no predicate is provided
-  //     return this[this.length - 1] ?? null;
-  //   }
+    if (!predicate) {
+      // Return the last item if no predicate is provided
+      return this[this.length - 1] ?? null;
+    }
 
-  //   // Iterate from the last element to the first to find the match
-  //   for (let i = this.length - 1; i >= 0; i--) {
-  //     if (predicate(this[i])) {
-  //       return this[i];
-  //     }
-  //   }
+    // Iterate from the last element to the first to find the match
+    for (let i = this.length - 1; i >= 0; i--) {
+      if (predicate(this[i])) {
+        return this[i];
+      }
+    }
 
-  //   return null;
-  // }
+    return null;
+  }
 
-  // static make<U>(items: U[] = []): Collection<U> {
-  //   return new Collection(items);
-  // }
+  static make<U>(...items: U[]): Collection<U> {
+    return new Collection(...items);
+  }
 
   // mapToGroups<U>(
   //   callback: (item: T, index: number) => Record<string, U>
