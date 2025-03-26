@@ -284,15 +284,15 @@ export default class Collection<T> extends Array<T> {
     return new Collection(...this.slice(start, start + perPage));
   }
 
-  // get(key: string, defaultValue: T | (() => T) | null = null): T | null {
-  //   const item = this.find((obj) => (obj as any)?.[key] !== undefined);
-  //   if (item) return (item as any)[key];
+  get(key: string, defaultValue: T | (() => T) | null = null): T | null {
+    const item = this.find((obj) => (obj as any)?.[key] !== undefined);
+    if (item) return (item as any)[key];
 
-  //   // If defaultValue is a function, execute it, otherwise return the value
-  //   return typeof defaultValue === "function"
-  //     ? (defaultValue as () => T)()
-  //     : defaultValue;
-  // }
+    // If defaultValue is a function, execute it, otherwise return the value
+    return typeof defaultValue === "function"
+      ? (defaultValue as () => T)()
+      : defaultValue;
+  }
 
   // groupBy(
   //   keyOrCallback: string | ((item: T) => any)
