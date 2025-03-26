@@ -637,65 +637,65 @@ export default class Collection<T> extends Array<T> {
     );
   }
 
-  // shuffle(): Collection<T> {
-  //   const shuffled = [...this]; // Create a copy of the collection to avoid mutating the original
-  //   let currentIndex = shuffled.length,
-  //     randomIndex;
+  shuffle(): Collection<T> {
+    const shuffled = [...this]; // Create a copy of the collection to avoid mutating the original
+    let currentIndex = shuffled.length,
+      randomIndex;
 
-  //   // While there remain elements to shuffle
-  //   while (currentIndex !== 0) {
-  //     // Pick a remaining element
-  //     randomIndex = Math.floor(Math.random() * currentIndex);
-  //     currentIndex--;
+    // While there remain elements to shuffle
+    while (currentIndex !== 0) {
+      // Pick a remaining element
+      randomIndex = Math.floor(Math.random() * currentIndex);
+      currentIndex--;
 
-  //     // Swap it with the current element
-  //     [shuffled[currentIndex], shuffled[randomIndex]] = [
-  //       shuffled[randomIndex],
-  //       shuffled[currentIndex],
-  //     ];
-  //   }
+      // Swap it with the current element
+      [shuffled[currentIndex], shuffled[randomIndex]] = [
+        shuffled[randomIndex],
+        shuffled[currentIndex],
+      ];
+    }
 
-  //   // Return a new collection with the shuffled items
-  //   return new Collection(shuffled);
-  // }
+    // Return a new collection with the shuffled items
+    return new Collection(...shuffled);
+  }
 
-  // skip(n: number): Collection<T> {
-  //   const skippedItems = this.slice(n); // Skips the first `n` elements using slice
-  //   return new Collection(skippedItems); // Return a new collection with the skipped items
-  // }
+  skip(n: number): Collection<T> {
+    const skippedItems = this.slice(n); // Skips the first `n` elements using slice
+    return new Collection(...skippedItems); // Return a new collection with the skipped items
+  }
 
-  // skipUntil(callback: (item: T) => boolean): Collection<T> {
-  //   let found = false;
-  //   const result = [];
+  skipUntil(callback: (item: T) => boolean): Collection<T> {
+    let found = false;
+    const result = [];
 
-  //   for (const item of this) {
-  //     if (callback(item)) {
-  //       found = true;
-  //     }
+    for (const item of this) {
+      if (callback(item)) {
+        found = true;
+      }
 
-  //     if (found) {
-  //       result.push(item); // Add the item once the callback condition is met
-  //     }
-  //   }
+      if (found) {
+        result.push(item); // Add the item once the callback condition is met
+      }
+    }
 
-  //   return new Collection(result); // Return a new collection with the remaining items
-  // }
+    return new Collection(...result); // Return a new collection with the remaining items
+  }
 
-  // skipWhile(callback: (item: T) => boolean): Collection<T> {
-  //   let skip = true;
-  //   const result = [];
+  skipWhile(callback: (item: T) => boolean): Collection<T> {
+    let skip = true;
+    const result = [];
 
-  //   for (const item of this) {
-  //     if (skip && callback(item)) {
-  //       continue; // Skip the item if the callback returns true
-  //     }
+    for (const item of this) {
+      if (skip && callback(item)) {
+        continue; // Skip the item if the callback returns true
+      }
 
-  //     skip = false; // Once we hit an item where the callback returns false, stop skipping
-  //     result.push(item); // Add the item to the result
-  //   }
+      skip = false; // Once we hit an item where the callback returns false, stop skipping
+      result.push(item); // Add the item to the result
+    }
 
-  //   return new Collection(result); // Return a new collection with the remaining items
-  // }
+    return new Collection(...result); // Return a new collection with the remaining items
+  }
 
   // sliding(size: number, step: number = 1): Collection<T[]> {
   //   let result = [];
