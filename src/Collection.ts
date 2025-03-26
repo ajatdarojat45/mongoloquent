@@ -447,30 +447,54 @@ export default class Collection<T> extends Array<T> {
     );
   }
 
-  // median(key?: keyof T): number | null {
-  //   if (this.length === 0) return null;
+  median(key?: keyof T): number | null {
+    if (this.length === 0) return null;
 
-  //   const values = key
-  //     ? this.map((item) => (item[key] as unknown as number) || 0)
-  //     : (this as unknown as number[]);
+    const values = key
+      ? this.map((item) =>
+          typeof item[key] === "number" ? (item[key] as unknown as number) : 0
+        )
+      : this.map((item) =>
+          typeof item === "number" ? (item as unknown as number) : 0
+        );
 
-  //   const sortedValues = values.sort((a, b) => a - b);
-  //   const mid = Math.floor(sortedValues.length / 2);
+    this.forEach((item) => {
+      if (typeof item === "number") {
+        values.push(item as unknown as number);
+      } else if (key && typeof item[key] === "number") {
+        values.push(item[key] as unknown as number);
+      }
+    });
 
-  //   return sortedValues.length % 2 !== 0
-  //     ? sortedValues[mid]
-  //     : (sortedValues[mid - 1] + sortedValues[mid]) / 2;
-  // }
+    const sortedValues = values.sort((a, b) => a - b);
+    const mid = Math.floor(sortedValues.length / 2);
 
-  // min(key?: keyof T): number | null {
-  //   if (this.length === 0) return null;
+    return sortedValues.length % 2 !== 0
+      ? sortedValues[mid]
+      : (sortedValues[mid - 1] + sortedValues[mid]) / 2;
+  }
 
-  //   const values = key
-  //     ? this.map((item) => (item[key] as unknown as number) || 0)
-  //     : (this as unknown as number[]);
+  min(key?: keyof T): number | null {
+    if (this.length === 0) return null;
 
-  //   return Math.min(...values);
-  // }
+    const values: number[] = [];
+
+    if (key) {
+      this.forEach((item) => {
+        if (typeof item[key] === "number") {
+          values.push(item[key] as unknown as number);
+        }
+      });
+    } else {
+      this.forEach((item) => {
+        if (typeof item === "number") {
+          values.push(item as unknown as number);
+        }
+      });
+    }
+
+    return values.length > 0 ? Math.min(...values) : null;
+  }
 
   // multiply(times: number): Collection<T> {
   //   if (times <= 0) return new Collection([]);
