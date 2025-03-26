@@ -417,33 +417,35 @@ export default class Collection<T> extends Array<T> {
     return Collection.make(...Array.from(grouped.values()));
   }
 
-  // mapWithKeys<U>(
-  //   callback: (item: T, index: number) => Record<string, U>
-  // ): Collection<{ [key: string]: U }> {
-  //   const result: { [key: string]: U } = {};
+  mapWithKeys<U>(
+    callback: (item: T, index: number) => Record<string, U>
+  ): Collection<{ [key: string]: U }> {
+    const result: { [key: string]: U } = {};
 
-  //   this.forEach((item, index) => {
-  //     const entry = callback(item, index);
-  //     const key = Object.keys(entry)[0];
-  //     result[key] = entry[key]; // Assign value to the corresponding key
-  //   });
+    this.forEach((item, index) => {
+      const entry = callback(item, index);
+      const key = Object.keys(entry)[0];
+      result[key] = entry[key]; // Assign value to the corresponding key
+    });
 
-  //   return Collection.make([result]);
-  // }
+    if (Object.keys(result).length === 0) return Collection.make();
 
-  // max(key?: keyof T): number | null {
-  //   if (this.length === 0) return null;
+    return Collection.make(...[result]);
+  }
 
-  //   if (!key) {
-  //     // Assume collection contains only numbers
-  //     return Math.max(...(this as unknown as number[]));
-  //   }
+  max(key?: keyof T): number | null {
+    if (this.length === 0) return null;
 
-  //   // Extract values based on the key and find the max value
-  //   return Math.max(
-  //     ...this.map((item) => (item[key] as unknown as number) || 0)
-  //   );
-  // }
+    if (!key) {
+      // Assume collection contains only numbers
+      return Math.max(...(this as unknown as number[]));
+    }
+
+    // Extract values based on the key and find the max value
+    return Math.max(
+      ...this.map((item) => (item[key] as unknown as number) || 0)
+    );
+  }
 
   // median(key?: keyof T): number | null {
   //   if (this.length === 0) return null;
