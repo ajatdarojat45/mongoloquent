@@ -214,24 +214,24 @@ export default class Collection<T> extends Array<T> {
     return null;
   }
 
-  // firstOrFail(
-  //   predicate?: (item: T, index: number, collection: this) => boolean
-  // ): T {
-  //   if (!predicate) {
-  //     if (this.length > 0) {
-  //       return this[0];
-  //     }
-  //     throw new MongoloquentItemNotFoundException();
-  //   }
+  firstOrFail(
+    predicate?: (item: T, index: number, collection: this) => boolean
+  ): T {
+    if (!predicate) {
+      if (this.length > 0) {
+        return this[0];
+      }
+      throw new MongoloquentItemNotFoundException();
+    }
 
-  //   for (let i = 0; i < this.length; i++) {
-  //     if (predicate(this[i], i, this)) {
-  //       return this[i];
-  //     }
-  //   }
+    for (let i = 0; i < this.length; i++) {
+      if (predicate(this[i], i, this)) {
+        return this[i];
+      }
+    }
 
-  //   throw new MongoloquentItemNotFoundException();
-  // }
+    throw new MongoloquentItemNotFoundException();
+  }
 
   // firstWhere<K extends keyof T>(
   //   key: K,
