@@ -351,13 +351,13 @@ export default class Collection<T> extends Array<T> {
     return "";
   }
 
-  // isEmpty(): boolean {
-  //   return this.length === 0;
-  // }
+  isEmpty(): boolean {
+    return this.length === 0;
+  }
 
-  // isNotEmpty(): boolean {
-  //   return this.length > 0;
-  // }
+  isNotEmpty(): boolean {
+    return this.length > 0;
+  }
 
   // keyBy(keyOrCallback: string | ((item: T) => string)): Collection<T> {
   //   const result: Record<string, T> = {};
