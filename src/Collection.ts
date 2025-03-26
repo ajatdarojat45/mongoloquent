@@ -337,19 +337,19 @@ export default class Collection<T> extends Array<T> {
     );
   }
 
-  // implode(keyOrGlue: string | ((item: T) => any), glue?: string): string {
-  //   if (typeof keyOrGlue === "function") {
-  //     return this.map(keyOrGlue).join(glue ?? "");
-  //   }
+  implode(keyOrGlue: string | ((item: T) => any), glue?: string): string {
+    if (typeof keyOrGlue === "function") {
+      return this.map(keyOrGlue).join(glue ?? "");
+    }
 
-  //   if (typeof keyOrGlue === "string") {
-  //     return this.map((item) => (item as any)?.[keyOrGlue] ?? "").join(
-  //       glue ?? ""
-  //     );
-  //   }
+    if (typeof keyOrGlue === "string") {
+      return this.map((item) => (item as any)?.[keyOrGlue] ?? "").join(
+        glue ?? ""
+      );
+    }
 
-  //   return "";
-  // }
+    return "";
+  }
 
   // isEmpty(): boolean {
   //   return this.length === 0;
