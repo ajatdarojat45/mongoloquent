@@ -294,28 +294,28 @@ export default class Collection<T> extends Array<T> {
       : defaultValue;
   }
 
-  // groupBy(
-  //   keyOrCallback: string | ((item: T) => any)
-  // ): Collection<Record<string, T[]>> {
-  //   const grouped: Record<string, T[]> = {};
+  groupBy(
+    keyOrCallback: string | ((item: T) => any)
+  ): Collection<Record<string, T[]>> {
+    const grouped: Record<string, T[]> = {};
 
-  //   this.forEach((item) => {
-  //     const key =
-  //       typeof keyOrCallback === "function"
-  //         ? keyOrCallback(item)
-  //         : (item as any)[keyOrCallback];
+    this.forEach((item) => {
+      const key =
+        typeof keyOrCallback === "function"
+          ? keyOrCallback(item)
+          : (item as any)[keyOrCallback];
 
-  //     if (!grouped[key]) {
-  //       grouped[key] = [];
-  //     }
+      if (!grouped[key]) {
+        grouped[key] = [];
+      }
 
-  //     grouped[key].push(item);
-  //   });
+      grouped[key].push(item);
+    });
 
-  //   return new Collection(
-  //     Object.entries(grouped).map(([key, value]) => ({ [key]: value }))
-  //   );
-  // }
+    return new Collection(
+      ...Object.entries(grouped).map(([key, value]) => ({ [key]: value }))
+    );
+  }
 
   // has(keys: string | string[]): boolean {
   //   if (!Array.isArray(keys)) {
