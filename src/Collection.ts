@@ -496,14 +496,20 @@ export default class Collection<T> extends Array<T> {
     return values.length > 0 ? Math.min(...values) : null;
   }
 
-  // multiply(times: number): Collection<T> {
-  //   if (times <= 0) return new Collection([]);
-  //   return new Collection(
-  //     Array(times)
-  //       .fill([...this])
-  //       .flat()
-  //   );
-  // }
+  multiply(times: number): Collection<T> {
+    if (typeof times !== "number" || times <= 0) {
+      return new Collection(...[]); // Return an empty collection for invalid or non-positive numbers
+    }
+
+    return new Collection(
+      ...Array(times)
+        .fill([...this])
+        .flat()
+        .map((item) =>
+          typeof item === "object" && item !== null ? { ...item } : item
+        ) // Deep copy objects
+    );
+  }
 
   // nth(step: number, offset: number = 0): Collection<T> {
   //   if (step <= 0) return new Collection([]);
