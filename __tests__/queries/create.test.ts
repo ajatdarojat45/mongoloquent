@@ -1,14 +1,24 @@
+import {
+  IMongoloquentSchema,
+  IMongoloquentTimestamps,
+} from "../../src/interfaces/ISchema";
 import Model from "../../src/Model";
 
-// Define User model extending from Model
-class User extends Model {
-  static $collection = "users";
+interface IUser extends IMongoloquentSchema, IMongoloquentTimestamps {
+  name: string;
+  age: number;
+  address: string;
 }
+class User extends Model {
+  static $schema: IUser;
+}
+
+const query = User["query"]();
+const userCollection = query["getCollection"]();
 
 // Clean up the collection before all tests
 beforeAll(async () => {
   try {
-    const userCollection = User["getCollection"]();
     await userCollection.deleteMany({});
   } catch (error) {
     console.error(error);
@@ -18,7 +28,6 @@ beforeAll(async () => {
 // Clean up the collection after all tests
 afterAll(async () => {
   try {
-    const userCollection = User["getCollection"]();
     await userCollection.deleteMany({});
   } catch (error) {
     console.error(error);
@@ -26,8 +35,6 @@ afterAll(async () => {
 });
 
 describe("User Model - create method", () => {
-  const userCollection = User["getCollection"]();
-
   // Clean up the collection after each test in this describe block
   afterAll(async () => {
     try {
@@ -71,8 +78,8 @@ describe("User Model - create method", () => {
     expect(result).toHaveProperty("name", "Udin");
     expect(result).toHaveProperty("age", 20);
     expect(result).toHaveProperty("address", "Jakarta");
-    expect(result).toHaveProperty(User["$createdAt"]);
-    expect(result).toHaveProperty(User["$updatedAt"]);
+    expect(result).toHaveProperty(query["$createdAt"]);
+    expect(result).toHaveProperty(query["$updatedAt"]);
   });
 
   // Test case: should insert data with soft delete enabled
@@ -91,7 +98,7 @@ describe("User Model - create method", () => {
     expect(result).toHaveProperty("name", "Udin");
     expect(result).toHaveProperty("age", 20);
     expect(result).toHaveProperty("address", "Jakarta");
-    expect(result).toHaveProperty(User.getIsDeleted(), false);
+    expect(result).toHaveProperty(query.getIsDeleted(), false);
   });
 
   // Test case: should insert data with both soft delete and timestamps enabled
@@ -110,8 +117,8 @@ describe("User Model - create method", () => {
     expect(result).toHaveProperty("name", "Udin");
     expect(result).toHaveProperty("age", 20);
     expect(result).toHaveProperty("address", "Jakarta");
-    expect(result).toHaveProperty(User.getIsDeleted(), false);
-    expect(result).toHaveProperty(User["$createdAt"]);
-    expect(result).toHaveProperty(User["$updatedAt"]);
+    expect(result).toHaveProperty(query.getIsDeleted(), false);
+    expect(result).toHaveProperty(query["$createdAt"]);
+    expect(result).toHaveProperty(query["$updatedAt"]);
   });
 });

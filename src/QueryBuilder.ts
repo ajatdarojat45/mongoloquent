@@ -145,6 +145,13 @@ export default class QueryBuilder {
     }
   }
 
+  public async create<T extends typeof QueryBuilder>(
+    doc: FormSchema<T["$schema"]>,
+    options?: InsertOneOptions
+  ): Promise<T["$schema"]> {
+    return this.insert(doc, options);
+  }
+
   /**
    * Inserts multiple documents into the collection, applying timestamps and soft delete if applicable
    */

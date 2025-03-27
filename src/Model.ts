@@ -25,6 +25,14 @@ export default class Model extends Relation {
     return this.query().insert(doc, options);
   }
 
+  public static async create<M extends typeof Model>(
+    this: M,
+    doc: FormSchema<M["$schema"]>,
+    options?: InsertOneOptions
+  ) {
+    return this.query().insert(doc, options);
+  }
+
   public static async insertMany<M extends typeof Model>(
     this: M,
     docs: FormSchema<M["$schema"]>[],
