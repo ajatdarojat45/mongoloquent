@@ -1,8 +1,10 @@
-import { Document } from "mongodb";
 import Model from "../../src/Model";
-import { IMongoloquentSchema } from "../../src/interfaces/ISchema";
+import {
+  IMongoloquentSchema,
+  IMongoloquentTimestamps,
+} from "../../src/interfaces/ISchema";
 
-interface IUser {
+interface IUser extends IMongoloquentSchema, IMongoloquentTimestamps {
   name: string;
   age: number;
   address: string;
