@@ -37,3 +37,13 @@ export class MongoloquentMultipleItemsFoundException extends MongoloquentExcepti
     this.name = "MongoloquentMultipleItemsFoundException";
   }
 }
+
+export class MongoloquentInvalidOperatorException extends MongoloquentException {
+  constructor(
+    message: string = "Invalid operator",
+    status: number | null = null
+  ) {
+    super(message, status);
+    this.name = "MongoloquentInvalidOperatorException";
+  }
+}
