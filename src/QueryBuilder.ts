@@ -252,7 +252,7 @@ export default class QueryBuilder {
     const data = await this.update(doc);
     if (data) return data;
 
-    return this.insert(doc);
+    return this.insert(doc as FormSchema<T["$schema"]>);
   }
 
   /**
@@ -373,9 +373,9 @@ export default class QueryBuilder {
    * Handles both creation and update timestamps based on the model's configuration
    */
   private checkUseTimestamps<T extends typeof QueryBuilder>(
-    doc: FormSchema<T["$schema"]>,
+    doc: Partial<FormSchema<T["$schema"]>>,
     isNew: boolean = true
-  ): FormSchema<T["$schema"]> {
+  ): Partial<FormSchema<T["$schema"]>> {
     if (this.$useTimestamps) {
       const current = dayjs().format("YYYY/MM/DD HH:mm:ss");
       const now = dayjs.utc(current).tz(this.$timezone).toDate();
@@ -393,9 +393,9 @@ export default class QueryBuilder {
    * Manages the isDeleted flag and deletedAt timestamp for soft-deletable models
    */
   private checkUseSoftdelete<T extends typeof QueryBuilder>(
-    doc: FormSchema<T["$schema"]>,
+    doc: Partial<FormSchema<T["$schema"]>>,
     isDeleted: boolean = false
-  ): FormSchema<T["$schema"]> {
+  ): Partial<FormSchema<T["$schema"]>> {
     if (this.$useSoftDelete) {
       if (isDeleted) {
         const current = dayjs().format("YYYY/MM/DD HH:mm:ss");
