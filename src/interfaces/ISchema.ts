@@ -1,17 +1,15 @@
 import { ObjectId } from "mongodb";
 
-export interface IMongoloquentSchema
-  extends IMongoloquentTimestamps,
-    IMongoloquentSoftDelete {
+export interface IMongoloquentSchema {
   _id: ObjectId;
 }
 
-interface IMongoloquentTimestamps {
+export interface IMongoloquentTimestamps {
   createdAt: Date;
   updatedAt: Date;
 }
 
-interface IMongoloquentSoftDelete {
+export interface IMongoloquentSoftDelete {
   deletedAt: Date;
   isDeleted: boolean;
 }
