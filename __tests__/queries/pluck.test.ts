@@ -1,33 +1,41 @@
+import { IMongoloquentSchema } from "../../src/interfaces/ISchema";
 import Model from "../../src/Model";
+
+interface IUser extends IMongoloquentSchema {
+  name: string;
+  email: string;
+  age: number;
+}
+class User extends Model {
+  static $schema: IUser;
+}
+
+const query = User["query"]();
+const userCollection = query["getCollection"]();
 
 const users = [
   {
     name: "John Doe",
     email: "jhon@mail.com",
     age: 20,
-    IS_DELETED: false,
+    [query["$isDeleted"]]: false,
   },
   {
     name: "Udin",
     email: "udin@mail.com",
-    IS_DELETED: false,
+    [query["$isDeleted"]]: false,
     age: 10,
   },
   {
     name: "Kosasih",
     email: "kosasih@mail.com",
-    IS_DELETED: true,
+    [query["$isDeleted"]]: true,
     age: 50,
   },
 ];
 
-class User extends Model {
-  static $collection = "users";
-}
-
 beforeAll(async () => {
   try {
-    const userCollection = User["getCollection"]();
     await userCollection.deleteMany({});
   } catch (error) {
     console.error(error);
@@ -36,7 +44,6 @@ beforeAll(async () => {
 
 afterAll(async () => {
   try {
-    const userCollection = User["getCollection"]();
     await userCollection.deleteMany({});
   } catch (error) {
     console.error(error);
@@ -44,8 +51,6 @@ afterAll(async () => {
 });
 
 describe("Model - pluck method", () => {
-  const userCollection = User["getCollection"]();
-
   beforeAll(async () => {
     try {
       await userCollection.insertMany(users);
@@ -88,6 +93,7 @@ describe("Model - pluck method", () => {
 
   it("should return an empty array when the specified field does not exist", async () => {
     User["$useSoftDelete"] = false;
+    // @ts-ignore
     const result = await User.pluck("address");
 
     expect(result).toEqual(expect.any(Array));

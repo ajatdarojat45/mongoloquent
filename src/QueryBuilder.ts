@@ -756,6 +756,10 @@ export default class QueryBuilder {
     return data;
   }
 
+  public async pluck(columns: string | string[] = []) {
+    return (await this.get()).pluck(columns as any);
+  }
+
   /**
    * Retrieves the count of documents in the collection
    */

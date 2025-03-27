@@ -198,6 +198,13 @@ export default class Model extends Relation {
     return this.query().firstOrCreate(doc);
   }
 
+  public static async pluck<M extends typeof Model>(
+    this: M,
+    keys: keyof M["$schema"] | (keyof M["$schema"])[]
+  ) {
+    return this.query().pluck(keys as any);
+  }
+
   public static async count(): Promise<number> {
     return this.query().count();
   }
