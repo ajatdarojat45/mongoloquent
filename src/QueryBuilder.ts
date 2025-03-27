@@ -23,7 +23,8 @@ import Collection from "./Collection";
 import { FormSchema } from "./types/schema";
 import { IMongoloquentSchema } from "./interfaces/ISchema";
 
-export default class QueryBuilder<Schema extends IMongoloquentSchema> {
+export default class QueryBuilder {
+  public static $schema: unknown;
   private $connection: string = "";
   private $databaseName: string | null = null;
   private $collection: string = "mongoloquent";
@@ -109,17 +110,17 @@ export default class QueryBuilder<Schema extends IMongoloquentSchema> {
     this.$db = Database.getDb(this.$connection, this.$databaseName);
   }
 
-  private getCollection() {
-    return this.$db.collection<FormSchema<Schema>>(this.$collection);
+  private getCollection<T extends typeof QueryBuilder>() {
+    return this.$db.collection<FormSchema<T["$schema"]>>(this.$collection);
   }
 
   /**
    * Inserts a new document into the collection, applying timestamps and soft delete if applicable
    */
-  public async insert(
-    doc: FormSchema<Schema>,
+  public async insert<T extends typeof QueryBuilder>(
+    doc: FormSchema<T["$schema"]>,
     options?: InsertOneOptions
-  ): Promise<Schema> {
+  ): Promise<T["$schema"]> {
     try {
       // Get the collection from the database
       const collection = this.getCollection();
@@ -132,13 +133,13 @@ export default class QueryBuilder<Schema extends IMongoloquentSchema> {
       //      newDoc = this.checkRelationship(newDoc);
       // Insert the document into the collection
       const data = await collection?.insertOne(
-        newDoc as OptionalUnlessRequiredId<FormSchema<Schema>>,
+        newDoc as OptionalUnlessRequiredId<FormSchema<T["$schema"]>>,
         options
       );
 
       this.resetQuery();
       // Return the inserted document with its ID
-      return { _id: data?.insertedId as ObjectId, ...newDoc } as Schema;
+      return { _id: data?.insertedId as ObjectId, ...newDoc } as T["$schema"];
     } catch (error) {
       throw new Error(`Inserting document failed`);
     }
@@ -147,8 +148,8 @@ export default class QueryBuilder<Schema extends IMongoloquentSchema> {
   /**
    * Inserts multiple documents into the collection, applying timestamps and soft delete if applicable
    */
-  public async insertMany(
-    docs: FormSchema<Schema>[],
+  public async insertMany<T extends typeof QueryBuilder>(
+    docs: FormSchema<T["$schema"]>[],
     options?: BulkWriteOptions
   ): Promise<ObjectId[]> {
     try {
@@ -166,7 +167,7 @@ export default class QueryBuilder<Schema extends IMongoloquentSchema> {
 
       // Insert the documents into the collection
       const data = await collection?.insertMany(
-        newDocs as OptionalUnlessRequiredId<FormSchema<Schema>>[],
+        newDocs as OptionalUnlessRequiredId<FormSchema<T["$schema"]>>[],
         options
       );
 
@@ -190,8 +191,8 @@ export default class QueryBuilder<Schema extends IMongoloquentSchema> {
   /**
    * Updates a single document in the collection that matches the query criteria
    */
-  public async update(
-    doc: Partial<FormSchema<Schema>>,
+  public async update<T extends typeof QueryBuilder>(
+    doc: Partial<FormSchema<T["$schema"]>>,
     options: FindOneAndUpdateOptions = {}
   ) {
     try {
@@ -208,7 +209,7 @@ export default class QueryBuilder<Schema extends IMongoloquentSchema> {
       let filter = {};
       if (stages.length > 0) filter = stages[0].$match;
       // Apply timestamps and soft delete fields to the documents if enabled
-      let newDoc = this.checkUseTimestamps(doc as Schema, false);
+      let newDoc = this.checkUseTimestamps(doc, false);
       newDoc = this.checkUseSoftdelete(newDoc);
       delete (newDoc as any)._id;
 
@@ -217,7 +218,7 @@ export default class QueryBuilder<Schema extends IMongoloquentSchema> {
         { ...filter },
         {
           $set: {
-            ...(newDoc as Partial<Schema>),
+            ...(newDoc as Partial<T["$schema"]>),
           },
         },
         {
@@ -238,7 +239,10 @@ export default class QueryBuilder<Schema extends IMongoloquentSchema> {
   /**
    * Updates or creates a document based on the specified condition
    */
-  async updateOrCreate(filter: { [key: string]: any }, doc: Partial<FormSchema<Schema>>) {
+  async updateOrCreate<T extends typeof QueryBuilder>(
+    filter: { [key: string]: any },
+    doc: Partial<FormSchema<T["$schema"]>>
+  ) {
     for (var key in filter) {
       if (doc.hasOwnProperty(key)) {
         this.where(key, filter[key]);
@@ -248,14 +252,14 @@ export default class QueryBuilder<Schema extends IMongoloquentSchema> {
     const data = await this.update(doc);
     if (data) return data;
 
-    return this.insert(doc as Schema);
+    return this.insert(doc);
   }
 
   /**
    * Updates multiple documents in the collection, applying timestamps and soft delete if applicable
    */
-  public async updateMany(
-    doc: Partial<FormSchema<Schema>>,
+  public async updateMany<T extends typeof QueryBuilder>(
+    doc: Partial<FormSchema<T["$schema"]>>,
     options?: UpdateOptions
   ): Promise<number> {
     try {
@@ -272,7 +276,7 @@ export default class QueryBuilder<Schema extends IMongoloquentSchema> {
       let filter = {};
       if (stages.length > 0) filter = stages[0].$match;
       // Apply timestamps and soft delete fields to the documents if enabled
-      let newDoc = this.checkUseTimestamps(doc as Schema, false);
+      let newDoc = this.checkUseTimestamps(doc, false);
       newDoc = this.checkUseSoftdelete(newDoc);
       delete (newDoc as any)._id;
 
@@ -281,7 +285,7 @@ export default class QueryBuilder<Schema extends IMongoloquentSchema> {
         { ...filter },
         {
           $set: {
-            ...(newDoc as Partial<Schema>),
+            ...(newDoc as Partial<T["$schema"]>),
           },
         },
         options
@@ -323,7 +327,7 @@ export default class QueryBuilder<Schema extends IMongoloquentSchema> {
   /**
    * Deletes multiple documents from the collection, applying soft delete if applicable
    */
-  public async delete(): Promise<number> {
+  public async delete<T extends typeof QueryBuilder>(): Promise<number> {
     try {
       // Get the collection from the database
       const collection = this.getCollection();
@@ -335,14 +339,14 @@ export default class QueryBuilder<Schema extends IMongoloquentSchema> {
 
       // If soft delete is enabled, update the documents to mark them as deleted
       if (this.$useSoftDelete) {
-        let doc = this.checkUseTimestamps({} as Schema, false);
+        let doc = this.checkUseTimestamps({}, false);
         doc = this.checkUseSoftdelete(doc, true);
 
         const data = await collection?.updateMany(
           { ...filter },
           {
             $set: {
-              ...(doc as Partial<Schema>),
+              ...(doc as Partial<T["$schema"]>),
             },
           }
         );
@@ -368,10 +372,10 @@ export default class QueryBuilder<Schema extends IMongoloquentSchema> {
    * Helper function to validate and apply timestamps to documents
    * Handles both creation and update timestamps based on the model's configuration
    */
-  private checkUseTimestamps(
-    doc: FormSchema<Schema>,
+  private checkUseTimestamps<T extends typeof QueryBuilder>(
+    doc: FormSchema<T["$schema"]>,
     isNew: boolean = true
-  ): FormSchema<Schema> {
+  ): FormSchema<T["$schema"]> {
     if (this.$useTimestamps) {
       const current = dayjs().format("YYYY/MM/DD HH:mm:ss");
       const now = dayjs.utc(current).tz(this.$timezone).toDate();
@@ -388,10 +392,10 @@ export default class QueryBuilder<Schema extends IMongoloquentSchema> {
    * Helper function to handle soft delete functionality
    * Manages the isDeleted flag and deletedAt timestamp for soft-deletable models
    */
-  private checkUseSoftdelete(
-    doc: FormSchema<Schema>,
+  private checkUseSoftdelete<T extends typeof QueryBuilder>(
+    doc: FormSchema<T["$schema"]>,
     isDeleted: boolean = false
-  ): FormSchema<Schema> {
+  ): FormSchema<T["$schema"]> {
     if (this.$useSoftDelete) {
       if (isDeleted) {
         const current = dayjs().format("YYYY/MM/DD HH:mm:ss");
@@ -685,7 +689,9 @@ export default class QueryBuilder<Schema extends IMongoloquentSchema> {
   /**
    * Retrieves documents based on the specified columns and query stages
    */
-  public async get(columns: string | string[] = []) {
+  public async get<T extends typeof QueryBuilder>(
+    columns: string | string[] = []
+  ) {
     try {
       // Add the specified columns to the query
       this.setColumns(columns);
@@ -694,7 +700,7 @@ export default class QueryBuilder<Schema extends IMongoloquentSchema> {
       const aggregate = await this.aggregate();
 
       // Convert the aggregation cursor to an array of documents
-      const data = await aggregate.toArray() as Schema[]
+      const data = (await aggregate.toArray()) as T["$schema"][];
 
       const collection = new Collection(...data);
       return collection;
@@ -735,14 +741,16 @@ export default class QueryBuilder<Schema extends IMongoloquentSchema> {
   /**
    * Retrieves the first document that matches the specified condition or creates a new one
    */
-  public async firstOrCreate(doc: FormSchema<Schema>) {
+  public async firstOrCreate<T extends typeof QueryBuilder>(
+    doc: FormSchema<T["$schema"]>
+  ) {
     const collection = this.getCollection();
 
     if (this.$useSoftDelete) {
       doc = { ...doc, [this.getIsDeleted()]: false };
     }
 
-    const data = await collection?.findOne(doc as Filter<FormSchema<Schema>>);
+    const data = await collection?.findOne(doc);
     if (!data) return await this.insert(doc);
 
     return data;

@@ -2,7 +2,7 @@ import { Document } from "mongodb";
 import Model from "../../src/Model";
 import { IMongoloquentSchema } from "../../src/interfaces/ISchema";
 
-interface IUser extends IMongoloquentSchema {
+interface IUser {
   name: string;
   age: number;
   address: string;

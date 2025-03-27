@@ -1,3 +1,3 @@
-import Query from "./Query";
+import QueryBuilder from "./QueryBuilder";
 
-export default class Relation extends Query { }
+export default class Relation extends QueryBuilder {}

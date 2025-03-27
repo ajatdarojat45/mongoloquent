@@ -1,5 +1,3 @@
-import { time } from "console";
-import QueryBuilder from "./QueryBuilder";
 import {
   BulkWriteOptions,
   Document,
@@ -10,15 +8,14 @@ import {
   UpdateOptions,
 } from "mongodb";
 import { FormSchema } from "./types/schema";
-import { IMongoloquentSchema } from "./interfaces/ISchema";
+import Relation from "./Relation";
 
-export default class Model {
+export default class Model extends Relation {
   protected static $connection: string;
   protected static $databaseName: string;
   protected static $collection: string;
   protected static $useSoftDelete: boolean = false;
   protected static $useTimestamps: boolean = true;
-  public static $schema: IMongoloquentSchema;
 
   public static async insert<M extends typeof Model>(
     this: M,
@@ -222,7 +219,7 @@ export default class Model {
   }
 
   private static query<M extends typeof Model>(this: M) {
-    return new QueryBuilder<M["$schema"]>({
+    return new this({
       connection: this.$connection,
       databaseName: this.$databaseName,
       collection: this.$collection || `${this.name.toLowerCase()}s`,
