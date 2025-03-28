@@ -6,6 +6,7 @@ import {
   InsertOneOptions,
   ObjectId,
   OptionalUnlessRequiredId,
+  UpdateOptions,
 } from "mongodb";
 import Collection from "./Collection";
 import {
@@ -180,6 +181,43 @@ export default class QueryBuilder<T> {
     } catch (error) {
       console.log(error);
       throw new Error(`Updating documents failed`);
+    }
+  }
+
+  public async updateMany(
+    doc: Partial<FormSchema<T>>,
+    options?: UpdateOptions
+  ): Promise<number> {
+    try {
+      const collection = this.getCollection();
+
+      //     await this.checkRelation();
+      this.checkSoftDelete();
+      this.generateWheres();
+      const stages = this.getStages();
+      let filter = {};
+      if (stages.length > 0) filter = stages[0].$match;
+      let newDoc = this.checkUseTimestamps(doc, false);
+      newDoc = this.checkUseSoftdelete(newDoc);
+      delete (newDoc as any)._id;
+
+      // Update the documents in the collection
+      const data = await collection.updateMany(
+        { ...filter },
+        {
+          $set: {
+            ...(newDoc as Partial<T>),
+          },
+        },
+        options
+      );
+
+      // Reset the query and relation states
+      this.resetQuery();
+      return data.modifiedCount;
+    } catch (error) {
+      console.log(error);
+      throw new Error(`Updating multiple documents failed`);
     }
   }
 
