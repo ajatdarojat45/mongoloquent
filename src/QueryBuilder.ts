@@ -19,6 +19,7 @@ import { FormSchema } from "./types/schema";
 import { IQueryOrder, IQueryWhere } from "./interfaces/IQuery";
 import operators from "./utils/operators";
 import dayjs from "./utils/dayjs";
+import MongoloquentNotFoundException from "./exceptions/MongoloquentNotFoundException";
 
 export default class QueryBuilder<T> {
   static $schema: Record<string, any>;
@@ -473,10 +474,27 @@ export default class QueryBuilder<T> {
     return new Proxy(this, handler) as this & T;
   }
 
+  public async firstOrFail<K extends keyof T>(...columns: (K | K[])[]) {
+    const data = await this.first(...columns);
+    if (data && Object.keys(data.$original).length === 0) {
+      throw new MongoloquentNotFoundException();
+    }
+
+    return data;
+  }
+
   public async find(id: string | ObjectId) {
     const _id = new ObjectId(id);
     this.setId(_id);
     return this.first();
+  }
+
+  public async findOrFail(id: string | ObjectId) {
+    const data = await this.find(id);
+    if (data && Object.keys(data.$original).length === 0) {
+      throw new MongoloquentNotFoundException();
+    }
+    return data;
   }
 
   public hasChanges(): boolean {

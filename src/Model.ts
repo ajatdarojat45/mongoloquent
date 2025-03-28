@@ -262,7 +262,6 @@ class User extends Model<IUser> {
 }
 
 (async () => {
-  const user = await User.first();
-  user.fill({ name: "Udin edited" });
+  const user = await User.where("name", "Udineee").firstOrFail();
   console.log(user);
 })();
