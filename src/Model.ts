@@ -138,6 +138,35 @@ export default class Model<T> extends Relation<T> {
     return this.query().orWhereNotNull(column);
   }
 
+  static withTrashed<M extends typeof Model<any>>(this: M) {
+    return this.query().withTrashed();
+  }
+
+  static onlyTrashed<M extends typeof Model<any>>(this: M) {
+    return this.query().onlyTrashed();
+  }
+
+  static offset<M extends typeof Model<any>>(this: M, value: number) {
+    return this.query().offset(value);
+  }
+
+  static skip<M extends typeof Model<any>>(this: M, value: number) {
+    return this.query().skip(value);
+  }
+
+  static orderBy<M extends typeof Model<any>>(
+    this: M,
+    column: keyof M["$schema"],
+    direction: "asc" | "desc" = "asc",
+    caseSensitive: boolean = false
+  ) {
+    return this.query().orderBy(column, direction, caseSensitive);
+  }
+
+  static limit<M extends typeof Model<any>>(this: M, value: number) {
+    return this.query().limit(value);
+  }
+
   static get<M extends typeof Model<any>>(
     this: M,
     ...fields: (keyof M["$schema"] | Array<keyof M["$schema"]>)[]
@@ -176,7 +205,7 @@ class User extends Model<IUser> {
 }
 
 (async () => {
-  const user = await User.all();
+  const user = await User.limit(1).get();
 
   console.log(user);
   // const Udin = new User();

@@ -190,6 +190,48 @@ export default class QueryBuilder<T> {
     return this;
   }
 
+  public withTrashed(): QueryBuilder<T> {
+    this.$withTrashed = true;
+
+    return this;
+  }
+
+  public onlyTrashed(): QueryBuilder<T> {
+    this.$onlyTrashed = true;
+    return this;
+  }
+
+  public offset(value: number): QueryBuilder<T> {
+    this.$offset = value;
+
+    return this;
+  }
+
+  public skip(value: number): QueryBuilder<T> {
+    return this.offset(value);
+  }
+
+  public limit(value: number): QueryBuilder<T> {
+    this.$limit = value;
+
+    return this;
+  }
+
+  public orderBy<K extends keyof T>(
+    column: K,
+    direction: "asc" | "desc" = "asc",
+    caseSensitive: boolean = false
+  ): this {
+    const payload = {
+      column,
+      order: direction,
+      caseSensitive: caseSensitive,
+    } as any;
+    this.setOrders(payload);
+
+    return this;
+  }
+
   public async get<K extends keyof T>(...fields: (K | K[])[]): Promise<T[]> {
     try {
       this.setColumns(...fields);
@@ -239,48 +281,6 @@ export default class QueryBuilder<T> {
     const _id = new ObjectId(id);
     this.setId(_id);
     return this.first();
-  }
-
-  public withTrashed(): QueryBuilder<T> {
-    this.$withTrashed = true;
-
-    return this;
-  }
-
-  public onlyTrashed(): QueryBuilder<T> {
-    this.$onlyTrashed = true;
-    return this;
-  }
-
-  public offset(value: number): QueryBuilder<T> {
-    this.$offset = value;
-
-    return this;
-  }
-
-  public skip(value: number): QueryBuilder<T> {
-    return this.offset(value);
-  }
-
-  public limit(value: number): QueryBuilder<T> {
-    this.$limit = value;
-
-    return this;
-  }
-
-  public orderBy<K extends keyof T>(
-    column: K,
-    order: string = "asc",
-    caseSensitive: boolean = false
-  ): this {
-    const payload = {
-      column,
-      order: order,
-      caseSensitive: caseSensitive,
-    } as any;
-    this.setOrders(payload);
-
-    return this;
   }
 
   public hasChanges(): boolean {
