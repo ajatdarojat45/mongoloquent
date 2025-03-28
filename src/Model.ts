@@ -262,6 +262,7 @@ class User extends Model<IUser> {
 }
 
 (async () => {
-  const user = await User.updateOrCreate({ name: "a" }, { name: "a edited" });
+  const user = await User.first();
+  user.fill({ name: "Udin edited" });
   console.log(user);
 })();

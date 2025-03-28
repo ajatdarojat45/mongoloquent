@@ -258,6 +258,11 @@ export default class QueryBuilder<T> {
     }
   }
 
+  public fill(doc: Partial<FormSchema<T>>) {
+    Object.assign(this, doc);
+    return this;
+  }
+
   public select<K extends keyof T>(...columns: (K | K[])[]): QueryBuilder<T> {
     this.setColumns(...columns);
     return this;
