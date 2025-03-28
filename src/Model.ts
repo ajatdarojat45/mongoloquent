@@ -276,6 +276,26 @@ export default class Model<T> extends Relation<T> {
     return this.query().find(id);
   }
 
+  static count<M extends typeof Model<any>>(this: M) {
+    return this.query().count();
+  }
+
+  static max<M extends typeof Model<any>>(this: M, column: keyof M["$schema"]) {
+    return this.query().max(column);
+  }
+
+  static min<M extends typeof Model<any>>(this: M, column: keyof M["$schema"]) {
+    return this.query().min(column);
+  }
+
+  static avg<M extends typeof Model<any>>(this: M, column: keyof M["$schema"]) {
+    return this.query().avg(column);
+  }
+
+  static sum<M extends typeof Model<any>>(this: M, column: keyof M["$schema"]) {
+    return this.query().sum(column);
+  }
+
   static query<M extends typeof Model<any>>(this: M): Model<M["$schema"]> {
     return new this();
   }
