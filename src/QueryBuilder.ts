@@ -1,4 +1,10 @@
-import { Db, Document, ObjectId } from "mongodb";
+import {
+  Db,
+  Document,
+  InsertOneOptions,
+  ObjectId,
+  OptionalUnlessRequiredId,
+} from "mongodb";
 import Collection from "./Collection";
 import {
   MONGOLOQUENT_DATABASE_NAME,
@@ -65,6 +71,35 @@ export default class QueryBuilder<T> {
   private getCollection() {
     const db = Database.getDb(this.$connection, this.$databaseName);
     return db.collection<FormSchema<T>>(this.$collection);
+  }
+
+  public async insert(
+    doc: FormSchema<T>,
+    options?: InsertOneOptions
+  ): Promise<T> {
+    try {
+      const collection = this.getCollection();
+      let newDoc = this.checkUseTimestamps(doc);
+      newDoc = this.checkUseSoftdelete(newDoc);
+      //      newDoc = this.checkRelationship(newDoc);
+
+      const data = await collection?.insertOne(
+        newDoc as OptionalUnlessRequiredId<FormSchema<T>>,
+        options
+      );
+
+      this.resetQuery();
+      return { _id: data?.insertedId as ObjectId, ...newDoc } as T;
+    } catch (error) {
+      throw new Error(`Inserting document failed`);
+    }
+  }
+
+  public async create(
+    doc: FormSchema<T>,
+    options?: InsertOneOptions
+  ): Promise<T> {
+    return this.insert(doc, options);
   }
 
   public select<K extends keyof T>(...columns: (K | K[])[]): QueryBuilder<T> {

@@ -1,5 +1,6 @@
-import { ObjectId } from "mongodb";
+import { InsertOneOptions, ObjectId } from "mongodb";
 import Relation from "./Relation";
+import { FormSchema } from "./types/schema";
 
 export default class Model<T> extends Relation<T> {
   [key: string]: any;
@@ -12,6 +13,22 @@ export default class Model<T> extends Relation<T> {
       Object.assign(this, schema);
       return this.createProxy();
     }
+  }
+
+  public static async insert<M extends typeof Model<any>>(
+    this: M,
+    doc: FormSchema<M["$schema"]>,
+    options?: InsertOneOptions
+  ) {
+    return this.query().insert(doc, options);
+  }
+
+  public static async create<M extends typeof Model<any>>(
+    this: M,
+    doc: FormSchema<M["$schema"]>,
+    options?: InsertOneOptions
+  ) {
+    return this.query().create(doc, options);
   }
 
   public static select<M extends typeof Model<any>>(
@@ -195,7 +212,7 @@ export default class Model<T> extends Relation<T> {
 }
 
 interface IUser {
-  _id: string;
+  _id: ObjectId;
   name: string;
   age: number;
 }
@@ -205,10 +222,9 @@ class User extends Model<IUser> {
 }
 
 (async () => {
-  const user = await User.limit(1).get();
-
+  const user = await User.insert({
+    name: "John Doe",
+    age: 30,
+  });
   console.log(user);
-  // const Udin = new User();
-  // Udin.name = "Udin";
-  // console.log(Udin);
 })();
