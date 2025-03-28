@@ -604,6 +604,83 @@ export default class QueryBuilder<T> {
     return data;
   }
 
+  public async count(): Promise<number> {
+    try {
+      const collection = this.getCollection();
+
+      //     await this.checkRelation();
+      this.checkSoftDelete();
+      this.generateWheres();
+
+      const stages = this.getStages();
+      const aggregate = await collection
+        .aggregate([
+          ...stages,
+          {
+            $count: "total",
+          },
+        ])
+        .next();
+
+      this.resetQuery();
+      return aggregate?.total || 0;
+    } catch (error) {
+      console.log(error);
+      throw new Error(`Fetching document count failed`);
+    }
+  }
+
+  public async max<K extends keyof T>(field: K): Promise<number> {
+    return this.aggregates(field, "max");
+  }
+
+  public async min<K extends keyof T>(field: K): Promise<number> {
+    return this.aggregates(field, "min");
+  }
+
+  public async avg<K extends keyof T>(field: K): Promise<number> {
+    return this.aggregates(field, "avg");
+  }
+
+  public async sum<K extends keyof T>(field: K): Promise<number> {
+    return this.aggregates(field, "sum");
+  }
+
+  private async aggregates<K extends keyof T>(
+    field: K,
+    type: "avg" | "sum" | "max" | "min"
+  ): Promise<number> {
+    try {
+      const collection = this.getCollection();
+      //await this.checkRelation();
+      this.checkSoftDelete();
+      this.generateWheres();
+
+      const stages = this.getStages();
+      const aggregate = await collection
+        .aggregate([
+          ...stages,
+          {
+            $group: {
+              _id: null,
+              [type]: {
+                // @ts-ignore
+                [`$${type}`]: `$${field}`,
+              },
+            },
+          },
+        ])
+        .next();
+
+      // Reset the query state
+      this.resetQuery();
+      return typeof aggregate?.[type] === "number" ? aggregate[type] : 0;
+    } catch (error) {
+      console.log(error);
+      throw new Error(`Fetching maximum value failed`);
+    }
+  }
+
   public hasChanges(): boolean {
     return Object.keys(this.$changes).length > 0;
   }
