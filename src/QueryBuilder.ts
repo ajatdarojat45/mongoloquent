@@ -327,6 +327,20 @@ export default class QueryBuilder<T> {
     }
   }
 
+  public async restore(): Promise<number> {
+    try {
+      this.onlyTrashed();
+      const payload = {
+        [this.$isDeleted]: false,
+        [this.$deletedAt]: null,
+      } as Partial<FormSchema<T>>;
+      return await this.updateMany(payload);
+    } catch (error) {
+      console.log(error);
+      throw new Error(`Restoring documents failed`);
+    }
+  }
+
   public fill(doc: Partial<FormSchema<T>>) {
     Object.assign(this, doc);
     return this;
