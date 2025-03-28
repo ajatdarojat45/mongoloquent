@@ -1,5 +1,5 @@
 import { Document, ObjectId } from "mongodb";
-import Model from "./Model";
+import Model from "./Model__";
 import Query from "./Query";
 import {
   IRelationBelongsTo,
@@ -130,7 +130,7 @@ export default class Relation extends Query {
       foreignKey,
       localKey,
       alias: this.$alias,
-      options: this.$options
+      options: this.$options,
     };
     const lookup = HasOne.generate(hasOne);
     // Add the lookup stages to the $lookups array
@@ -516,7 +516,9 @@ export default class Relation extends Query {
     if (!Array.isArray(ids)) objectIds = ids ? [new ObjectId(ids)] : [];
     else objectIds = ids.map((el) => new ObjectId(el));
 
-    const collection = Database.getCollection(relationship.pivotModel.$collection);
+    const collection = Database.getCollection(
+      relationship.pivotModel.$collection
+    );
     const _payload: object[] = [];
 
     query = {
@@ -636,7 +638,9 @@ export default class Relation extends Query {
       isDeleteAll = !ids && true;
     } else objectIds = ids.map((el) => new ObjectId(el));
 
-    const collection = Database.getCollection(relationship.pivotModel.$collection);
+    const collection = Database.getCollection(
+      relationship.pivotModel.$collection
+    );
     const query = {
       [relationship.foreignPivotKey]: {
         $in: ids,
@@ -780,9 +784,7 @@ export default class Relation extends Query {
    * @param {string | string[] | ObjectId | ObjectId[]} ids - The IDs of the related models.
    * @return {Promise<{message: string}>} The result of the sync operation.
    */
-  public async syncMorphToMany(
-    ids: string | string[] | ObjectId | ObjectId[]
-  ) {
+  public async syncMorphToMany(ids: string | string[] | ObjectId | ObjectId[]) {
     const relationship = this.getRelationship();
     if (relationship?.type !== IRelationTypes.morphToMany) return null;
 

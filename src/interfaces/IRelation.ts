@@ -1,5 +1,5 @@
 import { ObjectId } from "mongodb";
-import Model from "../Model";
+import Model from "../Model__";
 
 export enum IRelationTypes {
   hasOne = "hasOne",

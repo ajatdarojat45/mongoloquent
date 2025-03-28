@@ -6,17 +6,10 @@ export default class Model<T> extends Relation<T> {
 
   constructor() {
     super();
-
-    // Initialize from schema
     const schema = (this.constructor as any).$schema;
     if (schema) {
-      // Save original values
       this.$original = { ...schema };
-
-      // Add schema properties to instance
       Object.assign(this, schema);
-
-      // Create and return proxy
       return this.createProxy();
     }
   }
@@ -48,25 +41,3 @@ export default class Model<T> extends Relation<T> {
     return new this();
   }
 }
-
-interface UserSchema {
-  name: string;
-  email: string;
-}
-
-class User extends Model<UserSchema> {
-  static $schema: UserSchema = {
-    name: "",
-    email: "",
-  };
-}
-
-(async () => {
-  const user = await User.where("name").first();
-  user.name = "John Doe";
-  // console.log(user.getChanges());
-
-  const Udin = new User();
-  Udin.name = "Udin";
-  console.log(Udin);
-})();
