@@ -31,7 +31,6 @@ export default class QueryBuilder<T> {
 
   protected $original: Partial<T> = {};
   protected $changes: Partial<Record<keyof T, { old: any; new: any }>> = {};
-  private $isProxied: boolean = false;
 
   protected $connection: string = "";
   protected $databaseName: string = "";
