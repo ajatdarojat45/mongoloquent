@@ -203,6 +203,10 @@ export default class QueryBuilder<T> {
     }
   }
 
+  public async all(): Promise<T[]> {
+    return this.get();
+  }
+
   public async first<K extends keyof T>(
     ...fields: (K | K[])[]
   ): Promise<this & T> {
