@@ -36,6 +36,107 @@ export default class Model<T> extends Relation<T> {
     return this.query().where(column, operator, value);
   }
 
+  static orWhere<M extends typeof Model<any>>(
+    this: M,
+    column: keyof M["$schema"],
+    operator: any,
+    value: any = null
+  ) {
+    return this.query().orWhere(column, operator, value);
+  }
+
+  static whereNot<M extends typeof Model<any>>(
+    this: M,
+    column: keyof M["$schema"],
+    value: any
+  ) {
+    return this.query().whereNot(column, value);
+  }
+
+  static orWhereNot<M extends typeof Model<any>>(
+    this: M,
+    column: keyof M["$schema"],
+    value: any
+  ) {
+    return this.query().orWhereNot(column, value);
+  }
+
+  static whereIn<M extends typeof Model<any>>(
+    this: M,
+    column: keyof M["$schema"],
+    value: any[]
+  ) {
+    return this.query().whereIn(column, value);
+  }
+
+  static orWhereIn<M extends typeof Model<any>>(
+    this: M,
+    column: keyof M["$schema"],
+    value: any[]
+  ) {
+    return this.query().orWhereIn(column, value);
+  }
+
+  static whereNotIn<M extends typeof Model<any>>(
+    this: M,
+    column: keyof M["$schema"],
+    value: any[]
+  ) {
+    return this.query().whereNotIn(column, value);
+  }
+
+  static orWhereNotIn<M extends typeof Model<any>>(
+    this: M,
+    column: keyof M["$schema"],
+    value: any[]
+  ) {
+    return this.query().orWhereNotIn(column, value);
+  }
+
+  static whereBetween<M extends typeof Model<any>>(
+    this: M,
+    column: keyof M["$schema"],
+    value: [number, number?]
+  ) {
+    return this.query().whereBetween(column, value);
+  }
+
+  static orWhereBetween<M extends typeof Model<any>>(
+    this: M,
+    column: keyof M["$schema"],
+    value: [number, number?]
+  ) {
+    return this.query().orWhereBetween(column, value);
+  }
+
+  static whereNull<M extends typeof Model<any>>(
+    this: M,
+    column: keyof M["$schema"]
+  ) {
+    return this.query().whereNull(column);
+  }
+
+  static orWhereNull<M extends typeof Model<any>>(
+    this: M,
+    column: keyof M["$schema"]
+  ) {
+    return this.query().orWhereNull(column);
+  }
+
+  static whereNotNull<M extends typeof Model<any>>(
+    this: M,
+    column: keyof M["$schema"]
+  ) {
+    return this.query().whereNotNull(column);
+  }
+
+  static orWhereNotNull<M extends typeof Model<any>>(
+    this: M,
+    column: keyof M["$schema"]
+  ) {
+    return this.query().orWhereNotNull(column);
+  }
+
   static get<M extends typeof Model<any>>(
     this: M,
     ...fields: (keyof M["$schema"] | Array<keyof M["$schema"]>)[]
@@ -63,5 +164,6 @@ class User extends Model<IUser> {
 }
 
 (async () => {
-  const user = await User.exclude("age").first();
+  const user = await User.where("name", "Udin").orWhere("age", 20).get("name");
+  console.log(user);
 })();
