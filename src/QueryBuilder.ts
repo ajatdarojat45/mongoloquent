@@ -1,6 +1,5 @@
 import {
   BulkWriteOptions,
-  Db,
   Document,
   FindOneAndUpdateOptions,
   InsertOneOptions,
@@ -649,7 +648,6 @@ export default class QueryBuilder<T> {
 
   public refresh(): QueryBuilder<T> {
     this.$changes = {};
-    this.$isProxied = false;
     Object.assign(this, this.$original);
     return this;
   }
