@@ -474,6 +474,23 @@ export default class QueryBuilder<T> {
     return new Proxy(this, handler) as this & T;
   }
 
+  public async firstOrCreate(filter: Partial<T>, doc: Partial<FormSchema<T>>) {
+    for (var key in filter) {
+      if (doc.hasOwnProperty(key)) {
+        this.where(key, filter[key]);
+      }
+    }
+
+    const data = await this.first();
+    if (data && Object.keys(data.$original).length > 0) return data;
+
+    return this.insert(doc as FormSchema<T>);
+  }
+
+  public async firstOrNew(filter: Partial<T>, doc: Partial<FormSchema<T>>) {
+    return this.firstOrCreate(filter, doc);
+  }
+
   public async firstOrFail<K extends keyof T>(...columns: (K | K[])[]) {
     const data = await this.first(...columns);
     if (data && Object.keys(data.$original).length === 0) {

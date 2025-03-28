@@ -242,6 +242,22 @@ export default class Model<T> extends Relation<T> {
     return this.query().first(...fields);
   }
 
+  static firstOrCreate<M extends typeof Model<any>>(
+    this: M,
+    filter: Partial<M["$schema"]>,
+    doc: Partial<FormSchema<M["$schema"]>>
+  ) {
+    return this.query().firstOrCreate(filter, doc);
+  }
+
+  static firstOrNew<M extends typeof Model<any>>(
+    this: M,
+    filter: Partial<M["$schema"]>,
+    doc: Partial<FormSchema<M["$schema"]>>
+  ) {
+    return this.query().firstOrNew(filter, doc);
+  }
+
   static find<M extends typeof Model<any>>(this: M, id: string | ObjectId) {
     return this.query().find(id);
   }
