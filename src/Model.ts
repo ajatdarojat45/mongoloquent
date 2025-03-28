@@ -1,3 +1,4 @@
+import { ObjectId } from "mongodb";
 import Relation from "./Relation";
 
 export default class Model<T> extends Relation<T> {
@@ -151,6 +152,10 @@ export default class Model<T> extends Relation<T> {
     return this.query().first(...fields);
   }
 
+  static find<M extends typeof Model<any>>(this: M, id: string | ObjectId) {
+    return this.query().find(id);
+  }
+
   static query<M extends typeof Model<any>>(this: M): Model<M["$schema"]> {
     return new this();
   }
@@ -167,7 +172,7 @@ class User extends Model<IUser> {
 }
 
 (async () => {
-  const user = await User.first();
+  const user = await User.find("67b9c242ed7f7737d0e37cb6");
 
   console.log(user);
   // const Udin = new User();
