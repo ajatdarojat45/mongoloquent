@@ -156,14 +156,14 @@ interface IUser {
 }
 
 class User extends Model<IUser> {
-  static $schema = {
-    name: "string",
-    age: "string",
-    _id: "string",
-  };
+  static $schema: IUser;
 }
 
 (async () => {
   const user = await User.where("name", "Udin").orWhere("age", 20).get("name");
+
   console.log(user);
+  // const Udin = new User();
+  // Udin.name = "Udin";
+  // console.log(Udin);
 })();

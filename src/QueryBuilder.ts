@@ -26,7 +26,6 @@ export default class QueryBuilder<T> {
   protected $connection: string = "";
   protected $databaseName: string = "";
   protected $collection: string = "mongoloquent";
-  protected $db: Db;
   protected $useTimestamps: boolean = true;
   protected $useSoftDelete: boolean = false;
 
@@ -61,7 +60,11 @@ export default class QueryBuilder<T> {
     this.$useTimestamps = (
       this.constructor as typeof QueryBuilder
     ).$useTimestamps;
-    this.$db = Database.getDb(this.$connection, this.$databaseName);
+  }
+
+  private getCollection() {
+    const db = Database.getDb(this.$connection, this.$databaseName);
+    return db.collection<FormSchema<T>>(this.$collection);
   }
 
   public select<K extends keyof T>(...columns: (K | K[])[]): QueryBuilder<T> {
@@ -232,10 +235,6 @@ export default class QueryBuilder<T> {
     const _id = new ObjectId(id);
     this.setId(_id);
     return this.first();
-  }
-
-  private getCollection() {
-    return this.$db.collection<FormSchema<T>>(this.$collection);
   }
 
   public withTrashed(): QueryBuilder<T> {
