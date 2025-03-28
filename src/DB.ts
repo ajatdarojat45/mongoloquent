@@ -22,6 +22,5 @@ interface IUser {
 }
 
 (async () => {
-  const user = await DB.collection<IUser>("users").pluck(["name"]);
-  console.log(user);
+  const user = await DB.collection<IUser>("users");
 })();

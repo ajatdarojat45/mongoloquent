@@ -249,6 +249,14 @@ export default class Model<T> extends Relation<T> {
     return this.query().all();
   }
 
+  static paginate<M extends typeof Model<any>>(
+    this: M,
+    page: number = 1,
+    limit?: number
+  ) {
+    return this.query().paginate(page, limit);
+  }
+
   static first<M extends typeof Model<any>>(
     this: M,
     ...fields: (keyof M["$schema"] | Array<keyof M["$schema"]>)[]

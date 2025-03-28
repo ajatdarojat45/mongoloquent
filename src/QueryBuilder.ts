@@ -19,6 +19,7 @@ import { IQueryOrder, IQueryWhere } from "./interfaces/IQuery";
 import operators from "./utils/operators";
 import dayjs from "./utils/dayjs";
 import MongoloquentNotFoundException from "./exceptions/MongoloquentNotFoundException";
+import { IModelPaginate } from "./interfaces/IModel";
 
 export default class QueryBuilder<T> {
   static $schema: Record<string, any>;
@@ -532,6 +533,59 @@ export default class QueryBuilder<T> {
     const result = await this.get(...fields);
     const flattenedFields = fields.flat() as K[];
     return result.pluck(...flattenedFields);
+  }
+
+  public async paginate(
+    page: number = 1,
+    limit: number = this.$limit
+  ): Promise<IModelPaginate> {
+    try {
+      // await this.checkRelation();
+      this.checkSoftDelete();
+      this.generateColumns();
+      this.generateExcludes();
+      this.generateWheres();
+      this.generateOrders();
+      this.generateGroups();
+
+      const collection = this.getCollection();
+      const stages = this.getStages();
+      // const lookups = this.getLookups();
+      const aggregate = collection.aggregate([...stages]);
+
+      let totalResult = await collection
+        .aggregate([
+          ...stages,
+          {
+            $count: "total",
+          },
+        ])
+        .next();
+      let total = 0;
+
+      if (totalResult?.total) total = totalResult?.total;
+
+      const result = await aggregate
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .toArray();
+
+      // Reset the query and relation states
+      this.resetQuery();
+
+      return {
+        data: result,
+        meta: {
+          total,
+          page,
+          limit,
+          lastPage: Math.ceil(total / limit),
+        },
+      };
+    } catch (error) {
+      console.log(error);
+      throw new Error(`Pagination failed`);
+    }
   }
 
   public async first<K extends keyof T>(
