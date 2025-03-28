@@ -9,23 +9,14 @@ export default class Model<T> extends Relation<T> {
     super();
     return new Proxy(this, {
       set: (target, prop, value) => {
-        // Skip internal properties
-        if (
-          prop === "$original" ||
-          prop === "$changes" ||
-          typeof prop === "symbol"
-        ) {
-          // @ts-ignore
-          target[prop] = value;
-          return true;
-        }
         // @ts-ignore
-        target.$changes[prop] = {
-          old: this["$original"][prop as keyof T],
-          new: value,
-        };
+        // prop ! starts with $ means it's a private property
+        if (!prop.startsWith("$") && value !== target.$original[prop]) {
+          // @ts-ignore
+          target.$changes[prop] = value;
+        }
 
-        // Set the value
+        // @ts-ignore
         target[prop] = value;
         return true;
       },
@@ -239,12 +230,24 @@ class User extends Model<IUser> {
 }
 
 (async () => {
-  const user = await User.get();
+  const user = await User.first();
   // const user = new User();
   // user.name = "John smith edited";
-  // user.age = 100;
+  user.age = 100;
+  console.log(user["$original"], "<<<<< original");
+  console.log(user["$changes"], "<<<<< changes");
+  console.log(user.isDirty(), "< dirty");
+  console.log(user.isClean(), "< clean");
+  console.log(user.age, "< age");
+  user.refresh();
+  console.log("<<<<<<<<<<<<<<");
+  console.log(user["$original"], "<<<<< original");
+  console.log(user["$changes"], "<<<<< changes");
+  console.log(user.isDirty(), "< dirty");
+  console.log(user.isClean(), "< clean");
+  console.log(user.age, "< age");
 
-  console.log(user);
+  // console.log(user);
   // const newUser = await user.save();
   // console.log(newUser);
 })();

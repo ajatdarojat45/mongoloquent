@@ -107,9 +107,10 @@ export default class QueryBuilder<T> {
       payload = {
         ...payload,
         // @ts-ignore
-        [key]: this.$changes[key].new,
+        [key]: this.$changes[key],
       };
     }
+
     if (Object.keys(this.$original).length === 0) {
       return this.insert(payload as FormSchema<T>);
     } else {
@@ -377,45 +378,90 @@ export default class QueryBuilder<T> {
     return Object.keys(this.$changes).length > 0;
   }
 
-  public isDirty<K extends keyof T>(field?: K): boolean {
-    if (field) {
-      return field in this.$changes;
+  public isDirty<K extends keyof T>(...fields: (K | K[])[]): boolean {
+    if (fields && fields.length > 0) {
+      const flattenedFields = fields.flat() as (keyof T)[];
+      return flattenedFields.some((field) => field in this.$changes);
+    }
+
+    return this.hasChanges();
+  }
+
+  public isClean<K extends keyof T>(...fields: (K | K[])[]): boolean {
+    if (fields && fields.length > 0) {
+      const flattenedFields = fields.flat() as (keyof T)[];
+      return flattenedFields.every((field) => !(field in this.$changes));
+    }
+    return !this.hasChanges();
+  }
+
+  public wasChanged<K extends keyof T>(...fields: (K | K[])[]): boolean {
+    if (fields && fields.length > 0) {
+      const flattenedFields = fields.flat() as (keyof T)[];
+      return flattenedFields.some((field) => {
+        const _new = this.$changes[field];
+        const old = this.$original[field];
+        return _new && old !== _new;
+      });
     }
     return this.hasChanges();
   }
 
   public getChanges(): Partial<Record<keyof T, { old: any; new: any }>> {
-    const changes = { ...this.$changes };
-
+    const changes: Partial<Record<keyof T, { old: any; new: any }>> = {};
     // Remove any property starting with $
-    for (const key in changes) {
-      if (key.startsWith("$")) {
-        delete changes[key];
+    for (const key in this.$changes) {
+      if (key.startsWith("$")) continue;
+      const _new = this.$changes[key];
+      const old = this.$original[key];
+      if (_new && old !== _new) {
+        changes[key] = _new;
       }
     }
 
     return changes;
   }
 
-  protected createProxy(): this & T {
-    if (this.$isProxied) return this as this & T;
-
-    const self = this;
-    const handler = {
-      set(target: any, prop: string, value: any) {
-        if (typeof prop === "string" && prop !== "$isProxied") {
-          self.trackChange(prop as keyof T, value);
+  public getOriginal<K extends keyof T>(...fields: (K | K[])[]): any {
+    if (fields && fields.length > 0) {
+      const flattenedFields = fields.flat() as (keyof T)[];
+      const original: Partial<Record<keyof T, any>> = {};
+      flattenedFields.forEach((field) => {
+        if (field in this.$original) {
+          original[field] = this.$original[field];
         }
+      });
+      return original;
+    }
+    return this.$original;
+  }
+
+  public refresh(): QueryBuilder<T> {
+    this.$changes = {};
+    this.$isProxied = false;
+    Object.assign(this, this.$original);
+    return this;
+  }
+
+  protected createProxy(): this & T {
+    return new Proxy(this, {
+      set: (target, prop, value) => {
+        // @ts-ignore
+        if (!prop.startsWith("$") && value !== target.$original[prop]) {
+          // @ts-ignore
+          target.$changes[prop] = value;
+        }
+
+        // @ts-ignore
         target[prop] = value;
         return true;
       },
-    };
-
-    this.$isProxied = true;
-    return new Proxy(this, handler) as this & T;
+    }) as this & T;
   }
 
   protected trackChange<K extends keyof T>(field: K, value: any): void {
+    // check if property starts with $
+
     // If field is not in $original, initialize it
     if (!(field in this.$original)) {
       // Get initial value from schema if possible
@@ -432,15 +478,9 @@ export default class QueryBuilder<T> {
       }
 
       if (!this.$changes[field]) {
-        this.$changes[field] = {
-          old: this.$original[field],
-          new: value,
-        };
+        this.$changes[field] = value;
       } else {
-        this.$changes[field] = {
-          ...this.$changes[field],
-          new: value,
-        };
+        this.$changes[field] = value;
       }
     }
   }
