@@ -197,6 +197,10 @@ export default class QueryBuilder<T> {
     return this.insert(doc as FormSchema<T>);
   }
 
+  async updateOrInsert(filter: Partial<T>, doc: Partial<FormSchema<T>>) {
+    return this.updateOrCreate(filter, doc);
+  }
+
   public async updateMany(
     doc: Partial<FormSchema<T>>,
     options?: UpdateOptions

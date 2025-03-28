@@ -63,6 +63,14 @@ export default class Model<T> extends Relation<T> {
     return this.query().updateOrCreate(filter, doc);
   }
 
+  public static async updateOrInsert<M extends typeof Model<any>>(
+    this: M,
+    filter: Partial<M["$schema"]>,
+    doc: Partial<FormSchema<M["$schema"]>>
+  ) {
+    return this.query().updateOrInsert(filter, doc);
+  }
+
   public static select<M extends typeof Model<any>>(
     this: M,
     ...fields: (keyof M["$schema"] | Array<keyof M["$schema"]>)[]
