@@ -184,6 +184,19 @@ export default class QueryBuilder<T> {
     }
   }
 
+  async updateOrCreate(filter: Partial<T>, doc: Partial<FormSchema<T>>) {
+    for (var key in filter) {
+      if (doc.hasOwnProperty(key)) {
+        this.where(key, filter[key]);
+      }
+    }
+
+    const data = await this.update(doc);
+    if (data) return data;
+
+    return this.insert(doc as FormSchema<T>);
+  }
+
   public async updateMany(
     doc: Partial<FormSchema<T>>,
     options?: UpdateOptions

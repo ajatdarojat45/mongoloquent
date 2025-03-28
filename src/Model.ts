@@ -55,6 +55,14 @@ export default class Model<T> extends Relation<T> {
     return this.query().createMany(doc, options);
   }
 
+  public static async updateOrCreate<M extends typeof Model<any>>(
+    this: M,
+    filter: Partial<M["$schema"]>,
+    doc: Partial<FormSchema<M["$schema"]>>
+  ) {
+    return this.query().updateOrCreate(filter, doc);
+  }
+
   public static select<M extends typeof Model<any>>(
     this: M,
     ...fields: (keyof M["$schema"] | Array<keyof M["$schema"]>)[]
@@ -246,6 +254,6 @@ class User extends Model<IUser> {
 }
 
 (async () => {
-  const user = await User.get();
+  const user = await User.updateOrCreate({ name: "a" }, { name: "a edited" });
   console.log(user);
 })();
