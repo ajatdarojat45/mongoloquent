@@ -239,12 +239,12 @@ class User extends Model<IUser> {
 }
 
 (async () => {
-  // const user = await User.query().first();
-  const user = new User();
-  user.name = "John smith";
-  user.age = 30;
+  const user = await User.get();
+  // const user = new User();
+  // user.name = "John smith edited";
+  // user.age = 100;
 
-  // console.log(user);
-  const newUser = await user.save();
-  console.log(newUser);
+  console.log(user);
+  // const newUser = await user.save();
+  // console.log(newUser);
 })();

@@ -1,6 +1,7 @@
 import {
   Db,
   Document,
+  FindOneAndUpdateOptions,
   InsertOneOptions,
   ObjectId,
   OptionalUnlessRequiredId,
@@ -73,10 +74,7 @@ export default class QueryBuilder<T> {
     return db.collection<FormSchema<T>>(this.$collection);
   }
 
-  public async insert(
-    doc: FormSchema<T>,
-    options?: InsertOneOptions
-  ): Promise<T> {
+  public async insert(doc: FormSchema<T>, options?: InsertOneOptions) {
     try {
       const collection = this.getCollection();
       let newDoc = this.checkUseTimestamps(doc);
@@ -117,8 +115,45 @@ export default class QueryBuilder<T> {
     } else {
       // @ts-ignore
       const id = this.$original?._id;
-      console.log(id);
-      // return this.where("_id" as keyof T, id).update(payload as FormSchema<T>);
+      return this.where("_id" as keyof T, id).update(payload as FormSchema<T>);
+    }
+  }
+
+  public async update(
+    doc: Partial<FormSchema<T>>,
+    options: FindOneAndUpdateOptions = {}
+  ) {
+    try {
+      const collection = this.getCollection();
+      //     await this.checkRelation();
+      this.checkSoftDelete();
+      this.generateWheres();
+      const stages = this.getStages();
+      let filter = {};
+      if (stages.length > 0) filter = stages[0].$match;
+      let newDoc = this.checkUseTimestamps(doc, false);
+      newDoc = this.checkUseSoftdelete(newDoc);
+      delete (newDoc as any)._id;
+
+      const data = await collection.findOneAndUpdate(
+        { ...filter },
+        {
+          $set: {
+            ...(newDoc as Partial<T>),
+          },
+        },
+        {
+          ...options,
+          returnDocument: "after",
+        }
+      );
+
+      // Reset the query and relation states
+      this.resetQuery();
+      return data;
+    } catch (error) {
+      console.log(error);
+      throw new Error(`Updating documents failed`);
     }
   }
 
