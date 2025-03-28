@@ -7,12 +7,29 @@ export default class Model<T> extends Relation<T> {
 
   constructor() {
     super();
-    const schema = (this.constructor as any).$schema;
-    if (schema) {
-      this.$original = { ...schema };
-      Object.assign(this, schema);
-      return this.createProxy();
-    }
+    return new Proxy(this, {
+      set: (target, prop, value) => {
+        // Skip internal properties
+        if (
+          prop === "$original" ||
+          prop === "$changes" ||
+          typeof prop === "symbol"
+        ) {
+          // @ts-ignore
+          target[prop] = value;
+          return true;
+        }
+        // @ts-ignore
+        target.$changes[prop] = {
+          old: this["$original"][prop as keyof T],
+          new: value,
+        };
+
+        // Set the value
+        target[prop] = value;
+        return true;
+      },
+    });
   }
 
   public static async insert<M extends typeof Model<any>>(
@@ -222,9 +239,12 @@ class User extends Model<IUser> {
 }
 
 (async () => {
-  const user = await User.insert({
-    name: "John Doe",
-    age: 30,
-  });
-  console.log(user);
+  // const user = await User.query().first();
+  const user = new User();
+  user.name = "John smith";
+  user.age = 30;
+
+  // console.log(user);
+  const newUser = await user.save();
+  console.log(newUser);
 })();

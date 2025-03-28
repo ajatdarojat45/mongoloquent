@@ -102,6 +102,26 @@ export default class QueryBuilder<T> {
     return this.insert(doc, options);
   }
 
+  public async save() {
+    let payload = {};
+    for (const key in this.$changes) {
+      if (key.startsWith("$") || key === "_id") continue;
+      payload = {
+        ...payload,
+        // @ts-ignore
+        [key]: this.$changes[key].new,
+      };
+    }
+    if (Object.keys(this.$original).length === 0) {
+      return this.insert(payload as FormSchema<T>);
+    } else {
+      // @ts-ignore
+      const id = this.$original?._id;
+      console.log(id);
+      // return this.where("_id" as keyof T, id).update(payload as FormSchema<T>);
+    }
+  }
+
   public select<K extends keyof T>(...columns: (K | K[])[]): QueryBuilder<T> {
     this.setColumns(...columns);
     return this;
@@ -382,11 +402,11 @@ export default class QueryBuilder<T> {
           new: value,
         };
       } else {
-        this.$changes[field]!.new = value;
+        this.$changes[field] = {
+          ...this.$changes[field],
+          new: value,
+        };
       }
-      console.log(
-        `Changed ${String(field)} from ${this.$original[field]} to ${value}`
-      );
     }
   }
 
