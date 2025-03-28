@@ -534,19 +534,48 @@ export default class Collection<T> extends Array<T> {
     );
   }
 
-  pluck<K extends keyof T>(keys: K | K[]): Collection<T[K] | Partial<T>> {
-    if (Array.isArray(keys)) {
+  pluck<K extends keyof T>(field: K): Collection<T[K]>;
+  pluck<K extends keyof T>(fields: K[]): Collection<Pick<T, K>>;
+  pluck<K extends keyof T>(...fields: K[]): Collection<Pick<T, K>>;
+  pluck<K extends keyof T>(
+    ...fields: (K | K[])[]
+  ): Collection<T[K] | Pick<T, K>> {
+    if (fields.length === 0) return new Collection(...[]);
+
+    // Case 1: Single field as string - return actual values
+    if (fields.length === 1 && !Array.isArray(fields[0])) {
+      const field = fields[0];
+      return new Collection(...this.map((item) => item[field]));
+    }
+
+    // Case 2: Single field as array - return objects with selected fields
+    if (fields.length === 1 && Array.isArray(fields[0])) {
+      const fieldArray = fields[0];
       return new Collection(
         ...this.map((item) =>
-          keys.reduce((acc, key) => {
+          fieldArray.reduce((acc, key) => {
             acc[key] = item[key];
             return acc;
-          }, {} as Partial<T>)
+          }, {} as Pick<T, K>)
         )
       );
     }
 
-    return new Collection(...this.map((item) => item[keys]));
+    // Case 3: Multiple fields - return objects with all selected fields
+    return new Collection(
+      ...this.map((item) => {
+        return fields.reduce((acc, field) => {
+          if (Array.isArray(field)) {
+            field.forEach((key) => {
+              acc[key] = item[key];
+            });
+          } else {
+            acc[field] = item[field];
+          }
+          return acc;
+        }, {} as Pick<T, K>);
+      })
+    );
   }
 
   pull<K extends keyof T>(key: K): T[K] | null {
