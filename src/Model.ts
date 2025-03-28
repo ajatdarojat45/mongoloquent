@@ -13,6 +13,20 @@ export default class Model<T> extends Relation<T> {
     }
   }
 
+  public static select<M extends typeof Model<any>>(
+    this: M,
+    ...fields: (keyof M["$schema"] | Array<keyof M["$schema"]>)[]
+  ) {
+    return this.query().select(...fields);
+  }
+
+  public static exclude<M extends typeof Model<any>>(
+    this: M,
+    ...fields: (keyof M["$schema"] | Array<keyof M["$schema"]>)[]
+  ) {
+    return this.query().exclude(...fields);
+  }
+
   static where<M extends typeof Model<any>>(
     this: M,
     column: keyof M["$schema"],
@@ -33,3 +47,21 @@ export default class Model<T> extends Relation<T> {
     return new this();
   }
 }
+
+interface IUser {
+  _id: string;
+  name: string;
+  age: number;
+}
+
+class User extends Model<IUser> {
+  static $schema = {
+    name: "string",
+    age: "string",
+    _id: "string",
+  };
+}
+
+(async () => {
+  const user = await User.exclude("age").first();
+})();

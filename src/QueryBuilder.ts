@@ -188,14 +188,10 @@ export default class QueryBuilder<T> {
   }
 
   public async get<K extends keyof T>(...fields: (K | K[])[]): Promise<T[]> {
-    // const allFields = fields.flat();
     try {
-      // Execute the aggregation pipeline
+      this.setColumns(...fields);
       const aggregate = await this.aggregate();
-
-      // Convert the aggregation cursor to an array of documents
       const data = (await aggregate.toArray()) as T[];
-
       const collection = new Collection(...data);
       return collection;
     } catch (error) {
@@ -207,7 +203,6 @@ export default class QueryBuilder<T> {
   public async first<K extends keyof T>(
     ...fields: (K | K[])[]
   ): Promise<this & T> {
-    const allFields = fields.flat();
     let data = await this.get(...fields);
     if (data && data.length > 0) {
       this.$original = { ...data[0] };
