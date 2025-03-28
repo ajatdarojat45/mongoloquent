@@ -259,6 +259,76 @@ export default class QueryBuilder<T> {
     }
   }
 
+  public async delete(): Promise<number> {
+    try {
+      const collection = this.getCollection();
+      this.generateWheres();
+      const stages = this.getStages();
+      let filter = {};
+      if (stages.length > 0) filter = stages[0].$match;
+
+      if (this.$useSoftDelete) {
+        let doc = this.checkUseTimestamps({}, false);
+        doc = this.checkUseSoftdelete(doc, true);
+
+        const data = await collection?.updateMany(
+          { ...filter },
+          {
+            $set: {
+              ...(doc as Partial<T>),
+            },
+          }
+        );
+
+        this.resetQuery();
+
+        return data?.modifiedCount || 0;
+      }
+
+      const data = await collection?.deleteMany(filter);
+      this.resetQuery();
+
+      return data?.deletedCount || 0;
+    } catch (error) {
+      console.log(error);
+      throw new Error(`Deleting multiple documents failed`);
+    }
+  }
+
+  public async destroy(...ids: (string | ObjectId)[]): Promise<number> {
+    ids = ids.map((el) => {
+      if (typeof el === "string") return new ObjectId(el);
+      return el;
+    });
+    this.where("_id" as keyof T, "in", ids);
+    return this.delete();
+  }
+
+  public async forceDestroy(...ids: (string | ObjectId)[]): Promise<number> {
+    try {
+      ids = ids.map((el) => {
+        if (typeof el === "string") return new ObjectId(el);
+        return el;
+      });
+      this.where("_id" as keyof T, "in", ids);
+      this.onlyTrashed();
+      this.generateWheres();
+      const stages = this.getStages();
+
+      let filter = {};
+      if (stages.length > 0) filter = stages[0].$match;
+
+      const collection = this.getCollection();
+      const data = await collection.deleteMany(filter);
+      this.resetQuery();
+
+      return data.deletedCount;
+    } catch (error) {
+      console.log(error);
+      throw new Error(`Force deleting documents failed`);
+    }
+  }
+
   public fill(doc: Partial<FormSchema<T>>) {
     Object.assign(this, doc);
     return this;
@@ -468,6 +538,8 @@ export default class QueryBuilder<T> {
     };
 
     // Assign properties to this instance
+    // @ts-ignore
+    this.$id = result?._id;
     Object.assign(this, result);
 
     // Create a proxy for the combined object

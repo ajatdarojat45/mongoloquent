@@ -71,6 +71,20 @@ export default class Model<T> extends Relation<T> {
     return this.query().updateOrInsert(filter, doc);
   }
 
+  public static destroy<M extends typeof Model<any>>(
+    this: M,
+    ...ids: (string | ObjectId)[]
+  ) {
+    return this.query().destroy(...ids);
+  }
+
+  public static forceDestroy<M extends typeof Model<any>>(
+    this: M,
+    ...ids: (string | ObjectId)[]
+  ) {
+    return this.query().forceDestroy(...ids);
+  }
+
   public static select<M extends typeof Model<any>>(
     this: M,
     ...fields: (keyof M["$schema"] | Array<keyof M["$schema"]>)[]
@@ -278,6 +292,6 @@ class User extends Model<IUser> {
 }
 
 (async () => {
-  const user = await User.where("name", "Udineee").firstOrFail();
+  const user = await User.first();
   console.log(user);
 })();
