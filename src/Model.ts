@@ -144,6 +144,13 @@ export default class Model<T> extends Relation<T> {
     return this.query().get(...fields);
   }
 
+  static first<M extends typeof Model<any>>(
+    this: M,
+    ...fields: (keyof M["$schema"] | Array<keyof M["$schema"]>)[]
+  ) {
+    return this.query().first(...fields);
+  }
+
   static query<M extends typeof Model<any>>(this: M): Model<M["$schema"]> {
     return new this();
   }
@@ -160,7 +167,7 @@ class User extends Model<IUser> {
 }
 
 (async () => {
-  const user = await User.where("name", "Udin").orWhere("age", 20).get("name");
+  const user = await User.first();
 
   console.log(user);
   // const Udin = new User();
