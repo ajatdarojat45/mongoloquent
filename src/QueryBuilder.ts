@@ -18,7 +18,7 @@ import { FormSchema } from "./types/schema";
 import { IQueryOrder, IQueryWhere } from "./interfaces/IQuery";
 import operators from "./utils/operators";
 import dayjs from "./utils/dayjs";
-import MongoloquentNotFoundException from "./exceptions/MongoloquentNotFoundException";
+import { MongoloquentNotFoundException } from "./exceptions/MongoloquentException";
 import { IModelPaginate } from "./interfaces/IModel";
 
 export default class QueryBuilder<T> {
@@ -30,7 +30,7 @@ export default class QueryBuilder<T> {
   protected static $useTimestamps: boolean = true;
 
   protected $original: Partial<T> = {};
-  protected $changes: Partial<Record<keyof T, { old: any; new: any }>> = {};
+  protected $changes: Partial<Record<keyof T, any>> = {};
 
   protected $connection: string = "";
   protected $databaseName: string = "";
@@ -1085,29 +1085,20 @@ export default class QueryBuilder<T> {
 
   private async aggregate() {
     try {
-      // Check if soft delete is enabled and apply necessary filters
       this.checkSoftDelete();
-      // Generate the columns to be selected in the query
       this.generateColumns();
-      // Generate the columns to be excluded from the query
       this.generateExcludes();
-      // Generate the where conditions for the query
       this.generateWheres();
       this.generateOffset();
       this.generateLimit();
-      // Generate the order by conditions for the query
       this.generateOrders();
-      // Generate the group by conditions for the query
       this.generateGroups();
 
-      // Get the collection from the database
       const collection = this.getCollection();
-      // Execute the aggregation pipeline with the generated stages and lookups
       const stages = this.getStages();
       //const lookups = this.getLookups();
       const aggregate = collection?.aggregate([...stages]);
 
-      // Reset the query and relation states
       this.resetQuery();
 
       return aggregate;

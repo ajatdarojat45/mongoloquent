@@ -8,6 +8,13 @@ export default class MongoloquentException extends Error {
   }
 }
 
+export class MongoloquentNotFoundException extends MongoloquentException {
+  constructor(message: string = "Not found", status: number | null = null) {
+    super(message, status);
+    this.name = "MongoloquentNotFoundException";
+  }
+}
+
 export class MongoloquentInvalidArgumentException extends MongoloquentException {
   constructor(
     message: string = "Invalid argument",
