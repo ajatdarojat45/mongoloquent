@@ -1,4 +1,4 @@
-import { InsertOneOptions, ObjectId } from "mongodb";
+import { BulkWriteOptions, InsertOneOptions, ObjectId } from "mongodb";
 import Relation from "./Relation";
 import { FormSchema } from "./types/schema";
 
@@ -37,6 +37,22 @@ export default class Model<T> extends Relation<T> {
     options?: InsertOneOptions
   ) {
     return this.query().create(doc, options);
+  }
+
+  public static async insertMany<M extends typeof Model<any>>(
+    this: M,
+    doc: FormSchema<M["$schema"]>[],
+    options?: BulkWriteOptions
+  ) {
+    return this.query().insertMany(doc, options);
+  }
+
+  public static async createMany<M extends typeof Model<any>>(
+    this: M,
+    doc: FormSchema<M["$schema"]>[],
+    options?: BulkWriteOptions
+  ) {
+    return this.query().createMany(doc, options);
   }
 
   public static select<M extends typeof Model<any>>(
@@ -230,24 +246,6 @@ class User extends Model<IUser> {
 }
 
 (async () => {
-  const user = await User.first();
-  // const user = new User();
-  // user.name = "John smith edited";
-  user.age = 100;
-  console.log(user["$original"], "<<<<< original");
-  console.log(user["$changes"], "<<<<< changes");
-  console.log(user.isDirty(), "< dirty");
-  console.log(user.isClean(), "< clean");
-  console.log(user.age, "< age");
-  user.refresh();
-  console.log("<<<<<<<<<<<<<<");
-  console.log(user["$original"], "<<<<< original");
-  console.log(user["$changes"], "<<<<< changes");
-  console.log(user.isDirty(), "< dirty");
-  console.log(user.isClean(), "< clean");
-  console.log(user.age, "< age");
-
-  // console.log(user);
-  // const newUser = await user.save();
-  // console.log(newUser);
+  const user = await User.get();
+  console.log(user);
 })();

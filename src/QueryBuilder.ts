@@ -1,4 +1,5 @@
 import {
+  BulkWriteOptions,
   Db,
   Document,
   FindOneAndUpdateOptions,
@@ -100,24 +101,48 @@ export default class QueryBuilder<T> {
     return this.insert(doc, options);
   }
 
-  public async save() {
-    let payload = {};
-    for (const key in this.$changes) {
-      if (key.startsWith("$") || key === "_id") continue;
-      payload = {
-        ...payload,
-        // @ts-ignore
-        [key]: this.$changes[key],
-      };
-    }
+  public async insertMany(
+    docs: FormSchema<T>[],
+    options?: BulkWriteOptions
+  ): Promise<ObjectId[]> {
+    try {
+      const collection = this.getCollection();
+      const newDocs = docs.map((el) => {
+        let newEl = this.checkUseTimestamps(el);
+        newEl = this.checkUseSoftdelete(newEl);
+        // newEl = this.checkRelationship(newEl);
 
-    if (Object.keys(this.$original).length === 0) {
-      return this.insert(payload as FormSchema<T>);
-    } else {
-      // @ts-ignore
-      const id = this.$original?._id;
-      return this.where("_id" as keyof T, id).update(payload as FormSchema<T>);
+        return newEl;
+      });
+
+      // Insert the documents into the collection
+      const data = await collection?.insertMany(
+        newDocs as OptionalUnlessRequiredId<FormSchema<T>>[],
+        options
+      );
+
+      const result: ObjectId[] = [];
+
+      // Extract the inserted IDs from the result
+      for (const key in data?.insertedIds) {
+        result.push(
+          data?.insertedIds[key as unknown as keyof typeof data.insertedIds]
+        );
+      }
+
+      this.resetQuery();
+      return result;
+    } catch (error) {
+      console.log(error);
+      throw new Error(`Inserting multiple documents failed`);
     }
+  }
+
+  public async createMany(
+    docs: FormSchema<T>[],
+    options?: BulkWriteOptions
+  ): Promise<ObjectId[]> {
+    return this.insertMany(docs, options);
   }
 
   public async update(
@@ -155,6 +180,26 @@ export default class QueryBuilder<T> {
     } catch (error) {
       console.log(error);
       throw new Error(`Updating documents failed`);
+    }
+  }
+
+  public async save() {
+    let payload = {};
+    for (const key in this.$changes) {
+      if (key.startsWith("$") || key === "_id") continue;
+      payload = {
+        ...payload,
+        // @ts-ignore
+        [key]: this.$changes[key],
+      };
+    }
+
+    if (Object.keys(this.$original).length === 0) {
+      return this.insert(payload as FormSchema<T>);
+    } else {
+      // @ts-ignore
+      const id = this.$original?._id;
+      return this.where("_id" as keyof T, id).update(payload as FormSchema<T>);
     }
   }
 
