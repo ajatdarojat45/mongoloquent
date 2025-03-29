@@ -53,7 +53,8 @@ export interface IRelationHasMany {
 
 export interface IRelationHasManyThrough {
   type: IRelationTypes.hasManyThrough;
-  model: typeof Model;
+  model: Model<any>;
+  relatedModel: typeof Model;
   throughModel: typeof Model;
   foreignKey: string;
   foreignKeyThrough: string;
@@ -61,9 +62,6 @@ export interface IRelationHasManyThrough {
   localKeyThrough: string;
   alias: string;
   options: IRelationOptions;
-  parentId: string | ObjectId | null;
-  parentModelName: string;
-  parentCollectionName: string;
 }
 
 export interface IRelationBelongsToMany {

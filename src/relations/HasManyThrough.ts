@@ -65,11 +65,13 @@ export default class HasManyThrough extends LookupBuilder {
     const pipeline: Document[] = [];
 
     // Add soft delete condition to the pipeline if enabled
-    if (hasManyThrough.model.$useSoftDelete) {
+    if (hasManyThrough.relatedModel["$useSoftDelete"]) {
       pipeline.push({
         $match: {
           $expr: {
-            $and: [{ $eq: [`$${hasManyThrough.model.getIsDeleted()}`, false] }],
+            $and: [
+              { $eq: [`$${hasManyThrough.relatedModel["$isDeleted"]}`, false] },
+            ],
           },
         },
       });
@@ -79,7 +81,7 @@ export default class HasManyThrough extends LookupBuilder {
     lookup.push(
       {
         $lookup: {
-          from: hasManyThrough.throughModel.$collection,
+          from: hasManyThrough.throughModel["$collection"],
           localField: hasManyThrough.localKey,
           foreignField: hasManyThrough.foreignKey,
           as: "pivot",
@@ -87,7 +89,7 @@ export default class HasManyThrough extends LookupBuilder {
       },
       {
         $lookup: {
-          from: hasManyThrough.model.$collection,
+          from: hasManyThrough.relatedModel["$collection"],
           localField: `pivot.${hasManyThrough.localKeyThrough}`,
           foreignField: `${hasManyThrough.foreignKeyThrough}`,
           as: hasManyThrough.alias || "alias",

@@ -1,6 +1,7 @@
 import {
   IRelationBelongsTo,
   IRelationHasMany,
+  IRelationHasManyThrough,
   IRelationHasOne,
   IRelationOptions,
   IRelationTypes,
@@ -9,6 +10,7 @@ import Model from "./Model";
 import QueryBuilder from "./QueryBuilder";
 import BelongsTo from "./relations/BelongsTo";
 import HasMany from "./relations/HasMany";
+import HasManyThrough from "./relations/HasManyThrough";
 import HasOne from "./relations/HasOne";
 
 export default class Relation<T> extends QueryBuilder<T> {
@@ -92,6 +94,35 @@ export default class Relation<T> extends QueryBuilder<T> {
     const m = model.query();
     m.setRelationship(hasMany);
 
+    return m;
+  }
+
+  hasManyThrough(
+    model: typeof Model,
+    throughModel: typeof Model,
+    foreignKey: string,
+    foreignKeyThrough: string,
+    localKey: string = "_id",
+    localKeyThrough: string = "_id"
+  ) {
+    // Generate the lookup stages for the hasManyThrough relationship
+    const hasManyThrough: IRelationHasManyThrough = {
+      type: IRelationTypes.hasManyThrough,
+      model: this,
+      relatedModel: model,
+      throughModel,
+      foreignKey,
+      foreignKeyThrough,
+      localKey,
+      localKeyThrough,
+      alias: this.$alias,
+      options: this.$options,
+    };
+    const lookup = HasManyThrough.generate(hasManyThrough);
+    this.setLookups(lookup);
+
+    const m = model.query();
+    m.setRelationship(hasManyThrough);
     return m;
   }
 
