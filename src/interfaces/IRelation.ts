@@ -1,5 +1,5 @@
 import { ObjectId } from "mongodb";
-import Model from "../Model__";
+import Model from "../Model";
 
 export enum IRelationTypes {
   hasOne = "hasOne",
@@ -23,14 +23,12 @@ export interface IRelationOptions {
 
 export interface IRelationHasOne {
   type: IRelationTypes.hasOne;
-  model: typeof Model;
+  model: Model<any>;
+  relatedModel: Model<any>;
   foreignKey: string;
   localKey: string;
   alias: string;
   options: IRelationOptions;
-  parentId: string | ObjectId | null;
-  parentModelName: string;
-  parentCollectionName: string;
 }
 
 export interface IRelationBelongsTo {

@@ -20,6 +20,17 @@ import operators from "./utils/operators";
 import dayjs from "./utils/dayjs";
 import { MongoloquentNotFoundException } from "./exceptions/MongoloquentException";
 import { IModelPaginate } from "./interfaces/IModel";
+import {
+  IRelationBelongsTo,
+  IRelationBelongsToMany,
+  IRelationHasMany,
+  IRelationHasManyThrough,
+  IRelationHasOne,
+  IRelationMorphedByMany,
+  IRelationMorphMany,
+  IRelationMorphTo,
+  IRelationMorphToMany,
+} from "./interfaces/IRelation";
 
 export default class QueryBuilder<T> {
   static $schema: Record<string, any>;
@@ -29,31 +40,43 @@ export default class QueryBuilder<T> {
   protected static $useSoftDelete: boolean = false;
   protected static $useTimestamps: boolean = true;
 
-  protected $original: Partial<T> = {};
-  protected $changes: Partial<Record<keyof T, any>> = {};
-
-  protected $connection: string = "";
-  protected $databaseName: string = "";
-  protected $collection: string = "mongoloquent";
-  protected $useTimestamps: boolean = true;
-  protected $useSoftDelete: boolean = false;
-
   private $timezone: string = TIMEZONE;
   private $createdAt: string = "createdAt";
   private $updatedAt: string = "updatedAt";
-  private $id: string | ObjectId | null = null;
   private $stages: Document[] = [];
   private $columns: (keyof T)[] = [];
   private $excludes: (keyof T)[] = [];
   private $wheres: IQueryWhere[] = [];
   private $orders: IQueryOrder[] = [];
   private $groups: (keyof T)[] = [];
-  protected $isDeleted: string = "isDeleted";
-  protected $deletedAt: string = "deletedAt";
   private $withTrashed: boolean = false;
   private $onlyTrashed: boolean = false;
-  protected $limit: number = 0;
   private $offset: number = 0;
+
+  protected $id: string | ObjectId | null = null;
+  protected $original: Partial<T> = {};
+  protected $changes: Partial<Record<keyof T, any>> = {};
+  protected $connection: string = "";
+  protected $databaseName: string = "";
+  protected $collection: string = "mongoloquent";
+  protected $useTimestamps: boolean = true;
+  protected $useSoftDelete: boolean = false;
+  protected $lookups: Document[] = [];
+  protected $isDeleted: string = "isDeleted";
+  protected $deletedAt: string = "deletedAt";
+  protected $limit: number = 0;
+
+  protected $relationship:
+    | IRelationHasOne
+    | IRelationBelongsTo
+    | IRelationHasMany
+    | IRelationHasManyThrough
+    | IRelationBelongsToMany
+    | IRelationMorphTo
+    | IRelationMorphMany
+    | IRelationMorphToMany
+    | IRelationMorphedByMany
+    | null = null;
 
   constructor() {
     this.$connection = (this.constructor as typeof QueryBuilder).$connection;
@@ -906,8 +929,31 @@ export default class QueryBuilder<T> {
     else this.$groups = [...this.$groups, doc];
   }
 
+  protected setLookups(doc: Document): void {
+    if (Array.isArray(doc)) this.$lookups = [...this.$lookups, ...doc];
+    else this.$lookups = [...this.$lookups, doc];
+  }
+
   public getIsDeleted() {
     return this.$isDeleted;
+  }
+
+  protected setRelationship(
+    relation:
+      | IRelationHasOne
+      | IRelationHasMany
+      | IRelationHasManyThrough
+      | IRelationBelongsToMany
+      | IRelationMorphTo
+      | IRelationMorphMany
+      | IRelationMorphToMany
+      | IRelationMorphedByMany
+  ): void {
+    this.$relationship = relation;
+  }
+
+  protected getRelationship() {
+    return this.$relationship;
   }
 
   private checkSoftDelete<K extends keyof T>(): void {
