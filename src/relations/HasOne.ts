@@ -28,7 +28,7 @@ export default class HasOne extends LookupBuilder {
       pipeline.push({
         $match: {
           $expr: {
-            $and: [{ $eq: [`$${hasOne.model["$isDeleted"]}`, false] }],
+            $and: [{ $eq: [`$${hasOne.relatedModel["$isDeleted"]}`, false] }],
           },
         },
       });

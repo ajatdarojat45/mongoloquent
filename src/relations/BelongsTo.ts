@@ -38,11 +38,13 @@ export default class BelongsTo extends LookupBuilder {
     const pipeline: Document[] = [];
 
     // Add soft delete condition to the pipeline if enabled
-    if (belongsTo.model.$useSoftDelete) {
+    if (belongsTo.relatedModel["$useSoftDelete"]) {
       pipeline.push({
         $match: {
           $expr: {
-            $and: [{ $eq: [`$${belongsTo.model.getIsDeleted()}`, false] }],
+            $and: [
+              { $eq: [`$${belongsTo.relatedModel["$isDeleted"]}`, false] },
+            ],
           },
         },
       });
@@ -50,7 +52,7 @@ export default class BelongsTo extends LookupBuilder {
 
     // Define the $lookup stage
     const $lookup = {
-      from: belongsTo.model.$collection,
+      from: belongsTo.relatedModel["$collection"],
       localField: belongsTo.foreignKey,
       foreignField: belongsTo.ownerKey,
       as: belongsTo.alias,

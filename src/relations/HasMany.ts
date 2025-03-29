@@ -59,11 +59,11 @@ export default class HasMany extends LookupBuilder {
     const pipeline: Document[] = [];
 
     // Add soft delete condition to the pipeline if enabled
-    if (hasMany.model.$useSoftDelete) {
+    if (hasMany.relatedModel["$useSoftDelete"]) {
       pipeline.push({
         $match: {
           $expr: {
-            $and: [{ $eq: [`$${hasMany.model.getIsDeleted()}`, false] }],
+            $and: [{ $eq: [`$${hasMany.relatedModel["$isDeleted"]}`, false] }],
           },
         },
       });
@@ -71,7 +71,7 @@ export default class HasMany extends LookupBuilder {
 
     // Define the $lookup stage
     const $lookup = {
-      from: hasMany.model.$collection,
+      from: hasMany.relatedModel["$collection"],
       localField: hasMany.localKey,
       foreignField: hasMany.foreignKey,
       as: hasMany.alias || "alias",

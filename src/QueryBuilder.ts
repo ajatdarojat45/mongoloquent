@@ -39,6 +39,7 @@ export default class QueryBuilder<T> {
   protected static $collection: string = "";
   protected static $useSoftDelete: boolean = false;
   protected static $useTimestamps: boolean = true;
+  protected static $isDeleted: string = "isDeleted";
 
   private $timezone: string = TIMEZONE;
   private $createdAt: string = "createdAt";
@@ -92,6 +93,7 @@ export default class QueryBuilder<T> {
     this.$useTimestamps = (
       this.constructor as typeof QueryBuilder
     ).$useTimestamps;
+    this.$isDeleted = (this.constructor as typeof QueryBuilder).$isDeleted;
   }
 
   private getCollection() {

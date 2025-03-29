@@ -24,7 +24,7 @@ export interface IRelationOptions {
 export interface IRelationHasOne {
   type: IRelationTypes.hasOne;
   model: Model<any>;
-  relatedModel: Model<any>;
+  relatedModel: typeof Model;
   foreignKey: string;
   localKey: string;
   alias: string;
@@ -33,26 +33,22 @@ export interface IRelationHasOne {
 
 export interface IRelationBelongsTo {
   type: IRelationTypes.belongsTo;
-  model: typeof Model;
+  model: Model<any>;
+  relatedModel: typeof Model;
   foreignKey: string;
   ownerKey: string;
   alias: string;
   options: IRelationOptions;
-  parentId: string | ObjectId | null;
-  parentModelName: string;
-  parentCollectionName: string;
 }
 
 export interface IRelationHasMany {
   type: IRelationTypes.hasMany;
-  model: typeof Model;
+  model: Model<any>;
+  relatedModel: typeof Model;
   foreignKey: string;
   localKey: string;
   alias: string;
   options: IRelationOptions;
-  parentId: string | ObjectId | null;
-  parentModelName: string;
-  parentCollectionName: string;
 }
 
 export interface IRelationHasManyThrough {
