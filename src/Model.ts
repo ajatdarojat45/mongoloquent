@@ -1,7 +1,12 @@
 import { BulkWriteOptions, InsertOneOptions, ObjectId } from "mongodb";
 import Relation from "./Relation";
 import { FormSchema } from "./types/schema";
-import { IRelationTypes } from "./interfaces/IRelation";
+import {
+  IRelationOptions,
+  IRelationTypes,
+  IRelationHasMany,
+} from "./interfaces/IRelation";
+import HasMany from "./relations/HasMany";
 
 export default class Model<T> extends Relation<T> {
   [key: string]: any;
@@ -316,6 +321,37 @@ export default class Model<T> extends Relation<T> {
     return new this();
   }
 
+  static with<M extends typeof Model<any>>(
+    this: M,
+    relation: string,
+    options: IRelationOptions = {}
+  ) {
+    const model = this.query();
+    const relatedModel = model[relation]();
+
+    switch (relatedModel.$relationship.type) {
+      case IRelationTypes.hasMany:
+        const hasMany: IRelationHasMany = {
+          type: IRelationTypes.hasMany,
+          model: model,
+          relatedModel: relatedModel,
+          foreignKey: relatedModel.$relationship.foreignKey,
+          localKey: relatedModel.$relationship.localKey,
+          alias: relation,
+          options,
+        };
+
+        model.setRelationship(hasMany);
+        const lookups = HasMany.generate(hasMany);
+        model.$lookups = lookups;
+        break;
+      default:
+        throw new Error("Unsupported relation type");
+    }
+
+    return model;
+  }
+
   hasMany<M>(
     model: new () => Model<M>,
     foreignKey: keyof M,
@@ -325,6 +361,16 @@ export default class Model<T> extends Relation<T> {
     const parent = this;
     // relation.where(foreignKey, this[localKey as string]);
 
+    relation.setRelationship({
+      type: IRelationTypes.hasMany,
+      model: relation,
+      relatedModel: parent,
+      foreignKey: foreignKey as string,
+      localKey: localKey as string,
+      alias: "",
+      options: {},
+    });
+
     return relation;
   }
 }
@@ -333,6 +379,7 @@ interface IUser {
   _id: ObjectId;
   name: string;
   age: number;
+  posts?: IPost[];
 }
 
 interface IPost {
@@ -355,6 +402,6 @@ class User extends Model<IUser> {
 }
 
 (async () => {
-  const user = await User.find("67b9c25b804f1a0ebdb3d4f4");
-  const posts = await user.posts().get();
+  const user = await User.with("posts").first();
+  console.log(user);
 })();

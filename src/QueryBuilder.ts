@@ -30,6 +30,7 @@ import {
   IRelationMorphMany,
   IRelationMorphTo,
   IRelationMorphToMany,
+  IRelationTypes,
 } from "./interfaces/IRelation";
 
 export default class QueryBuilder<T> {
@@ -883,6 +884,10 @@ export default class QueryBuilder<T> {
     return this.$stages;
   }
 
+  protected getLookups(): Document[] {
+    return this.$lookups;
+  }
+
   private setColumns<K extends keyof T>(...columns: (K | K[])[]): void {
     if (Array.isArray(columns)) {
       const flattenedColumns = columns.flat() as unknown as keyof T[];
@@ -1144,8 +1149,8 @@ export default class QueryBuilder<T> {
 
       const collection = this.getCollection();
       const stages = this.getStages();
-      //const lookups = this.getLookups();
-      const aggregate = collection?.aggregate([...stages]);
+      const lookups = this.getLookups();
+      const aggregate = collection?.aggregate([...stages, ...lookups]);
 
       this.resetQuery();
 
@@ -1201,5 +1206,52 @@ export default class QueryBuilder<T> {
     }
 
     return doc;
+  }
+
+  private checkRelationship(doc: object): object {
+    const relationship = this.$relationship;
+    if (!relationship) return doc;
+
+    switch (relationship.type) {
+      case IRelationTypes.hasMany:
+        return {
+          ...doc,
+          [relationship.foreignKey]:
+            relationship.relatedModel[relationship.foreignKey],
+        };
+
+      // case IRelationTypes.belongsToMany:
+      //   return doc;
+
+      // case IRelationTypes.hasManyThrough:
+      //   return doc;
+
+      // case IRelationTypes.morphMany:
+      //   return {
+      //     ...doc,
+      //     [relationship.morphType]: relationship.parentModelName,
+      //     [relationship.morphId]: relationship.parentId,
+      //   };
+
+      // case IRelationTypes.morphTo:
+      //   return {
+      //     ...doc,
+      //     [relationship.morphType]: relationship.parentModelName,
+      //     [relationship.morphId]: relationship.parentId,
+      //   };
+
+      // case IRelationTypes.morphToMany:
+      //   return doc;
+
+      // case IRelationTypes.morphedByMany:
+      //   return {
+      //     ...doc,
+      //     [relationship.morphType]: this.name,
+      //     [relationship.foreignKey]: relationship.parentId,
+      //   };
+
+      default:
+        return doc;
+    }
   }
 }

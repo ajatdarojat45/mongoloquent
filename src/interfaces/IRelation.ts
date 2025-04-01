@@ -44,7 +44,7 @@ export interface IRelationBelongsTo {
 export interface IRelationHasMany {
   type: IRelationTypes.hasMany;
   model: Model<any>;
-  relatedModel: typeof Model;
+  relatedModel: Model<any>;
   foreignKey: string;
   localKey: string;
   alias: string;
