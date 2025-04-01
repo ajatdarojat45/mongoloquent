@@ -1138,10 +1138,11 @@ export default class QueryBuilder<T> {
 
   private async aggregate() {
     try {
+      await this.checkRelationshipForAggregate();
       this.checkSoftDelete();
+      this.generateWheres();
       this.generateColumns();
       this.generateExcludes();
-      this.generateWheres();
       this.generateOffset();
       this.generateLimit();
       this.generateOrders();
@@ -1159,19 +1160,6 @@ export default class QueryBuilder<T> {
       console.log(error);
       throw new Error(`Aggregation failed`);
     }
-  }
-
-  private resetQuery(): void {
-    this.$withTrashed = false;
-    this.$onlyTrashed = false;
-    this.$stages = [];
-    this.$columns = [];
-    this.$excludes = [];
-    this.$wheres = [];
-    this.$orders = [];
-    this.$groups = [];
-    this.$offset = 0;
-    this.$limit = 0;
   }
 
   private checkUseTimestamps(
@@ -1253,5 +1241,98 @@ export default class QueryBuilder<T> {
       default:
         return doc;
     }
+  }
+
+  private async checkRelationshipForAggregate() {
+    const relationship = this.getRelationship();
+
+    switch (relationship?.type) {
+      case IRelationTypes.hasMany:
+        this.where(
+          relationship.foreignKey as keyof T,
+          relationship.relatedModel.$original[relationship.localKey]
+        );
+        break;
+
+      // case IRelationTypes.belongsToMany:
+      //   const btmColl = this.getCollection(relationship.pivotModel.$collection);
+
+      //   const btmIds = await btmColl
+      //     .find({
+      //       [relationship.foreignPivotKey]: relationship.parentId,
+      //     })
+      //     .map((el) => el[relationship.relatedPivotKey])
+      //     .toArray();
+
+      //   this.whereIn("_id", btmIds);
+      //   break;
+
+      // case IRelationTypes.hasManyThrough:
+      //   const hmtColl = this.getCollection(
+      //     relationship.throughModel.$collection
+      //   );
+
+      //   const hmtIds = await hmtColl
+      //     .find({
+      //       [relationship.foreignKey]: relationship.parentId,
+      //     })
+      //     .map((el) => el._id)
+      //     .toArray();
+
+      //   this.whereIn(relationship.foreignKeyThrough, hmtIds);
+      //   break;
+
+      // case IRelationTypes.morphMany:
+      //   this.where(relationship.morphType, relationship.parentModelName).where(
+      //     relationship.morphId,
+      //     relationship.parentId
+      //   );
+      //   break;
+
+      // case IRelationTypes.morphToMany:
+      //   const mtmColl = this.getCollection(relationship.morphCollectionName);
+      //   const key = `${relationship.model.name.toLowerCase()}Id`;
+
+      //   const mtmIds = await mtmColl
+      //     .find({
+      //       [relationship.morphType]: relationship.parentModelName,
+      //       [relationship.morphId]: relationship.parentId,
+      //     })
+      //     .map((el) => el[key])
+      //     .toArray();
+
+      //   this.whereIn("_id", mtmIds);
+      //   break;
+
+      // case IRelationTypes.morphedByMany:
+      //   const mbmColl = this.getCollection(relationship.morphCollectionName);
+
+      //   const mbmIds = await mbmColl
+      //     .find({
+      //       [relationship.morphType]: this.name,
+      //       [relationship.foreignKey]: relationship.parentId,
+      //     })
+      //     .map((el) => el[relationship.morphId])
+      //     .toArray();
+
+      //   this.whereIn("_id", mbmIds);
+      //   break;
+
+      // default:
+      //   break;
+    }
+  }
+
+  private resetQuery(): void {
+    this.$withTrashed = false;
+    this.$onlyTrashed = false;
+    this.$stages = [];
+    this.$columns = [];
+    this.$excludes = [];
+    this.$wheres = [];
+    this.$orders = [];
+    this.$groups = [];
+    this.$offset = 0;
+    this.$limit = 0;
   }
 }

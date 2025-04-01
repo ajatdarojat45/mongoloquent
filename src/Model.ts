@@ -402,6 +402,7 @@ class User extends Model<IUser> {
 }
 
 (async () => {
-  const user = await User.with("posts").first();
-  console.log(user);
+  const user = await User.find("67b9c25b804f1a0ebdb3d4f4");
+  const posts = await user.posts().select("title").get();
+  console.log(posts);
 })();
