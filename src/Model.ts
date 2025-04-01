@@ -1,6 +1,7 @@
 import { BulkWriteOptions, InsertOneOptions, ObjectId } from "mongodb";
 import Relation from "./Relation";
 import { FormSchema } from "./types/schema";
+import { IRelationTypes } from "./interfaces/IRelation";
 
 export default class Model<T> extends Relation<T> {
   [key: string]: any;
@@ -280,8 +281,15 @@ export default class Model<T> extends Relation<T> {
     return this.query().firstOrNew(filter, doc);
   }
 
-  static find<M extends typeof Model<any>>(this: M, id: string | ObjectId) {
-    return this.query().find(id);
+  // static find<M extends typeof Model<any>>(this: M, id: string | ObjectId) {
+  //   return this.query().find(id);
+  // }
+
+  static find<M extends typeof Model<any>>(
+    this: M,
+    id: string | ObjectId
+  ): Promise<InstanceType<M>> {
+    return this.query().find(id) as Promise<InstanceType<M>>;
   }
 
   static count<M extends typeof Model<any>>(this: M) {
@@ -307,6 +315,18 @@ export default class Model<T> extends Relation<T> {
   static query<M extends typeof Model<any>>(this: M): Model<M["$schema"]> {
     return new this();
   }
+
+  hasMany<M>(
+    model: new () => Model<M>,
+    foreignKey: keyof M,
+    localKey: keyof T
+  ): Model<M> {
+    const relation = new model();
+    const parent = this;
+    // relation.where(foreignKey, this[localKey as string]);
+
+    return relation;
+  }
 }
 
 interface IUser {
@@ -315,11 +335,26 @@ interface IUser {
   age: number;
 }
 
+interface IPost {
+  _id: ObjectId;
+  title: string;
+  content: string;
+  userId: ObjectId;
+}
+
+class Post extends Model<IPost> {
+  static $schema: IPost;
+}
+
 class User extends Model<IUser> {
   static $schema: IUser;
+
+  posts() {
+    return this.hasMany(Post, "userId", "_id");
+  }
 }
 
 (async () => {
-  const user = await User.first();
-  console.log(user);
+  const user = await User.find("67b9c25b804f1a0ebdb3d4f4");
+  const posts = await user.posts().get();
 })();
