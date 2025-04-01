@@ -947,6 +947,7 @@ export default class QueryBuilder<T> {
 
   protected setRelationship(
     relation:
+      | IRelationBelongsTo
       | IRelationHasOne
       | IRelationHasMany
       | IRelationHasManyThrough

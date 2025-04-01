@@ -5,8 +5,10 @@ import {
   IRelationOptions,
   IRelationTypes,
   IRelationHasMany,
+  IRelationBelongsTo,
 } from "./interfaces/IRelation";
 import HasMany from "./relations/HasMany";
+import BelongsTo from "./relations/BelongsTo";
 
 export default class Model<T> extends Relation<T> {
   [key: string]: any;
@@ -327,29 +329,19 @@ export default class Model<T> extends Relation<T> {
     options: IRelationOptions = {}
   ) {
     const model = this.query();
-    const relatedModel = model[relation]();
-
-    switch (relatedModel.$relationship.type) {
-      case IRelationTypes.hasMany:
-        const hasMany: IRelationHasMany = {
-          type: IRelationTypes.hasMany,
-          model: model,
-          relatedModel: relatedModel,
-          foreignKey: relatedModel.$relationship.foreignKey,
-          localKey: relatedModel.$relationship.localKey,
-          alias: relation,
-          options,
-        };
-
-        model.setRelationship(hasMany);
-        const lookups = HasMany.generate(hasMany);
-        model.$lookups = lookups;
-        break;
-      default:
-        throw new Error("Unsupported relation type");
-    }
+    model.$alias = relation;
+    model.$options = options;
+    model[relation]();
 
     return model;
+  }
+
+  with(relation: string, options: IRelationOptions = {}) {
+    this.$alias = relation;
+    this.$options = options;
+    this[relation]();
+
+    return this;
   }
 
   hasMany<M>(
@@ -358,19 +350,61 @@ export default class Model<T> extends Relation<T> {
     localKey: keyof T
   ): Model<M> {
     const relation = new model();
-    const parent = this;
-    // relation.where(foreignKey, this[localKey as string]);
+
+    const hasManyParent: IRelationHasMany = {
+      type: IRelationTypes.hasMany,
+      model: this,
+      relatedModel: relation,
+      foreignKey: foreignKey as string,
+      localKey: localKey as string,
+      alias: this.$alias,
+      options: this.$options,
+    };
+    this.setRelationship(hasManyParent);
+    const lookups = HasMany.generate(hasManyParent);
+    this.$lookups = [...this.$lookups, ...lookups];
 
     relation.setRelationship({
       type: IRelationTypes.hasMany,
       model: relation,
-      relatedModel: parent,
+      relatedModel: this,
       foreignKey: foreignKey as string,
       localKey: localKey as string,
       alias: "",
       options: {},
     });
+    return relation;
+  }
 
+  belongsTo<M>(
+    model: new () => Model<M>,
+    foreignKey: keyof T,
+    ownerKey: keyof M
+  ): Model<M> {
+    const relation = new model();
+
+    const belongsToParent: IRelationBelongsTo = {
+      type: IRelationTypes.belongsTo,
+      model: this,
+      relatedModel: relation,
+      foreignKey: foreignKey as string,
+      ownerKey: ownerKey as string,
+      alias: this.$alias,
+      options: this.$options,
+    };
+    this.setRelationship(belongsToParent);
+    const lookupsBelongsTo = BelongsTo.generate(belongsToParent);
+    this.$lookups = [...this.$lookups, ...lookupsBelongsTo];
+
+    relation.setRelationship({
+      type: IRelationTypes.belongsTo,
+      model: relation,
+      relatedModel: this,
+      foreignKey: foreignKey as string,
+      ownerKey: ownerKey as string,
+      alias: "",
+      options: {},
+    });
     return relation;
   }
 }
@@ -387,10 +421,26 @@ interface IPost {
   title: string;
   content: string;
   userId: ObjectId;
+  user?: IUser;
+}
+
+interface IProduct {
+  _id: ObjectId;
+  name: string;
+  desc: string;
+  userId: ObjectId;
 }
 
 class Post extends Model<IPost> {
   static $schema: IPost;
+
+  user() {
+    return this.belongsTo(User, "userId", "_id");
+  }
+}
+
+class Product extends Model<IProduct> {
+  static $schema: IProduct;
 }
 
 class User extends Model<IUser> {
@@ -399,10 +449,19 @@ class User extends Model<IUser> {
   posts() {
     return this.hasMany(Post, "userId", "_id");
   }
+
+  products() {
+    return this.hasMany(Product, "userId", "_id");
+  }
 }
 
 (async () => {
-  const user = await User.find("67b9c25b804f1a0ebdb3d4f4");
-  const posts = await user.posts().select("title").get();
-  console.log(posts);
+  const posts = await User.with("posts", {
+    select: ["title"],
+  })
+    .with("products", {
+      select: ["name"],
+    })
+    .get();
+  console.log(JSON.stringify(posts, null, 2));
 })();

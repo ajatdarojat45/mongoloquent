@@ -34,7 +34,7 @@ export interface IRelationHasOne {
 export interface IRelationBelongsTo {
   type: IRelationTypes.belongsTo;
   model: Model<any>;
-  relatedModel: typeof Model;
+  relatedModel: Model<any>;
   foreignKey: string;
   ownerKey: string;
   alias: string;
