@@ -103,17 +103,14 @@ export interface IRelationMorphMany {
 
 export interface IRelationMorphToMany {
   type: IRelationTypes.morphToMany;
-  model: typeof Model;
-  foreignKey: string;
+  model: Model<any>;
+  relatedModel: Model<any>;
   morph: string;
   morphId: string;
   morphType: string;
   morphCollectionName: string;
   alias: string;
   options: IRelationOptions;
-  parentId: string | ObjectId | null;
-  parentModelName: string;
-  parentCollectionName: string;
 }
 
 export interface IRelationMorphedByMany {

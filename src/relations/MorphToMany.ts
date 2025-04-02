@@ -62,7 +62,7 @@ export default class MorphToMany extends LookupBuilder {
     const pipeline: Document[] = [];
 
     // Add soft delete condition to the pipeline if enabled
-    if (morphToMany.model.$useSoftDelete) {
+    if (morphToMany.model["$useSoftDelete"]) {
       pipeline.push({
         $match: {
           $expr: {
@@ -88,7 +88,7 @@ export default class MorphToMany extends LookupBuilder {
                     {
                       $eq: [
                         `$${morphToMany.morphType}`,
-                        morphToMany.parentModelName,
+                        morphToMany.model.constructor.name,
                       ],
                     },
                   ],
@@ -100,8 +100,8 @@ export default class MorphToMany extends LookupBuilder {
       },
       {
         $lookup: {
-          from: morphToMany.model.$collection,
-          localField: `pivot.${morphToMany.foreignKey}`,
+          from: morphToMany.relatedModel["$collection"],
+          localField: `pivot.${morphToMany.relatedModel.constructor.name.toLowerCase()}Id`,
           foreignField: "_id",
           as: morphToMany.alias || "alias",
           pipeline,

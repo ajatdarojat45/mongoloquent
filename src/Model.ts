@@ -11,6 +11,7 @@ import {
   IRelationBelongsToMany,
   IRelationMorphMany,
   IRelationMorphTo,
+  IRelationMorphToMany,
 } from "./interfaces/IRelation";
 import HasMany from "./relations/HasMany";
 import BelongsTo from "./relations/BelongsTo";
@@ -19,6 +20,7 @@ import HasManyThrough from "./relations/HasManyThrough";
 import BelongsToMany from "./relations/BelongsToMany";
 import MorphMany from "./relations/MorphMany";
 import MorphTo from "./relations/MorphTo";
+import MorphToMany from "./relations/MorphToMany";
 
 export default class Model<T> extends Relation<T> {
   [key: string]: any;
@@ -597,6 +599,37 @@ export default class Model<T> extends Relation<T> {
     });
     return relation;
   }
+
+  morphToMany<M>(model: new () => Model<M>, name: string): Model<M> {
+    const relation = new model();
+
+    const morphToMany: IRelationMorphToMany = {
+      type: IRelationTypes.morphToMany,
+      model: this,
+      relatedModel: relation,
+      morph: name,
+      morphId: `${name}Id`,
+      morphType: `${name}Type`,
+      morphCollectionName: `${name}s`,
+      alias: this.$alias,
+      options: this.$options,
+    };
+    const lookups = MorphToMany.generate(morphToMany);
+    this.$lookups = [...this.$lookups, ...lookups];
+
+    relation.setRelationship({
+      type: IRelationTypes.morphToMany,
+      model: relation,
+      relatedModel: this,
+      morph: name,
+      morphId: `${name}Id`,
+      morphType: `${name}Type`,
+      morphCollectionName: `${name}s`,
+      alias: "",
+      options: {},
+    });
+    return relation;
+  }
 }
 
 interface IPost {
@@ -618,6 +651,11 @@ interface IComment {
   commentableType: string;
 }
 
+interface ITag {
+  _id: ObjectId;
+  name: string;
+}
+
 class Comment extends Model<IComment> {
   static $schema: IComment;
 
@@ -630,11 +668,19 @@ class Comment extends Model<IComment> {
   }
 }
 
+class Tag extends Model<ITag> {
+  static $schema: ITag;
+}
+
 class Post extends Model<IPost> {
   static $schema: IPost;
 
   comments() {
     return this.morphMany(Comment, "commentable");
+  }
+
+  tags() {
+    return this.morphToMany(Tag, "taggable");
   }
 }
 
@@ -644,9 +690,13 @@ class Video extends Model<IVideo> {
   comments() {
     return this.morphMany(Comment, "commentable");
   }
+
+  tags() {
+    return this.morphToMany(Tag, "taggable");
+  }
 }
 
 (async () => {
-  const comments = await Comment.with("post").with("video").get();
-  console.log(comments);
+  const posts = await Video.with("tags").get();
+  console.log(JSON.stringify(posts, null, 2));
 })();
