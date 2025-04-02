@@ -1,7 +1,7 @@
 import "dotenv/config";
 
 let databaseName: string =
-  process.env.MONGOLOQUENT_DATABASE_NAME || "mug_event";
+  process.env.MONGOLOQUENT_DATABASE_NAME || "mongoloquent";
 
 if (process.env.NODE_ENV === "test") {
   databaseName =

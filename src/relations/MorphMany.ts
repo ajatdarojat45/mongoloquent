@@ -61,14 +61,17 @@ export default class MorphMany extends LookupBuilder {
     const alias = morphMany.alias || "alias";
 
     // Add soft delete condition to the pipeline if enabled
-    if (morphMany.model.$useSoftDelete) {
+    if (morphMany.model["$useSoftDelete"]) {
       pipeline.push({
         $match: {
           $expr: {
             $and: [
-              { $eq: [`$${morphMany.model.getIsDeleted()}`, false] },
+              { $eq: [`$${morphMany.relatedModel.getIsDeleted()}`, false] },
               {
-                $eq: [`$${morphMany.morphType}`, morphMany.parentModelName],
+                $eq: [
+                  `$${morphMany.morphType}`,
+                  morphMany.model.constructor.name,
+                ],
               },
             ],
           },
@@ -80,7 +83,10 @@ export default class MorphMany extends LookupBuilder {
           $expr: {
             $and: [
               {
-                $eq: [`$${morphMany.morphType}`, morphMany.parentModelName],
+                $eq: [
+                  `$${morphMany.morphType}`,
+                  morphMany.model.constructor.name,
+                ],
               },
             ],
           },
@@ -90,7 +96,7 @@ export default class MorphMany extends LookupBuilder {
 
     // Define the $lookup stage
     const $lookup = {
-      from: morphMany.model.$collection,
+      from: morphMany.relatedModel["$collection"],
       localField: "_id",
       foreignField: morphMany.morphId,
       as: alias,

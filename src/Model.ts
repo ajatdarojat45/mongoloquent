@@ -9,12 +9,14 @@ import {
   IRelationHasOne,
   IRelationHasManyThrough,
   IRelationBelongsToMany,
+  IRelationMorphMany,
 } from "./interfaces/IRelation";
 import HasMany from "./relations/HasMany";
 import BelongsTo from "./relations/BelongsTo";
 import HasOne from "./relations/HasOne";
 import HasManyThrough from "./relations/HasManyThrough";
 import BelongsToMany from "./relations/BelongsToMany";
+import MorphMany from "./relations/MorphMany";
 
 export default class Model<T> extends Relation<T> {
   [key: string]: any;
@@ -530,50 +532,79 @@ export default class Model<T> extends Relation<T> {
 
     return relation;
   }
-}
 
-interface IUser {
-  _id: ObjectId;
-  name: string;
-}
+  morphMany<M>(model: new () => Model<M>, name: string): Model<M> {
+    const relation = new model();
 
-interface IRole {
-  _id: ObjectId;
-  name: string;
-}
+    const morphMany: IRelationMorphMany = {
+      type: IRelationTypes.morphMany,
+      model: this,
+      relatedModel: relation,
+      morph: name,
+      morphId: `${name}Id`,
+      morphType: `${name}Type`,
+      morphCollectionName: `${name}s`,
+      alias: this.$alias,
+      options: this.$options,
+    };
+    const lookups = MorphMany.generate(morphMany);
+    this.$lookups = [...this.$lookups, ...lookups];
 
-interface IRoleUser {
-  _id: ObjectId;
-  user_id: ObjectId;
-  role_id: ObjectId;
-}
-
-class User extends Model<IUser> {
-  static $schema: IUser;
-
-  roles() {
-    return this.belongsToMany(
-      Role,
-      RoleUser,
-      "user_id",
-      "role_id",
-      "_id",
-      "_id"
-    );
+    relation.setRelationship({
+      type: IRelationTypes.morphMany,
+      model: relation,
+      relatedModel: this,
+      morph: name,
+      morphId: `${name}Id`,
+      morphType: `${name}Type`,
+      morphCollectionName: `${name}s`,
+      alias: "",
+      options: {},
+    });
+    return relation;
   }
 }
 
-class Role extends Model<IRole> {
-  static $schema: IRole;
+interface IPost {
+  _id: ObjectId;
+  title: string;
+  body: string;
 }
 
-class RoleUser extends Model<IRoleUser> {
-  static $schema: IRoleUser;
-  protected static $collection: string = "role_user";
+interface IVideo {
+  _id: ObjectId;
+  title: string;
+  url: string;
+}
+
+interface IComment {
+  _id: ObjectId;
+  body: string;
+  commentableId: ObjectId;
+  commentableType: string;
+}
+
+class Comment extends Model<IComment> {
+  static $schema: IComment;
+}
+
+class Post extends Model<IPost> {
+  static $schema: IPost;
+
+  comments() {
+    return this.morphMany(Comment, "commentable");
+  }
+}
+
+class Video extends Model<IVideo> {
+  static $schema: IVideo;
+
+  comments() {
+    return this.morphMany(Comment, "commentable");
+  }
 }
 
 (async () => {
-  const users = await User.find("65d1a4f1c2a3b4d5e6f78903");
-  const roles = await users.roles().get();
-  console.log(roles);
+  const posts = await Video.with("comments").get();
+  console.log(JSON.stringify(posts, null, 2));
 })();
