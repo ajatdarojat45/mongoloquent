@@ -65,11 +65,13 @@ export default class MorphedByMany extends LookupBuilder {
     const pipeline: Document[] = [];
 
     // Add soft delete condition to the pipeline if enabled
-    if (morphedByMany.model.$useSoftDelete) {
+    if (morphedByMany.relatedModel["$useSoftDelete"]) {
       pipeline.push({
         $match: {
           $expr: {
-            $and: [{ $eq: [`$${morphedByMany.model.getIsDeleted()}`, false] }],
+            $and: [
+              { $eq: [`$${morphedByMany.relatedModel.getIsDeleted()}`, false] },
+            ],
           },
         },
       });
@@ -81,7 +83,7 @@ export default class MorphedByMany extends LookupBuilder {
         $lookup: {
           from: morphedByMany.morphCollectionName,
           localField: "_id",
-          foreignField: `${morphedByMany.parentModelName.toLowerCase()}Id`,
+          foreignField: `${morphedByMany.model.constructor.name.toLowerCase()}Id`,
           as: "pivot",
           pipeline: [
             {
@@ -91,7 +93,7 @@ export default class MorphedByMany extends LookupBuilder {
                     {
                       $eq: [
                         `$${morphedByMany.morphType}`,
-                        morphedByMany.model.name,
+                        morphedByMany.relatedModel.constructor.name,
                       ],
                     },
                   ],
@@ -103,7 +105,7 @@ export default class MorphedByMany extends LookupBuilder {
       },
       {
         $lookup: {
-          from: morphedByMany.model.$collection,
+          from: morphedByMany.relatedModel["$collection"],
           localField: `pivot.${morphedByMany.morphId}`,
           foreignField: "_id",
           as: morphedByMany.alias || "alias",

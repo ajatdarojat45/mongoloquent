@@ -12,6 +12,7 @@ import {
   IRelationMorphMany,
   IRelationMorphTo,
   IRelationMorphToMany,
+  IRelationMorphedByMany,
 } from "./interfaces/IRelation";
 import HasMany from "./relations/HasMany";
 import BelongsTo from "./relations/BelongsTo";
@@ -21,6 +22,7 @@ import BelongsToMany from "./relations/BelongsToMany";
 import MorphMany from "./relations/MorphMany";
 import MorphTo from "./relations/MorphTo";
 import MorphToMany from "./relations/MorphToMany";
+import MorphedByMany from "./relations/MorphedByMany";
 
 export default class Model<T> extends Relation<T> {
   [key: string]: any;
@@ -630,6 +632,38 @@ export default class Model<T> extends Relation<T> {
     });
     return relation;
   }
+
+  morphedByMany<M>(model: new () => Model<M>, name: string): Model<M> {
+    const relation = new model();
+
+    const morphedByMany: IRelationMorphedByMany = {
+      type: IRelationTypes.morphedByMany,
+      model: this,
+      relatedModel: relation,
+      morph: name,
+      morphId: `${name}Id`,
+      morphType: `${name}Type`,
+      morphCollectionName: `${name}s`,
+      alias: this.$alias,
+      options: this.$options,
+    };
+    const lookups = MorphedByMany.generate(morphedByMany);
+    console.log(JSON.stringify(lookups, null, 2));
+    this.$lookups = [...this.$lookups, ...lookups];
+
+    relation.setRelationship({
+      type: IRelationTypes.morphedByMany,
+      model: relation,
+      relatedModel: this,
+      morph: name,
+      morphId: `${name}Id`,
+      morphType: `${name}Type`,
+      morphCollectionName: `${name}s`,
+      alias: "",
+      options: {},
+    });
+    return relation;
+  }
 }
 
 interface IPost {
@@ -670,6 +704,14 @@ class Comment extends Model<IComment> {
 
 class Tag extends Model<ITag> {
   static $schema: ITag;
+
+  posts() {
+    return this.morphedByMany(Post, "taggable");
+  }
+
+  videos() {
+    return this.morphedByMany(Video, "taggable");
+  }
 }
 
 class Post extends Model<IPost> {
@@ -697,6 +739,6 @@ class Video extends Model<IVideo> {
 }
 
 (async () => {
-  const posts = await Video.with("tags").get();
-  console.log(JSON.stringify(posts, null, 2));
+  const tags = await Tag.with("posts").with("videos").get();
+  console.log(JSON.stringify(tags, null, 2));
 })();

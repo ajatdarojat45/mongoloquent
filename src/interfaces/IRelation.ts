@@ -115,15 +115,12 @@ export interface IRelationMorphToMany {
 
 export interface IRelationMorphedByMany {
   type: IRelationTypes.morphedByMany;
-  model: typeof Model;
-  foreignKey: string;
+  model: Model<any>;
+  relatedModel: Model<any>;
   morph: string;
   morphId: string;
   morphType: string;
   morphCollectionName: string;
   alias: string;
   options: IRelationOptions;
-  parentId: string | ObjectId | null;
-  parentModelName: string;
-  parentCollectionName: string;
 }
