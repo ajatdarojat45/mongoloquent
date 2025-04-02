@@ -97,9 +97,9 @@ export default class QueryBuilder<T> {
     this.$isDeleted = (this.constructor as typeof QueryBuilder).$isDeleted;
   }
 
-  private getCollection() {
+  private getCollection(collection?: string) {
     const db = Database.getDb(this.$connection, this.$databaseName);
-    return db.collection<FormSchema<T>>(this.$collection);
+    return db.collection<FormSchema<T>>(collection || this.$collection);
   }
 
   public async insert(doc: FormSchema<T>, options?: InsertOneOptions) {
@@ -1307,22 +1307,26 @@ export default class QueryBuilder<T> {
       //   this.whereIn("_id", mtmIds);
       //   break;
 
-      // case IRelationTypes.morphedByMany:
-      //   const mbmColl = this.getCollection(relationship.morphCollectionName);
+      case IRelationTypes.morphedByMany:
+        const mbmColl = this.getCollection(relationship.morphCollectionName);
 
-      //   const mbmIds = await mbmColl
-      //     .find({
-      //       [relationship.morphType]: this.name,
-      //       [relationship.foreignKey]: relationship.parentId,
-      //     })
-      //     .map((el) => el[relationship.morphId])
-      //     .toArray();
+        const mbmIds = await mbmColl
+          .find({
+            [relationship.morphType]: this.constructor.name,
+            [`${relationship.relatedModel.constructor.name.toLowerCase()}Id`]:
+              relationship.relatedModel.$original._id,
+          } as any)
+          .map(
+            (el) =>
+              el[relationship.morphId as keyof typeof el] as unknown as ObjectId
+          )
+          .toArray();
 
-      //   this.whereIn("_id", mbmIds);
-      //   break;
+        this.whereIn("_id" as keyof T, mbmIds);
+        break;
 
-      // default:
-      //   break;
+      default:
+        break;
     }
   }
 

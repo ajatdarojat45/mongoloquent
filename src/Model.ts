@@ -648,7 +648,6 @@ export default class Model<T> extends Relation<T> {
       options: this.$options,
     };
     const lookups = MorphedByMany.generate(morphedByMany);
-    console.log(JSON.stringify(lookups, null, 2));
     this.$lookups = [...this.$lookups, ...lookups];
 
     relation.setRelationship({
@@ -739,6 +738,7 @@ class Video extends Model<IVideo> {
 }
 
 (async () => {
-  const tags = await Tag.with("posts").with("videos").get();
-  console.log(JSON.stringify(tags, null, 2));
+  const tags = await Tag.find("67edbfa0497784cac07774dd");
+  const videos = await tags.posts().get();
+  console.log(JSON.stringify(videos, null, 2));
 })();
