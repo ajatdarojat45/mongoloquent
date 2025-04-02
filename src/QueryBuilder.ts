@@ -1292,20 +1292,21 @@ export default class QueryBuilder<T> {
         );
         break;
 
-      // case IRelationTypes.morphToMany:
-      //   const mtmColl = this.getCollection(relationship.morphCollectionName);
-      //   const key = `${relationship.model.name.toLowerCase()}Id`;
+      case IRelationTypes.morphToMany:
+        const mtmColl = this.getCollection(relationship.morphCollectionName);
+        const key = `${relationship.model.constructor.name.toLowerCase()}Id`;
 
-      //   const mtmIds = await mtmColl
-      //     .find({
-      //       [relationship.morphType]: relationship.parentModelName,
-      //       [relationship.morphId]: relationship.parentId,
-      //     })
-      //     .map((el) => el[key])
-      //     .toArray();
+        const mtmIds = await mtmColl
+          .find({
+            [relationship.morphType]:
+              relationship.relatedModel.constructor.name,
+            [relationship.morphId]: relationship.relatedModel.$original._id,
+          } as any)
+          .map((el) => el[key as keyof typeof el])
+          .toArray();
 
-      //   this.whereIn("_id", mtmIds);
-      //   break;
+        this.whereIn("_id" as keyof T, mtmIds);
+        break;
 
       case IRelationTypes.morphedByMany:
         const mbmColl = this.getCollection(relationship.morphCollectionName);
