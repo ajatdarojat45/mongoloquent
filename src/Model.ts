@@ -605,6 +605,7 @@ class Video extends Model<IVideo> {
 }
 
 (async () => {
-  const posts = await Video.with("comments").get();
-  console.log(JSON.stringify(posts, null, 2));
+  const video = await Video.find("67ed4054497784cac07774cd");
+  const comments = await video.comments().get();
+  console.log(comments);
 })();

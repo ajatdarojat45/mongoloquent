@@ -1152,6 +1152,7 @@ export default class QueryBuilder<T> {
       const collection = this.getCollection();
       const stages = this.getStages();
       const lookups = this.getLookups();
+      console.log(JSON.stringify(stages, null, 2));
       const aggregate = collection?.aggregate([...stages, ...lookups]);
 
       this.resetQuery();
@@ -1282,12 +1283,15 @@ export default class QueryBuilder<T> {
         this.whereIn(relationship.foreignKeyThrough as keyof T, hmtIds);
         break;
 
-      // case IRelationTypes.morphMany:
-      //   this.where(relationship.morphType, relationship.parentModelName).where(
-      //     relationship.morphId,
-      //     relationship.parentId
-      //   );
-      //   break;
+      case IRelationTypes.morphMany:
+        this.where(
+          relationship.morphType as keyof T,
+          relationship.relatedModel.constructor.name
+        ).where(
+          relationship.morphId as keyof T,
+          relationship.relatedModel["$original"]._id
+        );
+        break;
 
       // case IRelationTypes.morphToMany:
       //   const mtmColl = this.getCollection(relationship.morphCollectionName);
