@@ -1268,20 +1268,19 @@ export default class QueryBuilder<T> {
       //   this.whereIn("_id", btmIds);
       //   break;
 
-      // case IRelationTypes.hasManyThrough:
-      //   const hmtColl = this.getCollection(
-      //     relationship.throughModel.$collection
-      //   );
+      case IRelationTypes.hasManyThrough:
+        const hmtColl = relationship.throughModel.getCollection();
 
-      //   const hmtIds = await hmtColl
-      //     .find({
-      //       [relationship.foreignKey]: relationship.parentId,
-      //     })
-      //     .map((el) => el._id)
-      //     .toArray();
+        const hmtIds = await hmtColl
+          .find({
+            [relationship.foreignKey]:
+              relationship.relatedModel.$original[relationship.localKey],
+          })
+          .map((el) => el._id)
+          .toArray();
 
-      //   this.whereIn(relationship.foreignKeyThrough, hmtIds);
-      //   break;
+        this.whereIn(relationship.foreignKeyThrough as keyof T, hmtIds);
+        break;
 
       // case IRelationTypes.morphMany:
       //   this.where(relationship.morphType, relationship.parentModelName).where(

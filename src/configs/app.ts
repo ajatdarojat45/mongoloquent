@@ -1,6 +1,7 @@
 import "dotenv/config";
 
-let databaseName: string = process.env.MONGOLOQUENT_DATABASE_NAME || "mongoloquent";
+let databaseName: string =
+  process.env.MONGOLOQUENT_DATABASE_NAME || "mug_event";
 
 if (process.env.NODE_ENV === "test") {
   databaseName =
@@ -12,6 +13,4 @@ export const MONGOLOQUENT_DATABASE_NAME: string = databaseName;
 export const MONGOLOQUENT_DATABASE_URI: string =
   process.env.MONGOLOQUENT_DATABASE_URI || "mongodb://localhost:27017";
 
-export const TIMEZONE: string = process.env.TIMEZONE || "Asia/Jakarta"
-
-
+export const TIMEZONE: string = process.env.TIMEZONE || "Asia/Jakarta";

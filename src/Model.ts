@@ -7,10 +7,12 @@ import {
   IRelationHasMany,
   IRelationBelongsTo,
   IRelationHasOne,
+  IRelationHasManyThrough,
 } from "./interfaces/IRelation";
 import HasMany from "./relations/HasMany";
 import BelongsTo from "./relations/BelongsTo";
 import HasOne from "./relations/HasOne";
+import HasManyThrough from "./relations/HasManyThrough";
 
 export default class Model<T> extends Relation<T> {
   [key: string]: any;
@@ -441,55 +443,92 @@ export default class Model<T> extends Relation<T> {
     });
     return relation;
   }
-}
 
-interface IUser {
-  _id: ObjectId;
-  name: string;
-  age: number;
-  posts?: IPost[];
-}
+  hasManyThrough<M, TM>(
+    model: new () => Model<M>,
+    throughModel: new () => Model<TM>,
+    foreignKey: keyof TM,
+    foreignKeyThrough: keyof M,
+    localKey: keyof T,
+    localKeyThrough: keyof TM
+  ): Model<M> {
+    const relation = new model();
+    const through = new throughModel();
 
-interface IPost {
-  _id: ObjectId;
-  title: string;
-  content: string;
-  userId: ObjectId;
-  user?: IUser;
-}
+    const hasManyThrough: IRelationHasManyThrough = {
+      type: IRelationTypes.hasManyThrough,
+      model: this,
+      relatedModel: relation,
+      throughModel: through,
+      foreignKey: foreignKey as string,
+      foreignKeyThrough: foreignKeyThrough as string,
+      localKey: localKey as string,
+      localKeyThrough: localKeyThrough as string,
+      alias: this.$alias,
+      options: this.$options,
+    };
+    this.setRelationship(hasManyThrough);
+    const lookups = HasManyThrough.generate(hasManyThrough);
+    this.$lookups = [...this.$lookups, ...lookups];
 
-interface IProduct {
-  _id: ObjectId;
-  name: string;
-  desc: string;
-  userId: ObjectId;
-}
-
-class Post extends Model<IPost> {
-  static $schema: IPost;
-
-  user() {
-    return this.belongsTo(User, "userId", "_id");
+    relation.setRelationship({
+      type: IRelationTypes.hasManyThrough,
+      model: relation,
+      relatedModel: this,
+      throughModel: through,
+      foreignKey: foreignKey as string,
+      foreignKeyThrough: foreignKeyThrough as string,
+      localKey: localKey as string,
+      localKeyThrough: localKeyThrough as string,
+      alias: "",
+      options: {},
+    });
+    return relation;
   }
 }
 
-class Product extends Model<IProduct> {
-  static $schema: IProduct;
+interface IProject {
+  _id: ObjectId;
+  name: string;
 }
 
-class User extends Model<IUser> {
-  static $schema: IUser;
+interface IEnvironment {
+  _id: ObjectId;
+  name: string;
+  project_id: ObjectId;
+}
 
-  posts() {
-    return this.hasOne(Post, "userId", "_id");
-  }
+interface IDeployment {
+  _id: ObjectId;
+  commit_hash: string;
+  environment_id: ObjectId;
+}
 
-  products() {
-    return this.hasMany(Product, "userId", "_id");
+class Environment extends Model<IEnvironment> {
+  static $schema: IEnvironment;
+}
+
+class Deployment extends Model<IDeployment> {
+  static $schema: IDeployment;
+}
+
+class Project extends Model<IProject> {
+  static $schema: IProject;
+
+  deploys() {
+    return this.hasManyThrough(
+      Deployment,
+      Environment,
+      "project_id",
+      "environment_id",
+      "_id",
+      "_id"
+    );
   }
 }
 
 (async () => {
-  const posts = await User.with("posts").get();
-  console.log(JSON.stringify(posts, null, 2));
+  const projects = await Project.find("507f1f77bcf86cd799439012");
+  const deploys = await projects.deploys().get();
+  console.log(JSON.stringify(deploys, null, 2));
 })();

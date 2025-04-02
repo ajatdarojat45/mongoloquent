@@ -54,8 +54,8 @@ export interface IRelationHasMany {
 export interface IRelationHasManyThrough {
   type: IRelationTypes.hasManyThrough;
   model: Model<any>;
-  relatedModel: typeof Model;
-  throughModel: typeof Model;
+  relatedModel: Model<any>;
+  throughModel: Model<any>;
   foreignKey: string;
   foreignKeyThrough: string;
   localKey: string;
