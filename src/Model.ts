@@ -10,6 +10,7 @@ import {
   IRelationHasManyThrough,
   IRelationBelongsToMany,
   IRelationMorphMany,
+  IRelationMorphTo,
 } from "./interfaces/IRelation";
 import HasMany from "./relations/HasMany";
 import BelongsTo from "./relations/BelongsTo";
@@ -17,6 +18,7 @@ import HasOne from "./relations/HasOne";
 import HasManyThrough from "./relations/HasManyThrough";
 import BelongsToMany from "./relations/BelongsToMany";
 import MorphMany from "./relations/MorphMany";
+import MorphTo from "./relations/MorphTo";
 
 export default class Model<T> extends Relation<T> {
   [key: string]: any;
@@ -563,6 +565,38 @@ export default class Model<T> extends Relation<T> {
     });
     return relation;
   }
+
+  morphTo<M>(model: new () => Model<M>, name: string) {
+    const relation = new model();
+
+    const morphTo: IRelationMorphTo = {
+      type: IRelationTypes.morphTo,
+      model: this,
+      relatedModel: relation,
+      morph: name,
+      morphId: `${name}Id`,
+      morphType: `${name}Type`,
+      morphCollectionName: `${name}s`,
+      alias: this.$alias,
+      options: this.$options,
+    };
+    this.setRelationship(morphTo);
+    const lookups = MorphTo.generate(morphTo);
+    this.$lookups = [...this.$lookups, ...lookups];
+
+    relation.setRelationship({
+      type: IRelationTypes.morphTo,
+      model: relation,
+      relatedModel: this,
+      morph: name,
+      morphId: `${name}Id`,
+      morphType: `${name}Type`,
+      morphCollectionName: `${name}s`,
+      alias: "",
+      options: {},
+    });
+    return relation;
+  }
 }
 
 interface IPost {
@@ -586,6 +620,14 @@ interface IComment {
 
 class Comment extends Model<IComment> {
   static $schema: IComment;
+
+  post() {
+    return this.morphTo(Post, "commentable");
+  }
+
+  video() {
+    return this.morphTo(Video, "commentable");
+  }
 }
 
 class Post extends Model<IPost> {
@@ -605,7 +647,6 @@ class Video extends Model<IVideo> {
 }
 
 (async () => {
-  const video = await Video.find("67ed4054497784cac07774cd");
-  const comments = await video.comments().select("body").get();
+  const comments = await Comment.with("post").with("video").get();
   console.log(comments);
 })();

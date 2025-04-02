@@ -79,16 +79,14 @@ export interface IRelationBelongsToMany {
 
 export interface IRelationMorphTo {
   type: IRelationTypes.morphTo;
-  model: typeof Model;
+  model: Model<any>;
+  relatedModel: Model<any>;
   morph: string;
   morphId: string;
   morphType: string;
   morphCollectionName: string;
   alias: string;
   options: IRelationOptions;
-  parentId: string | ObjectId | null;
-  parentModelName: string;
-  parentCollectionName: string;
 }
 
 export interface IRelationMorphMany {

@@ -40,22 +40,11 @@ export default class MorphTo extends LookupBuilder {
     const pipeline: Document[] = [];
 
     // Add soft delete condition to the pipeline if enabled
-    if (morphTo.model.$useSoftDelete) {
+    if (morphTo.model["$useSoftDelete"]) {
       pipeline.push({
         $match: {
           $expr: {
-            $and: [
-              { $eq: [`$${morphTo.model.getIsDeleted()}`, false] },
-              { $eq: [`$${morphTo.morphType}`, morphTo.parentModelName] },
-            ],
-          },
-        },
-      });
-    } else {
-      pipeline.push({
-        $match: {
-          $expr: {
-            $and: [{ $eq: [`$${morphTo.morphType}`, morphTo.parentModelName] }],
+            $and: [{ $eq: [`$${morphTo.model.getIsDeleted()}`, false] }],
           },
         },
       });
@@ -63,9 +52,9 @@ export default class MorphTo extends LookupBuilder {
 
     // Define the $lookup stage
     const $lookup = {
-      from: morphTo.model.$collection,
-      localField: "_id",
-      foreignField: `${morphTo.morphId}`,
+      from: morphTo.relatedModel["$collection"],
+      localField: `${morphTo.morphId}`,
+      foreignField: "_id",
       as: alias,
       pipeline: pipeline,
     };
