@@ -1152,7 +1152,6 @@ export default class QueryBuilder<T> {
       const collection = this.getCollection();
       const stages = this.getStages();
       const lookups = this.getLookups();
-      console.log(JSON.stringify(stages, null, 2));
       const aggregate = collection?.aggregate([...stages, ...lookups]);
 
       this.resetQuery();

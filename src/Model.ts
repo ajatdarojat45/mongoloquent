@@ -606,6 +606,6 @@ class Video extends Model<IVideo> {
 
 (async () => {
   const video = await Video.find("67ed4054497784cac07774cd");
-  const comments = await video.comments().get();
+  const comments = await video.comments().select("body").get();
   console.log(comments);
 })();
