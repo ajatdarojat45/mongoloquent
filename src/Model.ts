@@ -8,11 +8,13 @@ import {
   IRelationBelongsTo,
   IRelationHasOne,
   IRelationHasManyThrough,
+  IRelationBelongsToMany,
 } from "./interfaces/IRelation";
 import HasMany from "./relations/HasMany";
 import BelongsTo from "./relations/BelongsTo";
 import HasOne from "./relations/HasOne";
 import HasManyThrough from "./relations/HasManyThrough";
+import BelongsToMany from "./relations/BelongsToMany";
 
 export default class Model<T> extends Relation<T> {
   [key: string]: any;
@@ -485,50 +487,93 @@ export default class Model<T> extends Relation<T> {
     });
     return relation;
   }
+
+  belongsToMany<M, TM>(
+    model: new () => Model<M>,
+    pivotModel: new () => Model<TM>,
+    foreignPivotKey: keyof TM,
+    relatedPivotKey: keyof TM,
+    parentKey: keyof T,
+    relatedKey: keyof M
+  ): Model<M> {
+    const relation = new model();
+    const pivot = new pivotModel();
+
+    const belongsToMany: IRelationBelongsToMany = {
+      type: IRelationTypes.belongsToMany,
+      model: this,
+      relatedModel: relation,
+      pivotModel: pivot,
+      foreignPivotKey: foreignPivotKey as string,
+      relatedPivotKey: relatedPivotKey as string,
+      parentKey: parentKey as string,
+      relatedKey: relatedKey as string,
+      alias: this.$alias,
+      options: this.$options,
+    };
+    this.setRelationship(belongsToMany);
+    const lookups = BelongsToMany.generate(belongsToMany);
+    this.$lookups = [...this.$lookups, ...lookups];
+
+    relation.setRelationship({
+      type: IRelationTypes.belongsToMany,
+      model: relation,
+      relatedModel: this,
+      pivotModel: pivot,
+      foreignPivotKey: foreignPivotKey as string,
+      relatedPivotKey: relatedPivotKey as string,
+      parentKey: parentKey as string,
+      relatedKey: relatedKey as string,
+      alias: "",
+      options: {},
+    });
+
+    return relation;
+  }
 }
 
-interface IProject {
+interface IUser {
   _id: ObjectId;
   name: string;
 }
 
-interface IEnvironment {
+interface IRole {
   _id: ObjectId;
   name: string;
-  project_id: ObjectId;
 }
 
-interface IDeployment {
+interface IRoleUser {
   _id: ObjectId;
-  commit_hash: string;
-  environment_id: ObjectId;
+  user_id: ObjectId;
+  role_id: ObjectId;
 }
 
-class Environment extends Model<IEnvironment> {
-  static $schema: IEnvironment;
-}
+class User extends Model<IUser> {
+  static $schema: IUser;
 
-class Deployment extends Model<IDeployment> {
-  static $schema: IDeployment;
-}
-
-class Project extends Model<IProject> {
-  static $schema: IProject;
-
-  deploys() {
-    return this.hasManyThrough(
-      Deployment,
-      Environment,
-      "project_id",
-      "environment_id",
+  roles() {
+    return this.belongsToMany(
+      Role,
+      RoleUser,
+      "user_id",
+      "role_id",
       "_id",
       "_id"
     );
   }
 }
 
+class Role extends Model<IRole> {
+  static $schema: IRole;
+}
+
+class RoleUser extends Model<IRoleUser> {
+  static $schema: IRoleUser;
+  protected static $collection: string = "role_user";
+}
+
 (async () => {
-  const projects = await Project.find("507f1f77bcf86cd799439012");
-  const deploys = await projects.deploys().get();
-  console.log(JSON.stringify(deploys, null, 2));
+  const users = await User.find("65d1a4f1c2a3b4d5e6f78903");
+  const roles = await users.roles().get();
+  console.log(roles);
 })();

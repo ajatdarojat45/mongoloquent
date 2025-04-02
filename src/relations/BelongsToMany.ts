@@ -65,11 +65,13 @@ export default class BelongsToMany extends LookupBuilder {
     const pipeline: Document[] = [];
 
     // Add soft delete condition to the pipeline if enabled
-    if (belongsToMany.model.$useSoftDelete) {
+    if (belongsToMany.relatedModel["$useSoftDelete"]) {
       pipeline.push({
         $match: {
           $expr: {
-            $and: [{ $eq: [`$${belongsToMany.model.getIsDeleted()}`, false] }],
+            $and: [
+              { $eq: [`$${belongsToMany.relatedModel.getIsDeleted()}`, false] },
+            ],
           },
         },
       });
@@ -79,7 +81,7 @@ export default class BelongsToMany extends LookupBuilder {
     lookup.push(
       {
         $lookup: {
-          from: belongsToMany.pivotModel.$collection,
+          from: belongsToMany.pivotModel["$collection"],
           localField: belongsToMany.parentKey,
           foreignField: belongsToMany.foreignPivotKey,
           as: "pivot",
@@ -87,7 +89,7 @@ export default class BelongsToMany extends LookupBuilder {
       },
       {
         $lookup: {
-          from: belongsToMany.model.$collection,
+          from: belongsToMany.relatedModel["$collection"],
           localField: `pivot.${belongsToMany.relatedPivotKey}`,
           foreignField: belongsToMany.relatedKey,
           as: belongsToMany.alias || "pivot",

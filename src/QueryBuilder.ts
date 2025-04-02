@@ -1255,18 +1255,18 @@ export default class QueryBuilder<T> {
         );
         break;
 
-      // case IRelationTypes.belongsToMany:
-      //   const btmColl = this.getCollection(relationship.pivotModel.$collection);
+      case IRelationTypes.belongsToMany:
+        const btmColl = relationship.pivotModel.getCollection();
+        const btmIds = await btmColl
+          .find({
+            [relationship.foreignPivotKey]:
+              relationship.relatedModel.$original[relationship.parentKey],
+          })
+          .map((el) => el[relationship.relatedPivotKey])
+          .toArray();
 
-      //   const btmIds = await btmColl
-      //     .find({
-      //       [relationship.foreignPivotKey]: relationship.parentId,
-      //     })
-      //     .map((el) => el[relationship.relatedPivotKey])
-      //     .toArray();
-
-      //   this.whereIn("_id", btmIds);
-      //   break;
+        this.whereIn(relationship.relatedKey as keyof T, btmIds);
+        break;
 
       case IRelationTypes.hasManyThrough:
         const hmtColl = relationship.throughModel.getCollection();

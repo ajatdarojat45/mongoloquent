@@ -66,17 +66,15 @@ export interface IRelationHasManyThrough {
 
 export interface IRelationBelongsToMany {
   type: IRelationTypes.belongsToMany;
-  model: typeof Model;
-  pivotModel: typeof Model;
+  model: Model<any>;
+  relatedModel: Model<any>;
+  pivotModel: Model<any>;
   foreignPivotKey: string;
   relatedPivotKey: string;
   parentKey: string;
   relatedKey: string;
   alias: string;
   options: IRelationOptions;
-  parentId: string | ObjectId | null;
-  parentModelName: string;
-  parentCollectionName: string;
 }
 
 export interface IRelationMorphTo {
