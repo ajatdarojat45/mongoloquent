@@ -24,7 +24,7 @@ export interface IRelationOptions {
 export interface IRelationHasOne {
   type: IRelationTypes.hasOne;
   model: Model<any>;
-  relatedModel: typeof Model;
+  relatedModel: Model<any>;
   foreignKey: string;
   localKey: string;
   alias: string;

@@ -6,9 +6,11 @@ import {
   IRelationTypes,
   IRelationHasMany,
   IRelationBelongsTo,
+  IRelationHasOne,
 } from "./interfaces/IRelation";
 import HasMany from "./relations/HasMany";
 import BelongsTo from "./relations/BelongsTo";
+import HasOne from "./relations/HasOne";
 
 export default class Model<T> extends Relation<T> {
   [key: string]: any;
@@ -351,7 +353,7 @@ export default class Model<T> extends Relation<T> {
   ): Model<M> {
     const relation = new model();
 
-    const hasManyParent: IRelationHasMany = {
+    const hasMany: IRelationHasMany = {
       type: IRelationTypes.hasMany,
       model: this,
       relatedModel: relation,
@@ -360,8 +362,40 @@ export default class Model<T> extends Relation<T> {
       alias: this.$alias,
       options: this.$options,
     };
-    this.setRelationship(hasManyParent);
-    const lookups = HasMany.generate(hasManyParent);
+    this.setRelationship(hasMany);
+    const lookups = HasMany.generate(hasMany);
+    this.$lookups = [...this.$lookups, ...lookups];
+
+    relation.setRelationship({
+      type: IRelationTypes.hasMany,
+      model: relation,
+      relatedModel: this,
+      foreignKey: foreignKey as string,
+      localKey: localKey as string,
+      alias: "",
+      options: {},
+    });
+    return relation;
+  }
+
+  hasOne<M>(
+    model: new () => Model<M>,
+    foreignKey: keyof M,
+    localKey: keyof T
+  ): Model<M> {
+    const relation = new model();
+
+    const hasOne: IRelationHasOne = {
+      type: IRelationTypes.hasOne,
+      model: this,
+      relatedModel: relation,
+      foreignKey: foreignKey as string,
+      localKey: localKey as string,
+      alias: this.$alias,
+      options: this.$options,
+    };
+    this.setRelationship(hasOne);
+    const lookups = HasOne.generate(hasOne);
     this.$lookups = [...this.$lookups, ...lookups];
 
     relation.setRelationship({
@@ -383,7 +417,7 @@ export default class Model<T> extends Relation<T> {
   ): Model<M> {
     const relation = new model();
 
-    const belongsToParent: IRelationBelongsTo = {
+    const belongsTo: IRelationBelongsTo = {
       type: IRelationTypes.belongsTo,
       model: this,
       relatedModel: relation,
@@ -392,8 +426,8 @@ export default class Model<T> extends Relation<T> {
       alias: this.$alias,
       options: this.$options,
     };
-    this.setRelationship(belongsToParent);
-    const lookupsBelongsTo = BelongsTo.generate(belongsToParent);
+    this.setRelationship(belongsTo);
+    const lookupsBelongsTo = BelongsTo.generate(belongsTo);
     this.$lookups = [...this.$lookups, ...lookupsBelongsTo];
 
     relation.setRelationship({
@@ -447,7 +481,7 @@ class User extends Model<IUser> {
   static $schema: IUser;
 
   posts() {
-    return this.hasMany(Post, "userId", "_id");
+    return this.hasOne(Post, "userId", "_id");
   }
 
   products() {
@@ -456,12 +490,6 @@ class User extends Model<IUser> {
 }
 
 (async () => {
-  const posts = await User.with("posts", {
-    select: ["title"],
-  })
-    .with("products", {
-      select: ["name"],
-    })
-    .get();
+  const posts = await User.with("posts").get();
   console.log(JSON.stringify(posts, null, 2));
 })();
