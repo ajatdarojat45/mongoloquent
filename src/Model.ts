@@ -417,7 +417,7 @@ export default class Model<T> extends Relation<T> {
     model: new () => Model<M>,
     foreignKey: keyof T,
     ownerKey: keyof M
-  ): Model<M> {
+  ) {
     const relation = new model();
 
     const belongsTo: IRelationBelongsTo = {
@@ -433,16 +433,7 @@ export default class Model<T> extends Relation<T> {
     const lookupsBelongsTo = BelongsTo.generate(belongsTo);
     this.$lookups = [...this.$lookups, ...lookupsBelongsTo];
 
-    relation.setRelationship({
-      type: IRelationTypes.belongsTo,
-      model: relation,
-      relatedModel: this,
-      foreignKey: foreignKey as string,
-      ownerKey: ownerKey as string,
-      alias: "",
-      options: {},
-    });
-    return relation;
+    return new BelongsTo<T, M>(this, relation, foreignKey, ownerKey);
   }
 
   hasManyThrough<M, TM>(
@@ -713,6 +704,10 @@ class Tag extends Model<ITag> {
 class Post extends Model<IPost> {
   static $schema: IPost;
 
+  user() {
+    return this.belongsTo(User, "userId", "_id");
+  }
+
   comments() {
     return this.morphMany(Comment, "commentable");
   }
@@ -743,10 +738,10 @@ class User extends Model<IUser> {
 }
 
 (async () => {
-  // const user = await User.find("67edcd91f127ea213f229b05");
-  // const posts = await user.posts().paginate(1, 10);
-  // console.log(posts);
-
-  const users = await User.with("posts").get();
-  console.log(users);
+  // const post = await Post.find("67ed4054497784cac07774ca");
+  // const user = await posts.user().get();
+  // const user = await User.where("name", "Kosasih").first();
+  // post.user().dissociate();
+  // await post.save();
+  // console.log(post);
 })();
