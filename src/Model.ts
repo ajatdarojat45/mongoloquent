@@ -362,7 +362,7 @@ export default class Model<T> extends Relation<T> {
     model: new () => Model<M>,
     foreignKey: keyof M,
     localKey: keyof T
-  ): HasMany<T, M> {
+  ) {
     const relation = new model();
 
     const hasMany: IRelationHasMany = {
