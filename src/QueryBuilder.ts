@@ -1248,13 +1248,6 @@ export default class QueryBuilder<T> {
     const relationship = this.getRelationship();
 
     switch (relationship?.type) {
-      case IRelationTypes.hasMany:
-        this.where(
-          relationship.foreignKey as keyof T,
-          relationship.relatedModel.$original[relationship.localKey]
-        );
-        break;
-
       case IRelationTypes.belongsToMany:
         const btmColl = relationship.pivotModel.getCollection();
         const btmIds = await btmColl

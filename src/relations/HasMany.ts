@@ -1,32 +1,143 @@
 import { Document } from "mongodb";
 import { IRelationHasMany } from "../interfaces/IRelation";
 import LookupBuilder from "./LookupBuilder.ts";
+import Model from "../Model";
+import { FormSchema } from "../types/schema";
+import QueryBuilder from "../QueryBuilder";
+import { IModelPaginate } from "../interfaces/IModel";
 
-export default class HasMany extends LookupBuilder {
-  /**
-   * Generates the lookup, select, exclude, sort, skip, and limit stages for the hasMany relation.
-   * @param {IRelationHasMany} hasMany - The hasMany relation configuration.
-   * @return {Document[]} The combined lookup, select, exclude, sort, skip, and limit stages.
-   */
-  static generate(hasMany: IRelationHasMany): Document[] {
+export default class HasMany<T, M> extends QueryBuilder<M> {
+  model: Model<T>;
+  relatedModel: Model<M>;
+  localKey: keyof T;
+  foreignKey: keyof M;
+
+  constructor(
+    model: Model<T>,
+    relatedModel: Model<M>,
+    foreignKey: keyof M,
+    localKey: keyof T
+  ) {
+    super();
+    this.model = model;
+    this.relatedModel = relatedModel;
+    this.localKey = localKey;
+    this.foreignKey = foreignKey;
+    this.$connection = relatedModel["$connection"];
+    this.$collection = relatedModel["$collection"];
+    this.$useSoftDelete = relatedModel["$useSoftDelete"];
+    this.$databaseName = relatedModel["$databaseName"];
+    this.$useSoftDelete = relatedModel["$useSoftDelete"];
+    this.$useTimestamps = relatedModel["$useTimestamps"];
+    this.$isDeleted = relatedModel["$isDeleted"];
+  }
+
+  public firstOrNew(filter: Partial<M>, doc: Partial<FormSchema<M>>) {
+    return super.firstOrNew(filter, doc);
+  }
+
+  public firstOrCreate(filter: Partial<M>, doc: Partial<FormSchema<M>>) {
+    return super.firstOrCreate(filter, doc);
+  }
+
+  public updateOrCreate(filter: Partial<M>, doc: Partial<FormSchema<M>>) {
+    return super.updateOrCreate(filter, doc);
+  }
+
+  // @ts-ignore
+  public save(doc: Partial<M>) {
+    const data = {
+      ...doc,
+      [this.foreignKey]: this.model["$original"][this.localKey],
+    } as FormSchema<M>;
+
+    return this.insert(data);
+  }
+
+  public saveMany(docs: Partial<M>[]) {
+    const data = docs.map((doc) => ({
+      ...doc,
+      [this.foreignKey]: this.model["$original"][this.localKey],
+    })) as FormSchema<M>[];
+
+    return this.insertMany(data);
+  }
+
+  // @ts-ignore
+  public create(doc: Partial<M>) {
+    return this.save(doc);
+  }
+
+  public all(): Promise<M[]> {
+    this.where(this.foreignKey, this.model["$original"][this.localKey]);
+    return super.all();
+  }
+
+  public get<K extends keyof M>(...fields: (K | K[])[]) {
+    this.where(this.foreignKey, this.model["$original"][this.localKey]);
+    return super.get(...fields);
+  }
+
+  public paginate(page: number, limit: number): Promise<IModelPaginate> {
+    this.where(this.foreignKey, this.model["$original"][this.localKey]);
+    return super.paginate(page, limit);
+  }
+
+  public first<K extends keyof M>(...fields: (K | K[])[]) {
+    this.where(this.foreignKey, this.model["$original"][this.localKey]);
+    return super.first(...fields);
+  }
+
+  public count(): Promise<number> {
+    this.where(this.foreignKey, this.model["$original"][this.localKey]);
+    return super.count();
+  }
+
+  public sum<K extends keyof M>(field: K): Promise<number> {
+    this.where(this.foreignKey, this.model["$original"][this.localKey]);
+    return super.sum(field);
+  }
+
+  public min<K extends keyof M>(field: K): Promise<number> {
+    this.where(this.foreignKey, this.model["$original"][this.localKey]);
+    return super.min(field);
+  }
+
+  public max<K extends keyof M>(field: K): Promise<number> {
+    this.where(this.foreignKey, this.model["$original"][this.localKey]);
+    return super.max(field);
+  }
+
+  public avg<K extends keyof M>(field: K): Promise<number> {
+    this.where(this.foreignKey, this.model["$original"][this.localKey]);
+    return super.avg(field);
+  }
+
+  public static generate(hasMany: IRelationHasMany): Document[] {
     // Generate the lookup stages for the hasMany relationship
     const lookup = this.lookup(hasMany);
 
     // Generate the select stages if options.select is provided
     if (hasMany.options?.select) {
-      const select = this.select(hasMany.options.select, hasMany.alias);
+      const select = LookupBuilder.select(
+        hasMany.options.select,
+        hasMany.alias
+      );
       lookup.push(...select);
     }
 
     // Generate the exclude stages if options.exclude is provided
     if (hasMany.options?.exclude) {
-      const exclude = this.exclude(hasMany.options.exclude, hasMany.alias);
+      const exclude = LookupBuilder.exclude(
+        hasMany.options.exclude,
+        hasMany.alias
+      );
       lookup.push(...exclude);
     }
 
     // Generate the sort stages if options.sort is provided
     if (hasMany.options?.sort) {
-      const sort = this.sort(
+      const sort = LookupBuilder.sort(
         hasMany.options?.sort[0],
         hasMany.options?.sort[1]
       );
@@ -35,13 +146,13 @@ export default class HasMany extends LookupBuilder {
 
     // Generate the skip stages if options.skip is provided
     if (hasMany.options?.skip) {
-      const skip = this.skip(hasMany.options?.skip);
+      const skip = LookupBuilder.skip(hasMany.options?.skip);
       lookup.push(skip);
     }
 
     // Generate the limit stages if options.limit is provided
     if (hasMany.options?.limit) {
-      const limit = this.limit(hasMany.options?.limit);
+      const limit = LookupBuilder.limit(hasMany.options?.limit);
       lookup.push(limit);
     }
 
@@ -49,12 +160,7 @@ export default class HasMany extends LookupBuilder {
     return lookup;
   }
 
-  /**
-   * Generates the lookup stages for the hasMany relation.
-   * @param {IRelationHasMany} hasMany - The hasMany relation configuration.
-   * @return {Document[]} The lookup stages.
-   */
-  static lookup(hasMany: IRelationHasMany): Document[] {
+  public static lookup(hasMany: IRelationHasMany): Document[] {
     const lookup: Document[] = [];
     const pipeline: Document[] = [];
 

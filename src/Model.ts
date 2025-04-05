@@ -362,7 +362,7 @@ export default class Model<T> extends Relation<T> {
     model: new () => Model<M>,
     foreignKey: keyof M,
     localKey: keyof T
-  ): Model<M> {
+  ): HasMany<T, M> {
     const relation = new model();
 
     const hasMany: IRelationHasMany = {
@@ -378,16 +378,7 @@ export default class Model<T> extends Relation<T> {
     const lookups = HasMany.generate(hasMany);
     this.$lookups = [...this.$lookups, ...lookups];
 
-    relation.setRelationship({
-      type: IRelationTypes.hasMany,
-      model: relation,
-      relatedModel: this,
-      foreignKey: foreignKey as string,
-      localKey: localKey as string,
-      alias: "",
-      options: {},
-    });
-    return relation;
+    return new HasMany<T, M>(this, relation, foreignKey, localKey);
   }
 
   hasOne<M>(
@@ -665,10 +656,16 @@ export default class Model<T> extends Relation<T> {
   }
 }
 
+interface IUser {
+  _id: ObjectId;
+  name: string;
+}
+
 interface IPost {
   _id: ObjectId;
   title: string;
   body: string;
+  userId: ObjectId;
 }
 
 interface IVideo {
@@ -737,8 +734,19 @@ class Video extends Model<IVideo> {
   }
 }
 
+class User extends Model<IUser> {
+  static $schema: IUser;
+
+  posts() {
+    return this.hasMany(Post, "userId", "_id");
+  }
+}
+
 (async () => {
-  const posts = await Post.find("67ed4054497784cac07774ca");
-  const comments = await posts.tags().get();
-  console.log(JSON.stringify(comments, null, 2));
+  // const user = await User.find("67edcd91f127ea213f229b05");
+  // const posts = await user.posts().paginate(1, 10);
+  // console.log(posts);
+
+  const users = await User.with("posts").get();
+  console.log(users);
 })();
