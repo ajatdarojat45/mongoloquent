@@ -23,7 +23,10 @@ export default class DB<T> extends QueryBuilder<T> {
    * @param {string} collection - The name of the collection to operate on
    * @returns {DB<T>} A new DB instance configured for the specified collection
    */
-  static collection<T>(this: new () => DB<T>, collection: string): DB<T> {
+  public static collection<T>(
+    this: new () => DB<T>,
+    collection: string,
+  ): DB<T> {
     const q = new this();
     q["$collection"] = collection;
 
