@@ -14,13 +14,3 @@ export default class DB<T> extends QueryBuilder<T> {
     return q;
   }
 }
-
-interface IUser {
-  name: string;
-  email: string;
-  age: number;
-}
-
-(async () => {
-  const user = await DB.collection<IUser>("users");
-})();
