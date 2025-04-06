@@ -6,11 +6,28 @@ import {
 } from "./exceptions/MongoloquentException";
 import operators from "./utils/operators";
 
+/**
+ * Collection class that extends Array to provide additional functionality for working with arrays of items
+ * @class Collection
+ * @extends Array
+ * @template T - The type of items in the collection
+ */
 export default class Collection<T> extends Array<T> {
+  /**
+   * Creates a new Collection instance
+   * @param {...T} args - The items to initialize the collection with
+   */
   constructor(...args: T[]) {
     super(...args);
   }
 
+  /**
+   * Returns the item that comes after the first item that matches the given key/value pair or callback
+   * @param {keyof T | ((item: T) => boolean)} keyOrCallback - The key to match against or a callback function
+   * @param {any} [value] - The value to match (only used when keyOrCallback is a key)
+   * @param {boolean} [strict=true] - Whether to use strict equality comparison
+   * @returns {T | null} The next item in the collection or null if not found
+   */
   after(
     keyOrCallback: keyof T | ((item: T) => boolean),
     value?: any,
@@ -18,7 +35,7 @@ export default class Collection<T> extends Array<T> {
   ): T | null {
     const index = this.findIndex((item) =>
       typeof keyOrCallback === "function"
-        ? keyOrCallback(item) // Custom callback function
+        ? keyOrCallback(item)
         : strict
           ? item[keyOrCallback] === value
           : item[keyOrCallback] == value,
@@ -26,22 +43,36 @@ export default class Collection<T> extends Array<T> {
     return index !== -1 && index + 1 < this.length ? this[index + 1] : null;
   }
 
+  /**
+   * Returns all items in the collection
+   * @returns {T[]} A copy of all items in the collection
+   */
   all(): T[] {
-    return this; // Returns a copy of the array to prevent mutation
+    return this;
   }
 
+  /**
+   * Alias for avg() method
+   * @param {keyof T | ((item: T) => number)} keyOrCallback - The key to average or a callback function
+   * @returns {number | null} The average value or null if collection is empty
+   */
   average(keyOrCallback: keyof T | ((item: T) => number)): number | null {
     return this.avg(keyOrCallback);
   }
 
+  /**
+   * Calculates the average value of a given key or callback result
+   * @param {keyof T | ((item: T) => number)} keyOrCallback - The key to average or a callback function
+   * @returns {number | null} The average value or null if collection is empty
+   */
   avg(keyOrCallback: keyof T | ((item: T) => number)): number | null {
     if (this.length === 0) return null;
 
     const sum = this.reduce((total, item) => {
       const value =
         typeof keyOrCallback === "function"
-          ? keyOrCallback(item) // Callback function
-          : (item[keyOrCallback] as unknown as number); // Numeric field
+          ? keyOrCallback(item)
+          : (item[keyOrCallback] as unknown as number);
 
       return total + (typeof value === "number" ? value : 0);
     }, 0);
@@ -49,6 +80,13 @@ export default class Collection<T> extends Array<T> {
     return sum / this.length;
   }
 
+  /**
+   * Returns the item that comes before the first item that matches the given key/value pair or callback
+   * @param {keyof T | ((item: T) => boolean)} keyOrCallback - The key to match against or a callback function
+   * @param {any} [value] - The value to match (only used when keyOrCallback is a key)
+   * @param {boolean} [strict=true] - Whether to use strict equality comparison
+   * @returns {T | null} The previous item in the collection or null if not found
+   */
   before(
     keyOrCallback: keyof T | ((item: T) => boolean),
     value?: any,
@@ -56,7 +94,7 @@ export default class Collection<T> extends Array<T> {
   ): T | null {
     const index = this.findIndex((item) =>
       typeof keyOrCallback === "function"
-        ? keyOrCallback(item) // Custom callback function
+        ? keyOrCallback(item)
         : strict
           ? item[keyOrCallback] === value
           : item[keyOrCallback] == value,
@@ -64,6 +102,11 @@ export default class Collection<T> extends Array<T> {
     return index > 0 ? this[index - 1] : null;
   }
 
+  /**
+   * Splits the collection into chunks of the specified size
+   * @param {number} size - The size of each chunk
+   * @returns {Collection<T>[]} An array of collections, each containing a chunk of items
+   */
   chunk(size: number): Collection<T>[] {
     if (size <= 0) return [];
 
@@ -75,14 +118,29 @@ export default class Collection<T> extends Array<T> {
     return chunks;
   }
 
+  /**
+   * Converts the collection into a new Collection instance
+   * @returns {Collection<T>} A new Collection instance containing the same items
+   */
   collect(): Collection<T> {
     return new Collection(...this);
   }
 
+  /**
+   * Concatenates the current collection with the given items
+   * @param {T[] | Collection<T>} items - The items to concatenate
+   * @returns {Collection<T>} A new Collection instance containing the concatenated items
+   */
   concat(items: T[] | Collection<T>): Collection<T> {
     return new Collection(...this, ...items);
   }
 
+  /**
+   * Checks if the collection contains an item that matches the given key/value pair or callback
+   * @param {keyof T | ((item: T) => boolean)} keyOrCallback - The key to match against or a callback function
+   * @param {any} [value] - The value to match (only used when keyOrCallback is a key)
+   * @returns {boolean} True if the collection contains a matching item, false otherwise
+   */
   contains(
     keyOrCallback: keyof T | ((item: T) => boolean),
     value?: any,
@@ -94,6 +152,12 @@ export default class Collection<T> extends Array<T> {
     return this.some((item) => item?.[keyOrCallback] == value);
   }
 
+  /**
+   * Checks if the collection contains an item that matches the given key/value pair or callback using strict equality
+   * @param {keyof T | ((item: T) => boolean)} keyOrCallback - The key to match against or a callback function
+   * @param {any} [value] - The value to match (only used when keyOrCallback is a key)
+   * @returns {boolean} True if the collection contains a matching item, false otherwise
+   */
   containsStrict(keyOrCallback: keyof T | ((item: T) => boolean), value?: any) {
     if (typeof keyOrCallback === "function") {
       return this.some(keyOrCallback);
@@ -102,16 +166,25 @@ export default class Collection<T> extends Array<T> {
     return this.some((item) => item?.[keyOrCallback] === value);
   }
 
+  /**
+   * Returns the number of items in the collection
+   * @returns {number} The number of items in the collection
+   */
   count(): number {
     return this.length;
   }
 
+  /**
+   * Counts the occurrences of each unique value in the collection
+   * @param {(item: T) => any} [callback] - A callback function to determine the value to count
+   * @returns {Record<string, number>} An object containing the counts of each unique value
+   */
   countBy(callback?: (item: T) => any): Record<string, number> {
     const result: Record<string, number> = {};
 
     this.forEach((item) => {
       const key = callback ? callback(item) : (item as any);
-      const keyStr = String(key); // Ensure key is a string
+      const keyStr = String(key);
 
       result[keyStr] = (result[keyStr] || 0) + 1;
     });
@@ -119,6 +192,12 @@ export default class Collection<T> extends Array<T> {
     return result;
   }
 
+  /**
+   * Checks if the collection does not contain an item that matches the given predicate or key/value pair
+   * @param {((item: T) => boolean) | string} predicate - A callback function or key to match against
+   * @param {any} [value] - The value to match (only used when predicate is a key)
+   * @returns {boolean} True if the collection does not contain a matching item, false otherwise
+   */
   doesntContain(
     predicate: ((item: T) => boolean) | string,
     value?: any,
@@ -130,11 +209,20 @@ export default class Collection<T> extends Array<T> {
     return !this.some((item) => (item as any)?.[predicate] === value);
   }
 
+  /**
+   * Logs the collection to the console
+   * @returns {this} The current collection instance
+   */
   dump(): this {
     console.log(this);
     return this;
   }
 
+  /**
+   * Finds duplicate values in the collection based on the specified key
+   * @param {keyof T} key - The key to check for duplicates
+   * @returns {Record<any, number>} An object containing the duplicate values and their counts
+   */
   duplicates(key: keyof T) {
     let result: any = {};
     const seen = new Set();
@@ -151,6 +239,11 @@ export default class Collection<T> extends Array<T> {
     return result;
   }
 
+  /**
+   * Iterates over each item in the collection and executes the callback function
+   * @param {(item: T, index: number, collection: this) => boolean | void} callback - The callback function to execute
+   * @returns {this} The current collection instance
+   */
   each(
     callback: (item: T, index: number, collection: this) => boolean | void,
   ): this {
@@ -162,6 +255,12 @@ export default class Collection<T> extends Array<T> {
     return this;
   }
 
+  /**
+   * Checks if every item in the collection matches the given callback or key/value pair
+   * @param {((item: T, index: number, collection: this) => boolean) | string} callbackOrKey - A callback function or key to match against
+   * @param {any} [value] - The value to match (only used when callbackOrKey is a key)
+   * @returns {boolean} True if every item matches, false otherwise
+   */
   isEvery(
     callbackOrKey:
       | ((item: T, index: number, collection: this) => boolean)
@@ -171,11 +270,9 @@ export default class Collection<T> extends Array<T> {
     if (this.length === 0) return true;
 
     if (typeof callbackOrKey === "string") {
-      // If first param is a key (string), check if all items have the given value
       return super.every((item: any) => item?.[callbackOrKey] === value);
     }
 
-    // If first param is a function, apply the callback
     return super.every((item, index, array) =>
       typeof callbackOrKey === "function"
         ? callbackOrKey(item, index, this)
@@ -183,6 +280,11 @@ export default class Collection<T> extends Array<T> {
     );
   }
 
+  /**
+   * Removes the specified keys from each item in the collection
+   * @param {string | string[]} keys - The keys to remove
+   * @returns {Collection<T>} A new collection with the keys removed
+   */
   except(keys: string | string[]) {
     let keysArray: string[] = Array.isArray(keys) ? keys : [keys];
 
@@ -199,6 +301,11 @@ export default class Collection<T> extends Array<T> {
     });
   }
 
+  /**
+   * Returns the first item in the collection that matches the given predicate
+   * @param {(item: T, index: number, collection: this) => boolean} [predicate] - A callback function to match against
+   * @returns {T | null} The first matching item or null if not found
+   */
   first(
     predicate?: (item: T, index: number, collection: this) => boolean,
   ): T | null {
@@ -215,6 +322,12 @@ export default class Collection<T> extends Array<T> {
     return null;
   }
 
+  /**
+   * Returns the first item in the collection that matches the given predicate or throws an exception if not found
+   * @param {(item: T, index: number, collection: this) => boolean} [predicate] - A callback function to match against
+   * @returns {T} The first matching item
+   * @throws {MongoloquentItemNotFoundException} If no matching item is found
+   */
   firstOrFail(
     predicate?: (item: T, index: number, collection: this) => boolean,
   ): T {
@@ -234,12 +347,19 @@ export default class Collection<T> extends Array<T> {
     throw new MongoloquentItemNotFoundException();
   }
 
+  /**
+   * Returns the first item in the collection that matches the given key/operator/value condition
+   * @param {keyof T} key - The key to match against
+   * @param {string | T[keyof T]} operator - The operator to use for comparison
+   * @param {any} [value] - The value to compare against
+   * @returns {T | null} The first matching item or null if not found
+   * @throws {MongoloquentInvalidOperatorException} If the operator is invalid
+   */
   firstWhere<K extends keyof T>(
     key: K,
     operator: string | T[K],
     value?: any,
   ): T | null {
-    // If only two arguments are provided, assume `=` (equal)
     if (value === undefined) {
       value = operator as T[K];
       operator = "=";
@@ -261,6 +381,11 @@ export default class Collection<T> extends Array<T> {
     return null;
   }
 
+  /**
+   * Removes the specified keys from each item in the collection
+   * @param {keyof T | (keyof T)[]} keys - The keys to remove
+   * @returns {this} The current collection instance
+   */
   forget(keys: keyof T | (keyof T)[]): this {
     const keyArray = Array.isArray(keys) ? keys : [keys];
 
@@ -276,6 +401,13 @@ export default class Collection<T> extends Array<T> {
     return this;
   }
 
+  /**
+   * Returns a subset of the collection for the specified page and items per page
+   * @param {number} page - The page number (1-based)
+   * @param {number} perPage - The number of items per page
+   * @returns {Collection<T>} A new collection containing the items for the specified page
+   * @throws {Error} If page or perPage is not a positive number
+   */
   forPage(page: number, perPage: number): Collection<T> {
     if (page <= 0 || perPage <= 0) {
       throw new Error("Page and perPage must be positive numbers.");
@@ -284,16 +416,26 @@ export default class Collection<T> extends Array<T> {
     return new Collection(...this.slice(start, start + perPage));
   }
 
+  /**
+   * Retrieves the value of the specified key from the first item in the collection
+   * @param {string} key - The key to retrieve
+   * @param {T | (() => T) | null} [defaultValue=null] - The default value to return if the key is not found
+   * @returns {T | null} The value of the key or the default value
+   */
   get(key: string, defaultValue: T | (() => T) | null = null): T | null {
     const item = this.find((obj) => (obj as any)?.[key] !== undefined);
     if (item) return (item as any)[key];
 
-    // If defaultValue is a function, execute it, otherwise return the value
     return typeof defaultValue === "function"
       ? (defaultValue as () => T)()
       : defaultValue;
   }
 
+  /**
+   * Groups the items in the collection by the specified key or callback
+   * @param {string | ((item: T) => any)} keyOrCallback - The key to group by or a callback function
+   * @returns {Collection<Record<string, T[]>>} A new collection containing the grouped items
+   */
   groupBy(
     keyOrCallback: string | ((item: T) => any),
   ): Collection<Record<string, T[]>> {
@@ -319,6 +461,11 @@ export default class Collection<T> extends Array<T> {
     );
   }
 
+  /**
+   * Checks if the collection contains items with the specified keys
+   * @param {string | string[]} keys - The keys to check for
+   * @returns {boolean} True if the collection contains items with the specified keys, false otherwise
+   */
   has(keys: string | string[]): boolean {
     if (!Array.isArray(keys)) {
       keys = [keys];
@@ -329,6 +476,11 @@ export default class Collection<T> extends Array<T> {
     );
   }
 
+  /**
+   * Checks if the collection contains items with any of the specified keys
+   * @param {string | string[]} keys - The keys to check for
+   * @returns {boolean} True if the collection contains items with any of the specified keys, false otherwise
+   */
   hasAny(keys: string | string[]): boolean {
     if (!Array.isArray(keys)) {
       keys = [keys];
@@ -339,6 +491,12 @@ export default class Collection<T> extends Array<T> {
     );
   }
 
+  /**
+   * Joins the values of the specified key or callback results into a string
+   * @param {string | ((item: T) => any)} keyOrGlue - The key to join or a callback function
+   * @param {string} [glue] - The string to use as a separator
+   * @returns {string} The joined string
+   */
   implode(keyOrGlue: string | ((item: T) => any), glue?: string): string {
     if (typeof keyOrGlue === "function") {
       return this.map(keyOrGlue).join(glue ?? "");
@@ -353,14 +511,27 @@ export default class Collection<T> extends Array<T> {
     return "";
   }
 
+  /**
+   * Checks if the collection is empty
+   * @returns {boolean} True if the collection is empty, false otherwise
+   */
   isEmpty(): boolean {
     return this.length === 0;
   }
 
+  /**
+   * Checks if the collection is not empty
+   * @returns {boolean} True if the collection is not empty, false otherwise
+   */
   isNotEmpty(): boolean {
     return this.length > 0;
   }
 
+  /**
+   * Creates a new collection with items keyed by the specified key or callback result
+   * @param {string | ((item: T) => string)} keyOrCallback - The key to use for grouping or a callback function
+   * @returns {Collection<T>} A new collection with items keyed by the specified key
+   */
   keyBy(keyOrCallback: string | ((item: T) => string)): Collection<T> {
     const result: Record<string, T> = {};
 
@@ -377,15 +548,18 @@ export default class Collection<T> extends Array<T> {
     return new Collection(...Object.values(result));
   }
 
+  /**
+   * Returns the last item in the collection that matches the given predicate
+   * @param {(item: T) => boolean} [predicate] - A callback function to match against
+   * @returns {T | null} The last matching item or null if not found
+   */
   last(predicate?: (item: T) => boolean): T | null {
     if (this.length === 0) return null;
 
     if (!predicate) {
-      // Return the last item if no predicate is provided
       return this[this.length - 1] ?? null;
     }
 
-    // Iterate from the last element to the first to find the match
     for (let i = this.length - 1; i >= 0; i--) {
       if (predicate(this[i])) {
         return this[i];
@@ -395,10 +569,20 @@ export default class Collection<T> extends Array<T> {
     return null;
   }
 
+  /**
+   * Creates a new collection instance with the specified items
+   * @param {...U} items - The items to include in the new collection
+   * @returns {Collection<U>} A new collection instance
+   */
   static make<U>(...items: U[]): Collection<U> {
     return new Collection(...items);
   }
 
+  /**
+   * Groups the items in the collection by the results of the callback function
+   * @param {(item: T, index: number) => Record<string, U>} callback - A callback function to determine the grouping
+   * @returns {Collection<U[]>} A new collection containing the grouped items
+   */
   mapToGroups<U>(
     callback: (item: T, index: number) => Record<string, U>,
   ): Collection<U[]> {
@@ -419,6 +603,11 @@ export default class Collection<T> extends Array<T> {
     return Collection.make(...Array.from(grouped.values()));
   }
 
+  /**
+   * Maps the items in the collection to key-value pairs using the callback function
+   * @param {(item: T, index: number) => Record<string, U>} callback - A callback function to determine the key-value pairs
+   * @returns {Collection<{ [key: string]: U }>} A new collection containing the mapped key-value pairs
+   */
   mapWithKeys<U>(
     callback: (item: T, index: number) => Record<string, U>,
   ): Collection<{ [key: string]: U }> {
@@ -427,7 +616,7 @@ export default class Collection<T> extends Array<T> {
     this.forEach((item, index) => {
       const entry = callback(item, index);
       const key = Object.keys(entry)[0];
-      result[key] = entry[key]; // Assign value to the corresponding key
+      result[key] = entry[key];
     });
 
     if (Object.keys(result).length === 0) return Collection.make();
@@ -435,20 +624,28 @@ export default class Collection<T> extends Array<T> {
     return Collection.make(...[result]);
   }
 
+  /**
+   * Finds the maximum value in the collection based on the specified key
+   * @param {keyof T} [key] - The key to find the maximum value for
+   * @returns {number | null} The maximum value or null if the collection is empty
+   */
   max(key?: keyof T): number | null {
     if (this.length === 0) return null;
 
     if (!key) {
-      // Assume collection contains only numbers
       return Math.max(...(this as unknown as number[]));
     }
 
-    // Extract values based on the key and find the max value
     return Math.max(
       ...this.map((item) => (item[key] as unknown as number) || 0),
     );
   }
 
+  /**
+   * Finds the median value in the collection based on the specified key
+   * @param {keyof T} [key] - The key to find the median value for
+   * @returns {number | null} The median value or null if the collection is empty
+   */
   median(key?: keyof T): number | null {
     if (this.length === 0) return null;
 
@@ -476,6 +673,11 @@ export default class Collection<T> extends Array<T> {
       : (sortedValues[mid - 1] + sortedValues[mid]) / 2;
   }
 
+  /**
+   * Finds the minimum value in the collection based on the specified key
+   * @param {keyof T} [key] - The key to find the minimum value for
+   * @returns {number | null} The minimum value or null if the collection is empty
+   */
   min(key?: keyof T): number | null {
     if (this.length === 0) return null;
 
@@ -498,9 +700,14 @@ export default class Collection<T> extends Array<T> {
     return values.length > 0 ? Math.min(...values) : null;
   }
 
+  /**
+   * Multiplies the collection by the specified number of times
+   * @param {number} times - The number of times to multiply the collection
+   * @returns {Collection<T>} A new collection containing the multiplied items
+   */
   multiply(times: number): Collection<T> {
     if (typeof times !== "number" || times <= 0) {
-      return new Collection(...[]); // Return an empty collection for invalid or non-positive numbers
+      return new Collection(...[]);
     }
 
     return new Collection(
@@ -509,10 +716,16 @@ export default class Collection<T> extends Array<T> {
         .flat()
         .map((item) =>
           typeof item === "object" && item !== null ? { ...item } : item,
-        ), // Deep copy objects
+        ),
     );
   }
 
+  /**
+   * Returns a new collection containing every nth item in the collection
+   * @param {number} step - The step size
+   * @param {number} [offset=0] - The offset to start from
+   * @returns {Collection<T>} A new collection containing every nth item
+   */
   nth(step: number, offset: number = 0): Collection<T> {
     if (step <= 0) return new Collection(...[]);
     return new Collection(
@@ -520,6 +733,11 @@ export default class Collection<T> extends Array<T> {
     );
   }
 
+  /**
+   * Returns a new collection containing only the specified keys from each item
+   * @param {string[]} keys - The keys to include
+   * @returns {Collection<Partial<T>>} A new collection containing only the specified keys
+   */
   only(keys: string[]): Collection<Partial<T>> {
     if (!Array.isArray(this)) return new Collection(...[]);
 
@@ -536,6 +754,11 @@ export default class Collection<T> extends Array<T> {
     );
   }
 
+  /**
+   * Extracts the values of the specified fields from each item in the collection
+   * @param {keyof T} field - The field to extract
+   * @returns {Collection<T[keyof T]>} A new collection containing the extracted values
+   */
   pluck<K extends keyof T>(field: K): Collection<T[K]>;
   pluck<K extends keyof T>(fields: K[]): Collection<Pick<T, K>>;
   pluck<K extends keyof T>(...fields: K[]): Collection<Pick<T, K>>;
@@ -544,13 +767,11 @@ export default class Collection<T> extends Array<T> {
   ): Collection<T[K] | Pick<T, K>> {
     if (fields.length === 0) return new Collection(...[]);
 
-    // Case 1: Single field as string - return actual values
     if (fields.length === 1 && !Array.isArray(fields[0])) {
       const field = fields[0];
       return new Collection(...this.map((item) => item[field]));
     }
 
-    // Case 2: Single field as array - return objects with selected fields
     if (fields.length === 1 && Array.isArray(fields[0])) {
       const fieldArray = fields[0];
       return new Collection(
@@ -566,7 +787,6 @@ export default class Collection<T> extends Array<T> {
       );
     }
 
-    // Case 3: Multiple fields - return objects with all selected fields
     return new Collection(
       ...this.map((item) => {
         return fields.reduce(
@@ -586,6 +806,11 @@ export default class Collection<T> extends Array<T> {
     );
   }
 
+  /**
+   * Removes the first item in the collection that contains the specified key and returns its value
+   * @param {keyof T} key - The key to remove
+   * @returns {T[keyof T] | null} The value of the removed item or null if not found
+   */
   pull<K extends keyof T>(key: K): T[K] | null {
     const index = this.findIndex((item: any) => key in item);
     if (index !== -1) {
@@ -595,6 +820,12 @@ export default class Collection<T> extends Array<T> {
     return null;
   }
 
+  /**
+   * Returns a random item or a collection of random items from the collection
+   * @param {number | ((collection: Collection<T>) => any)} [count] - The number of random items to return or a callback function
+   * @returns {T | Collection<T>} A random item or a collection of random items
+   * @throws {MongoloquentInvalidArgumentException} If count is invalid
+   */
   random(
     count?: number | ((collection: Collection<T>) => any),
   ): T | Collection<T> {
@@ -603,7 +834,6 @@ export default class Collection<T> extends Array<T> {
     }
 
     if (count === undefined) {
-      // Return a single random item
       return this[Math.floor(Math.random() * this.length)];
     }
 
@@ -611,11 +841,16 @@ export default class Collection<T> extends Array<T> {
       throw new MongoloquentInvalidArgumentException();
     }
 
-    // Shuffle and take `count` elements
     const shuffled = [...this].sort(() => 0.5 - Math.random());
     return new Collection(...shuffled.slice(0, count));
   }
 
+  /**
+   * Filters the collection to include items within the specified range
+   * @param {keyof T} key - The key to filter by
+   * @param {[number, number]} range - The range to include
+   * @returns {Collection<T>} A new collection containing items within the range
+   */
   range(key: keyof T, range: [number, number]): Collection<T> {
     const [min, max] = range;
     return new Collection(
@@ -626,39 +861,46 @@ export default class Collection<T> extends Array<T> {
     );
   }
 
+  /**
+   * Searches the collection for an item that matches the given key/value pair or callback
+   * @param {keyof T | ((item: T) => boolean)} keyOrCallback - The key to match against or a callback function
+   * @param {any} value - The value to match
+   * @param {boolean} [strict=false] - Whether to use strict equality comparison
+   * @returns {number | string | false} The index or key of the matching item, or false if not found
+   */
   search(
     keyOrCallback: keyof T | ((item: T) => boolean),
     value: any,
     strict: boolean = false,
   ): number | string | false {
-    // If keyOrCallback is a function, we use it as a callback for comparison
     const isMatch = (item: T) => {
-      // If the keyOrCallback is a string (key), check for strict or loose equality
       if (typeof keyOrCallback === "string") {
         const itemValue = item[keyOrCallback as keyof T];
         if (strict) {
-          return itemValue === value; // Strict comparison
+          return itemValue === value;
         } else {
-          return itemValue == value; // Loose comparison
+          return itemValue == value;
         }
       } else if (typeof keyOrCallback === "function") {
-        // If keyOrCallback is a callback function, use it for comparison
         return keyOrCallback(item);
       }
       return false;
     };
 
-    // Iterate over each item in the collection to find a match
     for (const key in this) {
       if (isMatch(this[key])) {
-        return key; // Return the key/index if found
+        return key;
       }
     }
-    return false; // Return false if no match is found
+    return false;
   }
 
+  /**
+   * Selects the specified keys from each item in the collection
+   * @param {string | string[]} keys - The keys to select
+   * @returns {Collection<Partial<T>>} A new collection containing the selected keys
+   */
   select(keys: string | string[]): Collection<Partial<T>> {
-    // If a single key is provided, convert it into an array
     const keysArray = Array.isArray(keys) ? keys : [keys];
 
     return new Collection(
@@ -674,33 +916,43 @@ export default class Collection<T> extends Array<T> {
     );
   }
 
+  /**
+   * Shuffles the items in the collection
+   * @returns {Collection<T>} A new collection containing the shuffled items
+   */
   shuffle(): Collection<T> {
-    const shuffled = [...this]; // Create a copy of the collection to avoid mutating the original
+    const shuffled = [...this];
     let currentIndex = shuffled.length,
       randomIndex;
 
-    // While there remain elements to shuffle
     while (currentIndex !== 0) {
-      // Pick a remaining element
       randomIndex = Math.floor(Math.random() * currentIndex);
       currentIndex--;
 
-      // Swap it with the current element
       [shuffled[currentIndex], shuffled[randomIndex]] = [
         shuffled[randomIndex],
         shuffled[currentIndex],
       ];
     }
 
-    // Return a new collection with the shuffled items
     return new Collection(...shuffled);
   }
 
+  /**
+   * Skips the first n items in the collection
+   * @param {number} n - The number of items to skip
+   * @returns {Collection<T>} A new collection containing the remaining items
+   */
   skip(n: number): Collection<T> {
-    const skippedItems = this.slice(n); // Skips the first `n` elements using slice
-    return new Collection(...skippedItems); // Return a new collection with the skipped items
+    const skippedItems = this.slice(n);
+    return new Collection(...skippedItems);
   }
 
+  /**
+   * Skips items in the collection until the callback condition is met
+   * @param {(item: T) => boolean} callback - A callback function to determine when to stop skipping
+   * @returns {Collection<T>} A new collection containing the remaining items
+   */
   skipUntil(callback: (item: T) => boolean): Collection<T> {
     let found = false;
     const result = [];
@@ -711,29 +963,41 @@ export default class Collection<T> extends Array<T> {
       }
 
       if (found) {
-        result.push(item); // Add the item once the callback condition is met
+        result.push(item);
       }
     }
 
-    return new Collection(...result); // Return a new collection with the remaining items
+    return new Collection(...result);
   }
 
+  /**
+   * Skips items in the collection while the callback condition is true
+   * @param {(item: T) => boolean} callback - A callback function to determine when to stop skipping
+   * @returns {Collection<T>} A new collection containing the remaining items
+   */
   skipWhile(callback: (item: T) => boolean): Collection<T> {
     let skip = true;
     const result = [];
 
     for (const item of this) {
       if (skip && callback(item)) {
-        continue; // Skip the item if the callback returns true
+        continue;
       }
 
-      skip = false; // Once we hit an item where the callback returns false, stop skipping
-      result.push(item); // Add the item to the result
+      skip = false;
+      result.push(item);
     }
 
-    return new Collection(...result); // Return a new collection with the remaining items
+    return new Collection(...result);
   }
 
+  /**
+   * Creates sliding windows of the specified size and step
+   * @param {number} size - The size of each window
+   * @param {number} [step=1] - The step size between windows
+   * @returns {Collection<T[]>} A new collection containing the sliding windows
+   * @throws {MongoloquentInvalidArgumentException} If size or step is invalid
+   */
   sliding(size: number, step: number = 1): Collection<T[]> {
     if (size <= 0 || step <= 0) {
       throw new MongoloquentInvalidArgumentException(
@@ -745,48 +1009,59 @@ export default class Collection<T> extends Array<T> {
 
     while (startIndex + size <= this.length) {
       result.push(this.slice(startIndex, startIndex + size));
-      startIndex += step; // Move forward by the given step
+      startIndex += step;
     }
 
     return new Collection(...result);
   }
 
+  /**
+   * Returns the sole item in the collection that matches the given key/value pair or callback
+   * @param {keyof T | ((item: T) => boolean)} [key] - The key to match against or a callback function
+   * @param {any} [value] - The value to match
+   * @returns {T} The sole matching item
+   * @throws {MongoloquentItemNotFoundException} If no matching item is found
+   * @throws {MongoloquentMultipleItemsFoundException} If multiple matching items are found
+   */
   sole(key?: keyof T | ((item: T) => boolean), value?: any): T {
     if (!key) {
-      // If no key is provided, return the first element only if there is exactly one element in the collection
       if (this.length === 1) {
         return this[0];
       }
-      throw new MongoloquentItemNotFoundException(); // Throw exception if no element found
+      throw new MongoloquentItemNotFoundException();
     }
 
-    // If a key and value are provided, find the element that matches the key/value pair
     if (value !== undefined) {
       const matchedItems = this.filter((item: any) => item[key] === value);
       if (matchedItems.length === 1) {
         return matchedItems[0];
       } else if (matchedItems.length === 0) {
-        throw new MongoloquentItemNotFoundException(); // Throw exception if no matching item is found
+        throw new MongoloquentItemNotFoundException();
       } else {
-        throw new MongoloquentMultipleItemsFoundException(); // Throw exception if multiple matching items are found
+        throw new MongoloquentMultipleItemsFoundException();
       }
     }
 
-    // If a callback is provided, find the element matching the callback
     if (typeof key === "function") {
       const matchedItems = this.filter(key);
       if (matchedItems.length === 1) {
         return matchedItems[0];
       } else if (matchedItems.length === 0) {
-        throw new MongoloquentItemNotFoundException(); // Throw exception if no matching item is found
+        throw new MongoloquentItemNotFoundException();
       } else {
-        throw new MongoloquentMultipleItemsFoundException(); // Throw exception if multiple matching items are found
+        throw new MongoloquentMultipleItemsFoundException();
       }
     }
 
-    throw new MongoloquentItemNotFoundException(); // Default exception if no match
+    throw new MongoloquentItemNotFoundException();
   }
 
+  /**
+   * Sorts the collection by the specified key or callback
+   * @param {keyof T | ((a: T, b: T) => number) | [keyof T, "asc" | "desc"][]} keyOrCallback - The key or callback to sort by
+   * @param {"asc" | "desc"} [direction="asc"] - The sort direction
+   * @returns {Collection<T>} A new collection containing the sorted items
+   */
   sortBy(
     keyOrCallback:
       | keyof T
@@ -794,11 +1069,9 @@ export default class Collection<T> extends Array<T> {
       | [keyof T, "asc" | "desc"][],
     direction: "asc" | "desc" = "asc",
   ): Collection<T> {
-    // Clone the array to avoid mutating the original collection
     const sortedArray = [...this];
 
     if (Array.isArray(keyOrCallback)) {
-      // Multiple sorting criteria
       sortedArray.sort((a, b) => {
         for (const [key, dir] of keyOrCallback) {
           const valueA = a[key];
@@ -810,10 +1083,8 @@ export default class Collection<T> extends Array<T> {
         return 0;
       });
     } else if (typeof keyOrCallback === "function") {
-      // Custom sorting function
       sortedArray.sort(keyOrCallback);
     } else {
-      // Single key sorting
       sortedArray.sort((a, b) => {
         const valueA = a[keyOrCallback];
         const valueB = b[keyOrCallback];
@@ -827,6 +1098,11 @@ export default class Collection<T> extends Array<T> {
     return new Collection(...sortedArray);
   }
 
+  /**
+   * Sorts the collection by the specified key or callback in descending order
+   * @param {keyof T | ((a: T, b: T) => number) | [keyof T, "asc" | "desc"][]} keyOrCallback - The key or callback to sort by
+   * @returns {Collection<T>} A new collection containing the sorted items
+   */
   sortByDesc(
     keyOrCallback:
       | keyof T
@@ -836,10 +1112,18 @@ export default class Collection<T> extends Array<T> {
     return this.sortBy(keyOrCallback, "desc");
   }
 
+  /**
+   * Sorts the collection in descending order
+   * @returns {Collection<T>} A new collection containing the sorted items
+   */
   sortDesc(): Collection<T> {
     return new Collection(...this.sort().reverse());
   }
 
+  /**
+   * Sorts the collection by keys in ascending order
+   * @returns {Collection<T>} A new collection containing the sorted items
+   */
   sortKeys(): Collection<T> {
     const sortedEntries = Object.entries(this).sort(([keyA], [keyB]) =>
       keyA.localeCompare(keyB),
@@ -849,7 +1133,10 @@ export default class Collection<T> extends Array<T> {
     return new Collection(...Object.values(sortedItems));
   }
 
-  // Sort the collection by keys in descending order
+  /**
+   * Sorts the collection by keys in descending order
+   * @returns {Collection<T>} A new collection containing the sorted items
+   */
   sortKeysDesc(): Collection<T> {
     const sortedEntries = Object.entries(this).sort(([keyA], [keyB]) =>
       keyB.localeCompare(keyA),
@@ -859,6 +1146,12 @@ export default class Collection<T> extends Array<T> {
     return new Collection(...Object.values(sortedItems));
   }
 
+  /**
+   * Splits the collection into the specified number of groups
+   * @param {number} numGroups - The number of groups to split into
+   * @returns {Collection<T>[]} An array of collections, each containing a group of items
+   * @throws {MongoloquentInvalidArgumentException} If numGroups is invalid
+   */
   split(numGroups: number): Collection<T>[] {
     if (numGroups <= 0) {
       throw new MongoloquentInvalidArgumentException(
@@ -876,6 +1169,12 @@ export default class Collection<T> extends Array<T> {
     return result;
   }
 
+  /**
+   * Splits the collection into the specified number of groups with balanced sizes
+   * @param {number} numGroups - The number of groups to split into
+   * @returns {Collection<T>[]} An array of collections, each containing a group of items
+   * @throws {Error} If numGroups is invalid
+   */
   splitIn(numGroups: number): Collection<T>[] {
     if (numGroups <= 0) {
       throw new Error("The number of groups must be greater than zero.");
@@ -895,6 +1194,11 @@ export default class Collection<T> extends Array<T> {
     return result;
   }
 
+  /**
+   * Calculates the sum of the specified key or callback results
+   * @param {keyof T | ((item: T) => number)} [keyOrCallback] - The key to sum or a callback function
+   * @returns {number} The sum of the values
+   */
   sum(keyOrCallback?: keyof T | ((item: T) => number)): number {
     if (this.length === 0) return 0;
 
@@ -902,20 +1206,17 @@ export default class Collection<T> extends Array<T> {
       let value: number = 0;
 
       if (typeof keyOrCallback === "function") {
-        // If a callback function is provided, call it with the item
         value = keyOrCallback(item);
       } else if (
         typeof keyOrCallback === "string" &&
         typeof item === "object" &&
         item[keyOrCallback] !== undefined
       ) {
-        // If a key is provided, extract the value from the object
         const extractedValue = item[keyOrCallback];
         if (typeof extractedValue === "number") {
           value = extractedValue;
         }
       } else if (typeof item === "number" && keyOrCallback === undefined) {
-        // If no key or callback is provided, sum up the numbers directly
         value = item;
       }
 
@@ -923,24 +1224,44 @@ export default class Collection<T> extends Array<T> {
     }, 0);
   }
 
+  /**
+   * Returns a subset of the collection with the specified number of items
+   * @param {number} limit - The number of items to take
+   * @returns {Collection<T>} A new collection containing the taken items
+   */
   take(limit: number): Collection<T> {
     if (limit === 0) return new Collection();
     if (limit > 0) return new Collection(...this.slice(0, limit));
-    return new Collection(...this.slice(limit)); // Negative limit → take from the end
+    return new Collection(...this.slice(limit));
   }
 
+  /**
+   * Returns a subset of the collection until the callback condition is met
+   * @param {(item: T) => boolean} callback - A callback function to determine when to stop taking
+   * @returns {Collection<T>} A new collection containing the taken items
+   */
   takeUntil(callback: (item: T) => boolean): Collection<T> {
     const index = this.findIndex(callback);
     const result = index === -1 ? this : this.slice(0, index);
     return new Collection(...result);
   }
 
+  /**
+   * Returns a subset of the collection while the callback condition is true
+   * @param {(item: T) => boolean} callback - A callback function to determine when to stop taking
+   * @returns {Collection<T>} A new collection containing the taken items
+   */
   takeWhile(callback: (item: T) => boolean): Collection<T> {
     const index = this.findIndex((item) => !callback(item));
     const result = index === -1 ? this : this.slice(0, index);
     return new Collection(...result);
   }
 
+  /**
+   * Transforms the items in the collection using the callback function
+   * @param {(item: T, index: number) => T} callback - A callback function to transform each item
+   * @returns {this} The current collection instance
+   */
   transform(callback: (item: T, index: number) => T): this {
     this.forEach((item, index) => {
       this[index] = callback(item, index);
@@ -948,6 +1269,11 @@ export default class Collection<T> extends Array<T> {
     return this;
   }
 
+  /**
+   * Returns a new collection containing unique items based on the specified key or callback
+   * @param {keyof T | ((item: T) => any)} [param] - The key or callback to determine uniqueness
+   * @returns {Collection<T>} A new collection containing unique items
+   */
   unique(): Collection<T>;
   unique<K extends keyof T>(key: K): Collection<T>;
   unique(callback: (item: T) => any): Collection<T>;
@@ -969,36 +1295,44 @@ export default class Collection<T> extends Array<T> {
     return new Collection(...filtered);
   }
 
+  /**
+   * Retrieves the value of the specified key from the first item in the collection
+   * @param {keyof T} key - The key to retrieve
+   * @returns {T[keyof T] | undefined} The value of the key or undefined if not found
+   */
   value<K extends keyof T>(key: K): T[K] | undefined {
     if (this.length === 0) return undefined;
     return this[0][key];
   }
 
+  /**
+   * Filters the collection to include items that match the specified key/operator/value condition
+   * @param {keyof T | ((item: T) => boolean)} keyOrCallback - The key to match against or a callback function
+   * @param {string | T[keyof T]} [operatorOrValue] - The operator to use for comparison or the value to match
+   * @param {T[keyof T]} [value] - The value to compare against
+   * @returns {Collection<T>} A new collection containing the matching items
+   * @throws {Error} If the operator is unsupported
+   */
   where<K extends keyof T>(
     keyOrCallback: K | ((item: T) => boolean),
     operatorOrValue?: string | T[K],
     value?: T[K],
   ): Collection<T> {
-    // If keyOrCallback is a function, treat it as a filter function
     if (typeof keyOrCallback === "function") {
       return new Collection(...this.filter(keyOrCallback));
     }
 
-    // Determine if the second parameter is a value or an operator
     let operator: string;
     let actualValue: any;
 
     if (value === undefined) {
-      // If only two parameters are provided, assume "=" as the default operator
       operator = "=";
       actualValue = operatorOrValue as T[K];
     } else {
-      // If three parameters are provided, the second one is an operator
       operator = operatorOrValue as string;
       actualValue = value;
     }
 
-    // Find corresponding MongoDB operator
     const operatorMapping = operators.find(
       (op) => op.operator === operator || op.mongoOperator === operator,
     );
@@ -1019,6 +1353,12 @@ export default class Collection<T> extends Array<T> {
     );
   }
 
+  /**
+   * Filters the collection to include items within the specified range
+   * @param {keyof T} key - The key to filter by
+   * @param {[T[keyof T], T[keyof T]]} range - The range to include
+   * @returns {Collection<T>} A new collection containing items within the range
+   */
   whereBetween<K extends keyof T>(key: K, range: [T[K], T[K]]): Collection<T> {
     const [min, max] = range;
 
@@ -1035,10 +1375,22 @@ export default class Collection<T> extends Array<T> {
     );
   }
 
+  /**
+   * Filters the collection to include items with values in the specified array
+   * @param {keyof T} key - The key to filter by
+   * @param {T[keyof T][]} values - The array of values to include
+   * @returns {Collection<T>} A new collection containing items with values in the array
+   */
   whereIn<K extends keyof T>(key: K, values: T[K][]): Collection<T> {
     return new Collection(...this.filter((item) => values.includes(item[key])));
   }
 
+  /**
+   * Filters the collection to exclude items within the specified range
+   * @param {keyof T} key - The key to filter by
+   * @param {[T[keyof T], T[keyof T]]} range - The range to exclude
+   * @returns {Collection<T>} A new collection containing items outside the range
+   */
   whereNotBetween<K extends keyof T>(
     key: K,
     range: [T[K], T[K]],
@@ -1049,22 +1401,47 @@ export default class Collection<T> extends Array<T> {
     );
   }
 
+  /**
+   * Filters the collection to exclude items with values in the specified array
+   * @param {keyof T} key - The key to filter by
+   * @param {T[keyof T][]} values - The array of values to exclude
+   * @returns {Collection<T>} A new collection containing items without values in the array
+   */
   whereNotIn<K extends keyof T>(key: K, values: T[K][]): Collection<T> {
     return new Collection(
       ...this.filter((item) => !values.includes(item[key])),
     );
   }
 
+  /**
+   * Filters the collection to include items with non-null values for the specified key
+   * @param {keyof T} key - The key to filter by
+   * @returns {Collection<T>} A new collection containing items with non-null values
+   */
   whereNotNull<K extends keyof T>(key: K): Collection<T> {
     return new Collection(
       ...this.filter((item) => item[key] !== null && item[key] !== undefined),
     );
   }
 
+  /**
+   * Filters the collection to include items with null values for the specified key
+   * @param {keyof T} key - The key to filter by
+   * @returns {Collection<T>} A new collection containing items with null values
+   */
   whereNull<K extends keyof T>(key: K): Collection<T> {
     return new Collection(...this.filter((item) => item[key] === null));
   }
 
+  /**
+   * Compares two values using the specified MongoDB operator
+   * @param {any} a - The first value
+   * @param {string} mongoOperator - The MongoDB operator to use for comparison
+   * @param {any} b - The second value
+   * @param {string} [options] - Additional options for the comparison
+   * @returns {boolean} True if the comparison is successful, false otherwise
+   * @throws {Error} If the operator is unsupported
+   */
   private compare(
     a: any,
     mongoOperator: string,
