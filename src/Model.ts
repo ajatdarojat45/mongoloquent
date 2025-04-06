@@ -381,11 +381,7 @@ export default class Model<T> extends Relation<T> {
     return new HasMany<T, M>(this, relation, foreignKey, localKey);
   }
 
-  hasOne<M>(
-    model: new () => Model<M>,
-    foreignKey: keyof M,
-    localKey: keyof T
-  ): Model<M> {
+  hasOne<M>(model: new () => Model<M>, foreignKey: keyof M, localKey: keyof T) {
     const relation = new model();
 
     const hasOne: IRelationHasOne = {
@@ -401,16 +397,7 @@ export default class Model<T> extends Relation<T> {
     const lookups = HasOne.generate(hasOne);
     this.$lookups = [...this.$lookups, ...lookups];
 
-    relation.setRelationship({
-      type: IRelationTypes.hasMany,
-      model: relation,
-      relatedModel: this,
-      foreignKey: foreignKey as string,
-      localKey: localKey as string,
-      alias: "",
-      options: {},
-    });
-    return relation;
+    return new HasOne<T, M>(this, relation, foreignKey, localKey);
   }
 
   belongsTo<M>(
