@@ -374,7 +374,6 @@ export default class Model<T> extends Relation<T> {
       alias: this.$alias,
       options: this.$options,
     };
-    this.setRelationship(hasMany);
     const lookups = HasMany.generate(hasMany);
     this.$lookups = [...this.$lookups, ...lookups];
 
@@ -393,7 +392,6 @@ export default class Model<T> extends Relation<T> {
       alias: this.$alias,
       options: this.$options,
     };
-    this.setRelationship(hasOne);
     const lookups = HasOne.generate(hasOne);
     this.$lookups = [...this.$lookups, ...lookups];
 
@@ -416,7 +414,6 @@ export default class Model<T> extends Relation<T> {
       alias: this.$alias,
       options: this.$options,
     };
-    this.setRelationship(belongsTo);
     const lookupsBelongsTo = BelongsTo.generate(belongsTo);
     this.$lookups = [...this.$lookups, ...lookupsBelongsTo];
 
@@ -446,7 +443,6 @@ export default class Model<T> extends Relation<T> {
       alias: this.$alias,
       options: this.$options,
     };
-    this.setRelationship(hasManyThrough);
     const lookups = HasManyThrough.generate(hasManyThrough);
     this.$lookups = [...this.$lookups, ...lookups];
 
