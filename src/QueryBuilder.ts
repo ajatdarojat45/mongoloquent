@@ -1248,20 +1248,6 @@ export default class QueryBuilder<T> {
     const relationship = this.getRelationship();
 
     switch (relationship?.type) {
-      case IRelationTypes.hasManyThrough:
-        const hmtColl = relationship.throughModel.getCollection();
-
-        const hmtIds = await hmtColl
-          .find({
-            [relationship.foreignKey]:
-              relationship.relatedModel.$original[relationship.localKey],
-          })
-          .map((el) => el._id)
-          .toArray();
-
-        this.whereIn(relationship.foreignKeyThrough as keyof T, hmtIds);
-        break;
-
       case IRelationTypes.morphMany:
         this.where(
           relationship.morphType as keyof T,

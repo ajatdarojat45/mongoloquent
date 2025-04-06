@@ -441,9 +441,9 @@ export default class Model<T> extends Relation<T> {
     throughModel: new () => Model<TM>,
     foreignKey: keyof TM,
     foreignKeyThrough: keyof M,
-    localKey: keyof T,
-    localKeyThrough: keyof TM
-  ): Model<M> {
+    localKey: keyof T = "_id" as keyof T,
+    localKeyThrough: keyof TM = "_id" as keyof TM
+  ) {
     const relation = new model();
     const through = new throughModel();
 
@@ -463,19 +463,15 @@ export default class Model<T> extends Relation<T> {
     const lookups = HasManyThrough.generate(hasManyThrough);
     this.$lookups = [...this.$lookups, ...lookups];
 
-    relation.setRelationship({
-      type: IRelationTypes.hasManyThrough,
-      model: relation,
-      relatedModel: this,
-      throughModel: through,
-      foreignKey: foreignKey as string,
-      foreignKeyThrough: foreignKeyThrough as string,
-      localKey: localKey as string,
-      localKeyThrough: localKeyThrough as string,
-      alias: "",
-      options: {},
-    });
-    return relation;
+    return new HasManyThrough<T, M, TM>(
+      this,
+      relation,
+      through,
+      foreignKey,
+      foreignKeyThrough,
+      localKey,
+      localKeyThrough
+    );
   }
 
   belongsToMany<M, TM>(
@@ -640,135 +636,46 @@ export default class Model<T> extends Relation<T> {
   }
 }
 
-interface IUser {
+interface IApplication {
   _id: ObjectId;
   name: string;
 }
 
-interface IPost {
-  _id: ObjectId;
-  title: string;
-  body: string;
-  userId: ObjectId;
-}
-
-interface IVideo {
-  _id: ObjectId;
-  title: string;
-  url: string;
-}
-
-interface IComment {
-  _id: ObjectId;
-  body: string;
-  commentableId: ObjectId;
-  commentableType: string;
-}
-
-interface ITag {
+interface IEvnironment {
   _id: ObjectId;
   name: string;
+  applicationId: ObjectId;
 }
 
-class Comment extends Model<IComment> {
-  static $schema: IComment;
-
-  post() {
-    return this.morphTo(Post, "commentable");
-  }
-
-  video() {
-    return this.morphTo(Video, "commentable");
-  }
-}
-
-class Tag extends Model<ITag> {
-  static $schema: ITag;
-
-  posts() {
-    return this.morphedByMany(Post, "taggable");
-  }
-
-  videos() {
-    return this.morphedByMany(Video, "taggable");
-  }
-}
-
-class Post extends Model<IPost> {
-  static $schema: IPost;
-
-  user() {
-    return this.belongsTo(User, "userId", "_id");
-  }
-
-  comments() {
-    return this.morphMany(Comment, "commentable");
-  }
-
-  tags() {
-    return this.morphToMany(Tag, "taggable");
-  }
-}
-
-class Video extends Model<IVideo> {
-  static $schema: IVideo;
-
-  comments() {
-    return this.morphMany(Comment, "commentable");
-  }
-
-  tags() {
-    return this.morphToMany(Tag, "taggable");
-  }
-}
-
-interface IRole {
+interface IDeployment {
   _id: ObjectId;
-  name: string;
+  commit_hash: string;
+  environmentId: ObjectId;
 }
 
-interface IRoleUser {
-  _id: ObjectId;
-  userId: ObjectId;
-  roleId: ObjectId;
-  message: string;
-}
+class Application extends Model<IApplication> {
+  static $schema: IApplication;
 
-class User extends Model<IUser> {
-  static $schema: IUser;
-
-  posts() {
-    return this.hasMany(Post, "userId", "_id");
-  }
-
-  roles() {
-    return this.belongsToMany(Role, RoleUser, "userId", "roleId", "_id", "_id");
+  deployments() {
+    return this.hasManyThrough(
+      Deployment,
+      Environment,
+      "applicationId",
+      "environmentId"
+    );
   }
 }
 
-class Role extends Model<IRole> {
-  static $schema: IRole;
+class Environment extends Model<IEvnironment> {
+  static $schema: IEvnironment;
 }
 
-class RoleUser extends Model<IRoleUser> {
-  static $schema: IRoleUser;
-  static $collection = "role_user";
-  static $useSoftDelete = true;
-  static $useTimestamps = true;
-
-  user() {
-    return this.belongsTo(User, "userId", "_id");
-  }
+class Deployment extends Model<IDeployment> {
+  static $schema: IDeployment;
 }
 
 (async () => {
-  const alice = await User.find("67f13826e1a3f31136bdc101");
-  const roles = await alice
-    .roles()
-    .toggle([
-      "67f13826e1a3f31136bdc201",
-      "67f13826e1a3f31136bdc202",
-      "67f13826e1a3f31136bdc203",
-    ]);
-  console.log(roles);
+  const app = await Application.find("67f13826e1a3f31136bdc301");
+  const deployments = await app.deployments().count();
+  console.log(deployments);
 })();

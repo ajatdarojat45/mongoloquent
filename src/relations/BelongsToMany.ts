@@ -424,17 +424,10 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
   }
 
   private async setDefaultCondition() {
-    const btmColl = this.pivotModel["getCollection"]();
-    const filterObj: Record<string, any> = {};
-    filterObj[this.foreignPivotKey as string] =
-      this.model["$original"][this.parentKey];
-
-    const btmIds = await btmColl
-      .find(filterObj)
-      .map(
-        (el) => el[this.relatedPivotKey as keyof typeof el] as unknown as any
-      )
-      .toArray();
+    const btmIds = await this.pivotModel
+      .withTrashed()
+      .where(this.foreignPivotKey, this.model["$original"][this.parentKey])
+      .pluck(this.relatedPivotKey);
 
     this.whereIn(this.relatedKey, btmIds);
   }

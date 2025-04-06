@@ -1,8 +1,98 @@
 import { Document } from "mongodb";
 import { IRelationHasManyThrough } from "../interfaces/IRelation";
 import LookupBuilder from "./LookupBuilder.ts";
+import QueryBuilder from "../QueryBuilder";
+import Model from "../Model";
+import { IModelPaginate } from "../interfaces/IModel";
 
-export default class HasManyThrough extends LookupBuilder {
+export default class HasManyThrough<T, M, TM> extends QueryBuilder<M> {
+  model: Model<T>;
+  relatedModel: Model<M>;
+  throughModel: Model<TM>;
+  foreignKey: keyof TM;
+  foreignKeyThrough: keyof M;
+  localKey: keyof T;
+  localKeyThrough: keyof TM;
+
+  constructor(
+    model: Model<T>,
+    relatedModel: Model<M>,
+    throughModel: Model<TM>,
+    foreignKey: keyof TM,
+    foreignKeyThrough: keyof M,
+    localKey: keyof T,
+    localKeyThrough: keyof TM
+  ) {
+    super();
+    this.model = model;
+    this.relatedModel = relatedModel;
+    this.throughModel = throughModel;
+    this.foreignKey = foreignKey;
+    this.foreignKeyThrough = foreignKeyThrough;
+    this.localKey = localKey;
+    this.localKeyThrough = localKeyThrough;
+    this.$connection = relatedModel["$connection"];
+    this.$collection = relatedModel["$collection"];
+    this.$useSoftDelete = relatedModel["$useSoftDelete"];
+    this.$databaseName = relatedModel["$databaseName"];
+    this.$useSoftDelete = relatedModel["$useSoftDelete"];
+    this.$useTimestamps = relatedModel["$useTimestamps"];
+    this.$isDeleted = relatedModel["$isDeleted"];
+  }
+
+  public all(): Promise<M[]> {
+    return super.all();
+  }
+
+  public async get<K extends keyof M>(...fields: (K | K[])[]) {
+    await this.setDefaultCondition();
+    return super.get(...fields);
+  }
+
+  public async paginate(page: number, limit: number): Promise<IModelPaginate> {
+    await this.setDefaultCondition();
+
+    return super.paginate(page, limit);
+  }
+
+  public first<K extends keyof M>(...fields: (K | K[])[]) {
+    return super.first(...fields);
+  }
+
+  public async count(): Promise<number> {
+    await this.setDefaultCondition();
+    return super.count();
+  }
+
+  public async sum<K extends keyof M>(field: K): Promise<number> {
+    await this.setDefaultCondition();
+    return super.sum(field);
+  }
+
+  public async min<K extends keyof M>(field: K): Promise<number> {
+    await this.setDefaultCondition();
+    return super.min(field);
+  }
+
+  public async max<K extends keyof M>(field: K): Promise<number> {
+    await this.setDefaultCondition();
+    return super.max(field);
+  }
+
+  public async avg<K extends keyof M>(field: K): Promise<number> {
+    await this.setDefaultCondition();
+    return super.avg(field);
+  }
+
+  private async setDefaultCondition() {
+    const hmtIds = await this.throughModel
+      .withTrashed()
+      .where(this.foreignKey, this.model["$original"][this.localKey])
+      .pluck(this.localKeyThrough);
+
+    this.whereIn(this.foreignKeyThrough, hmtIds);
+  }
+
   /**
    * Generates the lookup, select, exclude, sort, skip, and limit stages for the HasManyThrough relation.
    * @param {IRelationHasManyThrough} hasManyThrough - The HasManyThrough relation configuration.
@@ -14,7 +104,7 @@ export default class HasManyThrough extends LookupBuilder {
 
     // Generate the select stages if options.select is provided
     if (hasManyThrough.options?.select) {
-      const select = this.select(
+      const select = LookupBuilder.select(
         hasManyThrough.options.select,
         hasManyThrough.alias
       );
@@ -23,7 +113,7 @@ export default class HasManyThrough extends LookupBuilder {
 
     // Generate the exclude stages if options.exclude is provided
     if (hasManyThrough.options?.exclude) {
-      const exclude = this.exclude(
+      const exclude = LookupBuilder.exclude(
         hasManyThrough.options.exclude,
         hasManyThrough.alias
       );
@@ -32,7 +122,7 @@ export default class HasManyThrough extends LookupBuilder {
 
     // Generate the sort stages if options.sort is provided
     if (hasManyThrough.options?.sort) {
-      const sort = this.sort(
+      const sort = LookupBuilder.sort(
         hasManyThrough.options?.sort[0],
         hasManyThrough.options?.sort[1]
       );
@@ -41,13 +131,13 @@ export default class HasManyThrough extends LookupBuilder {
 
     // Generate the skip stages if options.skip is provided
     if (hasManyThrough.options?.skip) {
-      const skip = this.skip(hasManyThrough.options?.skip);
+      const skip = LookupBuilder.skip(hasManyThrough.options?.skip);
       lookup.push(skip);
     }
 
     // Generate the limit stages if options.limit is provided
     if (hasManyThrough.options?.limit) {
-      const limit = this.limit(hasManyThrough.options?.limit);
+      const limit = LookupBuilder.limit(hasManyThrough.options?.limit);
       lookup.push(limit);
     }
 
