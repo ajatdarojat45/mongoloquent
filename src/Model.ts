@@ -567,7 +567,7 @@ export default class Model<T> extends Relation<T> {
     return relation;
   }
 
-  morphToMany<M>(model: new () => Model<M>, name: string): Model<M> {
+  morphToMany<M>(model: new () => Model<M>, name: string) {
     const relation = new model();
 
     const morphToMany: IRelationMorphToMany = {
@@ -584,18 +584,14 @@ export default class Model<T> extends Relation<T> {
     const lookups = MorphToMany.generate(morphToMany);
     this.$lookups = [...this.$lookups, ...lookups];
 
-    relation.setRelationship({
-      type: IRelationTypes.morphToMany,
-      model: relation,
-      relatedModel: this,
-      morph: name,
-      morphId: `${name}Id`,
-      morphType: `${name}Type`,
-      morphCollectionName: `${name}s`,
-      alias: "",
-      options: {},
-    });
-    return relation;
+    return new MorphToMany<T, M>(
+      this,
+      relation,
+      name,
+      `${name}Id`,
+      `${name}Type`,
+      `${name}s`
+    );
   }
 
   morphedByMany<M>(model: new () => Model<M>, name: string): Model<M> {
@@ -636,36 +632,41 @@ interface IPost {
   body: string;
 }
 
-interface IComment {
+interface ITag {
   _id: ObjectId;
-  commentableId: ObjectId;
-  commentableType: string;
-  body: string;
+  name: string;
+}
+
+interface IVideo {
+  _id: ObjectId;
+  title: string;
+  url: string;
 }
 
 class Post extends Model<IPost> {
-  static $schema = {
-    _id: ObjectId,
-    title: String,
-    body: String,
-  };
+  static $schema: IPost;
 
-  comments() {
-    return this.morphMany(Comment, "commentable");
+  public tags() {
+    return this.morphToMany(Tag, "taggable");
   }
 }
 
-class Comment extends Model<IComment> {
-  static $schema = {
-    _id: ObjectId,
-    commentableId: ObjectId,
-    commentableType: String,
-    body: String,
-  };
+class Video extends Model<IVideo> {
+  static $schema: IVideo;
+
+  public tags() {
+    return this.morphToMany(Tag, "taggable");
+  }
+}
+
+class Tag extends Model<ITag> {
+  static $schema: ITag;
 }
 
 (async () => {
-  const post = await Post.find("67ed4054497784cac07774ca");
-  const comments = await post.comments().get("body");
-  console.log(comments);
+  const videos = await Video.find("67ed4054497784cac07774cc");
+  const tags = await videos
+    .tags()
+    .attach(["67edbfa0497784cac07774dd", "67edbfa0497784cac07774de"]);
+  console.log(tags);
 })();
