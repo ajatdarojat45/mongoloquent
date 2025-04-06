@@ -1,8 +1,19 @@
 import { Db, MongoClient, ServerApiVersion } from "mongodb";
 
+/**
+ * Database class for managing MongoDB connections
+ * @class Database
+ */
 export default class Database {
+  /** Map to store database connections */
   private static $dbs: Map<string, Db> = new Map();
 
+  /**
+   * Gets a database instance for the specified connection and database name
+   * @param {string} connection - MongoDB connection string
+   * @param {string} databaseName - Name of the database
+   * @returns {Db} MongoDB database instance
+   */
   public static getDb(connection: string, databaseName: string): Db {
     // Create a unique key for the database connection
     const key = `${connection}_${databaseName}`;
@@ -17,11 +28,23 @@ export default class Database {
     return this.connect(connection, databaseName);
   }
 
+  /**
+   * Gets all database connections
+   * @returns {Map<string, Db>} Map of all database connections
+   */
   protected static getDbs(): Map<string, Db> {
     // Return the map of connected databases
     return this.$dbs;
   }
 
+  /**
+   * Creates a new database connection
+   * @param {string} connection - MongoDB connection string
+   * @param {string} databaseName - Name of the database
+   * @returns {Db} MongoDB database instance
+   * @throws {Error} If connection fails
+   * @private
+   */
   private static connect(connection: string, databaseName: string): Db {
     try {
       console.log("Mongoloquent trying to connect to MongoDB database...");
