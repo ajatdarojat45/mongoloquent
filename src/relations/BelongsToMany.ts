@@ -95,15 +95,7 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
     if (!Array.isArray(ids)) objectIds = ids ? [new ObjectId(ids)] : [];
     else objectIds = ids.map((el) => new ObjectId(el));
 
-    const collection = this.pivotModel["getCollection"]();
     const payload: object[] = [];
-
-    query = {
-      [this.relatedPivotKey]: {
-        $in: objectIds,
-      },
-      [this.foreignPivotKey]: this.model["$original"][this.parentKey],
-    };
 
     objectIds.forEach((id) =>
       payload.push({
@@ -113,7 +105,15 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
       })
     );
 
-    const existingData = await collection.find(query as any).toArray();
+    const existingData = await this.pivotModel
+      .withTrashed()
+      .whereIn(this.relatedPivotKey, objectIds)
+      .where(this.foreignPivotKey, this.model["$original"][this.parentKey])
+      .get();
+
+    const payloadToInsert: object[] = [];
+    const idsToUpdate: ObjectId[] = [];
+
     for (let i = 0; i < objectIds.length; i++) {
       const existingItem = existingData.find((item: any) => {
         return (
@@ -122,12 +122,22 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
         );
       });
 
-      // insert if  data does not exist
-      if (!existingItem) {
-        await collection.insertOne(
-          payload[i] as OptionalUnlessRequiredId<FormSchema<PM>>
-        );
+      if (!existingItem) payloadToInsert.push(payload[i]);
+      // @ts-ignore
+      else if (existingItem?.[this.pivotModel["$isDeleted"]]) {
+        // @ts-ignore
+        idsToUpdate.push(existingItem._id);
       }
+    }
+
+    // insert data
+    if (payloadToInsert.length > 0) {
+      await this.pivotModel.insertMany(payloadToInsert as any);
+    }
+
+    // restore data
+    if (idsToUpdate.length > 0) {
+      await this.pivotModel.whereIn("_id" as keyof PM, idsToUpdate).restore();
     }
 
     return {
@@ -137,21 +147,14 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
 
   public async detach(ids: string | ObjectId | (string | ObjectId)[]) {
     let objectIds: ObjectId[] = [];
-    let query: Document = {};
 
     if (!Array.isArray(ids)) objectIds = ids ? [new ObjectId(ids)] : [];
     else objectIds = ids.map((el) => new ObjectId(el));
 
-    const collection = this.pivotModel["getCollection"]();
-
-    query = {
-      [this.relatedPivotKey]: {
-        $in: objectIds,
-      },
-      [this.foreignPivotKey]: this.model["$original"][this.parentKey],
-    };
-
-    await collection.deleteMany(query as any);
+    await this.pivotModel
+      .whereIn(this.relatedPivotKey, objectIds)
+      .where(this.foreignPivotKey, this.model["$original"][this.parentKey])
+      .delete();
 
     return {
       message: "Detach successfully",
@@ -167,24 +170,7 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
     if (!Array.isArray(ids)) objectIds = [new ObjectId(ids)];
     else objectIds = ids.map((el) => new ObjectId(el));
 
-    const collection = this.pivotModel["getCollection"]();
     const _payload: object[] = [];
-    let qFind = {};
-    let qDelete = {};
-
-    qFind = {
-      [this.relatedPivotKey]: {
-        $in: objectIds,
-      },
-      [this.foreignPivotKey]: this.model["$original"][this.parentKey],
-    };
-
-    qDelete = {
-      [this.relatedPivotKey]: {
-        $nin: objectIds,
-      },
-      [this.foreignPivotKey]: this.model["$original"][this.parentKey],
-    };
 
     objectIds.forEach((id) =>
       _payload.push({
@@ -195,10 +181,16 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
     );
 
     // find data
-    const existingData = await collection.find(qFind).toArray();
+    const existingData = await this.pivotModel
+      .whereIn(this.relatedPivotKey, objectIds)
+      .where(this.foreignPivotKey, this.model["$original"][this.parentKey])
+      .get();
 
     // check data
     const payloadToInsert: object[] = [];
+
+    // ids to update
+    const idsToUpdate: ObjectId[] = [];
 
     for (let i = 0; i < objectIds.length; i++) {
       const existingItem = existingData.find(
@@ -207,15 +199,26 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
           JSON.stringify(objectIds[i])
       );
       if (!existingItem) payloadToInsert.push(_payload[i]);
+      // @ts-ignore
+      else if (existingItem?.[this.pivotModel["$isDeleted"]])
+        // @ts-ignore
+        idsToUpdate.push(existingItem._id);
     }
 
     // insert data
     if (payloadToInsert.length > 0) {
-      await collection.insertMany(payloadToInsert as any);
+      await this.pivotModel.insertMany(payloadToInsert as any);
     }
 
-    // delete data
-    await collection.deleteMany(qDelete);
+    if (idsToUpdate.length > 0) {
+      await this.pivotModel.whereIn("_id" as keyof PM, idsToUpdate).restore();
+    }
+
+    await this.pivotModel
+      .whereNotIn(this.relatedPivotKey, objectIds)
+      .where(this.foreignPivotKey, this.model["$original"][this.parentKey])
+      .delete();
+
     return {
       message: "Sync successfully",
     };
@@ -230,16 +233,7 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
     if (!Array.isArray(ids)) objectIds = [new ObjectId(ids)];
     else objectIds = ids.map((el) => new ObjectId(el));
 
-    const collection = this.pivotModel["getCollection"]();
     const _payload: object[] = [];
-    let qFind = {};
-
-    qFind = {
-      [this.relatedPivotKey]: {
-        $in: objectIds,
-      },
-      [this.foreignPivotKey]: this.model["$original"][this.parentKey],
-    };
 
     objectIds.forEach((id) =>
       _payload.push({
@@ -250,10 +244,16 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
     );
 
     // find data
-    const existingData = await collection.find(qFind).toArray();
+    const existingData = await this.pivotModel
+      .whereIn(this.relatedPivotKey, objectIds)
+      .where(this.foreignPivotKey, this.model["$original"][this.parentKey])
+      .get();
 
     // check data
     const payloadToInsert: object[] = [];
+
+    // ids to update
+    const idsToUpdate: ObjectId[] = [];
 
     for (let i = 0; i < objectIds.length; i++) {
       const existingItem = existingData.find(
@@ -262,15 +262,23 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
           JSON.stringify(objectIds[i])
       );
       if (!existingItem) payloadToInsert.push(_payload[i]);
+      // @ts-ignore
+      else if (existingItem?.[this.pivotModel["$isDeleted"]])
+        // @ts-ignore
+        idsToUpdate.push(existingItem._id);
     }
 
     // insert data
     if (payloadToInsert.length > 0) {
-      await collection.insertMany(payloadToInsert as any);
+      await this.pivotModel.insertMany(payloadToInsert as any);
+    }
+
+    if (idsToUpdate.length > 0) {
+      await this.pivotModel.whereIn("_id" as keyof PM, idsToUpdate).restore();
     }
 
     return {
-      message: "syncWithoutDetaching successfully",
+      message: "Sync successfully",
     };
   }
 
@@ -283,16 +291,7 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
     if (!Array.isArray(ids)) objectIds = [new ObjectId(ids)];
     else objectIds = ids.map((el) => new ObjectId(el));
 
-    const collection = this.pivotModel["getCollection"]();
     const _payload: object[] = [];
-    let qFind = {};
-
-    qFind = {
-      [this.relatedPivotKey]: {
-        $in: objectIds,
-      },
-      [this.foreignPivotKey]: this.model["$original"][this.parentKey],
-    };
 
     objectIds.forEach((id) =>
       _payload.push({
@@ -303,7 +302,10 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
     );
 
     // find data
-    const existingData = await collection.find(qFind).toArray();
+    const existingData = await this.pivotModel
+      .whereIn(this.relatedPivotKey, objectIds)
+      .where(this.foreignPivotKey, this.model["$original"][this.parentKey])
+      .get();
 
     // check data
     const payloadToInsert: object[] = [];
@@ -321,23 +323,21 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
 
     // insert data
     if (payloadToInsert.length > 0) {
-      await collection.insertMany(payloadToInsert as any);
+      await this.pivotModel.insertMany(payloadToInsert as any);
     }
 
     // update data
     if (idsToUpdate.length > 0) {
-      await collection.updateMany(
-        {
-          [this.relatedPivotKey]: {
-            $in: idsToUpdate,
-          },
-          [this.foreignPivotKey]: this.model["$original"][this.parentKey],
-        } as any,
-        {
-          $set: doc,
-        }
-      );
+      await this.pivotModel
+        .whereIn(this.relatedPivotKey, idsToUpdate)
+        .where(this.foreignPivotKey, this.model["$original"][this.parentKey])
+        .updateMany(doc);
     }
+
+    await this.pivotModel
+      .whereNotIn(this.relatedPivotKey, objectIds)
+      .where(this.foreignPivotKey, this.model["$original"][this.parentKey])
+      .delete();
 
     return {
       message: "syncWithPivotValues successfully",
@@ -350,7 +350,6 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
     if (!Array.isArray(ids)) objectIds = [new ObjectId(ids)];
     else objectIds = ids.map((el) => new ObjectId(el));
 
-    const collection = this.pivotModel["getCollection"]();
     const _payload: object[] = [];
     let qFind = {};
 
@@ -369,13 +368,20 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
     );
 
     // find data
-    const existingData = await collection.find(qFind).toArray();
+    const existingData = await this.pivotModel
+      .withTrashed()
+      .whereIn(this.relatedPivotKey, objectIds)
+      .where(this.foreignPivotKey, this.model["$original"][this.parentKey])
+      .get();
 
     // check data
     const payloadToInsert: object[] = [];
 
     // check data
     const idsToDelete: any[] = [];
+
+    // ids to restore
+    const idsToRestore: ObjectId[] = [];
 
     for (let i = 0; i < objectIds.length; i++) {
       const existingItem = existingData.find(
@@ -384,6 +390,10 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
           JSON.stringify(objectIds[i])
       );
       if (!existingItem) payloadToInsert.push(_payload[i]);
+      // @ts-ignore
+      else if (existingItem?.[this.pivotModel["$isDeleted"]])
+        // @ts-ignore
+        idsToRestore.push(existingItem._id);
       else
         idsToDelete.push(
           (_payload[i] as Record<keyof PM, any>)[this.relatedPivotKey]
@@ -392,19 +402,20 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
 
     // insert data
     if (payloadToInsert.length > 0) {
-      await collection.insertMany(payloadToInsert as any);
+      await this.pivotModel.insertMany(payloadToInsert as any);
+    }
+
+    // restore data
+    if (idsToRestore.length > 0) {
+      await this.pivotModel.whereIn("_id" as keyof PM, idsToRestore).restore();
     }
 
     // delete data
-    console.log("idsToDelete", idsToDelete);
     if (idsToDelete.length > 0) {
-      await collection.deleteMany({
-        [this.relatedPivotKey as string]: {
-          $in: idsToDelete,
-        },
-        [this.foreignPivotKey as string]:
-          this.model["$original"][this.parentKey],
-      } as any);
+      await this.pivotModel
+        .whereIn(this.relatedPivotKey, idsToDelete)
+        .where(this.foreignPivotKey, this.model["$original"][this.parentKey])
+        .delete();
     }
 
     return {

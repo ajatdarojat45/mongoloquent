@@ -753,6 +753,8 @@ class Role extends Model<IRole> {
 class RoleUser extends Model<IRoleUser> {
   static $schema: IRoleUser;
   static $collection = "role_user";
+  static $useSoftDelete = true;
+  static $useTimestamps = true;
 
   user() {
     return this.belongsTo(User, "userId", "_id");

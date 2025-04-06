@@ -1248,19 +1248,6 @@ export default class QueryBuilder<T> {
     const relationship = this.getRelationship();
 
     switch (relationship?.type) {
-      case IRelationTypes.belongsToMany:
-        const btmColl = relationship.pivotModel.getCollection();
-        const btmIds = await btmColl
-          .find({
-            [relationship.foreignPivotKey]:
-              relationship.relatedModel.$original[relationship.parentKey],
-          })
-          .map((el) => el[relationship.relatedPivotKey])
-          .toArray();
-
-        this.whereIn(relationship.relatedKey as keyof T, btmIds);
-        break;
-
       case IRelationTypes.hasManyThrough:
         const hmtColl = relationship.throughModel.getCollection();
 
