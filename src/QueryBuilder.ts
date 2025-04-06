@@ -20,18 +20,6 @@ import operators from "./utils/operators";
 import dayjs from "./utils/dayjs";
 import { MongoloquentNotFoundException } from "./exceptions/MongoloquentException";
 import { IModelPaginate } from "./interfaces/IModel";
-import {
-  IRelationBelongsTo,
-  IRelationBelongsToMany,
-  IRelationHasMany,
-  IRelationHasManyThrough,
-  IRelationHasOne,
-  IRelationMorphedByMany,
-  IRelationMorphMany,
-  IRelationMorphTo,
-  IRelationMorphToMany,
-  IRelationTypes,
-} from "./interfaces/IRelation";
 
 export default class QueryBuilder<T> {
   static $schema: Record<string, any>;
@@ -67,18 +55,6 @@ export default class QueryBuilder<T> {
   protected $isDeleted: string = "isDeleted";
   protected $deletedAt: string = "deletedAt";
   protected $limit: number = 0;
-
-  protected $relationship:
-    | IRelationHasOne
-    | IRelationBelongsTo
-    | IRelationHasMany
-    | IRelationHasManyThrough
-    | IRelationBelongsToMany
-    | IRelationMorphTo
-    | IRelationMorphMany
-    | IRelationMorphToMany
-    | IRelationMorphedByMany
-    | null = null;
 
   constructor() {
     this.$connection = (this.constructor as typeof QueryBuilder).$connection;
@@ -945,25 +921,6 @@ export default class QueryBuilder<T> {
     return this.$isDeleted;
   }
 
-  protected setRelationship(
-    relation:
-      | IRelationBelongsTo
-      | IRelationHasOne
-      | IRelationHasMany
-      | IRelationHasManyThrough
-      | IRelationBelongsToMany
-      | IRelationMorphTo
-      | IRelationMorphMany
-      | IRelationMorphToMany
-      | IRelationMorphedByMany
-  ): void {
-    this.$relationship = relation;
-  }
-
-  protected getRelationship() {
-    return this.$relationship;
-  }
-
   private checkSoftDelete<K extends keyof T>(): void {
     if (!this.$withTrashed && !this.$onlyTrashed && this.$useSoftDelete)
       this.where(this.$isDeleted as K, false);
@@ -1139,7 +1096,6 @@ export default class QueryBuilder<T> {
 
   private async aggregate() {
     try {
-      await this.checkRelationshipForAggregate();
       this.checkSoftDelete();
       this.generateWheres();
       this.generateColumns();
@@ -1195,80 +1151,6 @@ export default class QueryBuilder<T> {
     }
 
     return doc;
-  }
-
-  private checkRelationship(doc: object): object {
-    const relationship = this.$relationship;
-    if (!relationship) return doc;
-
-    switch (relationship.type) {
-      case IRelationTypes.hasMany:
-        return {
-          ...doc,
-          [relationship.foreignKey]:
-            relationship.relatedModel[relationship.foreignKey],
-        };
-
-      // case IRelationTypes.belongsToMany:
-      //   return doc;
-
-      // case IRelationTypes.hasManyThrough:
-      //   return doc;
-
-      // case IRelationTypes.morphMany:
-      //   return {
-      //     ...doc,
-      //     [relationship.morphType]: relationship.parentModelName,
-      //     [relationship.morphId]: relationship.parentId,
-      //   };
-
-      // case IRelationTypes.morphTo:
-      //   return {
-      //     ...doc,
-      //     [relationship.morphType]: relationship.parentModelName,
-      //     [relationship.morphId]: relationship.parentId,
-      //   };
-
-      // case IRelationTypes.morphToMany:
-      //   return doc;
-
-      // case IRelationTypes.morphedByMany:
-      //   return {
-      //     ...doc,
-      //     [relationship.morphType]: this.name,
-      //     [relationship.foreignKey]: relationship.parentId,
-      //   };
-
-      default:
-        return doc;
-    }
-  }
-
-  private async checkRelationshipForAggregate() {
-    const relationship = this.getRelationship();
-
-    switch (relationship?.type) {
-      case IRelationTypes.morphedByMany:
-        const mbmColl = this.getCollection(relationship.morphCollectionName);
-
-        const mbmIds = await mbmColl
-          .find({
-            [relationship.morphType]: this.constructor.name,
-            [`${relationship.relatedModel.constructor.name.toLowerCase()}Id`]:
-              relationship.relatedModel.$original._id,
-          } as any)
-          .map(
-            (el) =>
-              el[relationship.morphId as keyof typeof el] as unknown as ObjectId
-          )
-          .toArray();
-
-        this.whereIn("_id" as keyof T, mbmIds);
-        break;
-
-      default:
-        break;
-    }
   }
 
   private resetQuery(): void {

@@ -594,7 +594,7 @@ export default class Model<T> extends Relation<T> {
     );
   }
 
-  morphedByMany<M>(model: new () => Model<M>, name: string): Model<M> {
+  morphedByMany<M>(model: new () => Model<M>, name: string) {
     const relation = new model();
 
     const morphedByMany: IRelationMorphedByMany = {
@@ -611,62 +611,13 @@ export default class Model<T> extends Relation<T> {
     const lookups = MorphedByMany.generate(morphedByMany);
     this.$lookups = [...this.$lookups, ...lookups];
 
-    relation.setRelationship({
-      type: IRelationTypes.morphedByMany,
-      model: relation,
-      relatedModel: this,
-      morph: name,
-      morphId: `${name}Id`,
-      morphType: `${name}Type`,
-      morphCollectionName: `${name}s`,
-      alias: "",
-      options: {},
-    });
-    return relation;
+    return new MorphedByMany<T, M>(
+      this,
+      relation,
+      name,
+      `${name}Id`,
+      `${name}Type`,
+      `${name}s`
+    );
   }
 }
-
-interface IPost {
-  _id: ObjectId;
-  title: string;
-  body: string;
-}
-
-interface ITag {
-  _id: ObjectId;
-  name: string;
-}
-
-interface IVideo {
-  _id: ObjectId;
-  title: string;
-  url: string;
-}
-
-class Post extends Model<IPost> {
-  static $schema: IPost;
-
-  public tags() {
-    return this.morphToMany(Tag, "taggable");
-  }
-}
-
-class Video extends Model<IVideo> {
-  static $schema: IVideo;
-
-  public tags() {
-    return this.morphToMany(Tag, "taggable");
-  }
-}
-
-class Tag extends Model<ITag> {
-  static $schema: ITag;
-}
-
-(async () => {
-  const videos = await Video.find("67ed4054497784cac07774cc");
-  const tags = await videos
-    .tags()
-    .attach(["67edbfa0497784cac07774dd", "67edbfa0497784cac07774de"]);
-  console.log(tags);
-})();
