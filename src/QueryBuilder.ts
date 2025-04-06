@@ -1248,16 +1248,6 @@ export default class QueryBuilder<T> {
     const relationship = this.getRelationship();
 
     switch (relationship?.type) {
-      case IRelationTypes.morphMany:
-        this.where(
-          relationship.morphType as keyof T,
-          relationship.relatedModel.constructor.name
-        ).where(
-          relationship.morphId as keyof T,
-          relationship.relatedModel["$original"]._id
-        );
-        break;
-
       case IRelationTypes.morphToMany:
         const mtmColl = this.getCollection(relationship.morphCollectionName);
         const key = `${relationship.model.constructor.name.toLowerCase()}Id`;

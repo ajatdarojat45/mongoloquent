@@ -96,7 +96,6 @@ export interface IRelationMorphMany {
   morph: string;
   morphId: string;
   morphType: string;
-  morphCollectionName: string;
   alias: string;
   options: IRelationOptions;
 }

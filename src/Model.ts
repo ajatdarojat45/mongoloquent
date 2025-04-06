@@ -510,7 +510,7 @@ export default class Model<T> extends Relation<T> {
     );
   }
 
-  morphMany<M>(model: new () => Model<M>, name: string): Model<M> {
+  morphMany<M>(model: new () => Model<M>, name: string) {
     const relation = new model();
 
     const morphMany: IRelationMorphMany = {
@@ -520,25 +520,19 @@ export default class Model<T> extends Relation<T> {
       morph: name,
       morphId: `${name}Id`,
       morphType: `${name}Type`,
-      morphCollectionName: `${name}s`,
       alias: this.$alias,
       options: this.$options,
     };
     const lookups = MorphMany.generate(morphMany);
     this.$lookups = [...this.$lookups, ...lookups];
 
-    relation.setRelationship({
-      type: IRelationTypes.morphMany,
-      model: relation,
-      relatedModel: this,
-      morph: name,
-      morphId: `${name}Id`,
-      morphType: `${name}Type`,
-      morphCollectionName: `${name}s`,
-      alias: "",
-      options: {},
-    });
-    return relation;
+    return new MorphMany<T, M>(
+      this,
+      relation,
+      name,
+      `${name}Id`,
+      `${name}Type`
+    );
   }
 
   morphTo<M>(model: new () => Model<M>, name: string) {
@@ -636,46 +630,42 @@ export default class Model<T> extends Relation<T> {
   }
 }
 
-interface IApplication {
+interface IPost {
   _id: ObjectId;
-  name: string;
+  title: string;
+  body: string;
 }
 
-interface IEvnironment {
+interface IComment {
   _id: ObjectId;
-  name: string;
-  applicationId: ObjectId;
+  commentableId: ObjectId;
+  commentableType: string;
+  body: string;
 }
 
-interface IDeployment {
-  _id: ObjectId;
-  commit_hash: string;
-  environmentId: ObjectId;
-}
+class Post extends Model<IPost> {
+  static $schema = {
+    _id: ObjectId,
+    title: String,
+    body: String,
+  };
 
-class Application extends Model<IApplication> {
-  static $schema: IApplication;
-
-  deployments() {
-    return this.hasManyThrough(
-      Deployment,
-      Environment,
-      "applicationId",
-      "environmentId"
-    );
+  comments() {
+    return this.morphMany(Comment, "commentable");
   }
 }
 
-class Environment extends Model<IEvnironment> {
-  static $schema: IEvnironment;
-}
-
-class Deployment extends Model<IDeployment> {
-  static $schema: IDeployment;
+class Comment extends Model<IComment> {
+  static $schema = {
+    _id: ObjectId,
+    commentableId: ObjectId,
+    commentableType: String,
+    body: String,
+  };
 }
 
 (async () => {
-  const app = await Application.find("67f13826e1a3f31136bdc301");
-  const deployments = await app.deployments().count();
-  console.log(deployments);
+  const post = await Post.find("67ed4054497784cac07774ca");
+  const comments = await post.comments().get("body");
+  console.log(comments);
 })();
