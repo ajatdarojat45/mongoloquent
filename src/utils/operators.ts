@@ -38,4 +38,4 @@ const operators = [
   },
 ];
 
-export default operators
+export default operators;

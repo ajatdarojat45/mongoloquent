@@ -1,10 +1,11 @@
-import { Document } from "mongodb";
-import { IRelationMorphMany } from "../interfaces/IRelation";
-import LookupBuilder from "./LookupBuilder.ts";
-import QueryBuilder from "../QueryBuilder";
 import Model from "../Model";
+import QueryBuilder from "../QueryBuilder";
 import { IModelPaginate } from "../interfaces/IModel";
+import { IRelationMorphMany } from "../interfaces/IRelation";
 import { FormSchema } from "../types/schema";
+import { Document } from "mongodb";
+
+import LookupBuilder from "./LookupBuilder.ts";
 
 export default class MorphMany<T, M> extends QueryBuilder<M> {
   model: Model<T>;
@@ -115,7 +116,7 @@ export default class MorphMany<T, M> extends QueryBuilder<M> {
   private async setDefaultCondition() {
     this.where(this.morphType as keyof M, this.model.constructor.name).where(
       this.morphId as keyof M,
-      (this.model["$original"] as any)["_id"]
+      (this.model["$original"] as any)["_id"],
     );
   }
 
@@ -145,7 +146,7 @@ export default class MorphMany<T, M> extends QueryBuilder<M> {
     if (morphMany.options?.sort) {
       const sort = LookupBuilder.sort(
         morphMany.options?.sort[0],
-        morphMany.options?.sort[1]
+        morphMany.options?.sort[1],
       );
       lookup.push(sort);
     }

@@ -1,9 +1,10 @@
-import { Document } from "mongodb";
-import { IRelationHasManyThrough } from "../interfaces/IRelation";
-import LookupBuilder from "./LookupBuilder.ts";
-import QueryBuilder from "../QueryBuilder";
 import Model from "../Model";
+import QueryBuilder from "../QueryBuilder";
 import { IModelPaginate } from "../interfaces/IModel";
+import { IRelationHasManyThrough } from "../interfaces/IRelation";
+import { Document } from "mongodb";
+
+import LookupBuilder from "./LookupBuilder.ts";
 
 export default class HasManyThrough<T, M, TM> extends QueryBuilder<M> {
   model: Model<T>;
@@ -21,7 +22,7 @@ export default class HasManyThrough<T, M, TM> extends QueryBuilder<M> {
     foreignKey: keyof TM,
     foreignKeyThrough: keyof M,
     localKey: keyof T,
-    localKeyThrough: keyof TM
+    localKeyThrough: keyof TM,
   ) {
     super();
     this.model = model;
@@ -106,7 +107,7 @@ export default class HasManyThrough<T, M, TM> extends QueryBuilder<M> {
     if (hasManyThrough.options?.select) {
       const select = LookupBuilder.select(
         hasManyThrough.options.select,
-        hasManyThrough.alias
+        hasManyThrough.alias,
       );
       lookup.push(...select);
     }
@@ -115,7 +116,7 @@ export default class HasManyThrough<T, M, TM> extends QueryBuilder<M> {
     if (hasManyThrough.options?.exclude) {
       const exclude = LookupBuilder.exclude(
         hasManyThrough.options.exclude,
-        hasManyThrough.alias
+        hasManyThrough.alias,
       );
       lookup.push(...exclude);
     }
@@ -124,7 +125,7 @@ export default class HasManyThrough<T, M, TM> extends QueryBuilder<M> {
     if (hasManyThrough.options?.sort) {
       const sort = LookupBuilder.sort(
         hasManyThrough.options?.sort[0],
-        hasManyThrough.options?.sort[1]
+        hasManyThrough.options?.sort[1],
       );
       lookup.push(sort);
     }
@@ -191,7 +192,7 @@ export default class HasManyThrough<T, M, TM> extends QueryBuilder<M> {
           pivot: 0,
           alias: 0,
         },
-      }
+      },
     );
 
     return lookup;

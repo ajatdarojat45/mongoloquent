@@ -1,10 +1,10 @@
-import { Document, ObjectId, OptionalUnlessRequiredId } from "mongodb";
-import { IRelationBelongsToMany } from "../interfaces/IRelation";
-import LookupBuilder from "./LookupBuilder.ts";
-import QueryBuilder from "../QueryBuilder";
 import Model from "../Model";
+import QueryBuilder from "../QueryBuilder";
 import { IModelPaginate } from "../interfaces/IModel";
-import { FormSchema } from "../types/schema";
+import { IRelationBelongsToMany } from "../interfaces/IRelation";
+import { Document, ObjectId, OptionalUnlessRequiredId } from "mongodb";
+
+import LookupBuilder from "./LookupBuilder.ts";
 
 export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
   private model: Model<T>;
@@ -22,7 +22,7 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
     foreignPivotKey: keyof PM,
     relatedPivotKey: keyof PM,
     parentKey: keyof T,
-    relatedKey: keyof M
+    relatedKey: keyof M,
   ) {
     super();
     this.model = model;
@@ -87,7 +87,7 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
 
   public async attach(
     ids: string | ObjectId | (string | ObjectId)[],
-    doc: Partial<PM> = {}
+    doc: Partial<PM> = {},
   ) {
     let objectIds: ObjectId[] = [];
     let query: Document = {};
@@ -102,7 +102,7 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
         [this.relatedPivotKey]: id,
         [this.foreignPivotKey]: this.model["$original"][this.parentKey],
         ...doc,
-      })
+      }),
     );
 
     const existingData = await this.pivotModel
@@ -163,7 +163,7 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
 
   public async sync(
     ids: string | ObjectId | (string | ObjectId)[],
-    doc: Partial<PM> = {}
+    doc: Partial<PM> = {},
   ) {
     let objectIds: ObjectId[] = [];
 
@@ -177,7 +177,7 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
         [this.foreignPivotKey]: this.model["$original"][this.parentKey],
         [this.relatedPivotKey]: id,
         ...doc,
-      })
+      }),
     );
 
     // find data
@@ -196,7 +196,7 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
       const existingItem = existingData.find(
         (item: any) =>
           JSON.stringify(item[this.relatedPivotKey]) ===
-          JSON.stringify(objectIds[i])
+          JSON.stringify(objectIds[i]),
       );
       if (!existingItem) payloadToInsert.push(_payload[i]);
       // @ts-ignore
@@ -226,7 +226,7 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
 
   public async syncWithoutDetaching(
     ids: string | ObjectId | (string | ObjectId)[],
-    doc: Partial<PM> = {}
+    doc: Partial<PM> = {},
   ) {
     let objectIds: ObjectId[] = [];
 
@@ -240,7 +240,7 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
         [this.foreignPivotKey]: this.model["$original"][this.parentKey],
         [this.relatedPivotKey]: id,
         ...doc,
-      })
+      }),
     );
 
     // find data
@@ -259,7 +259,7 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
       const existingItem = existingData.find(
         (item: any) =>
           JSON.stringify(item[this.relatedPivotKey]) ===
-          JSON.stringify(objectIds[i])
+          JSON.stringify(objectIds[i]),
       );
       if (!existingItem) payloadToInsert.push(_payload[i]);
       // @ts-ignore
@@ -284,7 +284,7 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
 
   public async syncWithPivotValues(
     ids: string | ObjectId | (string | ObjectId)[],
-    doc: Partial<PM> = {}
+    doc: Partial<PM> = {},
   ) {
     let objectIds: ObjectId[] = [];
 
@@ -298,7 +298,7 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
         [this.foreignPivotKey]: this.model["$original"][this.parentKey],
         [this.relatedPivotKey]: id,
         ...doc,
-      })
+      }),
     );
 
     // find data
@@ -315,7 +315,7 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
       const existingItem = existingData.find(
         (item: any) =>
           JSON.stringify(item[this.relatedPivotKey]) ===
-          JSON.stringify(objectIds[i])
+          JSON.stringify(objectIds[i]),
       );
       if (!existingItem) payloadToInsert.push(_payload[i]);
       else idsToUpdate.push(objectIds[i]);
@@ -364,7 +364,7 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
       _payload.push({
         [this.foreignPivotKey]: this.model["$original"][this.parentKey],
         [this.relatedPivotKey]: id,
-      })
+      }),
     );
 
     // find data
@@ -387,7 +387,7 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
       const existingItem = existingData.find(
         (item: any) =>
           JSON.stringify(item[this.relatedPivotKey]) ===
-          JSON.stringify(objectIds[i])
+          JSON.stringify(objectIds[i]),
       );
       if (!existingItem) payloadToInsert.push(_payload[i]);
       // @ts-ignore
@@ -396,7 +396,7 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
         idsToRestore.push(existingItem._id);
       else
         idsToDelete.push(
-          (_payload[i] as Record<keyof PM, any>)[this.relatedPivotKey]
+          (_payload[i] as Record<keyof PM, any>)[this.relatedPivotKey],
         );
     }
 
@@ -445,7 +445,7 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
     if (belongsToMany.options?.select) {
       const select = LookupBuilder.select(
         belongsToMany.options.select,
-        belongsToMany.alias
+        belongsToMany.alias,
       );
       lookup.push(...select);
     }
@@ -454,7 +454,7 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
     if (belongsToMany.options?.exclude) {
       const exclude = LookupBuilder.exclude(
         belongsToMany.options.exclude,
-        belongsToMany.alias
+        belongsToMany.alias,
       );
       lookup.push(...exclude);
     }
@@ -463,7 +463,7 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
     if (belongsToMany.options?.sort) {
       const sort = LookupBuilder.sort(
         belongsToMany.options?.sort[0],
-        belongsToMany.options?.sort[1]
+        belongsToMany.options?.sort[1],
       );
       lookup.push(sort);
     }
@@ -529,7 +529,7 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
         $project: {
           pivot: 0,
         },
-      }
+      },
     );
 
     return lookup;

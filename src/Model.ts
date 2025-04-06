@@ -1,28 +1,29 @@
 import { BulkWriteOptions, InsertOneOptions, ObjectId } from "mongodb";
-import { FormSchema } from "./types/schema";
+
+import QueryBuilder from "./QueryBuilder";
 import {
-  IRelationOptions,
-  IRelationTypes,
-  IRelationHasMany,
   IRelationBelongsTo,
-  IRelationHasOne,
-  IRelationHasManyThrough,
   IRelationBelongsToMany,
+  IRelationHasMany,
+  IRelationHasManyThrough,
+  IRelationHasOne,
   IRelationMorphMany,
   IRelationMorphTo,
   IRelationMorphToMany,
   IRelationMorphedByMany,
+  IRelationOptions,
+  IRelationTypes,
 } from "./interfaces/IRelation";
-import HasMany from "./relations/HasMany";
 import BelongsTo from "./relations/BelongsTo";
-import HasOne from "./relations/HasOne";
-import HasManyThrough from "./relations/HasManyThrough";
 import BelongsToMany from "./relations/BelongsToMany";
+import HasMany from "./relations/HasMany";
+import HasManyThrough from "./relations/HasManyThrough";
+import HasOne from "./relations/HasOne";
 import MorphMany from "./relations/MorphMany";
 import MorphTo from "./relations/MorphTo";
 import MorphToMany from "./relations/MorphToMany";
 import MorphedByMany from "./relations/MorphedByMany";
-import QueryBuilder from "./QueryBuilder";
+import { FormSchema } from "./types/schema";
 
 export default class Model<T> extends QueryBuilder<T> {
   [key: string]: any;
@@ -48,7 +49,7 @@ export default class Model<T> extends QueryBuilder<T> {
   public static async insert<M extends typeof Model<any>>(
     this: M,
     doc: FormSchema<M["$schema"]>,
-    options?: InsertOneOptions
+    options?: InsertOneOptions,
   ) {
     return this.query().insert(doc, options);
   }
@@ -56,7 +57,7 @@ export default class Model<T> extends QueryBuilder<T> {
   public static async create<M extends typeof Model<any>>(
     this: M,
     doc: FormSchema<M["$schema"]>,
-    options?: InsertOneOptions
+    options?: InsertOneOptions,
   ) {
     return this.query().create(doc, options);
   }
@@ -64,7 +65,7 @@ export default class Model<T> extends QueryBuilder<T> {
   public static async insertMany<M extends typeof Model<any>>(
     this: M,
     doc: FormSchema<M["$schema"]>[],
-    options?: BulkWriteOptions
+    options?: BulkWriteOptions,
   ) {
     return this.query().insertMany(doc, options);
   }
@@ -72,7 +73,7 @@ export default class Model<T> extends QueryBuilder<T> {
   public static async createMany<M extends typeof Model<any>>(
     this: M,
     doc: FormSchema<M["$schema"]>[],
-    options?: BulkWriteOptions
+    options?: BulkWriteOptions,
   ) {
     return this.query().createMany(doc, options);
   }
@@ -80,7 +81,7 @@ export default class Model<T> extends QueryBuilder<T> {
   public static async updateOrCreate<M extends typeof Model<any>>(
     this: M,
     filter: Partial<M["$schema"]>,
-    doc: Partial<FormSchema<M["$schema"]>>
+    doc: Partial<FormSchema<M["$schema"]>>,
   ) {
     return this.query().updateOrCreate(filter, doc);
   }
@@ -88,7 +89,7 @@ export default class Model<T> extends QueryBuilder<T> {
   public static async updateOrInsert<M extends typeof Model<any>>(
     this: M,
     filter: Partial<M["$schema"]>,
-    doc: Partial<FormSchema<M["$schema"]>>
+    doc: Partial<FormSchema<M["$schema"]>>,
   ) {
     return this.query().updateOrInsert(filter, doc);
   }
@@ -125,7 +126,7 @@ export default class Model<T> extends QueryBuilder<T> {
     this: M,
     column: keyof M["$schema"],
     operator: any,
-    value: any = null
+    value: any = null,
   ) {
     return this.query().where(column, operator, value);
   }
@@ -134,7 +135,7 @@ export default class Model<T> extends QueryBuilder<T> {
     this: M,
     column: keyof M["$schema"],
     operator: any,
-    value: any = null
+    value: any = null,
   ) {
     return this.query().orWhere(column, operator, value);
   }
@@ -142,7 +143,7 @@ export default class Model<T> extends QueryBuilder<T> {
   static whereNot<M extends typeof Model<any>>(
     this: M,
     column: keyof M["$schema"],
-    value: any
+    value: any,
   ) {
     return this.query().whereNot(column, value);
   }
@@ -150,7 +151,7 @@ export default class Model<T> extends QueryBuilder<T> {
   static orWhereNot<M extends typeof Model<any>>(
     this: M,
     column: keyof M["$schema"],
-    value: any
+    value: any,
   ) {
     return this.query().orWhereNot(column, value);
   }
@@ -158,7 +159,7 @@ export default class Model<T> extends QueryBuilder<T> {
   static whereIn<M extends typeof Model<any>>(
     this: M,
     column: keyof M["$schema"],
-    value: any[]
+    value: any[],
   ) {
     return this.query().whereIn(column, value);
   }
@@ -166,7 +167,7 @@ export default class Model<T> extends QueryBuilder<T> {
   static orWhereIn<M extends typeof Model<any>>(
     this: M,
     column: keyof M["$schema"],
-    value: any[]
+    value: any[],
   ) {
     return this.query().orWhereIn(column, value);
   }
@@ -174,7 +175,7 @@ export default class Model<T> extends QueryBuilder<T> {
   static whereNotIn<M extends typeof Model<any>>(
     this: M,
     column: keyof M["$schema"],
-    value: any[]
+    value: any[],
   ) {
     return this.query().whereNotIn(column, value);
   }
@@ -182,7 +183,7 @@ export default class Model<T> extends QueryBuilder<T> {
   static orWhereNotIn<M extends typeof Model<any>>(
     this: M,
     column: keyof M["$schema"],
-    value: any[]
+    value: any[],
   ) {
     return this.query().orWhereNotIn(column, value);
   }
@@ -190,7 +191,7 @@ export default class Model<T> extends QueryBuilder<T> {
   static whereBetween<M extends typeof Model<any>>(
     this: M,
     column: keyof M["$schema"],
-    value: [number, number?]
+    value: [number, number?],
   ) {
     return this.query().whereBetween(column, value);
   }
@@ -198,35 +199,35 @@ export default class Model<T> extends QueryBuilder<T> {
   static orWhereBetween<M extends typeof Model<any>>(
     this: M,
     column: keyof M["$schema"],
-    value: [number, number?]
+    value: [number, number?],
   ) {
     return this.query().orWhereBetween(column, value);
   }
 
   static whereNull<M extends typeof Model<any>>(
     this: M,
-    column: keyof M["$schema"]
+    column: keyof M["$schema"],
   ) {
     return this.query().whereNull(column);
   }
 
   static orWhereNull<M extends typeof Model<any>>(
     this: M,
-    column: keyof M["$schema"]
+    column: keyof M["$schema"],
   ) {
     return this.query().orWhereNull(column);
   }
 
   static whereNotNull<M extends typeof Model<any>>(
     this: M,
-    column: keyof M["$schema"]
+    column: keyof M["$schema"],
   ) {
     return this.query().whereNotNull(column);
   }
 
   static orWhereNotNull<M extends typeof Model<any>>(
     this: M,
-    column: keyof M["$schema"]
+    column: keyof M["$schema"],
   ) {
     return this.query().orWhereNotNull(column);
   }
@@ -251,7 +252,7 @@ export default class Model<T> extends QueryBuilder<T> {
     this: M,
     column: keyof M["$schema"],
     direction: "asc" | "desc" = "asc",
-    caseSensitive: boolean = false
+    caseSensitive: boolean = false,
   ) {
     return this.query().orderBy(column, direction, caseSensitive);
   }
@@ -274,7 +275,7 @@ export default class Model<T> extends QueryBuilder<T> {
   static paginate<M extends typeof Model<any>>(
     this: M,
     page: number = 1,
-    limit?: number
+    limit?: number,
   ) {
     return this.query().paginate(page, limit);
   }
@@ -289,7 +290,7 @@ export default class Model<T> extends QueryBuilder<T> {
   static firstOrCreate<M extends typeof Model<any>>(
     this: M,
     filter: Partial<M["$schema"]>,
-    doc: Partial<FormSchema<M["$schema"]>>
+    doc: Partial<FormSchema<M["$schema"]>>,
   ) {
     return this.query().firstOrCreate(filter, doc);
   }
@@ -297,7 +298,7 @@ export default class Model<T> extends QueryBuilder<T> {
   static firstOrNew<M extends typeof Model<any>>(
     this: M,
     filter: Partial<M["$schema"]>,
-    doc: Partial<FormSchema<M["$schema"]>>
+    doc: Partial<FormSchema<M["$schema"]>>,
   ) {
     return this.query().firstOrNew(filter, doc);
   }
@@ -308,7 +309,7 @@ export default class Model<T> extends QueryBuilder<T> {
 
   static find<M extends typeof Model<any>>(
     this: M,
-    id: string | ObjectId
+    id: string | ObjectId,
   ): Promise<InstanceType<M>> {
     return this.query().find(id) as Promise<InstanceType<M>>;
   }
@@ -340,7 +341,7 @@ export default class Model<T> extends QueryBuilder<T> {
   static with<M extends typeof Model<any>>(
     this: M,
     relation: string,
-    options: IRelationOptions = {}
+    options: IRelationOptions = {},
   ) {
     const model = this.query();
     model.$alias = relation;
@@ -361,7 +362,7 @@ export default class Model<T> extends QueryBuilder<T> {
   hasMany<M>(
     model: new () => Model<M>,
     foreignKey: keyof M,
-    localKey: keyof T
+    localKey: keyof T,
   ) {
     const relation = new model();
 
@@ -401,7 +402,7 @@ export default class Model<T> extends QueryBuilder<T> {
   belongsTo<M>(
     model: new () => Model<M>,
     foreignKey: keyof T,
-    ownerKey: keyof M
+    ownerKey: keyof M,
   ) {
     const relation = new model();
 
@@ -426,7 +427,7 @@ export default class Model<T> extends QueryBuilder<T> {
     foreignKey: keyof TM,
     foreignKeyThrough: keyof M,
     localKey: keyof T = "_id" as keyof T,
-    localKeyThrough: keyof TM = "_id" as keyof TM
+    localKeyThrough: keyof TM = "_id" as keyof TM,
   ) {
     const relation = new model();
     const through = new throughModel();
@@ -453,7 +454,7 @@ export default class Model<T> extends QueryBuilder<T> {
       foreignKey,
       foreignKeyThrough,
       localKey,
-      localKeyThrough
+      localKeyThrough,
     );
   }
 
@@ -463,7 +464,7 @@ export default class Model<T> extends QueryBuilder<T> {
     foreignPivotKey: keyof TM,
     relatedPivotKey: keyof TM,
     parentKey: keyof T,
-    relatedKey: keyof M
+    relatedKey: keyof M,
   ) {
     const relation = new model();
     const pivot = new pivotModel();
@@ -489,7 +490,7 @@ export default class Model<T> extends QueryBuilder<T> {
       foreignPivotKey,
       relatedPivotKey,
       parentKey,
-      relatedKey
+      relatedKey,
     );
   }
 

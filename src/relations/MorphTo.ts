@@ -1,9 +1,10 @@
-import { Document, ObjectId } from "mongodb";
-import { IRelationMorphTo } from "../interfaces/IRelation";
-import LookupBuilder from "./LookupBuilder.ts";
-import QueryBuilder from "../QueryBuilder";
 import Model from "../Model";
+import QueryBuilder from "../QueryBuilder";
 import { IModelPaginate } from "../interfaces/IModel";
+import { IRelationMorphTo } from "../interfaces/IRelation";
+import { Document } from "mongodb";
+
+import LookupBuilder from "./LookupBuilder.ts";
 
 export default class MorphTo<T, M> extends QueryBuilder<M> {
   private model: Model<T>;

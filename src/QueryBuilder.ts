@@ -7,20 +7,21 @@ import {
   OptionalUnlessRequiredId,
   UpdateOptions,
 } from "mongodb";
+
 import Collection from "./Collection";
+import Database from "./Database";
 import {
   MONGOLOQUENT_DATABASE_NAME,
   MONGOLOQUENT_DATABASE_URI,
   TIMEZONE,
 } from "./configs/app";
-import Database from "./Database";
-import { FormSchema } from "./types/schema";
-import { IQueryOrder, IQueryWhere } from "./interfaces/IQuery";
-import operators from "./utils/operators";
-import dayjs from "./utils/dayjs";
 import { MongoloquentNotFoundException } from "./exceptions/MongoloquentException";
 import { IModelPaginate } from "./interfaces/IModel";
+import { IQueryOrder, IQueryWhere } from "./interfaces/IQuery";
 import { IRelationOptions } from "./interfaces/IRelation";
+import { FormSchema } from "./types/schema";
+import dayjs from "./utils/dayjs";
+import operators from "./utils/operators";
 
 export default class QueryBuilder<T> {
   static $schema: Record<string, any>;
@@ -90,7 +91,7 @@ export default class QueryBuilder<T> {
 
       const data = await collection?.insertOne(
         newDoc as OptionalUnlessRequiredId<FormSchema<T>>,
-        options
+        options,
       );
 
       this.resetQuery();
@@ -102,14 +103,14 @@ export default class QueryBuilder<T> {
 
   public async create(
     doc: FormSchema<T>,
-    options?: InsertOneOptions
+    options?: InsertOneOptions,
   ): Promise<T> {
     return this.insert(doc, options);
   }
 
   public async insertMany(
     docs: FormSchema<T>[],
-    options?: BulkWriteOptions
+    options?: BulkWriteOptions,
   ): Promise<ObjectId[]> {
     try {
       const collection = this.getCollection();
@@ -123,7 +124,7 @@ export default class QueryBuilder<T> {
       // Insert the documents into the collection
       const data = await collection?.insertMany(
         newDocs as OptionalUnlessRequiredId<FormSchema<T>>[],
-        options
+        options,
       );
 
       const result: ObjectId[] = [];
@@ -131,7 +132,7 @@ export default class QueryBuilder<T> {
       // Extract the inserted IDs from the result
       for (const key in data?.insertedIds) {
         result.push(
-          data?.insertedIds[key as unknown as keyof typeof data.insertedIds]
+          data?.insertedIds[key as unknown as keyof typeof data.insertedIds],
         );
       }
 
@@ -145,14 +146,14 @@ export default class QueryBuilder<T> {
 
   public async createMany(
     docs: FormSchema<T>[],
-    options?: BulkWriteOptions
+    options?: BulkWriteOptions,
   ): Promise<ObjectId[]> {
     return this.insertMany(docs, options);
   }
 
   public async update(
     doc: Partial<FormSchema<T>>,
-    options: FindOneAndUpdateOptions = {}
+    options: FindOneAndUpdateOptions = {},
   ) {
     try {
       const collection = this.getCollection();
@@ -175,7 +176,7 @@ export default class QueryBuilder<T> {
         {
           ...options,
           returnDocument: "after",
-        }
+        },
       );
 
       // Reset the query and relation states
@@ -206,7 +207,7 @@ export default class QueryBuilder<T> {
 
   public async updateMany(
     doc: Partial<FormSchema<T>>,
-    options?: UpdateOptions
+    options?: UpdateOptions,
   ): Promise<number> {
     try {
       const collection = this.getCollection();
@@ -228,7 +229,7 @@ export default class QueryBuilder<T> {
             ...(newDoc as Partial<T>),
           },
         },
-        options
+        options,
       );
 
       // Reset the query and relation states
@@ -278,7 +279,7 @@ export default class QueryBuilder<T> {
             $set: {
               ...(doc as Partial<T>),
             },
-          }
+          },
         );
 
         this.resetQuery();
@@ -362,7 +363,7 @@ export default class QueryBuilder<T> {
   public where<K extends keyof T>(
     column: K,
     operator: any,
-    value: any = null
+    value: any = null,
   ): QueryBuilder<T> {
     let _value = value || operator;
     let _operator = value ? operator : "eq";
@@ -375,7 +376,7 @@ export default class QueryBuilder<T> {
   public orWhere<K extends keyof T>(
     column: K,
     operator: any,
-    value: any = null
+    value: any = null,
   ): QueryBuilder<T> {
     let _value = value || operator;
     let _operator = value ? operator : "eq";
@@ -405,7 +406,7 @@ export default class QueryBuilder<T> {
 
   public orWhereIn<K extends keyof T>(
     column: K,
-    values: any[]
+    values: any[],
   ): QueryBuilder<T> {
     this.setWheres(column, "in", values, "or");
 
@@ -414,7 +415,7 @@ export default class QueryBuilder<T> {
 
   public whereNotIn<K extends keyof T>(
     column: K,
-    values: any[]
+    values: any[],
   ): QueryBuilder<T> {
     this.setWheres(column, "nin", values, "and");
 
@@ -423,7 +424,7 @@ export default class QueryBuilder<T> {
 
   public orWhereNotIn<K extends keyof T>(
     column: K,
-    values: any[]
+    values: any[],
   ): QueryBuilder<T> {
     this.setWheres(column, "nin", values, "or");
 
@@ -432,7 +433,7 @@ export default class QueryBuilder<T> {
 
   public whereBetween<K extends keyof T>(
     column: K,
-    values: [number, number?]
+    values: [number, number?],
   ): QueryBuilder<T> {
     this.setWheres(column, "between", values, "and");
 
@@ -441,7 +442,7 @@ export default class QueryBuilder<T> {
 
   public orWhereBetween<K extends keyof T>(
     column: K,
-    values: [number, number?]
+    values: [number, number?],
   ): QueryBuilder<T> {
     this.setWheres(column, "between", values, "or");
 
@@ -502,7 +503,7 @@ export default class QueryBuilder<T> {
   public orderBy<K extends keyof T>(
     column: K,
     direction: "asc" | "desc" = "asc",
-    caseSensitive: boolean = false
+    caseSensitive: boolean = false,
   ): this {
     const payload = {
       column,
@@ -539,7 +540,7 @@ export default class QueryBuilder<T> {
 
   public async paginate(
     page: number = 1,
-    limit: number = this.$limit
+    limit: number = this.$limit,
   ): Promise<IModelPaginate> {
     try {
       // await this.checkRelation();
@@ -704,7 +705,7 @@ export default class QueryBuilder<T> {
 
   private async aggregates<K extends keyof T>(
     field: K,
-    type: "avg" | "sum" | "max" | "min"
+    type: "avg" | "sum" | "max" | "min",
   ): Promise<number> {
     try {
       const collection = this.getCollection();
@@ -888,7 +889,7 @@ export default class QueryBuilder<T> {
     column: K,
     operator: any,
     value: any,
-    boolean: string = "and"
+    boolean: string = "and",
   ): void {
     // Determine type of query E|R|S
     const ep = ["eq", "ne", "=", "!="];
@@ -959,7 +960,7 @@ export default class QueryBuilder<T> {
     // sort by type(E/R/S) for better peformace query in MongoDB
     this.$wheres.sort().forEach((el) => {
       const op = operators.find(
-        (op) => op.operator === el.operator || op.mongoOperator === el.operator
+        (op) => op.operator === el.operator || op.mongoOperator === el.operator,
       );
 
       let value;
@@ -1121,7 +1122,7 @@ export default class QueryBuilder<T> {
 
   private checkUseTimestamps(
     doc: Partial<FormSchema<T>>,
-    isNew: boolean = true
+    isNew: boolean = true,
   ): Partial<FormSchema<T>> {
     if (this.$useTimestamps) {
       const current = dayjs().format("YYYY/MM/DD HH:mm:ss");
@@ -1137,7 +1138,7 @@ export default class QueryBuilder<T> {
 
   private checkUseSoftdelete(
     doc: Partial<FormSchema<T>>,
-    isDeleted: boolean = false
+    isDeleted: boolean = false,
   ): Partial<FormSchema<T>> {
     if (this.$useSoftDelete) {
       if (isDeleted) {

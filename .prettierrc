@@ -1,0 +1,12 @@
+{
+	"singleQuote": false,
+	"trailingComma": "all",
+	"semi": true,
+	"bracketSpacing": true,
+	"tabWidth": 2,
+	"plugins": ["@trivago/prettier-plugin-sort-imports"],
+	"importOrderParserPlugins": ["typescript", "decorators-legacy"],
+	"importOrder": ["^[a-z-]+/", "^src/", "^\\./", "^\\.$"],
+	"importOrderSeparation": true,
+	"importOrderSortSpecifiers": true
+}

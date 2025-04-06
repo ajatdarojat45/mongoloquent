@@ -14,14 +14,14 @@ export default class Collection<T> extends Array<T> {
   after(
     keyOrCallback: keyof T | ((item: T) => boolean),
     value?: any,
-    strict: boolean = true
+    strict: boolean = true,
   ): T | null {
     const index = this.findIndex((item) =>
       typeof keyOrCallback === "function"
         ? keyOrCallback(item) // Custom callback function
         : strict
-        ? item[keyOrCallback] === value
-        : item[keyOrCallback] == value
+          ? item[keyOrCallback] === value
+          : item[keyOrCallback] == value,
     );
     return index !== -1 && index + 1 < this.length ? this[index + 1] : null;
   }
@@ -52,14 +52,14 @@ export default class Collection<T> extends Array<T> {
   before(
     keyOrCallback: keyof T | ((item: T) => boolean),
     value?: any,
-    strict: boolean = true
+    strict: boolean = true,
   ): T | null {
     const index = this.findIndex((item) =>
       typeof keyOrCallback === "function"
         ? keyOrCallback(item) // Custom callback function
         : strict
-        ? item[keyOrCallback] === value
-        : item[keyOrCallback] == value
+          ? item[keyOrCallback] === value
+          : item[keyOrCallback] == value,
     );
     return index > 0 ? this[index - 1] : null;
   }
@@ -85,7 +85,7 @@ export default class Collection<T> extends Array<T> {
 
   contains(
     keyOrCallback: keyof T | ((item: T) => boolean),
-    value?: any
+    value?: any,
   ): boolean {
     if (typeof keyOrCallback === "function") {
       return this.some(keyOrCallback);
@@ -121,7 +121,7 @@ export default class Collection<T> extends Array<T> {
 
   doesntContain(
     predicate: ((item: T) => boolean) | string,
-    value?: any
+    value?: any,
   ): boolean {
     if (typeof predicate === "function") {
       return !this.some(predicate);
@@ -152,7 +152,7 @@ export default class Collection<T> extends Array<T> {
   }
 
   each(
-    callback: (item: T, index: number, collection: this) => boolean | void
+    callback: (item: T, index: number, collection: this) => boolean | void,
   ): this {
     for (let i = 0; i < this.length; i++) {
       if (callback(this[i], i, this) === false) {
@@ -166,7 +166,7 @@ export default class Collection<T> extends Array<T> {
     callbackOrKey:
       | ((item: T, index: number, collection: this) => boolean)
       | string,
-    value?: any
+    value?: any,
   ): boolean {
     if (this.length === 0) return true;
 
@@ -179,7 +179,7 @@ export default class Collection<T> extends Array<T> {
     return super.every((item, index, array) =>
       typeof callbackOrKey === "function"
         ? callbackOrKey(item, index, this)
-        : item?.[callbackOrKey] === value
+        : item?.[callbackOrKey] === value,
     );
   }
 
@@ -200,7 +200,7 @@ export default class Collection<T> extends Array<T> {
   }
 
   first(
-    predicate?: (item: T, index: number, collection: this) => boolean
+    predicate?: (item: T, index: number, collection: this) => boolean,
   ): T | null {
     if (!predicate) {
       return this.length > 0 ? this[0] : null;
@@ -216,7 +216,7 @@ export default class Collection<T> extends Array<T> {
   }
 
   firstOrFail(
-    predicate?: (item: T, index: number, collection: this) => boolean
+    predicate?: (item: T, index: number, collection: this) => boolean,
   ): T {
     if (!predicate) {
       if (this.length > 0) {
@@ -237,7 +237,7 @@ export default class Collection<T> extends Array<T> {
   firstWhere<K extends keyof T>(
     key: K,
     operator: string | T[K],
-    value?: any
+    value?: any,
   ): T | null {
     // If only two arguments are provided, assume `=` (equal)
     if (value === undefined) {
@@ -246,7 +246,7 @@ export default class Collection<T> extends Array<T> {
     }
 
     const op = operators.find(
-      (o) => o.operator === operator || o.mongoOperator === operator
+      (o) => o.operator === operator || o.mongoOperator === operator,
     );
     if (!op) {
       throw new MongoloquentInvalidOperatorException();
@@ -295,7 +295,7 @@ export default class Collection<T> extends Array<T> {
   }
 
   groupBy(
-    keyOrCallback: string | ((item: T) => any)
+    keyOrCallback: string | ((item: T) => any),
   ): Collection<Record<string, T[]>> {
     const grouped: Record<string, T[]> = {};
 
@@ -313,7 +313,9 @@ export default class Collection<T> extends Array<T> {
     });
 
     return new Collection(
-      ...Object.entries(grouped).map(([key, value]) => ({ [key]: value }))
+      ...Object.entries(grouped).map(([key, value]) => ({
+        [key]: value,
+      })),
     );
   }
 
@@ -323,7 +325,7 @@ export default class Collection<T> extends Array<T> {
     }
 
     return keys.every((key) =>
-      this.some((item) => Object.prototype.hasOwnProperty.call(item, key))
+      this.some((item) => Object.prototype.hasOwnProperty.call(item, key)),
     );
   }
 
@@ -333,7 +335,7 @@ export default class Collection<T> extends Array<T> {
     }
 
     return keys.some((key) =>
-      this.some((item) => Object.prototype.hasOwnProperty.call(item, key))
+      this.some((item) => Object.prototype.hasOwnProperty.call(item, key)),
     );
   }
 
@@ -344,7 +346,7 @@ export default class Collection<T> extends Array<T> {
 
     if (typeof keyOrGlue === "string") {
       return this.map((item) => (item as any)?.[keyOrGlue] ?? "").join(
-        glue ?? ""
+        glue ?? "",
       );
     }
 
@@ -398,7 +400,7 @@ export default class Collection<T> extends Array<T> {
   }
 
   mapToGroups<U>(
-    callback: (item: T, index: number) => Record<string, U>
+    callback: (item: T, index: number) => Record<string, U>,
   ): Collection<U[]> {
     const grouped = new Map<string, U[]>();
 
@@ -418,7 +420,7 @@ export default class Collection<T> extends Array<T> {
   }
 
   mapWithKeys<U>(
-    callback: (item: T, index: number) => Record<string, U>
+    callback: (item: T, index: number) => Record<string, U>,
   ): Collection<{ [key: string]: U }> {
     const result: { [key: string]: U } = {};
 
@@ -443,7 +445,7 @@ export default class Collection<T> extends Array<T> {
 
     // Extract values based on the key and find the max value
     return Math.max(
-      ...this.map((item) => (item[key] as unknown as number) || 0)
+      ...this.map((item) => (item[key] as unknown as number) || 0),
     );
   }
 
@@ -452,10 +454,10 @@ export default class Collection<T> extends Array<T> {
 
     const values = key
       ? this.map((item) =>
-          typeof item[key] === "number" ? (item[key] as unknown as number) : 0
+          typeof item[key] === "number" ? (item[key] as unknown as number) : 0,
         )
       : this.map((item) =>
-          typeof item === "number" ? (item as unknown as number) : 0
+          typeof item === "number" ? (item as unknown as number) : 0,
         );
 
     this.forEach((item) => {
@@ -506,15 +508,15 @@ export default class Collection<T> extends Array<T> {
         .fill([...this])
         .flat()
         .map((item) =>
-          typeof item === "object" && item !== null ? { ...item } : item
-        ) // Deep copy objects
+          typeof item === "object" && item !== null ? { ...item } : item,
+        ), // Deep copy objects
     );
   }
 
   nth(step: number, offset: number = 0): Collection<T> {
     if (step <= 0) return new Collection(...[]);
     return new Collection(
-      ...this.filter((_, index) => (index - offset) % step === 0)
+      ...this.filter((_, index) => (index - offset) % step === 0),
     );
   }
 
@@ -530,7 +532,7 @@ export default class Collection<T> extends Array<T> {
             acc[key] = (item as any)[key];
             return acc;
           }, {} as Partial<T>);
-      })
+      }),
     );
   }
 
@@ -553,28 +555,34 @@ export default class Collection<T> extends Array<T> {
       const fieldArray = fields[0];
       return new Collection(
         ...this.map((item) =>
-          fieldArray.reduce((acc, key) => {
-            acc[key] = item[key];
-            return acc;
-          }, {} as Pick<T, K>)
-        )
+          fieldArray.reduce(
+            (acc, key) => {
+              acc[key] = item[key];
+              return acc;
+            },
+            {} as Pick<T, K>,
+          ),
+        ),
       );
     }
 
     // Case 3: Multiple fields - return objects with all selected fields
     return new Collection(
       ...this.map((item) => {
-        return fields.reduce((acc, field) => {
-          if (Array.isArray(field)) {
-            field.forEach((key) => {
-              acc[key] = item[key];
-            });
-          } else {
-            acc[field] = item[field];
-          }
-          return acc;
-        }, {} as Pick<T, K>);
-      })
+        return fields.reduce(
+          (acc, field) => {
+            if (Array.isArray(field)) {
+              field.forEach((key) => {
+                acc[key] = item[key];
+              });
+            } else {
+              acc[field] = item[field];
+            }
+            return acc;
+          },
+          {} as Pick<T, K>,
+        );
+      }),
     );
   }
 
@@ -588,7 +596,7 @@ export default class Collection<T> extends Array<T> {
   }
 
   random(
-    count?: number | ((collection: Collection<T>) => any)
+    count?: number | ((collection: Collection<T>) => any),
   ): T | Collection<T> {
     if (typeof count === "function") {
       return count(this);
@@ -614,14 +622,14 @@ export default class Collection<T> extends Array<T> {
       ...this.filter((item) => {
         const value = item[key];
         return typeof value === "number" && value >= min && value <= max;
-      })
+      }),
     );
   }
 
   search(
     keyOrCallback: keyof T | ((item: T) => boolean),
     value: any,
-    strict: boolean = false
+    strict: boolean = false,
   ): number | string | false {
     // If keyOrCallback is a function, we use it as a callback for comparison
     const isMatch = (item: T) => {
@@ -662,7 +670,7 @@ export default class Collection<T> extends Array<T> {
           }
         });
         return selected;
-      })
+      }),
     );
   }
 
@@ -729,7 +737,7 @@ export default class Collection<T> extends Array<T> {
   sliding(size: number, step: number = 1): Collection<T[]> {
     if (size <= 0 || step <= 0) {
       throw new MongoloquentInvalidArgumentException(
-        "Size and step must be positive numbers."
+        "Size and step must be positive numbers.",
       );
     }
     let result = [];
@@ -784,7 +792,7 @@ export default class Collection<T> extends Array<T> {
       | keyof T
       | ((a: T, b: T) => number)
       | [keyof T, "asc" | "desc"][],
-    direction: "asc" | "desc" = "asc"
+    direction: "asc" | "desc" = "asc",
   ): Collection<T> {
     // Clone the array to avoid mutating the original collection
     const sortedArray = [...this];
@@ -823,7 +831,7 @@ export default class Collection<T> extends Array<T> {
     keyOrCallback:
       | keyof T
       | ((a: T, b: T) => number)
-      | [keyof T, "asc" | "desc"][]
+      | [keyof T, "asc" | "desc"][],
   ): Collection<T> {
     return this.sortBy(keyOrCallback, "desc");
   }
@@ -834,7 +842,7 @@ export default class Collection<T> extends Array<T> {
 
   sortKeys(): Collection<T> {
     const sortedEntries = Object.entries(this).sort(([keyA], [keyB]) =>
-      keyA.localeCompare(keyB)
+      keyA.localeCompare(keyB),
     );
 
     const sortedItems = Object.fromEntries(sortedEntries);
@@ -844,7 +852,7 @@ export default class Collection<T> extends Array<T> {
   // Sort the collection by keys in descending order
   sortKeysDesc(): Collection<T> {
     const sortedEntries = Object.entries(this).sort(([keyA], [keyB]) =>
-      keyB.localeCompare(keyA)
+      keyB.localeCompare(keyA),
     );
 
     const sortedItems = Object.fromEntries(sortedEntries);
@@ -854,7 +862,7 @@ export default class Collection<T> extends Array<T> {
   split(numGroups: number): Collection<T>[] {
     if (numGroups <= 0) {
       throw new MongoloquentInvalidArgumentException(
-        "The number of groups must be greater than zero."
+        "The number of groups must be greater than zero.",
       );
     }
 
@@ -951,8 +959,8 @@ export default class Collection<T> extends Array<T> {
         typeof param === "function"
           ? param(item)
           : param
-          ? (item as any)[param]
-          : item;
+            ? (item as any)[param]
+            : item;
       if (seen.has(value)) return false;
       seen.add(value);
       return true;
@@ -969,7 +977,7 @@ export default class Collection<T> extends Array<T> {
   where<K extends keyof T>(
     keyOrCallback: K | ((item: T) => boolean),
     operatorOrValue?: string | T[K],
-    value?: T[K]
+    value?: T[K],
   ): Collection<T> {
     // If keyOrCallback is a function, treat it as a filter function
     if (typeof keyOrCallback === "function") {
@@ -992,7 +1000,7 @@ export default class Collection<T> extends Array<T> {
 
     // Find corresponding MongoDB operator
     const operatorMapping = operators.find(
-      (op) => op.operator === operator || op.mongoOperator === operator
+      (op) => op.operator === operator || op.mongoOperator === operator,
     );
     if (!operatorMapping) {
       throw new Error(`Unsupported operator: ${operator}`);
@@ -1005,9 +1013,9 @@ export default class Collection<T> extends Array<T> {
           itemValue,
           operatorMapping.mongoOperator,
           actualValue,
-          operatorMapping.options
+          operatorMapping.options,
         );
-      })
+      }),
     );
   }
 
@@ -1023,7 +1031,7 @@ export default class Collection<T> extends Array<T> {
           value >= (min as number) &&
           value <= (max as number)
         );
-      })
+      }),
     );
   }
 
@@ -1033,23 +1041,23 @@ export default class Collection<T> extends Array<T> {
 
   whereNotBetween<K extends keyof T>(
     key: K,
-    range: [T[K], T[K]]
+    range: [T[K], T[K]],
   ): Collection<T> {
     const [min, max] = range;
     return new Collection(
-      ...this.filter((item) => item[key] < min || item[key] > max)
+      ...this.filter((item) => item[key] < min || item[key] > max),
     );
   }
 
   whereNotIn<K extends keyof T>(key: K, values: T[K][]): Collection<T> {
     return new Collection(
-      ...this.filter((item) => !values.includes(item[key]))
+      ...this.filter((item) => !values.includes(item[key])),
     );
   }
 
   whereNotNull<K extends keyof T>(key: K): Collection<T> {
     return new Collection(
-      ...this.filter((item) => item[key] !== null && item[key] !== undefined)
+      ...this.filter((item) => item[key] !== null && item[key] !== undefined),
     );
   }
 
@@ -1061,7 +1069,7 @@ export default class Collection<T> extends Array<T> {
     a: any,
     mongoOperator: string,
     b: any,
-    options?: string
+    options?: string,
   ): boolean {
     switch (mongoOperator) {
       case "eq":

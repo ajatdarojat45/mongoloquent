@@ -43,7 +43,7 @@ export default class LookupBuilder {
         $replaceRoot: {
           newRoot: "$document",
         },
-      }
+      },
     );
 
     // Add the project and additional stages to the lookup array

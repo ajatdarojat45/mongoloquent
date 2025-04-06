@@ -1,9 +1,10 @@
-import { Document } from "mongodb";
-import { IRelationHasOne } from "../interfaces/IRelation";
-import LookupBuilder from "./LookupBuilder.ts";
-import QueryBuilder from "../QueryBuilder";
 import Model from "../Model";
+import QueryBuilder from "../QueryBuilder";
 import { IModelPaginate } from "../interfaces/IModel";
+import { IRelationHasOne } from "../interfaces/IRelation";
+import { Document } from "mongodb";
+
+import LookupBuilder from "./LookupBuilder.ts";
 
 export default class HasOne<T, M> extends QueryBuilder<M> {
   model: Model<T>;
@@ -15,7 +16,7 @@ export default class HasOne<T, M> extends QueryBuilder<M> {
     model: Model<T>,
     relatedModel: Model<M>,
     foreignKey: keyof M,
-    localKey: keyof T
+    localKey: keyof T,
   ) {
     super();
     this.model = model;
@@ -88,7 +89,7 @@ export default class HasOne<T, M> extends QueryBuilder<M> {
     if (hasOne.options?.exclude) {
       const exclude = LookupBuilder.exclude(
         hasOne.options.exclude,
-        hasOne.alias
+        hasOne.alias,
       );
       lookup.push(...exclude);
     }

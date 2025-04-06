@@ -1,9 +1,10 @@
-import { Document, ObjectId } from "mongodb";
-import { IRelationMorphToMany } from "../interfaces/IRelation";
-import LookupBuilder from "./LookupBuilder.ts";
-import QueryBuilder from "../QueryBuilder";
 import Model from "../Model";
+import QueryBuilder from "../QueryBuilder";
 import { IModelPaginate } from "../interfaces/IModel";
+import { IRelationMorphToMany } from "../interfaces/IRelation";
+import { Document, ObjectId } from "mongodb";
+
+import LookupBuilder from "./LookupBuilder.ts";
 
 export default class MorphToMany<T, M> extends QueryBuilder<M> {
   model: Model<T>;
@@ -97,7 +98,7 @@ export default class MorphToMany<T, M> extends QueryBuilder<M> {
         [foreignKey]: id,
         [this.morphId]: this.model?.["$id"],
         [this.morphType]: this.model.constructor.name,
-      })
+      }),
     );
 
     // find data
@@ -184,7 +185,7 @@ export default class MorphToMany<T, M> extends QueryBuilder<M> {
         [foreignKey]: id,
         [this.morphId]: this.model["$id"],
         [this.morphType]: this.model.constructor.name,
-      })
+      }),
     );
 
     // find data
@@ -197,7 +198,7 @@ export default class MorphToMany<T, M> extends QueryBuilder<M> {
     for (let i = 0; i < objectIds.length; i++) {
       const existingItem = existingData.find(
         (item: any) =>
-          JSON.stringify(item[foreignKey]) === JSON.stringify(objectIds[i])
+          JSON.stringify(item[foreignKey]) === JSON.stringify(objectIds[i]),
       );
 
       // insert if data does not exist
@@ -217,7 +218,7 @@ export default class MorphToMany<T, M> extends QueryBuilder<M> {
   }
 
   public async syncWithoutDetaching(
-    ids: string | ObjectId | (string | ObjectId)[]
+    ids: string | ObjectId | (string | ObjectId)[],
   ) {
     let objectIds: ObjectId[] = [];
     const foreignKey = `${this.relatedModel.constructor.name.toLowerCase()}Id`;
@@ -251,7 +252,7 @@ export default class MorphToMany<T, M> extends QueryBuilder<M> {
         [foreignKey]: id,
         [this.morphId]: this.model["$id"],
         [this.morphType]: this.model.constructor.name,
-      })
+      }),
     );
 
     // find data
@@ -264,7 +265,7 @@ export default class MorphToMany<T, M> extends QueryBuilder<M> {
     for (let i = 0; i < objectIds.length; i++) {
       const existingItem = existingData.find(
         (item: any) =>
-          JSON.stringify(item[foreignKey]) === JSON.stringify(objectIds[i])
+          JSON.stringify(item[foreignKey]) === JSON.stringify(objectIds[i]),
       );
 
       // insert if data does not exist
@@ -306,7 +307,7 @@ export default class MorphToMany<T, M> extends QueryBuilder<M> {
         [foreignKey]: id,
         [this.morphId]: this.model["$id"],
         [this.morphType]: this.model.constructor.name,
-      })
+      }),
     );
 
     // find data
@@ -322,7 +323,7 @@ export default class MorphToMany<T, M> extends QueryBuilder<M> {
     for (let i = 0; i < objectIds.length; i++) {
       const existingItem = existingData.find(
         (item: any) =>
-          JSON.stringify(item[foreignKey]) === JSON.stringify(objectIds[i])
+          JSON.stringify(item[foreignKey]) === JSON.stringify(objectIds[i]),
       );
 
       // insert if data does not exist
@@ -378,7 +379,7 @@ export default class MorphToMany<T, M> extends QueryBuilder<M> {
     if (morphToMany.options?.select) {
       const select = LookupBuilder.select(
         morphToMany.options.select,
-        morphToMany.alias
+        morphToMany.alias,
       );
       lookup.push(...select);
     }
@@ -387,7 +388,7 @@ export default class MorphToMany<T, M> extends QueryBuilder<M> {
     if (morphToMany.options?.exclude) {
       const exclude = LookupBuilder.exclude(
         morphToMany.options.exclude,
-        morphToMany.alias
+        morphToMany.alias,
       );
       lookup.push(...exclude);
     }
@@ -396,7 +397,7 @@ export default class MorphToMany<T, M> extends QueryBuilder<M> {
     if (morphToMany.options?.sort) {
       const sort = LookupBuilder.sort(
         morphToMany.options?.sort[0],
-        morphToMany.options?.sort[1]
+        morphToMany.options?.sort[1],
       );
       lookup.push(sort);
     }
@@ -477,7 +478,7 @@ export default class MorphToMany<T, M> extends QueryBuilder<M> {
           pivot: 0,
           alias: 0,
         },
-      }
+      },
     );
 
     return lookup;

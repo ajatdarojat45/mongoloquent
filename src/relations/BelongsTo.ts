@@ -1,9 +1,10 @@
+import Model from "../Model";
+import QueryBuilder from "../QueryBuilder";
+import { IModelPaginate } from "../interfaces/IModel";
 import { IRelationBelongsTo } from "../interfaces/IRelation";
 import { Document } from "mongodb";
+
 import LookupBuilder from "./LookupBuilder.ts";
-import QueryBuilder from "../QueryBuilder";
-import Model from "../Model";
-import { IModelPaginate } from "../interfaces/IModel";
 
 export default class BelongsTo<T, M> extends QueryBuilder<M> {
   model: Model<T>;
@@ -15,7 +16,7 @@ export default class BelongsTo<T, M> extends QueryBuilder<M> {
     model: Model<T>,
     relatedModel: Model<M>,
     foreignKey: keyof T,
-    ownerKey: keyof M
+    ownerKey: keyof M,
   ) {
     super();
     this.model = model;
@@ -104,7 +105,7 @@ export default class BelongsTo<T, M> extends QueryBuilder<M> {
     if (belongsTo.options?.select) {
       const select = LookupBuilder.select(
         belongsTo.options.select,
-        belongsTo.alias
+        belongsTo.alias,
       );
       lookup.push(...select);
     }
@@ -113,7 +114,7 @@ export default class BelongsTo<T, M> extends QueryBuilder<M> {
     if (belongsTo.options?.exclude) {
       const exclude = LookupBuilder.exclude(
         belongsTo.options.exclude,
-        belongsTo.alias
+        belongsTo.alias,
       );
       lookup.push(...exclude);
     }

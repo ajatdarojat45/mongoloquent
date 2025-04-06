@@ -1,10 +1,11 @@
-import { Document } from "mongodb";
-import { IRelationHasMany } from "../interfaces/IRelation";
-import LookupBuilder from "./LookupBuilder.ts";
 import Model from "../Model";
-import { FormSchema } from "../types/schema";
 import QueryBuilder from "../QueryBuilder";
 import { IModelPaginate } from "../interfaces/IModel";
+import { IRelationHasMany } from "../interfaces/IRelation";
+import { FormSchema } from "../types/schema";
+import { Document } from "mongodb";
+
+import LookupBuilder from "./LookupBuilder.ts";
 
 export default class HasMany<T, M> extends QueryBuilder<M> {
   model: Model<T>;
@@ -16,7 +17,7 @@ export default class HasMany<T, M> extends QueryBuilder<M> {
     model: Model<T>,
     relatedModel: Model<M>,
     foreignKey: keyof M,
-    localKey: keyof T
+    localKey: keyof T,
   ) {
     super();
     this.model = model;
@@ -121,7 +122,7 @@ export default class HasMany<T, M> extends QueryBuilder<M> {
     if (hasMany.options?.select) {
       const select = LookupBuilder.select(
         hasMany.options.select,
-        hasMany.alias
+        hasMany.alias,
       );
       lookup.push(...select);
     }
@@ -130,7 +131,7 @@ export default class HasMany<T, M> extends QueryBuilder<M> {
     if (hasMany.options?.exclude) {
       const exclude = LookupBuilder.exclude(
         hasMany.options.exclude,
-        hasMany.alias
+        hasMany.alias,
       );
       lookup.push(...exclude);
     }
@@ -139,7 +140,7 @@ export default class HasMany<T, M> extends QueryBuilder<M> {
     if (hasMany.options?.sort) {
       const sort = LookupBuilder.sort(
         hasMany.options?.sort[0],
-        hasMany.options?.sort[1]
+        hasMany.options?.sort[1],
       );
       lookup.push(sort);
     }

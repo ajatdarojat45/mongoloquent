@@ -1,9 +1,10 @@
-import { Document, ObjectId } from "mongodb";
-import { IRelationMorphedByMany } from "../interfaces/IRelation";
-import LookupBuilder from "./LookupBuilder.ts";
-import QueryBuilder from "../QueryBuilder";
 import Model from "../Model";
+import QueryBuilder from "../QueryBuilder";
 import { IModelPaginate } from "../interfaces/IModel";
+import { IRelationMorphedByMany } from "../interfaces/IRelation";
+import { Document, ObjectId } from "mongodb";
+
+import LookupBuilder from "./LookupBuilder.ts";
 
 export default class MorphedByMany<T, M> extends QueryBuilder<M> {
   model: Model<T>;
@@ -102,7 +103,7 @@ export default class MorphedByMany<T, M> extends QueryBuilder<M> {
     if (morphedByMany.options?.select) {
       const select = LookupBuilder.select(
         morphedByMany.options.select,
-        morphedByMany.alias
+        morphedByMany.alias,
       );
       lookup.push(...select);
     }
@@ -111,7 +112,7 @@ export default class MorphedByMany<T, M> extends QueryBuilder<M> {
     if (morphedByMany.options?.exclude) {
       const exclude = LookupBuilder.exclude(
         morphedByMany.options.exclude,
-        morphedByMany.alias
+        morphedByMany.alias,
       );
       lookup.push(...exclude);
     }
@@ -120,7 +121,7 @@ export default class MorphedByMany<T, M> extends QueryBuilder<M> {
     if (morphedByMany.options?.sort) {
       const sort = LookupBuilder.sort(
         morphedByMany.options?.sort[0],
-        morphedByMany.options?.sort[1]
+        morphedByMany.options?.sort[1],
       );
       lookup.push(sort);
     }
@@ -203,7 +204,7 @@ export default class MorphedByMany<T, M> extends QueryBuilder<M> {
           pivot: 0,
           alias: 0,
         },
-      }
+      },
     );
 
     return lookup;

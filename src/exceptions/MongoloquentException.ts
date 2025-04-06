@@ -18,7 +18,7 @@ export class MongoloquentNotFoundException extends MongoloquentException {
 export class MongoloquentInvalidArgumentException extends MongoloquentException {
   constructor(
     message: string = "Invalid argument",
-    status: number | null = null
+    status: number | null = null,
   ) {
     super(message, status);
     this.name = "MongoloquentInvalidArgumentException";
@@ -28,7 +28,7 @@ export class MongoloquentInvalidArgumentException extends MongoloquentException 
 export class MongoloquentItemNotFoundException extends MongoloquentException {
   constructor(
     message: string = "Item not found",
-    status: number | null = null
+    status: number | null = null,
   ) {
     super(message, status);
     this.name = "MongoloquentItemNotFoundException";
@@ -38,7 +38,7 @@ export class MongoloquentItemNotFoundException extends MongoloquentException {
 export class MongoloquentMultipleItemsFoundException extends MongoloquentException {
   constructor(
     message: string = "Multiple items found",
-    status: number | null = null
+    status: number | null = null,
   ) {
     super(message, status);
     this.name = "MongoloquentMultipleItemsFoundException";
@@ -48,7 +48,7 @@ export class MongoloquentMultipleItemsFoundException extends MongoloquentExcepti
 export class MongoloquentInvalidOperatorException extends MongoloquentException {
   constructor(
     message: string = "Invalid operator",
-    status: number | null = null
+    status: number | null = null,
   ) {
     super(message, status);
     this.name = "MongoloquentInvalidOperatorException";

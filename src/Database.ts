@@ -53,7 +53,7 @@ export default class Database {
     } catch (error) {
       console.error(
         "Mongoloquent failed to connect to MongoDB database:",
-        error
+        error,
       );
       // Throw an error if the connection fails
       throw new Error("Mongoloquent failed to connect to MongoDB database.");
