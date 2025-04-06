@@ -13,19 +13,13 @@ export default class MorphMany<T, M> extends QueryBuilder<M> {
   morphId: string;
   morphType: string;
 
-  constructor(
-    model: Model<T>,
-    relatedModel: Model<M>,
-    morph: string,
-    morphId: string,
-    morphType: string
-  ) {
+  constructor(model: Model<T>, relatedModel: Model<M>, morph: string) {
     super();
     this.model = model;
     this.relatedModel = relatedModel;
     this.morph = morph;
-    this.morphId = morphId;
-    this.morphType = morphType;
+    this.morphId = `${morph}Id`;
+    this.morphType = `${morph}Type`;
 
     this.$connection = relatedModel["$connection"];
     this.$collection = relatedModel["$collection"];

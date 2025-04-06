@@ -513,13 +513,7 @@ export default class Model<T> extends Relation<T> {
     const lookups = MorphMany.generate(morphMany);
     this.$lookups = [...this.$lookups, ...lookups];
 
-    return new MorphMany<T, M>(
-      this,
-      relation,
-      name,
-      `${name}Id`,
-      `${name}Type`
-    );
+    return new MorphMany<T, M>(this, relation, name);
   }
 
   morphTo<M>(model: new () => Model<M>, name: string) {
@@ -558,14 +552,7 @@ export default class Model<T> extends Relation<T> {
     const lookups = MorphToMany.generate(morphToMany);
     this.$lookups = [...this.$lookups, ...lookups];
 
-    return new MorphToMany<T, M>(
-      this,
-      relation,
-      name,
-      `${name}Id`,
-      `${name}Type`,
-      `${name}s`
-    );
+    return new MorphToMany<T, M>(this, relation, name);
   }
 
   morphedByMany<M>(model: new () => Model<M>, name: string) {
@@ -585,13 +572,6 @@ export default class Model<T> extends Relation<T> {
     const lookups = MorphedByMany.generate(morphedByMany);
     this.$lookups = [...this.$lookups, ...lookups];
 
-    return new MorphedByMany<T, M>(
-      this,
-      relation,
-      name,
-      `${name}Id`,
-      `${name}Type`,
-      `${name}s`
-    );
+    return new MorphedByMany<T, M>(this, relation, name);
   }
 }
