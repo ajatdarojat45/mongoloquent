@@ -83,7 +83,6 @@ export default class QueryBuilder<T> {
       const collection = this.getCollection();
       let newDoc = this.checkUseTimestamps(doc);
       newDoc = this.checkUseSoftdelete(newDoc);
-      //      newDoc = this.checkRelationship(newDoc);
 
       const data = await collection?.insertOne(
         newDoc as OptionalUnlessRequiredId<FormSchema<T>>,
@@ -113,7 +112,6 @@ export default class QueryBuilder<T> {
       const newDocs = docs.map((el) => {
         let newEl = this.checkUseTimestamps(el);
         newEl = this.checkUseSoftdelete(newEl);
-        // newEl = this.checkRelationship(newEl);
 
         return newEl;
       });
@@ -154,7 +152,6 @@ export default class QueryBuilder<T> {
   ) {
     try {
       const collection = this.getCollection();
-      //     await this.checkRelation();
       this.checkSoftDelete();
       this.generateWheres();
       const stages = this.getStages();
@@ -210,7 +207,6 @@ export default class QueryBuilder<T> {
     try {
       const collection = this.getCollection();
 
-      //     await this.checkRelation();
       this.checkSoftDelete();
       this.generateWheres();
       const stages = this.getStages();
