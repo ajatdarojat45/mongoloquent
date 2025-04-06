@@ -532,26 +532,13 @@ export default class Model<T> extends Relation<T> {
       morph: name,
       morphId: `${name}Id`,
       morphType: `${name}Type`,
-      morphCollectionName: `${name}s`,
       alias: this.$alias,
       options: this.$options,
     };
-    this.setRelationship(morphTo);
     const lookups = MorphTo.generate(morphTo);
     this.$lookups = [...this.$lookups, ...lookups];
 
-    relation.setRelationship({
-      type: IRelationTypes.morphTo,
-      model: relation,
-      relatedModel: this,
-      morph: name,
-      morphId: `${name}Id`,
-      morphType: `${name}Type`,
-      morphCollectionName: `${name}s`,
-      alias: "",
-      options: {},
-    });
-    return relation;
+    return new MorphTo<T, M>(this, relation, name);
   }
 
   morphToMany<M>(model: new () => Model<M>, name: string) {

@@ -1,8 +1,82 @@
-import { Document } from "mongodb";
+import { Document, ObjectId } from "mongodb";
 import { IRelationMorphTo } from "../interfaces/IRelation";
 import LookupBuilder from "./LookupBuilder.ts";
+import QueryBuilder from "../QueryBuilder";
+import Model from "../Model";
+import { IModelPaginate } from "../interfaces/IModel";
 
-export default class MorphTo extends LookupBuilder {
+export default class MorphTo<T, M> extends QueryBuilder<M> {
+  private model: Model<T>;
+  private relatedModel: Model<M>;
+  private morph: string;
+  private morphId: keyof T;
+  private morphType: keyof T;
+
+  constructor(model: Model<T>, relatedModel: Model<M>, morph: string) {
+    super();
+    this.model = model;
+    this.relatedModel = relatedModel;
+    this.morph = morph;
+    this.morphId = `${morph}Id` as keyof T;
+    this.morphType = `${morph}Type` as keyof T;
+
+    this.$connection = relatedModel["$connection"];
+    this.$collection = relatedModel["$collection"];
+    this.$useSoftDelete = relatedModel["$useSoftDelete"];
+    this.$databaseName = relatedModel["$databaseName"];
+    this.$useSoftDelete = relatedModel["$useSoftDelete"];
+    this.$useTimestamps = relatedModel["$useTimestamps"];
+    this.$isDeleted = relatedModel["$isDeleted"];
+  }
+
+  public all(): Promise<M[]> {
+    return super.all();
+  }
+
+  public async get<K extends keyof M>(...fields: (K | K[])[]) {
+    await this.setDefaultCondition();
+    return super.get(...fields);
+  }
+
+  public async paginate(page: number, limit: number): Promise<IModelPaginate> {
+    await this.setDefaultCondition();
+
+    return super.paginate(page, limit);
+  }
+
+  public first<K extends keyof M>(...fields: (K | K[])[]) {
+    return super.first(...fields);
+  }
+
+  public async count(): Promise<number> {
+    await this.setDefaultCondition();
+    return super.count();
+  }
+
+  public async sum<K extends keyof M>(field: K): Promise<number> {
+    await this.setDefaultCondition();
+    return super.sum(field);
+  }
+
+  public async min<K extends keyof M>(field: K): Promise<number> {
+    await this.setDefaultCondition();
+    return super.min(field);
+  }
+
+  public async max<K extends keyof M>(field: K): Promise<number> {
+    await this.setDefaultCondition();
+    return super.max(field);
+  }
+
+  public async avg<K extends keyof M>(field: K): Promise<number> {
+    await this.setDefaultCondition();
+    return super.avg(field);
+  }
+
+  private async setDefaultCondition() {
+    this.where("_id" as keyof M, this.model["$original"][this.morphId]);
+  }
+
   /**
    * Generates the lookup, select, and exclude stages for the MorphTo relation.
    * @param {IRelationMorphTo} morphTo - The MorphTo relation configuration.
@@ -15,13 +89,13 @@ export default class MorphTo extends LookupBuilder {
 
     // Generate the select stages if options.select is provided
     if (morphTo.options?.select) {
-      const select = this.select(morphTo.options.select, alias);
+      const select = LookupBuilder.select(morphTo.options.select, alias);
       lookup.push(...select);
     }
 
     // Generate the exclude stages if options.exclude is provided
     if (morphTo.options?.exclude) {
-      const exclude = this.exclude(morphTo.options.exclude, alias);
+      const exclude = LookupBuilder.exclude(morphTo.options.exclude, alias);
       lookup.push(...exclude);
     }
 
