@@ -6,7 +6,7 @@
 	"tabWidth": 2,
 	"plugins": ["@trivago/prettier-plugin-sort-imports"],
 	"importOrderParserPlugins": ["typescript", "decorators-legacy"],
-	"importOrder": ["^[a-z-]+/", "^src/", "^\\./", "^\\.$"],
+	"importOrder": ["^[a-z-]+/", "^src/", "^\\./", "^\\../", "^\\.$"],
 	"importOrderSeparation": true,
 	"importOrderSortSpecifiers": true
 }
