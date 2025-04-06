@@ -25,9 +25,20 @@ import MorphToMany from "./relations/MorphToMany";
 import MorphedByMany from "./relations/MorphedByMany";
 import { FormSchema } from "./types/schema";
 
+/**
+ * Base model class for all MongoDB models
+ * Extends QueryBuilder to provide query building capabilities
+ * @template T Type of the model schema
+ */
 export default class Model<T> extends QueryBuilder<T> {
+  /**
+   * Dynamic property accessor for model attributes
+   */
   [key: string]: any;
 
+  /**
+   * Creates a new model instance with a proxy to track property changes
+   */
   constructor() {
     super();
     return new Proxy(this, {
@@ -46,6 +57,13 @@ export default class Model<T> extends QueryBuilder<T> {
     });
   }
 
+  /**
+   * Inserts a new document into the collection
+   * @template M Type of the model class
+   * @param {FormSchema<M["$schema"]>} doc Document to insert
+   * @param {InsertOneOptions} [options] MongoDB insert options
+   * @returns {Promise<any>} Inserted document
+   */
   public static async insert<M extends typeof Model<any>>(
     this: M,
     doc: FormSchema<M["$schema"]>,
@@ -54,6 +72,13 @@ export default class Model<T> extends QueryBuilder<T> {
     return this.query().insert(doc, options);
   }
 
+  /**
+   * Creates a new document in the collection
+   * @template M Type of the model class
+   * @param {FormSchema<M["$schema"]>} doc Document to create
+   * @param {InsertOneOptions} [options] MongoDB insert options
+   * @returns {Promise<any>} Created document
+   */
   public static async create<M extends typeof Model<any>>(
     this: M,
     doc: FormSchema<M["$schema"]>,
@@ -62,6 +87,13 @@ export default class Model<T> extends QueryBuilder<T> {
     return this.query().create(doc, options);
   }
 
+  /**
+   * Inserts multiple documents into the collection
+   * @template M Type of the model class
+   * @param {FormSchema<M["$schema"]>[]} doc Documents to insert
+   * @param {BulkWriteOptions} [options] MongoDB bulk write options
+   * @returns {Promise<any>} Inserted documents
+   */
   public static async insertMany<M extends typeof Model<any>>(
     this: M,
     doc: FormSchema<M["$schema"]>[],
@@ -70,6 +102,13 @@ export default class Model<T> extends QueryBuilder<T> {
     return this.query().insertMany(doc, options);
   }
 
+  /**
+   * Creates multiple documents in the collection
+   * @template M Type of the model class
+   * @param {FormSchema<M["$schema"]>[]} doc Documents to create
+   * @param {BulkWriteOptions} [options] MongoDB bulk write options
+   * @returns {Promise<any>} Created documents
+   */
   public static async createMany<M extends typeof Model<any>>(
     this: M,
     doc: FormSchema<M["$schema"]>[],
@@ -78,6 +117,13 @@ export default class Model<T> extends QueryBuilder<T> {
     return this.query().createMany(doc, options);
   }
 
+  /**
+   * Updates a document or creates it if it doesn't exist
+   * @template M Type of the model class
+   * @param {Partial<M["$schema"]>} filter Filter to find document
+   * @param {Partial<FormSchema<M["$schema"]>>} doc Document to update or create
+   * @returns {Promise<any>} Updated or created document
+   */
   public static async updateOrCreate<M extends typeof Model<any>>(
     this: M,
     filter: Partial<M["$schema"]>,
@@ -86,6 +132,13 @@ export default class Model<T> extends QueryBuilder<T> {
     return this.query().updateOrCreate(filter, doc);
   }
 
+  /**
+   * Updates a document or inserts it if it doesn't exist
+   * @template M Type of the model class
+   * @param {Partial<M["$schema"]>} filter Filter to find document
+   * @param {Partial<FormSchema<M["$schema"]>>} doc Document to update or insert
+   * @returns {Promise<any>} Updated or inserted document
+   */
   public static async updateOrInsert<M extends typeof Model<any>>(
     this: M,
     filter: Partial<M["$schema"]>,
@@ -94,6 +147,12 @@ export default class Model<T> extends QueryBuilder<T> {
     return this.query().updateOrInsert(filter, doc);
   }
 
+  /**
+   * Soft deletes documents by their IDs
+   * @template M Type of the model class
+   * @param {...(string | ObjectId)[]} ids IDs of documents to delete
+   * @returns {Promise<any>} Result of the delete operation
+   */
   public static destroy<M extends typeof Model<any>>(
     this: M,
     ...ids: (string | ObjectId)[]
@@ -101,6 +160,12 @@ export default class Model<T> extends QueryBuilder<T> {
     return this.query().destroy(...ids);
   }
 
+  /**
+   * Hard deletes documents by their IDs
+   * @template M Type of the model class
+   * @param {...(string | ObjectId)[]} ids IDs of documents to delete
+   * @returns {Promise<any>} Result of the delete operation
+   */
   public static forceDestroy<M extends typeof Model<any>>(
     this: M,
     ...ids: (string | ObjectId)[]
@@ -108,6 +173,12 @@ export default class Model<T> extends QueryBuilder<T> {
     return this.query().forceDestroy(...ids);
   }
 
+  /**
+   * Selects specific fields from the documents
+   * @template M Type of the model class
+   * @param {...(keyof M["$schema"] | Array<keyof M["$schema"]>)[]} fields Fields to select
+   * @returns {Model<M["$schema"]>} Query builder instance
+   */
   public static select<M extends typeof Model<any>>(
     this: M,
     ...fields: (keyof M["$schema"] | Array<keyof M["$schema"]>)[]
@@ -115,6 +186,12 @@ export default class Model<T> extends QueryBuilder<T> {
     return this.query().select(...fields);
   }
 
+  /**
+   * Excludes specific fields from the documents
+   * @template M Type of the model class
+   * @param {...(keyof M["$schema"] | Array<keyof M["$schema"]>)[]} fields Fields to exclude
+   * @returns {Model<M["$schema"]>} Query builder instance
+   */
   public static exclude<M extends typeof Model<any>>(
     this: M,
     ...fields: (keyof M["$schema"] | Array<keyof M["$schema"]>)[]
@@ -122,6 +199,14 @@ export default class Model<T> extends QueryBuilder<T> {
     return this.query().exclude(...fields);
   }
 
+  /**
+   * Adds a where clause to the query
+   * @template M Type of the model class
+   * @param {keyof M["$schema"]} column Column to filter on
+   * @param {any} operator Operator or value
+   * @param {any} [value=null] Value if operator is provided
+   * @returns {Model<M["$schema"]>} Query builder instance
+   */
   static where<M extends typeof Model<any>>(
     this: M,
     column: keyof M["$schema"],
@@ -131,6 +216,14 @@ export default class Model<T> extends QueryBuilder<T> {
     return this.query().where(column, operator, value);
   }
 
+  /**
+   * Adds an OR where clause to the query
+   * @template M Type of the model class
+   * @param {keyof M["$schema"]} column Column to filter on
+   * @param {any} operator Operator or value
+   * @param {any} [value=null] Value if operator is provided
+   * @returns {Model<M["$schema"]>} Query builder instance
+   */
   static orWhere<M extends typeof Model<any>>(
     this: M,
     column: keyof M["$schema"],
@@ -140,6 +233,13 @@ export default class Model<T> extends QueryBuilder<T> {
     return this.query().orWhere(column, operator, value);
   }
 
+  /**
+   * Adds a where not clause to the query
+   * @template M Type of the model class
+   * @param {keyof M["$schema"]} column Column to filter on
+   * @param {any} value Value to exclude
+   * @returns {Model<M["$schema"]>} Query builder instance
+   */
   static whereNot<M extends typeof Model<any>>(
     this: M,
     column: keyof M["$schema"],
@@ -148,6 +248,13 @@ export default class Model<T> extends QueryBuilder<T> {
     return this.query().whereNot(column, value);
   }
 
+  /**
+   * Adds an OR where not clause to the query
+   * @template M Type of the model class
+   * @param {keyof M["$schema"]} column Column to filter on
+   * @param {any} value Value to exclude
+   * @returns {Model<M["$schema"]>} Query builder instance
+   */
   static orWhereNot<M extends typeof Model<any>>(
     this: M,
     column: keyof M["$schema"],
@@ -156,6 +263,13 @@ export default class Model<T> extends QueryBuilder<T> {
     return this.query().orWhereNot(column, value);
   }
 
+  /**
+   * Adds a where in clause to the query
+   * @template M Type of the model class
+   * @param {keyof M["$schema"]} column Column to filter on
+   * @param {any[]} value Array of values to include
+   * @returns {Model<M["$schema"]>} Query builder instance
+   */
   static whereIn<M extends typeof Model<any>>(
     this: M,
     column: keyof M["$schema"],
@@ -164,6 +278,13 @@ export default class Model<T> extends QueryBuilder<T> {
     return this.query().whereIn(column, value);
   }
 
+  /**
+   * Adds an OR where in clause to the query
+   * @template M Type of the model class
+   * @param {keyof M["$schema"]} column Column to filter on
+   * @param {any[]} value Array of values to include
+   * @returns {Model<M["$schema"]>} Query builder instance
+   */
   static orWhereIn<M extends typeof Model<any>>(
     this: M,
     column: keyof M["$schema"],
@@ -172,6 +293,13 @@ export default class Model<T> extends QueryBuilder<T> {
     return this.query().orWhereIn(column, value);
   }
 
+  /**
+   * Adds a where not in clause to the query
+   * @template M Type of the model class
+   * @param {keyof M["$schema"]} column Column to filter on
+   * @param {any[]} value Array of values to exclude
+   * @returns {Model<M["$schema"]>} Query builder instance
+   */
   static whereNotIn<M extends typeof Model<any>>(
     this: M,
     column: keyof M["$schema"],
@@ -180,6 +308,13 @@ export default class Model<T> extends QueryBuilder<T> {
     return this.query().whereNotIn(column, value);
   }
 
+  /**
+   * Adds an OR where not in clause to the query
+   * @template M Type of the model class
+   * @param {keyof M["$schema"]} column Column to filter on
+   * @param {any[]} value Array of values to exclude
+   * @returns {Model<M["$schema"]>} Query builder instance
+   */
   static orWhereNotIn<M extends typeof Model<any>>(
     this: M,
     column: keyof M["$schema"],
@@ -188,6 +323,13 @@ export default class Model<T> extends QueryBuilder<T> {
     return this.query().orWhereNotIn(column, value);
   }
 
+  /**
+   * Adds a where between clause to the query
+   * @template M Type of the model class
+   * @param {keyof M["$schema"]} column Column to filter on
+   * @param {[number, number?]} value Range values [min, max]
+   * @returns {Model<M["$schema"]>} Query builder instance
+   */
   static whereBetween<M extends typeof Model<any>>(
     this: M,
     column: keyof M["$schema"],
@@ -196,6 +338,13 @@ export default class Model<T> extends QueryBuilder<T> {
     return this.query().whereBetween(column, value);
   }
 
+  /**
+   * Adds an OR where between clause to the query
+   * @template M Type of the model class
+   * @param {keyof M["$schema"]} column Column to filter on
+   * @param {[number, number?]} value Range values [min, max]
+   * @returns {Model<M["$schema"]>} Query builder instance
+   */
   static orWhereBetween<M extends typeof Model<any>>(
     this: M,
     column: keyof M["$schema"],
@@ -204,6 +353,12 @@ export default class Model<T> extends QueryBuilder<T> {
     return this.query().orWhereBetween(column, value);
   }
 
+  /**
+   * Adds a where null clause to the query
+   * @template M Type of the model class
+   * @param {keyof M["$schema"]} column Column to check for null
+   * @returns {Model<M["$schema"]>} Query builder instance
+   */
   static whereNull<M extends typeof Model<any>>(
     this: M,
     column: keyof M["$schema"],
@@ -211,6 +366,12 @@ export default class Model<T> extends QueryBuilder<T> {
     return this.query().whereNull(column);
   }
 
+  /**
+   * Adds an OR where null clause to the query
+   * @template M Type of the model class
+   * @param {keyof M["$schema"]} column Column to check for null
+   * @returns {Model<M["$schema"]>} Query builder instance
+   */
   static orWhereNull<M extends typeof Model<any>>(
     this: M,
     column: keyof M["$schema"],
@@ -218,6 +379,12 @@ export default class Model<T> extends QueryBuilder<T> {
     return this.query().orWhereNull(column);
   }
 
+  /**
+   * Adds a where not null clause to the query
+   * @template M Type of the model class
+   * @param {keyof M["$schema"]} column Column to check for not null
+   * @returns {Model<M["$schema"]>} Query builder instance
+   */
   static whereNotNull<M extends typeof Model<any>>(
     this: M,
     column: keyof M["$schema"],
@@ -225,6 +392,12 @@ export default class Model<T> extends QueryBuilder<T> {
     return this.query().whereNotNull(column);
   }
 
+  /**
+   * Adds an OR where not null clause to the query
+   * @template M Type of the model class
+   * @param {keyof M["$schema"]} column Column to check for not null
+   * @returns {Model<M["$schema"]>} Query builder instance
+   */
   static orWhereNotNull<M extends typeof Model<any>>(
     this: M,
     column: keyof M["$schema"],
@@ -232,22 +405,52 @@ export default class Model<T> extends QueryBuilder<T> {
     return this.query().orWhereNotNull(column);
   }
 
+  /**
+   * Includes soft deleted documents in the query
+   * @template M Type of the model class
+   * @returns {Model<M["$schema"]>} Query builder instance
+   */
   static withTrashed<M extends typeof Model<any>>(this: M) {
     return this.query().withTrashed();
   }
 
+  /**
+   * Only includes soft deleted documents in the query
+   * @template M Type of the model class
+   * @returns {Model<M["$schema"]>} Query builder instance
+   */
   static onlyTrashed<M extends typeof Model<any>>(this: M) {
     return this.query().onlyTrashed();
   }
 
+  /**
+   * Sets the offset for the query
+   * @template M Type of the model class
+   * @param {number} value Number of documents to skip
+   * @returns {Model<M["$schema"]>} Query builder instance
+   */
   static offset<M extends typeof Model<any>>(this: M, value: number) {
     return this.query().offset(value);
   }
 
+  /**
+   * Sets the number of documents to skip
+   * @template M Type of the model class
+   * @param {number} value Number of documents to skip
+   * @returns {Model<M["$schema"]>} Query builder instance
+   */
   static skip<M extends typeof Model<any>>(this: M, value: number) {
     return this.query().skip(value);
   }
 
+  /**
+   * Sets the order for the query results
+   * @template M Type of the model class
+   * @param {keyof M["$schema"]} column Column to sort by
+   * @param {"asc"|"desc"} direction Sort direction
+   * @param {boolean} caseSensitive Whether to use case sensitive sorting
+   * @returns {Model<M["$schema"]>} Query builder instance
+   */
   static orderBy<M extends typeof Model<any>>(
     this: M,
     column: keyof M["$schema"],
@@ -257,10 +460,22 @@ export default class Model<T> extends QueryBuilder<T> {
     return this.query().orderBy(column, direction, caseSensitive);
   }
 
+  /**
+   * Sets the limit for the query
+   * @template M Type of the model class
+   * @param {number} value Maximum number of documents to return
+   * @returns {Model<M["$schema"]>} Query builder instance
+   */
   static limit<M extends typeof Model<any>>(this: M, value: number) {
     return this.query().limit(value);
   }
 
+  /**
+   * Executes the query and returns the documents
+   * @template M Type of the model class
+   * @param {...(keyof M["$schema"] | Array<keyof M["$schema"]>)[]} fields Fields to select
+   * @returns {Promise<any[]>} Retrieved documents
+   */
   static get<M extends typeof Model<any>>(
     this: M,
     ...fields: (keyof M["$schema"] | Array<keyof M["$schema"]>)[]
@@ -268,10 +483,22 @@ export default class Model<T> extends QueryBuilder<T> {
     return this.query().get(...fields);
   }
 
+  /**
+   * Gets all documents from the collection
+   * @template M Type of the model class
+   * @returns {Promise<any[]>} All documents
+   */
   static all<M extends typeof Model<any>>(this: M) {
     return this.query().all();
   }
 
+  /**
+   * Gets paginated results from the query
+   * @template M Type of the model class
+   * @param {number} page Page number
+   * @param {number} [limit] Documents per page
+   * @returns {Promise<{data: any[], meta: any}>} Paginated results and metadata
+   */
   static paginate<M extends typeof Model<any>>(
     this: M,
     page: number = 1,
@@ -280,6 +507,12 @@ export default class Model<T> extends QueryBuilder<T> {
     return this.query().paginate(page, limit);
   }
 
+  /**
+   * Gets the first document matching the query
+   * @template M Type of the model class
+   * @param {...(keyof M["$schema"] | Array<keyof M["$schema"]>)[]} fields Fields to select
+   * @returns {Promise<any>} First matching document
+   */
   static first<M extends typeof Model<any>>(
     this: M,
     ...fields: (keyof M["$schema"] | Array<keyof M["$schema"]>)[]
@@ -287,6 +520,13 @@ export default class Model<T> extends QueryBuilder<T> {
     return this.query().first(...fields);
   }
 
+  /**
+   * Gets the first document matching the filter or creates it
+   * @template M Type of the model class
+   * @param {Partial<M["$schema"]>} filter Filter to find the document
+   * @param {Partial<FormSchema<M["$schema"]>>} doc Document to create if not found
+   * @returns {Promise<any>} Retrieved or created document
+   */
   static firstOrCreate<M extends typeof Model<any>>(
     this: M,
     filter: Partial<M["$schema"]>,
@@ -295,6 +535,13 @@ export default class Model<T> extends QueryBuilder<T> {
     return this.query().firstOrCreate(filter, doc);
   }
 
+  /**
+   * Gets the first document matching the filter or returns a new model instance
+   * @template M Type of the model class
+   * @param {Partial<M["$schema"]>} filter Filter to find the document
+   * @param {Partial<FormSchema<M["$schema"]>>} doc Document properties for the new instance
+   * @returns {Promise<any>} Retrieved document or new instance
+   */
   static firstOrNew<M extends typeof Model<any>>(
     this: M,
     filter: Partial<M["$schema"]>,
@@ -303,10 +550,12 @@ export default class Model<T> extends QueryBuilder<T> {
     return this.query().firstOrNew(filter, doc);
   }
 
-  // static find<M extends typeof Model<any>>(this: M, id: string | ObjectId) {
-  //   return this.query().find(id);
-  // }
-
+  /**
+   * Finds a document by its ID
+   * @template M Type of the model class
+   * @param {string|ObjectId} id Document ID
+   * @returns {Promise<InstanceType<M>>} Retrieved document as model instance
+   */
   static find<M extends typeof Model<any>>(
     this: M,
     id: string | ObjectId,
@@ -314,30 +563,71 @@ export default class Model<T> extends QueryBuilder<T> {
     return this.query().find(id) as Promise<InstanceType<M>>;
   }
 
+  /**
+   * Counts documents matching the query
+   * @template M Type of the model class
+   * @returns {Promise<number>} Document count
+   */
   static count<M extends typeof Model<any>>(this: M) {
     return this.query().count();
   }
 
+  /**
+   * Gets the maximum value for a column
+   * @template M Type of the model class
+   * @param {keyof M["$schema"]} column Column to check
+   * @returns {Promise<number>} Maximum value
+   */
   static max<M extends typeof Model<any>>(this: M, column: keyof M["$schema"]) {
     return this.query().max(column);
   }
 
+  /**
+   * Gets the minimum value for a column
+   * @template M Type of the model class
+   * @param {keyof M["$schema"]} column Column to check
+   * @returns {Promise<number>} Minimum value
+   */
   static min<M extends typeof Model<any>>(this: M, column: keyof M["$schema"]) {
     return this.query().min(column);
   }
 
+  /**
+   * Gets the average value for a column
+   * @template M Type of the model class
+   * @param {keyof M["$schema"]} column Column to check
+   * @returns {Promise<number>} Average value
+   */
   static avg<M extends typeof Model<any>>(this: M, column: keyof M["$schema"]) {
     return this.query().avg(column);
   }
 
+  /**
+   * Gets the sum of values for a column
+   * @template M Type of the model class
+   * @param {keyof M["$schema"]} column Column to sum
+   * @returns {Promise<number>} Sum of values
+   */
   static sum<M extends typeof Model<any>>(this: M, column: keyof M["$schema"]) {
     return this.query().sum(column);
   }
 
+  /**
+   * Creates a new query builder instance
+   * @template M Type of the model class
+   * @returns {Model<M["$schema"]>} New query builder instance
+   */
   static query<M extends typeof Model<any>>(this: M): Model<M["$schema"]> {
     return new this();
   }
 
+  /**
+   * Eager loads a relation
+   * @template M Type of the model class
+   * @param {string} relation Relation name
+   * @param {IRelationOptions} [options={}] Relation loading options
+   * @returns {Model<M["$schema"]>} Query builder instance
+   */
   static with<M extends typeof Model<any>>(
     this: M,
     relation: string,
@@ -351,6 +641,12 @@ export default class Model<T> extends QueryBuilder<T> {
     return model;
   }
 
+  /**
+   * Eager loads a relation on an instance
+   * @param {string} relation Relation name
+   * @param {IRelationOptions} [options={}] Relation loading options
+   * @returns {this} Model instance
+   */
   with(relation: string, options: IRelationOptions = {}) {
     this.$alias = relation;
     this.$options = options;
@@ -359,6 +655,14 @@ export default class Model<T> extends QueryBuilder<T> {
     return this;
   }
 
+  /**
+   * Defines a has-many relationship
+   * @template M Type of the related model
+   * @param {new () => Model<M>} model Related model class
+   * @param {keyof M} foreignKey Foreign key on related model
+   * @param {keyof T} localKey Local key on this model
+   * @returns {HasMany<T, M>} HasMany relationship instance
+   */
   hasMany<M>(
     model: new () => Model<M>,
     foreignKey: keyof M,
@@ -381,6 +685,14 @@ export default class Model<T> extends QueryBuilder<T> {
     return new HasMany<T, M>(this, relation, foreignKey, localKey);
   }
 
+  /**
+   * Defines a has-one relationship
+   * @template M Type of the related model
+   * @param {new () => Model<M>} model Related model class
+   * @param {keyof M} foreignKey Foreign key on related model
+   * @param {keyof T} localKey Local key on this model
+   * @returns {HasOne<T, M>} HasOne relationship instance
+   */
   hasOne<M>(model: new () => Model<M>, foreignKey: keyof M, localKey: keyof T) {
     const relation = new model();
 
@@ -399,6 +711,14 @@ export default class Model<T> extends QueryBuilder<T> {
     return new HasOne<T, M>(this, relation, foreignKey, localKey);
   }
 
+  /**
+   * Defines a belongs-to relationship
+   * @template M Type of the related model
+   * @param {new () => Model<M>} model Related model class
+   * @param {keyof T} foreignKey Foreign key on this model
+   * @param {keyof M} ownerKey Owner key on related model
+   * @returns {BelongsTo<T, M>} BelongsTo relationship instance
+   */
   belongsTo<M>(
     model: new () => Model<M>,
     foreignKey: keyof T,
@@ -421,6 +741,18 @@ export default class Model<T> extends QueryBuilder<T> {
     return new BelongsTo<T, M>(this, relation, foreignKey, ownerKey);
   }
 
+  /**
+   * Defines a has-many-through relationship
+   * @template M Type of the related model
+   * @template TM Type of the intermediate model
+   * @param {new () => Model<M>} model Related model class
+   * @param {new () => Model<TM>} throughModel Intermediate model class
+   * @param {keyof TM} foreignKey Foreign key on intermediate model
+   * @param {keyof M} foreignKeyThrough Foreign key on related model
+   * @param {keyof T} localKey Local key on this model
+   * @param {keyof TM} localKeyThrough Local key on intermediate model
+   * @returns {HasManyThrough<T, M, TM>} HasManyThrough relationship instance
+   */
   hasManyThrough<M, TM>(
     model: new () => Model<M>,
     throughModel: new () => Model<TM>,
@@ -458,6 +790,18 @@ export default class Model<T> extends QueryBuilder<T> {
     );
   }
 
+  /**
+   * Defines a belongs-to-many relationship
+   * @template M Type of the related model
+   * @template TM Type of the pivot model
+   * @param {new () => Model<M>} model Related model class
+   * @param {new () => Model<TM>} pivotModel Pivot model class
+   * @param {keyof TM} foreignPivotKey Foreign key on pivot model for this model
+   * @param {keyof TM} relatedPivotKey Foreign key on pivot model for related model
+   * @param {keyof T} parentKey Primary key on this model
+   * @param {keyof M} relatedKey Primary key on related model
+   * @returns {BelongsToMany<T, M, TM>} BelongsToMany relationship instance
+   */
   belongsToMany<M, TM>(
     model: new () => Model<M>,
     pivotModel: new () => Model<TM>,
@@ -494,6 +838,13 @@ export default class Model<T> extends QueryBuilder<T> {
     );
   }
 
+  /**
+   * Defines a morph-many relationship
+   * @template M Type of the related model
+   * @param {new () => Model<M>} model Related model class
+   * @param {string} name Name of the polymorphic relation
+   * @returns {MorphMany<T, M>} MorphMany relationship instance
+   */
   morphMany<M>(model: new () => Model<M>, name: string) {
     const relation = new model();
 
@@ -513,6 +864,13 @@ export default class Model<T> extends QueryBuilder<T> {
     return new MorphMany<T, M>(this, relation, name);
   }
 
+  /**
+   * Defines a morph-to relationship
+   * @template M Type of the related model
+   * @param {new () => Model<M>} model Related model class
+   * @param {string} name Name of the polymorphic relation
+   * @returns {MorphTo<T, M>} MorphTo relationship instance
+   */
   morphTo<M>(model: new () => Model<M>, name: string) {
     const relation = new model();
 
@@ -532,6 +890,13 @@ export default class Model<T> extends QueryBuilder<T> {
     return new MorphTo<T, M>(this, relation, name);
   }
 
+  /**
+   * Defines a morph-to-many relationship
+   * @template M Type of the related model
+   * @param {new () => Model<M>} model Related model class
+   * @param {string} name Name of the polymorphic relation
+   * @returns {MorphToMany<T, M>} MorphToMany relationship instance
+   */
   morphToMany<M>(model: new () => Model<M>, name: string) {
     const relation = new model();
 
@@ -552,6 +917,13 @@ export default class Model<T> extends QueryBuilder<T> {
     return new MorphToMany<T, M>(this, relation, name);
   }
 
+  /**
+   * Defines a morphed-by-many relationship
+   * @template M Type of the related model
+   * @param {new () => Model<M>} model Related model class
+   * @param {string} name Name of the polymorphic relation
+   * @returns {MorphedByMany<T, M>} MorphedByMany relationship instance
+   */
   morphedByMany<M>(model: new () => Model<M>, name: string) {
     const relation = new model();
 
