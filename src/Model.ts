@@ -1,5 +1,4 @@
 import { BulkWriteOptions, InsertOneOptions, ObjectId } from "mongodb";
-import Relation from "./Relation";
 import { FormSchema } from "./types/schema";
 import {
   IRelationOptions,
@@ -23,8 +22,9 @@ import MorphMany from "./relations/MorphMany";
 import MorphTo from "./relations/MorphTo";
 import MorphToMany from "./relations/MorphToMany";
 import MorphedByMany from "./relations/MorphedByMany";
+import QueryBuilder from "./QueryBuilder";
 
-export default class Model<T> extends Relation<T> {
+export default class Model<T> extends QueryBuilder<T> {
   [key: string]: any;
 
   constructor() {

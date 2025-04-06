@@ -20,6 +20,7 @@ import operators from "./utils/operators";
 import dayjs from "./utils/dayjs";
 import { MongoloquentNotFoundException } from "./exceptions/MongoloquentException";
 import { IModelPaginate } from "./interfaces/IModel";
+import { IRelationOptions } from "./interfaces/IRelation";
 
 export default class QueryBuilder<T> {
   static $schema: Record<string, any>;
@@ -55,6 +56,9 @@ export default class QueryBuilder<T> {
   protected $isDeleted: string = "isDeleted";
   protected $deletedAt: string = "deletedAt";
   protected $limit: number = 0;
+
+  protected $alias: string = "";
+  protected $options: IRelationOptions = {};
 
   constructor() {
     this.$connection = (this.constructor as typeof QueryBuilder).$connection;
