@@ -485,10 +485,9 @@ export default class Model<T> extends Relation<T> {
     relatedPivotKey: keyof TM,
     parentKey: keyof T,
     relatedKey: keyof M
-  ): Model<M> {
+  ) {
     const relation = new model();
     const pivot = new pivotModel();
-
     const belongsToMany: IRelationBelongsToMany = {
       type: IRelationTypes.belongsToMany,
       model: this,
@@ -501,24 +500,18 @@ export default class Model<T> extends Relation<T> {
       alias: this.$alias,
       options: this.$options,
     };
-    this.setRelationship(belongsToMany);
     const lookups = BelongsToMany.generate(belongsToMany);
     this.$lookups = [...this.$lookups, ...lookups];
 
-    relation.setRelationship({
-      type: IRelationTypes.belongsToMany,
-      model: relation,
-      relatedModel: this,
-      pivotModel: pivot,
-      foreignPivotKey: foreignPivotKey as string,
-      relatedPivotKey: relatedPivotKey as string,
-      parentKey: parentKey as string,
-      relatedKey: relatedKey as string,
-      alias: "",
-      options: {},
-    });
-
-    return relation;
+    return new BelongsToMany<T, M, TM>(
+      this,
+      relation,
+      pivot,
+      foreignPivotKey,
+      relatedPivotKey,
+      parentKey,
+      relatedKey
+    );
   }
 
   morphMany<M>(model: new () => Model<M>, name: string): Model<M> {
@@ -729,19 +722,51 @@ class Video extends Model<IVideo> {
   }
 }
 
+interface IRole {
+  _id: ObjectId;
+  name: string;
+}
+
+interface IRoleUser {
+  _id: ObjectId;
+  userId: ObjectId;
+  roleId: ObjectId;
+  message: string;
+}
+
 class User extends Model<IUser> {
   static $schema: IUser;
 
   posts() {
     return this.hasMany(Post, "userId", "_id");
   }
+
+  roles() {
+    return this.belongsToMany(Role, RoleUser, "userId", "roleId", "_id", "_id");
+  }
+}
+
+class Role extends Model<IRole> {
+  static $schema: IRole;
+}
+
+class RoleUser extends Model<IRoleUser> {
+  static $schema: IRoleUser;
+  static $collection = "role_user";
+
+  user() {
+    return this.belongsTo(User, "userId", "_id");
+  }
 }
 
 (async () => {
-  // const post = await Post.find("67ed4054497784cac07774ca");
-  // const user = await posts.user().get();
-  // const user = await User.where("name", "Kosasih").first();
-  // post.user().dissociate();
-  // await post.save();
-  // console.log(post);
+  const alice = await User.find("67f13826e1a3f31136bdc101");
+  const roles = await alice
+    .roles()
+    .toggle([
+      "67f13826e1a3f31136bdc201",
+      "67f13826e1a3f31136bdc202",
+      "67f13826e1a3f31136bdc203",
+    ]);
+  console.log(roles);
 })();
