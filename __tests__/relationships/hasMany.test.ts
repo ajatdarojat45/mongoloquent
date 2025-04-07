@@ -72,8 +72,8 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await Post["query"]().delete();
-  await Comment["query"]().delete();
+  await Post["query"]().forceDestroy();
+  await Comment["query"]().forceDestroy();
 });
 
 describe("hasMany Relation", () => {

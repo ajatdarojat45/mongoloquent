@@ -1,28 +1,47 @@
 import { ObjectId } from "mongodb";
-import Model from "../../src/Model";
 
-class Project extends Model {
+import Model from "../../src/Model";
+import { IMongoloquentSchema } from "../../src/interfaces/ISchema";
+
+interface IProject extends IMongoloquentSchema {
+  _id: ObjectId;
+  name: string;
+}
+
+interface IEnvironment extends IMongoloquentSchema {
+  _id: ObjectId;
+  name: string;
+  projectId: ObjectId;
+}
+
+interface IDeployment extends IMongoloquentSchema {
+  _id: ObjectId;
+  commitHash: string;
+  environmentId: ObjectId;
+}
+
+class Project extends Model<IProject> {
   static $collection = "projects";
   static $useTimestamps = true;
   static $useSoftDelete = true;
 
-  static deployments() {
+  deployments() {
     return this.hasManyThrough(
       Deployment,
       Environment,
       "projectId",
-      "environmentId"
+      "environmentId",
     );
   }
 }
 
-class Environment extends Model {
+class Environment extends Model<IEnvironment> {
   static $collection = "environments";
   static $useTimestamps = true;
   static $useSoftDelete = true;
 }
 
-class Deployment extends Model {
+class Deployment extends Model<IDeployment> {
   static $collection = "deployments";
   static $useTimestamps = true;
   static $useSoftDelete = true;
@@ -74,13 +93,9 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  const projectCollection = Project["getCollection"]();
-  const environmentCollection = Environment["getCollection"]();
-  const deploymentCollection = Deployment["getCollection"]();
-
-  await projectCollection.deleteMany({});
-  await environmentCollection.deleteMany({});
-  await deploymentCollection.deleteMany({});
+  await Project["query"]().forceDestroy();
+  await Environment["query"]().forceDestroy();
+  await Deployment["query"]().forceDestroy();
 });
 
 describe("hasManyThrough relation", () => {
@@ -148,7 +163,7 @@ describe("hasManyThrough relation", () => {
   });
 
   it("With Querying related data", async () => {
-    const project = Project.find(projectIds[0]);
+    const project = await Project.find(projectIds[0]);
 
     const deployments = await project
       .deployments()
@@ -172,10 +187,8 @@ describe("hasManyThrough relation", () => {
     expect(project?.deployments).toEqual(expect.any(Array));
     expect(project?.deployments).toHaveLength(4);
 
-    const deploymentsWithTrashed = await Project.find(projectIds[0])
-      .deployments()
-      .withTrashed()
-      .get();
+    const d = await Project.find(projectIds[0]);
+    const deploymentsWithTrashed = await d.deployments().withTrashed().get();
 
     expect(deploymentsWithTrashed).toEqual(expect.any(Array));
     expect(deploymentsWithTrashed).toHaveLength(5);
