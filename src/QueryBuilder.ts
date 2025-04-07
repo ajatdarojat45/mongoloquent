@@ -1644,6 +1644,7 @@ export default class QueryBuilder<T> {
     this.$withTrashed = false;
     this.$onlyTrashed = false;
     this.$stages = [];
+    this.$lookups = [];
     this.$columns = [];
     this.$excludes = [];
     this.$wheres = [];

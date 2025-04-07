@@ -1,30 +1,45 @@
 import { ObjectId } from "mongodb";
-import Model from "../../src/Model";
 
-class Post extends Model {
+import Model from "../../src/Model";
+import { IMongoloquentSchema } from "../../src/interfaces/ISchema";
+
+interface IPost extends IMongoloquentSchema {
+  title: string;
+}
+interface IUser extends IMongoloquentSchema {
+  name: string;
+}
+interface IImage extends IMongoloquentSchema {
+  url: string;
+  imageableId: ObjectId;
+  imageableType: string;
+}
+
+class Post extends Model<IPost> {
   static $collection = "posts";
   static $useSoftDelete = true;
   static $useTimestamps = true;
 
-  static image() {
+  image() {
     return this.morphTo(Image, "imageable");
   }
 }
 
-class User extends Model {
+class User extends Model<IUser> {
   static $collection = "users";
   static $useSoftDelete = true;
   static $useTimestamps = true;
 
-  static image() {
+  image() {
     return this.morphTo(Image, "imageable");
   }
 }
 
-class Image extends Model {
+class Image extends Model<IImage> {
   static $collection = "imageables";
   static $useSoftDelete = true;
   static $useTimestamps = true;
+  static $schema: IImage;
 }
 
 let userIds: ObjectId[];
@@ -44,18 +59,16 @@ beforeAll(async () => {
     { title: "Post 3" },
   ]);
 
-  await User.find(userIds[0]).image().save({ url: "image1.jpg" });
-  await Post.find(postIds[0]).image().save({ url: "image2.jpg" });
+  await Image.insertMany([
+    { url: "image1.jpg", imageableId: userIds[0], imageableType: User.name },
+    { url: "image2.jpg", imageableId: postIds[0], imageableType: Post.name },
+  ]);
 });
 
 afterAll(async () => {
-  const userCollection = User["getCollection"]();
-  const postCollection = Post["getCollection"]();
-  const imageCollection = Image["getCollection"]();
-
-  await userCollection.deleteMany({});
-  await postCollection.deleteMany({});
-  await imageCollection.deleteMany({});
+  await User.query()["getCollection"]().deleteMany({});
+  await Post.query()["getCollection"]().deleteMany({});
+  await Image.query()["getCollection"]().deleteMany({});
 });
 
 describe("morphTo Relation", () => {
@@ -73,12 +86,10 @@ describe("morphTo Relation", () => {
 
   it("Should return related data from another model", async () => {
     const post = await Post.with("image").where("_id", postIds[0]).first();
-
     expect(post).toEqual(expect.any(Object));
     expect(post).toHaveProperty("image");
 
     const image = post?.image;
-
     expect(image).toEqual(expect.any(Object));
     expect(image).toHaveProperty("url");
     expect(image).toHaveProperty("imageableId", postIds[0]);
@@ -122,15 +133,16 @@ describe("morphTo Relation", () => {
   });
 
   it("With add data from related model", async () => {
-    await Post.find(postIds[1]).image().save({
+    const post = await Post.find(postIds[1]);
+    await post.image().save({
       url: "newImage.jpg",
     });
 
-    const post = await Post.with("image").where("_id", postIds[1]).first();
-    expect(post).toEqual(expect.any(Object));
-    expect(post).toHaveProperty("image");
+    const post2 = await Post.with("image").where("_id", postIds[1]).first();
+    expect(post2).toEqual(expect.any(Object));
+    expect(post2).toHaveProperty("image");
 
-    const image = post?.image;
+    const image = post2?.image;
     expect(image).toEqual(expect.any(Object));
     expect(image).toHaveProperty("url", "newImage.jpg");
     expect(image).toHaveProperty("imageableId", postIds[1]);
@@ -140,14 +152,14 @@ describe("morphTo Relation", () => {
   it("With has no data", async () => {
     const post = await Post.with("image").where("_id", postIds[2]).first();
     expect(post).toEqual(expect.any(Object));
-    expect(post).not.toHaveProperty("image");
+    expect(post?.["$original"]).not.toHaveProperty("image");
   });
 
   it("With softDelete", async () => {
     await Image.where("url", "image1.jpg").delete();
     const user = await User.with("image").where("_id", userIds[0]).first();
     expect(user).toEqual(expect.any(Object));
-    expect(user).not.toHaveProperty("image");
+    expect(user?.["$original"]).not.toHaveProperty("image");
 
     const images = await Image.withTrashed().get();
     expect(images).toEqual(expect.any(Array));
