@@ -93,9 +93,9 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await Project["query"]().forceDestroy();
-  await Environment["query"]().forceDestroy();
-  await Deployment["query"]().forceDestroy();
+  await Project.query()["getCollection"]().deleteMany({});
+  await Environment.query()["getCollection"]().deleteMany({});
+  await Deployment.query()["getCollection"]().deleteMany({});
 });
 
 describe("hasManyThrough relation", () => {
