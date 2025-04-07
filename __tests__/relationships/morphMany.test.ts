@@ -1,27 +1,43 @@
 import { ObjectId } from "mongodb";
-import Model from "../../src/Model";
 
-class Post extends Model {
+import Model from "../../src/Model";
+import { IMongoloquentSchema } from "../../src/interfaces/ISchema";
+
+interface IPost extends IMongoloquentSchema {
+  title: string;
+}
+
+interface IVideo extends IMongoloquentSchema {
+  name: string;
+}
+
+interface IComment extends IMongoloquentSchema {
+  text: string;
+  commentableId: ObjectId;
+  commentableType: string;
+}
+
+class Post extends Model<IPost> {
   static $collection = "posts";
   static $useSoftDelete = true;
   static $useTimestamps = true;
 
-  static comments() {
+  comments() {
     return this.morphMany(Comment, "commentable");
   }
 }
 
-class Video extends Model {
+class Video extends Model<IVideo> {
   static $collection = "videos";
   static $useSoftDelete = true;
   static $useTimestamps = true;
 
-  static comments() {
+  comments() {
     return this.morphMany(Comment, "commentable");
   }
 }
 
-class Comment extends Model {
+class Comment extends Model<IComment> {
   static $collection = "commentables";
   static $useSoftDelete = true;
   static $useTimestamps = true;
@@ -44,7 +60,7 @@ beforeAll(async () => {
   ]);
 
   const post: any = await Post.find(postIds[0]);
-  await post.comments().insertMany([
+  await post.comments().saveMany([
     {
       text: "Comment 1",
     },
@@ -54,17 +70,13 @@ beforeAll(async () => {
   ]);
 
   const video: any = await Video.find(videoIds[0]);
-  await video.comments().insertMany([{ text: "Comment 3" }]);
+  await video.comments().saveMany([{ text: "Comment 3" }]);
 });
 
 afterAll(async () => {
-  const videoCollection = Video["getCollection"]();
-  const postCollection = Post["getCollection"]();
-  const commentCollection = Comment["getCollection"]();
-
-  await videoCollection.deleteMany({});
-  await postCollection.deleteMany({});
-  await commentCollection.deleteMany({});
+  await Post.query()["getCollection"]().deleteMany({});
+  await Video.query()["getCollection"]().deleteMany({});
+  await Comment.query()["getCollection"]().deleteMany({});
 });
 
 describe("morphMany Relation", () => {
@@ -147,11 +159,8 @@ describe("morphMany Relation", () => {
     expect(post).toHaveProperty("comments");
     expect(post?.comments).toHaveLength(2);
 
-    const comments = await Post.find(postIds[0])
-      .comments()
-      .where("text", "Comment 1")
-      .get();
-
+    const post2 = await Post.find(postIds[0]);
+    const comments = await post2?.comments().where("text", "Comment 1").get();
     expect(comments).toEqual(expect.any(Array));
     expect(comments).toHaveLength(1);
   });
@@ -162,7 +171,8 @@ describe("morphMany Relation", () => {
     expect(post).toHaveProperty("comments");
     expect(post?.comments).toHaveLength(0);
 
-    await Post.find(postIds[2]).comments().save({
+    const post2 = await Post.find(postIds[2]);
+    await post2?.comments().save({
       text: "newComment 1",
     });
 
@@ -180,16 +190,15 @@ describe("morphMany Relation", () => {
     expect(post).toHaveProperty("comments");
     expect(post?.comments).toHaveLength(1);
 
-    await Post.find(postIds[2])
-      .comments()
-      .insertMany([
-        {
-          text: "newComment 2",
-        },
-        {
-          text: "newComment 3",
-        },
-      ]);
+    let post2 = await Post.find(postIds[2]);
+    await post2?.comments().saveMany([
+      {
+        text: "newComment 2",
+      },
+      {
+        text: "newComment 3",
+      },
+    ]);
 
     post = await Post.with("comments").where("_id", postIds[2]).first();
 
@@ -207,7 +216,8 @@ describe("morphMany Relation", () => {
     expect(post).toHaveProperty("comments");
     expect(post?.comments).toHaveLength(2);
 
-    const comments = await Post.find(postIds[2]).comments().withTrashed().get();
+    const post2 = await Post.find(postIds[2]);
+    const comments = await post2.comments().withTrashed().get();
     expect(comments).toEqual(expect.any(Array));
     expect(comments).toHaveLength(3);
   });
