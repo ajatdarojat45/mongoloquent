@@ -1,6 +1,14 @@
 import Model from "../../src/Model";
+import { IMongoloquentSchema } from "../../src/interfaces/ISchema";
 
-class User extends Model {}
+interface IUser extends IMongoloquentSchema {
+  name: string;
+  age: number;
+  address: string;
+}
+class User extends Model<IUser> {
+  static $schema: IUser;
+}
 
 const query = User["query"]();
 const userCollection = query["getCollection"]();
@@ -83,7 +91,7 @@ describe("Model - destroy method", () => {
 
     const ids = userIds.map((el) => el.toString());
 
-    const result = await User.destroy(ids);
+    const result = await User.destroy(...ids);
     const users = await User.all();
 
     expect(result).toEqual(2);
@@ -133,7 +141,7 @@ describe("Model - destroy method", () => {
       },
     ]);
 
-    const result = await User.destroy(userIds);
+    const result = await User.destroy(...userIds);
     const users = await User.all();
 
     expect(result).toEqual(2);

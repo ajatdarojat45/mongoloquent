@@ -1,7 +1,14 @@
 import { ObjectId } from "mongodb";
-import Model from "../../src/Model";
 
-class User extends Model {
+import Model from "../../src/Model";
+import { IMongoloquentSchema } from "../../src/interfaces/ISchema";
+
+interface IUser extends IMongoloquentSchema {
+  name: string;
+  email: string;
+}
+
+class User extends Model<IUser> {
   static $collection = "users";
   static $useSoftDelete = true;
   static $useTimestamps = true;
@@ -31,17 +38,26 @@ describe("Model.firstOrCreate", () => {
   });
 
   it("should return the existing document if it matches the condition", async () => {
-    const user = await User.firstOrCreate({ email: "john@example.com" });
+    const user = await User.firstOrCreate(
+      { email: "john@example.com" },
+      { email: "john@example.com" },
+    );
     expect(user).toEqual(expect.any(Object));
     expect(user).toHaveProperty("name", "John Doe");
     expect(user).toHaveProperty("email", "john@example.com");
   });
 
   it("should create a new document if no matching document is found", async () => {
-    const newUser = await User.firstOrCreate({
-      name: "Alice",
-      email: "alice@example.com",
-    });
+    const newUser = await User.firstOrCreate(
+      {
+        name: "Alice",
+        email: "alice@example.com",
+      },
+      {
+        name: "Alice",
+        email: "alice@example.com",
+      },
+    );
     expect(newUser).toEqual(expect.any(Object));
     expect(newUser).toHaveProperty("name", "Alice");
     expect(newUser).toHaveProperty("email", "alice@example.com");
@@ -57,7 +73,10 @@ describe("Model.firstOrCreate", () => {
   it("should handle documents with soft delete enabled", async () => {
     await User.destroy(userIds[0]);
 
-    const user: any = await User.firstOrCreate({ email: "john@example.com" });
+    const user: any = await User.firstOrCreate(
+      { email: "john@example.com" },
+      { email: "john@example.com" },
+    );
     expect(user).toEqual(expect.any(Object));
     expect(user).toHaveProperty("email", "john@example.com");
     expect(user).toHaveProperty(query.getIsDeleted(), false);

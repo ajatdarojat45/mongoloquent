@@ -1,6 +1,16 @@
 import Model from "../../src/Model";
+import { IMongoloquentSchema } from "../../src/interfaces/ISchema";
 
-class User extends Model {}
+interface IUser extends IMongoloquentSchema {
+  name: string;
+  email: string;
+  age: number;
+  balance: number;
+}
+class User extends Model<IUser> {
+  static $schema: IUser;
+  static $useSoftDelete = true;
+}
 
 const query = User["query"]();
 const userCollection = query["getCollection"]();
@@ -60,7 +70,7 @@ describe("Query Builder - exclude() method", () => {
     expect(result?.email).toBeDefined();
     expect(result?.age).toBeDefined();
     expect(result?.balance).toBeDefined();
-    expect(result?.[query.getIsDeleted()]).toBeDefined();
+    expect(result?.getIsDeleted()).toBeDefined();
   });
 
   it("should exclude multiple fields when passing an array parameter", async () => {
@@ -71,7 +81,7 @@ describe("Query Builder - exclude() method", () => {
     expect(result?.email).toBeDefined();
     expect(result?.age).toBeUndefined();
     expect(result?.balance).toBeDefined();
-    expect(result?.[query.getIsDeleted()]).toBeDefined();
+    expect(result?.getIsDeleted()).toBeDefined();
   });
 
   it("should exclude fields when chaining multiple exclude() calls", async () => {
@@ -82,6 +92,6 @@ describe("Query Builder - exclude() method", () => {
     expect(result?.email).toBeUndefined();
     expect(result?.age).toBeUndefined();
     expect(result?.balance).toBeDefined();
-    expect(result?.[query.getIsDeleted()]).toBeDefined();
+    expect(result?.getIsDeleted()).toBeDefined();
   });
 });

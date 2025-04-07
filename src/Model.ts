@@ -470,6 +470,10 @@ export default class Model<T> extends QueryBuilder<T> {
     return this.query().limit(value);
   }
 
+  public static take<M extends typeof Model<any>>(this: M, value: number) {
+    return this.query().limit(value);
+  }
+
   /**
    * Executes the query and returns the documents
    * @template M Type of the model class
@@ -490,6 +494,13 @@ export default class Model<T> extends QueryBuilder<T> {
    */
   public static all<M extends typeof Model<any>>(this: M) {
     return this.query().all();
+  }
+
+  public static async pluck<M extends typeof Model<any>>(
+    this: M,
+    ...fields: (keyof M["$schema"] | Array<keyof M["$schema"]>)[]
+  ) {
+    return this.query().pluck(...fields);
   }
 
   /**
@@ -622,6 +633,13 @@ export default class Model<T> extends QueryBuilder<T> {
     column: keyof M["$schema"],
   ) {
     return this.query().sum(column);
+  }
+
+  public static groupBy<M extends typeof Model<any>>(
+    this: M,
+    ...fields: (keyof M["$schema"] | Array<keyof M["$schema"]>)[]
+  ) {
+    return this.query().groupBy(...fields);
   }
 
   /**

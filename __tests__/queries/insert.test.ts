@@ -9,7 +9,7 @@ interface IUser extends IMongoloquentSchema, IMongoloquentTimestamps {
   age: number;
   address: string;
 }
-class User extends Model {
+class User extends Model<IUser> {
   static $schema: IUser;
 }
 

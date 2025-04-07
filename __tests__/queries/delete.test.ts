@@ -1,6 +1,14 @@
 import Model from "../../src/Model";
+import { IMongoloquentSchema } from "../../src/interfaces/ISchema";
 
-class User extends Model {}
+interface IUser extends IMongoloquentSchema {
+  name: string;
+  age: number;
+  address: string;
+}
+class User extends Model<IUser> {
+  static $schema: IUser;
+}
 
 const query = User["query"]();
 const userCollection = query["getCollection"]();
@@ -53,7 +61,7 @@ describe("User Model - delete method", () => {
 
     // Check if the user was deleted successfully
     expect(result).toEqual(1);
-    expect(user).toEqual(null);
+    expect(user).toBe(null);
   });
 
   it("should soft delete a user", async () => {

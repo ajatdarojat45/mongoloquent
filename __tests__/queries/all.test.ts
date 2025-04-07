@@ -1,12 +1,13 @@
-import { IMongoloquentSchema } from "../../src/interfaces/ISchema";
 import Model from "../../src/Model";
+import { IMongoloquentSchema } from "../../src/interfaces/ISchema";
+
 // Define User model extending from Model
 interface IUser extends IMongoloquentSchema {
   name: string;
   email: string;
   age: number;
 }
-class User extends Model {
+class User extends Model<IUser> {
   static $schema: IUser;
 }
 

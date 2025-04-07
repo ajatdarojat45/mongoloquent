@@ -1,6 +1,13 @@
 import Model from "../../src/Model";
+import { IMongoloquentSchema } from "../../src/interfaces/ISchema";
 
-class User extends Model {}
+interface IUser extends IMongoloquentSchema {
+  name: string;
+  age: number;
+  address: string;
+}
+
+class User extends Model<IUser> {}
 
 const query = User["query"]();
 const userCollection = query["getCollection"]();
@@ -74,7 +81,7 @@ describe("User Model - Update Method", () => {
     expect(updatedUser).toHaveProperty("_id");
     expect(updatedUser).toHaveProperty(
       query["$createdAt"],
-      (user as any)[query["$createdAt"]]
+      (user as any)[query["$createdAt"]],
     );
     expect(updatedUser).toHaveProperty(query["$updatedAt"]);
   });
@@ -133,7 +140,7 @@ describe("User Model - Update Method", () => {
     expect(updatedUser).toHaveProperty("_id", (user as any)._id);
     expect(updatedUser).toHaveProperty(
       query["$createdAt"],
-      (user as any)[query["$createdAt"]]
+      (user as any)[query["$createdAt"]],
     );
   });
 

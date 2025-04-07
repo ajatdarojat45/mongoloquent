@@ -1,3 +1,4 @@
+import { lookup } from "dns";
 import {
   BulkWriteOptions,
   Document,
@@ -22,7 +23,6 @@ import { IRelationOptions } from "./interfaces/IRelation";
 import { FormSchema } from "./types/schema";
 import dayjs from "./utils/dayjs";
 import operators from "./utils/operators";
-import { lookup } from "dns";
 
 /**
  * QueryBuilder class for MongoDB operations with Mongoloquent
@@ -863,10 +863,14 @@ export default class QueryBuilder<T> {
    */
   public async first<K extends keyof T>(
     ...fields: (K | K[])[]
-  ): Promise<this & T> {
+  ): Promise<(this & T) | null> {
     let data = await this.get(...fields);
     if (data && data.length > 0) {
       this.$original = { ...data[0] };
+    }
+
+    if (data.length === 0) {
+      return null;
     }
 
     let result = data[0] as T;
@@ -928,7 +932,7 @@ export default class QueryBuilder<T> {
    */
   public async firstOrFail<K extends keyof T>(...columns: (K | K[])[]) {
     const data = await this.first(...columns);
-    if (data && Object.keys(data.$original).length === 0) {
+    if (!data) {
       throw new MongoloquentNotFoundException();
     }
 
@@ -1024,6 +1028,12 @@ export default class QueryBuilder<T> {
    */
   public async sum<K extends keyof T>(field: K): Promise<number> {
     return this.aggregates(field, "sum");
+  }
+
+  public groupBy<K extends keyof T>(...fields: (K | K[])[]): QueryBuilder<T> {
+    const flattenedFields = fields.flat() as (keyof T)[];
+    this.$groups = [...this.$groups, ...flattenedFields];
+    return this;
   }
 
   /**
@@ -1322,16 +1332,6 @@ export default class QueryBuilder<T> {
   private setOrders(doc: IQueryOrder): void {
     if (Array.isArray(doc)) this.$orders = [...this.$orders, ...doc];
     else this.$orders = [...this.$orders, doc];
-  }
-
-  /**
-   * Sets group by columns
-   * @param doc Column to group by
-   * @private
-   */
-  private setGroups<K extends keyof T>(doc: K): void {
-    if (Array.isArray(doc)) this.$groups = [...this.$groups, ...doc];
-    else this.$groups = [...this.$groups, doc];
   }
 
   /**

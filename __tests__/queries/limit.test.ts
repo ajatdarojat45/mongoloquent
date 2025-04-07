@@ -1,6 +1,15 @@
 import Model from "../../src/Model";
+import { IMongoloquentSchema } from "../../src/interfaces/ISchema";
 
-class User extends Model {}
+interface IUser extends IMongoloquentSchema {
+  name: string;
+  email: string;
+  age: number;
+  balance: number;
+}
+class User extends Model<IUser> {
+  static $schema: IUser;
+}
 
 const query = User["query"]();
 const userCollection = query["getCollection"]();
@@ -61,7 +70,7 @@ describe("Model - limit() method", () => {
 
   it("should limit result to 1 record with AND conditions", async () => {
     const result = await User.where("age", 5)
-      .where(query.getIsDeleted(), false)
+      .where(query.getIsDeleted() as keyof IUser, false)
       .limit(1)
       .get();
 
@@ -109,7 +118,7 @@ describe("Model - limit() method", () => {
   it("should limit result to 1 record with soft delete and AND conditions", async () => {
     User["$useSoftDelete"] = true;
     const result = await User.where("age", 5)
-      .where(query.getIsDeleted(), false)
+      .where(query.getIsDeleted() as keyof IUser, false)
       .limit(1)
       .get();
 

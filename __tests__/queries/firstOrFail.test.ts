@@ -1,9 +1,16 @@
 import { ObjectId } from "mongodb";
-import Model from "../../src/Model";
-import MongoloquentNotFoundException from "../../src/exceptions/MongoloquentNotFoundException";
 
-class TestModel extends Model {
+import Model from "../../src/Model";
+import { MongoloquentNotFoundException } from "../../src/exceptions/MongoloquentException";
+
+interface ITestModel {
+  name: string;
+  value: number;
+}
+
+class TestModel extends Model<ITestModel> {
   static $collection = "testCollection";
+  static $schema: ITestModel;
 }
 
 const query = TestModel["query"]();
@@ -29,7 +36,7 @@ describe("Model.firstOrFail", () => {
   it("Should return the first document that matches the query criteria", async () => {
     const document = await TestModel.where(
       "name",
-      "Test Document"
+      "Test Document",
     ).firstOrFail();
     expect(document).toEqual(expect.any(Object));
     expect(document).toHaveProperty("_id", documentId);
@@ -39,13 +46,13 @@ describe("Model.firstOrFail", () => {
 
   it("Should throw ModelNotFoundException if no document matches the query criteria", async () => {
     await expect(
-      TestModel.where("name", "Nonexistent Document").firstOrFail()
+      TestModel.where("name", "Nonexistent Document").firstOrFail(),
     ).rejects.toThrow(MongoloquentNotFoundException);
   });
 
   it("Should return the first document with specified column", async () => {
     const document = await TestModel.where("name", "Test Document").firstOrFail(
-      "name"
+      "name",
     );
     expect(document).toEqual(expect.any(Object));
     expect(document).toHaveProperty("_id", documentId);
@@ -55,7 +62,7 @@ describe("Model.firstOrFail", () => {
 
   it("Should return the first document with specified columns", async () => {
     const document = await TestModel.where("name", "Test Document").firstOrFail(
-      ["name", "value"]
+      ["name", "value"],
     );
     expect(document).toEqual(expect.any(Object));
     expect(document).toHaveProperty("_id", documentId);
@@ -65,7 +72,7 @@ describe("Model.firstOrFail", () => {
 
   it("Should throw ModelNotFoundException if no document matches the query criteria with specified columns", async () => {
     await expect(
-      TestModel.where("name", "Nonexistent Document").firstOrFail(["name"])
+      TestModel.where("name", "Nonexistent Document").firstOrFail(["name"]),
     ).rejects.toThrow(MongoloquentNotFoundException);
   });
 });

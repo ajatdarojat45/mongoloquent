@@ -1,6 +1,16 @@
 import Model from "../../src/Model";
+import { IMongoloquentSchema } from "../../src/interfaces/ISchema";
 
-class User extends Model {}
+interface IUser extends IMongoloquentSchema {
+  name: string;
+  email: string;
+  age: number;
+  balance: number;
+}
+class User extends Model<IUser> {
+  static $schema: IUser;
+  static $useSoftDelete = true;
+}
 
 const query = User["query"]();
 const userCollection = query["getCollection"]();
@@ -73,8 +83,7 @@ describe("Find Method Tests", () => {
 
   it("should return null when finding soft deleted document using first() method", async () => {
     User["$useSoftDelete"] = true;
-    const user = (await User.find(userIds["4"])) as any;
-    expect(user?.["_id"]).toBeUndefined();
-    User["$useSoftDelete"] = false;
+    const user = await User.find(userIds["4"]);
+    expect(user).toBeNull();
   });
 });
