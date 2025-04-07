@@ -832,8 +832,8 @@ export default class Model<T> extends QueryBuilder<T> {
     pivotModel: new () => Model<TM>,
     foreignPivotKey: keyof TM,
     relatedPivotKey: keyof TM,
-    parentKey: keyof T,
-    relatedKey: keyof M,
+    parentKey: keyof T = "_id" as keyof T,
+    relatedKey: keyof M = "_id" as keyof M,
   ) {
     const relation = new model();
     const pivot = new pivotModel();
@@ -974,7 +974,7 @@ export default class Model<T> extends QueryBuilder<T> {
    * @template M Type of the model class
    * @returns {Model<M["$schema"]>} New query builder instance
    */
-  private static query<M extends typeof Model<any>>(
+  public static query<M extends typeof Model<any>>(
     this: M,
   ): Model<M["$schema"]> {
     return new this();

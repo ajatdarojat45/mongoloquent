@@ -1,10 +1,11 @@
+import { Document, ObjectId, OptionalUnlessRequiredId } from "mongodb";
+
+import LookupBuilder from "./LookupBuilder.ts";
+
 import Model from "../Model";
 import QueryBuilder from "../QueryBuilder";
 import { IModelPaginate } from "../interfaces/IModel";
 import { IRelationBelongsToMany } from "../interfaces/IRelation";
-import { Document, ObjectId, OptionalUnlessRequiredId } from "mongodb";
-
-import LookupBuilder from "./LookupBuilder.ts";
 
 export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
   private model: Model<T>;
@@ -425,7 +426,6 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
 
   private async setDefaultCondition() {
     const btmIds = await this.pivotModel
-      .withTrashed()
       .where(this.foreignPivotKey, this.model["$original"][this.parentKey])
       .pluck(this.relatedPivotKey);
 

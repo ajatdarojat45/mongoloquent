@@ -1,27 +1,43 @@
 import { ObjectId } from "mongodb";
-import Model from "../../src/Model";
 
-class User extends Model {
+import Model from "../../src/Model";
+import { IMongoloquentSchema } from "../../src/interfaces/ISchema";
+
+interface IUser extends IMongoloquentSchema {
+  name: string;
+  age: number;
+}
+
+interface IRole extends IMongoloquentSchema {
+  name: string;
+  type: string;
+}
+interface IRoleUser extends IMongoloquentSchema {
+  userId: ObjectId;
+  roleId: ObjectId;
+}
+
+class User extends Model<IUser> {
   static $collection = "users";
   static $useSoftDelete = true;
   static $useTimestamps = true;
 
-  static roles() {
+  roles() {
     return this.belongsToMany(Role, RoleUser, "userId", "roleId");
   }
 }
 
-class Role extends Model {
+class Role extends Model<IRole> {
   static $collection = "roles";
   static $useSoftDelete = true;
   static $useTimestamps = true;
 
-  static users() {
+  users() {
     return this.belongsToMany(User, RoleUser, "roleId", "userId");
   }
 }
 
-class RoleUser extends Model {
+class RoleUser extends Model<IRoleUser> {
   static $collection = "role_user";
   static $useSoftDelete = true;
   static $useTimestamps = true;
@@ -32,17 +48,17 @@ let roleIds: ObjectId[];
 
 beforeAll(async () => {
   userIds = await User.insertMany([
-    { name: "Udin", age: 10, [User.getIsDeleted()]: false },
-    { name: "Kosasih", age: 11, [User.getIsDeleted()]: false },
-    { name: "Jhon", age: 12, [User.getIsDeleted()]: false },
+    { name: "Udin", age: 10, [User["query"]().getIsDeleted()]: false },
+    { name: "Kosasih", age: 11, [User["query"]().getIsDeleted()]: false },
+    { name: "Jhon", age: 12, [User["query"]().getIsDeleted()]: false },
   ]);
 
   roleIds = await Role.insertMany([
-    { name: "Role 1", type: "Full", [User.getIsDeleted()]: false },
-    { name: "Role 2", type: "Half", [User.getIsDeleted()]: false },
-    { name: "Role 3", type: "Empty", [User.getIsDeleted()]: false },
-    { name: "Role 4", type: "Empty", [User.getIsDeleted()]: false },
-    { name: "Role 5", type: "Empty", [User.getIsDeleted()]: false },
+    { name: "Role 1", type: "Full", [User["query"]().getIsDeleted()]: false },
+    { name: "Role 2", type: "Half", [User["query"]().getIsDeleted()]: false },
+    { name: "Role 3", type: "Empty", [User["query"]().getIsDeleted()]: false },
+    { name: "Role 4", type: "Empty", [User["query"]().getIsDeleted()]: false },
+    { name: "Role 5", type: "Empty", [User["query"]().getIsDeleted()]: false },
   ]);
 
   const udin = await User.find(userIds[0]);
@@ -53,13 +69,9 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  const userCollection = User["getCollection"]();
-  const roleCollection = Role["getCollection"]();
-  const roleUserCollection = RoleUser["getCollection"]();
-
-  await userCollection.deleteMany({});
-  await roleCollection.deleteMany({});
-  await roleUserCollection.deleteMany({});
+  await User.query()["getCollection"]().deleteMany({});
+  await Role.query()["getCollection"]().deleteMany({});
+  await RoleUser.query()["getCollection"]().deleteMany({});
 });
 
 describe("belongsToMany Relation", () => {
@@ -166,26 +178,28 @@ describe("belongsToMany Relation", () => {
   });
 
   it("With attach method", async () => {
-    await User.find(userIds[0]).roles().attach(roleIds[3]);
+    const user = await User.find(userIds[0]);
+    await user.roles().attach(roleIds[3]);
 
-    const roles = await User.find(userIds[0]).roles().get();
+    const roles = await user.roles().get();
 
     expect(roles).toEqual(expect.any(Array));
     expect(roles).toHaveLength(3);
   });
 
   it("With detach method", async () => {
-    await User.find(userIds[0]).roles().detach([roleIds[1], roleIds[2]]);
-    const roles = await User.find(userIds[0]).roles().get();
+    const user = await User.find(userIds[0]);
+    await user.roles().detach([roleIds[1], roleIds[2]]);
+
+    const roles = await user.roles().get();
     expect(roles).toEqual(expect.any(Array));
-    expect(roles).toHaveLength(3);
+    expect(roles).toHaveLength(1);
   });
 
   it("With sync method", async () => {
-    await User.find(userIds[0]).roles().sync([roleIds[1], roleIds[2]]);
-
-    const roles = await User.find(userIds[0]).roles().get();
-
+    const user = await User.find(userIds[0]);
+    await user.roles().sync([roleIds[1], roleIds[2]]);
+    const roles = await user.roles().get();
     expect(roles).toEqual(expect.any(Array));
     expect(roles).toHaveLength(2);
   });
