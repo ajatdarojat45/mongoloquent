@@ -1,21 +1,34 @@
+import { ObjectId } from "mongodb";
+
 import Model from "../../src/Model";
 
-class User extends Model {
+interface IUser {
+  _id: ObjectId;
+  name: string;
+}
+
+interface IPhone {
+  _id: ObjectId;
+  number: string;
+  userId: ObjectId;
+}
+
+class User extends Model<IUser> {
   static $collection = "users";
   static $useTimestamps = true;
   static $useSoftDelete = true;
 
-  static phone() {
+  phone() {
     return this.hasOne(Phone, "userId", "_id");
   }
 }
 
-class Phone extends Model {
+class Phone extends Model<IPhone> {
   static $collection = "phones";
   static $useTimestamps = true;
   static $useSoftDelete = true;
 
-  static user() {
+  user() {
     return this.belongsTo(User, "userId", "_id");
   }
 }
@@ -46,11 +59,8 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  const userCollection = User["getCollection"]();
-  const phoneCollection = Phone["getCollection"]();
-
-  await userCollection.deleteMany({});
-  await phoneCollection.deleteMany({});
+  await User.query()["getCollection"]().deleteMany({});
+  await Phone.query()["getCollection"]().deleteMany({});
 });
 
 describe("hasOne Relation", () => {
@@ -97,7 +107,7 @@ describe("hasOne Relation", () => {
     const user = await User.with("phone").where("name", "Jhon").first();
 
     expect(user).toEqual(expect.any(Object));
-    expect(user).not.toHaveProperty("phone");
+    expect(user?.phone).not.toHaveProperty("phone");
   });
 
   it("with softDelete should be has no related data", async () => {
