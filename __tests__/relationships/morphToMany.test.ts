@@ -1,41 +1,61 @@
 import { ObjectId } from "mongodb";
-import Model from "../../src/Model";
 
-class Post extends Model {
+import Model from "../../src/Model";
+import { IMongoloquentSchema } from "../../src/interfaces/ISchema";
+
+interface IPost extends IMongoloquentSchema {
+  title: string;
+}
+
+interface IVideo extends IMongoloquentSchema {
+  name: string;
+}
+
+interface ITag extends IMongoloquentSchema {
+  name: string;
+}
+
+interface ITaggable extends IMongoloquentSchema {
+  tagId: ObjectId;
+  taggableId: ObjectId;
+  taggableType: string;
+}
+
+class Post extends Model<IPost> {
   static $collection = "posts";
   static $useSoftDelete = true;
   static $useTimestamps = true;
 
-  static tags() {
+  tags() {
     return this.morphToMany(Tag, "taggable");
   }
 }
 
-class Video extends Model {
+class Video extends Model<IVideo> {
   static $collection = "videos";
   static $useSoftDelete = true;
   static $useTimestamps = true;
 
-  static tags() {
+  tags() {
     return this.morphToMany(Tag, "taggable");
   }
 }
 
-class Tag extends Model {
+class Tag extends Model<ITag> {
   static $collection = "tags";
   static $useSoftDelete = true;
   static $useTimestamps = true;
 
-  static posts() {
+  posts() {
     return this.morphedByMany(Post, "taggable");
   }
 
-  static videos() {
+  videos() {
     return this.morphedByMany(Video, "taggable");
   }
 }
 
-class Taggable extends Model {
+class Taggable extends Model<ITaggable> {
   static $collection = "taggables";
 }
 
@@ -62,21 +82,21 @@ beforeAll(async () => {
     { name: "Tag 3" },
   ]);
 
-  await Post.find(postIds[0]).tags().attach(tagIds);
-  await Post.find(postIds[1]).tags().attach(tagIds);
-  await Video.find(videoIds[0]).tags().attach(tagIds);
+  const post = await Post.find(postIds[0]);
+  await post.tags().attach(tagIds);
+
+  const post2 = await Post.find(postIds[1]);
+  await post2.tags().attach(tagIds);
+
+  const video = await Video.find(videoIds[0]);
+  await video.tags().attach(tagIds);
 });
 
 afterAll(async () => {
-  const postCollection = Post["getCollection"]();
-  const videoCollection = Video["getCollection"]();
-  const tagCollection = Tag["getCollection"]();
-  const taggableCollection = Taggable["getCollection"]();
-
-  await postCollection.deleteMany({});
-  await videoCollection.deleteMany({});
-  await tagCollection.deleteMany({});
-  await taggableCollection.deleteMany({});
+  await Post.query()["getCollection"]().deleteMany({});
+  await Video.query()["getCollection"]().deleteMany({});
+  await Tag.query()["getCollection"]().deleteMany({});
+  await Taggable.query()["getCollection"]().deleteMany({});
 });
 
 describe("morphToMany Relation", () => {
@@ -136,10 +156,8 @@ describe("morphToMany Relation", () => {
     expect(post).toHaveProperty("tags");
     expect(post?.tags).toHaveLength(3);
 
-    const tags = await Post.find(postIds[0])
-      .tags()
-      .where("name", "Tag 1")
-      .get();
+    const post2 = await Post.find(postIds[0]);
+    const tags = await post2.tags().where("name", "Tag 1").get();
     expect(tags).toEqual(expect.any(Array));
     expect(tags).toHaveLength(1);
   });
@@ -161,7 +179,8 @@ describe("morphToMany Relation", () => {
     expect(post).toHaveProperty("tags");
     expect(post?.tags).toHaveLength(2);
 
-    const tags = await Post.find(postIds[0]).tags().withTrashed().get();
+    const post2 = await Post.find(postIds[0]);
+    const tags = await post2.tags().withTrashed().get();
     expect(tags).toEqual(expect.any(Array));
     expect(tags).toHaveLength(3);
   });
@@ -172,7 +191,6 @@ describe("morphToMany Relation Reverse", () => {
     const tag = await Tag.with("posts").where("_id", tagIds[0]).first();
     expect(tag).toEqual(expect.any(Object));
     expect(tag).toHaveProperty("posts");
-
     const posts = tag?.posts;
     expect(posts).toEqual(expect.any(Array));
     expect(posts).toHaveLength(2);
@@ -182,7 +200,6 @@ describe("morphToMany Relation Reverse", () => {
     const tag = await Tag.with("videos").where("_id", tagIds[0]).first();
     expect(tag).toEqual(expect.any(Object));
     expect(tag).toHaveProperty("videos");
-
     const videos = tag?.videos;
     expect(videos).toEqual(expect.any(Array));
     expect(videos).toHaveLength(1);
@@ -196,11 +213,9 @@ describe("morphToMany Relation Reverse", () => {
       .first();
     expect(tag).toEqual(expect.any(Object));
     expect(tag).toHaveProperty("posts");
-
     const posts = tag?.posts;
     expect(posts).toEqual(expect.any(Array));
     expect(posts).toHaveLength(2);
-
     const [post] = posts;
     expect(post).toEqual(expect.any(Object));
     expect(post).toHaveProperty("title");
@@ -215,11 +230,9 @@ describe("morphToMany Relation Reverse", () => {
       .first();
     expect(tag).toEqual(expect.any(Object));
     expect(tag).toHaveProperty("posts");
-
     const posts = tag?.posts;
     expect(posts).toEqual(expect.any(Array));
     expect(posts).toHaveLength(2);
-
     const post = posts[0];
     expect(post).toEqual(expect.any(Object));
     expect(post).not.toHaveProperty("title");
@@ -233,10 +246,9 @@ describe("morphToMany Relation Reverse", () => {
     expect(tag?.posts).toEqual(expect.any(Array));
     expect(tag?.posts).toHaveLength(2);
 
-    const posts = await Tag.find(tagIds[0])
-      .posts()
-      .where("title", "Post 1")
-      .get();
+    const tag2 = await Tag.find(tagIds[0]);
+
+    const posts = await tag2.posts().where("title", "Post 1").get();
     expect(posts).toEqual(expect.any(Array));
     expect(posts).toHaveLength(1);
   });
@@ -248,7 +260,8 @@ describe("morphToMany Relation Reverse", () => {
     expect(tag).toHaveProperty("posts");
     expect(tag?.posts).toHaveLength(1);
 
-    const posts = await Tag.find(tagIds[0]).posts().withTrashed().get();
+    const tag2 = await Tag.find(tagIds[0]);
+    const posts = await tag2.posts().withTrashed().get();
     expect(posts).toEqual(expect.any(Array));
     expect(posts).toHaveLength(2);
   });
