@@ -1,4 +1,4 @@
-import { Document, ObjectId } from "mongodb";
+import { Document } from "mongodb";
 
 import QueryBuilder from "./QueryBuilder";
 import { IDBLookup } from "./interfaces/IDB";
@@ -36,18 +36,28 @@ export default class DB<T> extends QueryBuilder<T> {
     return q;
   }
 
+  /**
+   * Performs a MongoDB $lookup aggregation to join documents from another collection
+   * @param {IDBLookup} document - The lookup configuration containing from, localField, foreignField, and as properties
+   * @returns {this} The current DB instance for method chaining
+   */
   public lookup(document: IDBLookup) {
     this.$lookups.push({
-      $lookup: document
-    })
+      $lookup: document,
+    });
 
     return this;
   }
 
+  /**
+   * Adds raw MongoDB aggregation pipeline stages to the query
+   * @param {Document | Document[]} documents - One or more MongoDB aggregation pipeline stages
+   * @returns {this} The current DB instance for method chaining
+   */
   public raw(documents: Document | Document[]) {
-    const docs = Array.isArray(documents) ? documents : [documents]
-    this["$stages"].push(...docs)
+    const docs = Array.isArray(documents) ? documents : [documents];
+    this["$stages"].push(...docs);
 
-    return this
+    return this;
   }
 }
