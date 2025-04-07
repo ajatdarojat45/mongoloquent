@@ -22,6 +22,7 @@ import { IRelationOptions } from "./interfaces/IRelation";
 import { FormSchema } from "./types/schema";
 import dayjs from "./utils/dayjs";
 import operators from "./utils/operators";
+import { lookup } from "dns";
 
 /**
  * QueryBuilder class for MongoDB operations with Mongoloquent
@@ -1575,6 +1576,7 @@ export default class QueryBuilder<T> {
       const collection = this.getCollection();
       const stages = this.getStages();
       const lookups = this.getLookups();
+
       const aggregate = collection?.aggregate([...stages, ...lookups]);
 
       this.resetQuery();

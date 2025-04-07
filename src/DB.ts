@@ -1,4 +1,7 @@
+import { Document, ObjectId } from "mongodb";
+
 import QueryBuilder from "./QueryBuilder";
+import { IDBLookup } from "./interfaces/IDB";
 
 /**
  * DB class represents a database collection wrapper that extends QueryBuilder
@@ -31,5 +34,20 @@ export default class DB<T> extends QueryBuilder<T> {
     q["$collection"] = collection;
 
     return q;
+  }
+
+  public lookup(document: IDBLookup) {
+    this.$lookups.push({
+      $lookup: document
+    })
+
+    return this;
+  }
+
+  public raw(documents: Document | Document[]) {
+    const docs = Array.isArray(documents) ? documents : [documents]
+    this["$stages"].push(...docs)
+
+    return this
   }
 }
