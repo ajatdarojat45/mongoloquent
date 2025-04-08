@@ -72,7 +72,10 @@ export default class BelongsTo<T, M> extends QueryBuilder<M> {
    * @param {number} limit - The number of records per page
    * @returns {Promise<IModelPaginate>} Promise that resolves with paginated result
    */
-  public paginate(page: number, limit: number): Promise<IModelPaginate> {
+  public paginate(
+    page: number = 1,
+    limit: number = 15,
+  ): Promise<IModelPaginate> {
     this.where(this.ownerKey, this.model["$original"][this.foreignKey]);
     return super.paginate(page, limit);
   }
