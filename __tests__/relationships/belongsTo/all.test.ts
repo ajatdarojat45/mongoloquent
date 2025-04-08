@@ -58,7 +58,7 @@ describe("all method", () => {
     ]);
 
     const comment = await Comment.find(commentIds[0]);
-    const posts = await comment.post().get();
+    const posts = await comment.post().all();
     expect(posts).toEqual(expect.any(Array));
     expect(posts).toHaveLength(1);
     expect(posts[0]).toEqual(
