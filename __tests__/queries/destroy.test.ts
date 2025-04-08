@@ -101,70 +101,6 @@ describe("destroy method", () => {
         expect(flights).toHaveLength(2);
         expect(flights[0]).toHaveProperty(Flight.query()["$isDeleted"], true);
       });
-
-      it("with array of string param", async () => {
-        interface IFlight extends IMongoloquentSchema {
-          name: string;
-        }
-
-        class Flight extends Model<IFlight> {
-          static $schema: IFlight;
-          static $useSoftDelete = true;
-        }
-
-        const flightIds = await Flight.insertMany([
-          { name: "Flight 1" },
-          { name: "Flight 2" },
-        ]);
-
-        const deleted = await Flight.destroy([
-          flightIds[0].toString(),
-          flightIds[1].toString(),
-        ]);
-        expect(deleted).toEqual(expect.any(Number));
-        expect(deleted).toBe(2);
-
-        let flights = await Flight.get();
-        expect(flights).toEqual(expect.any(Array));
-        expect(flights).toHaveLength(0);
-
-        flights = await Flight.withTrashed().get();
-        expect(flights).toEqual(expect.any(Array));
-        expect(flights).toHaveLength(2);
-        expect(flights[0]).toHaveProperty(Flight.query()["$isDeleted"], true);
-      });
-
-      it("with mix array param", async () => {
-        interface IFlight extends IMongoloquentSchema {
-          name: string;
-        }
-
-        class Flight extends Model<IFlight> {
-          static $schema: IFlight;
-          static $useSoftDelete = true;
-        }
-
-        const flightIds = await Flight.insertMany([
-          { name: "Flight 1" },
-          { name: "Flight 2" },
-        ]);
-
-        const deleted = await Flight.destroy([
-          flightIds[0].toString(),
-          flightIds[1],
-        ]);
-        expect(deleted).toEqual(expect.any(Number));
-        expect(deleted).toBe(2);
-
-        let flights = await Flight.get();
-        expect(flights).toEqual(expect.any(Array));
-        expect(flights).toHaveLength(0);
-
-        flights = await Flight.withTrashed().get();
-        expect(flights).toEqual(expect.any(Array));
-        expect(flights).toHaveLength(2);
-        expect(flights[0]).toHaveProperty(Flight.query()["$isDeleted"], true);
-      });
     });
 
     describe("with objectId param", () => {
@@ -253,6 +189,40 @@ describe("destroy method", () => {
         expect(flights).toHaveLength(2);
         expect(flights[0]).toHaveProperty(Flight.query()["$isDeleted"], true);
       });
+    });
+
+    describe("with array param", () => {
+      it("with array of string param", async () => {
+        interface IFlight extends IMongoloquentSchema {
+          name: string;
+        }
+
+        class Flight extends Model<IFlight> {
+          static $schema: IFlight;
+          static $useSoftDelete = true;
+        }
+
+        const flightIds = await Flight.insertMany([
+          { name: "Flight 1" },
+          { name: "Flight 2" },
+        ]);
+
+        const deleted = await Flight.destroy([
+          flightIds[0].toString(),
+          flightIds[1].toString(),
+        ]);
+        expect(deleted).toEqual(expect.any(Number));
+        expect(deleted).toBe(2);
+
+        let flights = await Flight.get();
+        expect(flights).toEqual(expect.any(Array));
+        expect(flights).toHaveLength(0);
+
+        flights = await Flight.withTrashed().get();
+        expect(flights).toEqual(expect.any(Array));
+        expect(flights).toHaveLength(2);
+        expect(flights[0]).toHaveProperty(Flight.query()["$isDeleted"], true);
+      });
 
       it("with array of objectId param", async () => {
         interface IFlight extends IMongoloquentSchema {
@@ -298,7 +268,10 @@ describe("destroy method", () => {
           { name: "Flight 2" },
         ]);
 
-        const deleted = await Flight.destroy([flightIds[0], flightIds[1]]);
+        const deleted = await Flight.destroy([
+          flightIds[0].toString(),
+          flightIds[1],
+        ]);
         expect(deleted).toEqual(expect.any(Number));
         expect(deleted).toBe(2);
 
@@ -390,60 +363,6 @@ describe("destroy method", () => {
         expect(flights).toEqual(expect.any(Array));
         expect(flights).toHaveLength(0);
       });
-
-      it("with array of string param", async () => {
-        interface IFlight extends IMongoloquentSchema {
-          name: string;
-        }
-
-        class Flight extends Model<IFlight> {
-          static $schema: IFlight;
-          static $useSoftDelete = false;
-        }
-
-        const flightIds = await Flight.insertMany([
-          { name: "Flight 1" },
-          { name: "Flight 2" },
-        ]);
-
-        const deleted = await Flight.destroy([
-          flightIds[0].toString(),
-          flightIds[1].toString(),
-        ]);
-        expect(deleted).toEqual(expect.any(Number));
-        expect(deleted).toBe(2);
-
-        const flights = await Flight.get();
-        expect(flights).toEqual(expect.any(Array));
-        expect(flights).toHaveLength(0);
-      });
-
-      it("with mix array param", async () => {
-        interface IFlight extends IMongoloquentSchema {
-          name: string;
-        }
-
-        class Flight extends Model<IFlight> {
-          static $schema: IFlight;
-          static $useSoftDelete = false;
-        }
-
-        const flightIds = await Flight.insertMany([
-          { name: "Flight 1" },
-          { name: "Flight 2" },
-        ]);
-
-        const deleted = await Flight.destroy([
-          flightIds[0].toString(),
-          flightIds[1],
-        ]);
-        expect(deleted).toEqual(expect.any(Number));
-        expect(deleted).toBe(2);
-
-        const flights = await Flight.get();
-        expect(flights).toEqual(expect.any(Array));
-        expect(flights).toHaveLength(0);
-      });
     });
 
     describe("with objectId param", () => {
@@ -518,6 +437,35 @@ describe("destroy method", () => {
         expect(flights).toEqual(expect.any(Array));
         expect(flights).toHaveLength(0);
       });
+    });
+
+    describe("with array param", () => {
+      it("with array of string param", async () => {
+        interface IFlight extends IMongoloquentSchema {
+          name: string;
+        }
+
+        class Flight extends Model<IFlight> {
+          static $schema: IFlight;
+          static $useSoftDelete = false;
+        }
+
+        const flightIds = await Flight.insertMany([
+          { name: "Flight 1" },
+          { name: "Flight 2" },
+        ]);
+
+        const deleted = await Flight.destroy([
+          flightIds[0].toString(),
+          flightIds[1].toString(),
+        ]);
+        expect(deleted).toEqual(expect.any(Number));
+        expect(deleted).toBe(2);
+
+        const flights = await Flight.get();
+        expect(flights).toEqual(expect.any(Array));
+        expect(flights).toHaveLength(0);
+      });
 
       it("with array of objectId param", async () => {
         interface IFlight extends IMongoloquentSchema {
@@ -558,7 +506,10 @@ describe("destroy method", () => {
           { name: "Flight 2" },
         ]);
 
-        const deleted = await Flight.destroy([flightIds[0], flightIds[1]]);
+        const deleted = await Flight.destroy([
+          flightIds[0].toString(),
+          flightIds[1],
+        ]);
         expect(deleted).toEqual(expect.any(Number));
         expect(deleted).toBe(2);
 
