@@ -3,7 +3,6 @@ import Model from "../../src/Model";
 import {
   IMongoloquentSchema,
   IMongoloquentSoftDelete,
-  IMongoloquentTimestamps,
 } from "../../src/interfaces/ISchema";
 
 beforeEach(async () => {

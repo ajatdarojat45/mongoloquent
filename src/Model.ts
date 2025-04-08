@@ -155,9 +155,14 @@ export default class Model<T> extends QueryBuilder<T> {
    */
   public static destroy<M extends typeof Model<any>>(
     this: M,
-    ...ids: (string | ObjectId)[]
+    // ...ids: (string | ObjectId)[]
+    ...ids: (string | ObjectId | (string | ObjectId)[])[]
   ) {
-    return this.query().destroy(...ids);
+    const flattenedIds = ids.reduce<(string | ObjectId)[]>((acc, id) => {
+      return acc.concat(Array.isArray(id) ? id : [id]);
+    }, []);
+
+    return this.query().destroy(...flattenedIds);
   }
 
   /**

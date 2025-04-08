@@ -419,12 +419,19 @@ export default class QueryBuilder<T> {
    * @param ids IDs of documents to delete
    * @returns Number of documents deleted or soft-deleted
    */
-  public async destroy(...ids: (string | ObjectId)[]): Promise<number> {
-    ids = ids.map((el) => {
+  public async destroy(
+    ...ids: (string | ObjectId | (string | ObjectId)[])[]
+  ): Promise<number> {
+    let flattenedIds = ids.reduce<(string | ObjectId)[]>((acc, id) => {
+      return acc.concat(Array.isArray(id) ? id : [id]);
+    }, []);
+
+    flattenedIds = flattenedIds.map((el) => {
       if (typeof el === "string") return new ObjectId(el);
       return el;
     });
-    this.where("_id" as keyof T, "in", ids);
+
+    this.where("_id" as keyof T, "in", flattenedIds);
     return this.delete();
   }
 

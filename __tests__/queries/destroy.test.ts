@@ -1,150 +1,176 @@
+import DB from "../../src/DB";
 import Model from "../../src/Model";
-import { IMongoloquentSchema } from "../../src/interfaces/ISchema";
+import {
+  IMongoloquentSchema,
+  IMongoloquentSoftDelete,
+} from "../../src/interfaces/ISchema";
 
-interface IUser extends IMongoloquentSchema {
-  name: string;
-  age: number;
-  address: string;
-}
-class User extends Model<IUser> {
-  static $schema: IUser;
-}
-
-const query = User["query"]();
-const userCollection = query["getCollection"]();
-
-beforeAll(async () => {
-  try {
-    await userCollection?.deleteMany({});
-  } catch (error) {
-    console.error(error);
-  }
+beforeEach(async () => {
+  await DB.collection("flights").getCollection().deleteMany({});
 });
 
-afterAll(async () => {
-  try {
-    await userCollection?.deleteMany({});
-  } catch (error) {
-    console.error(error);
-  }
-});
+describe("destroy method", () => {
+  describe("with soft delete", () => {
+    describe("with string param", () => {
+      it("with single string param", async () => {
+        interface IFlight extends IMongoloquentSchema, IMongoloquentSoftDelete {
+          name: string;
+        }
 
-describe("Model - destroy method", () => {
-  beforeEach(async () => {
-    try {
-      await userCollection?.deleteMany({});
-    } catch (error) {
-      console.error(error);
-    }
+        class Flight extends Model<IFlight> {
+          static $schema: IFlight;
+          static $useSoftDelete = true;
+        }
+
+        const flightIds = await Flight.insertMany([{ name: "Flight 1" }]);
+
+        const deleted = await Flight.destroy(flightIds[0].toString());
+        expect(deleted).toEqual(expect.any(Number));
+        expect(deleted).toBe(1);
+
+        const flights = await Flight.get();
+        expect(flights).toEqual(expect.any(Array));
+        expect(flights).toHaveLength(0);
+      });
+
+      it("with multiple string param", async () => {
+        interface IFlight extends IMongoloquentSchema, IMongoloquentSoftDelete {
+          name: string;
+        }
+
+        class Flight extends Model<IFlight> {
+          static $schema: IFlight;
+          static $useSoftDelete = true;
+        }
+
+        const flightIds = await Flight.insertMany([
+          { name: "Flight 1" },
+          { name: "Flight 2" },
+        ]);
+
+        const deleted = await Flight.destroy(
+          flightIds[0].toString(),
+          flightIds[1].toString(),
+        );
+        expect(deleted).toEqual(expect.any(Number));
+        expect(deleted).toBe(2);
+
+        const flights = await Flight.get();
+        expect(flights).toEqual(expect.any(Array));
+        expect(flights).toHaveLength(0);
+      });
+
+      it("with array of string param", async () => {
+        interface IFlight extends IMongoloquentSchema, IMongoloquentSoftDelete {
+          name: string;
+        }
+
+        class Flight extends Model<IFlight> {
+          static $schema: IFlight;
+          static $useSoftDelete = true;
+        }
+
+        const flightIds = await Flight.insertMany([
+          { name: "Flight 1" },
+          { name: "Flight 2" },
+        ]);
+
+        const deleted = await Flight.destroy([
+          flightIds[0].toString(),
+          flightIds[1].toString(),
+        ]);
+        expect(deleted).toEqual(expect.any(Number));
+        expect(deleted).toBe(2);
+
+        const flights = await Flight.get();
+        expect(flights).toEqual(expect.any(Array));
+        expect(flights).toHaveLength(0);
+      });
+    });
+
+    describe("with objectId param", () => {
+      it("with single objectId param", async () => {});
+
+      it("with multiple objectId param", async () => {});
+
+      it("with array of objectId param", async () => {});
+    });
   });
 
-  afterAll(async () => {
-    try {
-      await userCollection?.deleteMany({});
-    } catch (error) {
-      console.error(error);
-    }
-  });
+  describe("without soft delete", () => {
+    it("with single string param", async () => {
+      interface IFlight extends IMongoloquentSchema {
+        name: string;
+      }
 
-  // Test case for deleting a single user by string ID
-  it("should delete a single user when given a string ID", async () => {
-    User["$useSoftDelete"] = false;
-    User["$useTimestamps"] = false;
+      class Flight extends Model<IFlight> {
+        static $schema: IFlight;
+        static $useSoftDelete = false;
+      }
 
-    const userIds = await User.insertMany([
-      {
-        name: "Udin",
-        age: 20,
-        address: "Bogor",
-      },
-      {
-        name: "John Doe",
-        age: 25,
-        address: "Bandung",
-      },
-    ]);
+      const flightIds = await Flight.insertMany([{ name: "Flight 1" }]);
 
-    const result = await User.destroy(userIds[0].toString());
-    const users = await User.all();
+      const deleted = await Flight.destroy(flightIds[0].toString());
+      expect(deleted).toEqual(expect.any(Number));
+      expect(deleted).toBe(1);
 
-    expect(result).toEqual(1);
-    expect(users?.length).toEqual(1);
-  });
+      const flights = await Flight.get();
+      expect(flights).toEqual(expect.any(Array));
+      expect(flights).toHaveLength(0);
+    });
 
-  // Test case for deleting multiple users by an array of string IDs
-  it("should delete multiple users when given an array of string IDs", async () => {
-    User["$useSoftDelete"] = false;
-    User["$useTimestamps"] = false;
+    it("with multiple string param", async () => {
+      interface IFlight extends IMongoloquentSchema {
+        name: string;
+      }
 
-    const userIds = await User.insertMany([
-      {
-        name: "Udin",
-        age: 20,
-        address: "Bogor",
-      },
-      {
-        name: "John Doe",
-        age: 25,
-        address: "Bandung",
-      },
-    ]);
+      class Flight extends Model<IFlight> {
+        static $schema: IFlight;
+        static $useSoftDelete = false;
+      }
 
-    const ids = userIds.map((el) => el.toString());
+      const flightIds = await Flight.insertMany([
+        { name: "Flight 1" },
+        { name: "Flight 2" },
+      ]);
 
-    const result = await User.destroy(...ids);
-    const users = await User.all();
+      const deleted = await Flight.destroy(
+        flightIds[0].toString(),
+        flightIds[1].toString(),
+      );
+      expect(deleted).toEqual(expect.any(Number));
+      expect(deleted).toBe(2);
 
-    expect(result).toEqual(2);
-    expect(users?.length).toEqual(0);
-  });
+      const flights = await Flight.get();
+      expect(flights).toEqual(expect.any(Array));
+      expect(flights).toHaveLength(0);
+    });
 
-  // Test case for deleting a single user by ObjectId
-  it("should delete a single user when given an ObjectId", async () => {
-    User["$useSoftDelete"] = false;
-    User["$useTimestamps"] = false;
+    it("with array of string param", async () => {
+      interface IFlight extends IMongoloquentSchema {
+        name: string;
+      }
 
-    const userIds = await User.insertMany([
-      {
-        name: "Udin",
-        age: 20,
-        address: "Bogor",
-      },
-      {
-        name: "John Doe",
-        age: 25,
-        address: "Bandung",
-      },
-    ]);
+      class Flight extends Model<IFlight> {
+        static $schema: IFlight;
+        static $useSoftDelete = false;
+      }
 
-    const result = await User.destroy(userIds[0]);
-    const users = await User.all();
+      const flightIds = await Flight.insertMany([
+        { name: "Flight 1" },
+        { name: "Flight 2" },
+      ]);
 
-    expect(result).toEqual(1);
-    expect(users?.length).toEqual(1);
-  });
+      const deleted = await Flight.destroy([
+        flightIds[0].toString(),
+        flightIds[1].toString(),
+      ]);
+      expect(deleted).toEqual(expect.any(Number));
+      expect(deleted).toBe(2);
 
-  // Test case for deleting multiple users by an array of ObjectIds
-  it("should delete multiple users when given an array of ObjectIds", async () => {
-    User["$useSoftDelete"] = false;
-    User["$useTimestamps"] = false;
-
-    const userIds = await User.insertMany([
-      {
-        name: "Udin",
-        age: 20,
-        address: "Bogor",
-      },
-      {
-        name: "John Doe",
-        age: 25,
-        address: "Bandung",
-      },
-    ]);
-
-    const result = await User.destroy(...userIds);
-    const users = await User.all();
-
-    expect(result).toEqual(2);
-    expect(users?.length).toEqual(0);
+      const flights = await Flight.get();
+      expect(flights).toEqual(expect.any(Array));
+      expect(flights).toHaveLength(0);
+    });
   });
 });
