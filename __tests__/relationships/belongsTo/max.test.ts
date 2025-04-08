@@ -17,8 +17,8 @@ afterEach(async () => {
   await DB.collection("comments").getCollection().deleteMany({});
 });
 
-describe("min method", () => {
-  it("should return the min of related docs", async () => {
+describe("max method", () => {
+  it("should return the max of related docs", async () => {
     interface IPost extends IMongoloquentSchema {
       title: string;
       content: string;
@@ -49,7 +49,7 @@ describe("min method", () => {
 
     const postsIds = await Post.insertMany([
       { title: "Post 1", content: "Content 1", likes: 10 },
-      { title: "Post 2", content: "Content 2", likes: 5 },
+      { title: "Post 2", content: "Content 2", likes: 20 },
     ]);
 
     const commentIds = await Comment.insertMany([
@@ -59,7 +59,7 @@ describe("min method", () => {
     ]);
 
     const comment = await Comment.find(commentIds[0]);
-    const min = await comment.post().min("likes");
-    expect(min).toBe(10);
+    const max = await comment.post().max("likes");
+    expect(max).toBe(10);
   });
 });
