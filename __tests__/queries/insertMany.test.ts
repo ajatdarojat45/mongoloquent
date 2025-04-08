@@ -1,156 +1,141 @@
-import { ObjectId } from "mongodb";
-
+import DB from "../../src/DB";
 import Model from "../../src/Model";
-import { IMongoloquentSchema } from "../../src/interfaces/ISchema";
+import {
+  IMongoloquentSchema,
+  IMongoloquentSoftDelete,
+  IMongoloquentTimestamps,
+} from "../../src/interfaces/ISchema";
 
-interface IUser extends IMongoloquentSchema {
-  name: string;
-  age: number;
-  address: string;
-}
-class User extends Model<IUser> {}
-
-const query = User["query"]();
-const userCollection = query["getCollection"]();
-
-// Clear the users collection before all tests
-beforeAll(async () => {
-  try {
-    await userCollection?.deleteMany({});
-  } catch (error) {
-    console.error(error);
-  }
+beforeEach(async () => {
+  await DB.collection("flights").getCollection().deleteMany({});
 });
 
-// Clear the users collection after all tests
-afterAll(async () => {
-  try {
-    await userCollection?.deleteMany({});
-  } catch (error) {
-    console.error(error);
-  }
+afterEach(async () => {
+  await DB.collection("flights").getCollection().deleteMany({});
 });
 
-describe("User Model - insert method", () => {
-  // Clear the users collection after each test in this describe block
-  afterAll(async () => {
-    try {
-      await userCollection?.deleteMany({});
-    } catch (error) {
-      console.error(error);
+describe("insertMany method", () => {
+  it("without timestamp and soft delete", async () => {
+    interface IFlight extends IMongoloquentSchema {
+      name: string;
     }
+
+    class Flight extends Model<IFlight> {
+      static $schema: IFlight;
+      static $useTimestamps = false;
+    }
+
+    const flightIds = await Flight.insertMany([
+      { name: "Flight 1" },
+      { name: "Flight 2" },
+    ]);
+    expect(flightIds).toEqual(expect.any(Array));
+    expect(flightIds).toHaveLength(2);
+
+    const flights = await Flight.get();
+    expect(flights).toEqual(expect.any(Array));
+    expect(flights).toHaveLength(2);
+
+    const flight = flights[0];
+    expect(flight).toEqual(expect.any(Object));
+    expect(flight).toHaveProperty("_id");
+    expect(flight).toHaveProperty("name", "Flight 1");
+    expect(flight).not.toHaveProperty(Flight.query()["$createdAt"]);
+    expect(flight).not.toHaveProperty(Flight.query()["$updatedAt"]);
+    expect(flight).not.toHaveProperty(Flight.query()["$deletedAt"]);
   });
 
-  it("should insert data without timestamps and soft delete", async () => {
-    User["$useSoftDelete"] = false;
-    User["$useTimestamps"] = false;
+  it("with timestamp", async () => {
+    interface IFlight extends IMongoloquentSchema, IMongoloquentTimestamps {
+      name: string;
+    }
 
-    const result = await User.insertMany([
-      {
-        name: "Udin",
-        age: 20,
-        address: "Jakarta",
-      },
-      {
-        name: "Kosasih",
-        age: 30,
-        address: "Jakarta",
-      },
+    class Flight extends Model<IFlight> {
+      static $schema: IFlight;
+      static $useTimestamps = true;
+    }
+
+    const flightIds = await Flight.insertMany([
+      { name: "Flight 1" },
+      { name: "Flight 2" },
     ]);
+    expect(flightIds).toEqual(expect.any(Array));
+    expect(flightIds).toHaveLength(2);
 
-    expect(result).toEqual(expect.any(Array));
-    expect(result).toHaveLength(2);
-    expect(result[0]).toEqual(expect.any(ObjectId));
+    const flights = await Flight.get();
+    expect(flights).toEqual(expect.any(Array));
+    expect(flights).toHaveLength(2);
+
+    const flight = flights[0];
+    expect(flight).toEqual(expect.any(Object));
+    expect(flight).toHaveProperty("_id");
+    expect(flight).toHaveProperty("name", "Flight 1");
+    expect(flight).toHaveProperty(Flight.query()["$createdAt"]);
+    expect(flight).toHaveProperty(Flight.query()["$updatedAt"]);
   });
 
-  it("should insert data with timestamps but without soft delete", async () => {
-    User["$useSoftDelete"] = false;
-    User["$useTimestamps"] = true;
+  it("with soft delete", async () => {
+    interface IFlight extends IMongoloquentSchema, IMongoloquentSoftDelete {
+      name: string;
+    }
 
-    const result = await User.insertMany([
-      {
-        name: "Udin",
-        age: 20,
-        address: "Jakarta",
-      },
-      {
-        name: "Kosasih",
-        age: 30,
-        address: "Jakarta",
-      },
+    class Flight extends Model<IFlight> {
+      static $schema: IFlight;
+      static $useSoftDelete = true;
+      static $useTimestamps = false;
+    }
+
+    const flightIds = await Flight.insertMany([
+      { name: "Flight 1" },
+      { name: "Flight 2" },
     ]);
+    expect(flightIds).toEqual(expect.any(Array));
+    expect(flightIds).toHaveLength(2);
 
-    expect(result).toEqual(expect.any(Array));
-    expect(result).toHaveLength(2);
-    expect(result?.[0]).toEqual(expect.any(ObjectId));
+    const flights = await Flight.get();
+    expect(flights).toEqual(expect.any(Array));
+    expect(flights).toHaveLength(2);
 
-    const user = await User.where("_id", result[0]).first();
-    expect(user).toEqual(expect.any(Object));
-    expect(user).toHaveProperty("_id");
-    expect(user).toHaveProperty("name", "Udin");
-    expect(user).toHaveProperty("age", 20);
-    expect(user).toHaveProperty("address", "Jakarta");
-    expect(user).toHaveProperty(query["$createdAt"]);
-    expect(user).toHaveProperty(query["$updatedAt"]);
+    const flight = flights[0];
+    expect(flight).toEqual(expect.any(Object));
+    expect(flight).toHaveProperty("_id");
+    expect(flight).toHaveProperty("name", "Flight 1");
+    expect(flight).not.toHaveProperty(Flight.query()["$createdAt"]);
+    expect(flight).not.toHaveProperty(Flight.query()["$updatedAt"]);
+    expect(flight).not.toHaveProperty(Flight.query()["$deletedAt"]);
   });
 
-  it("should insert data with soft delete but without timestamps", async () => {
-    User["$useSoftDelete"] = true;
-    User["$useTimestamps"] = false;
+  it("with soft delete and timestamp", async () => {
+    interface IFlight
+      extends IMongoloquentSchema,
+        IMongoloquentSoftDelete,
+        IMongoloquentTimestamps {
+      name: string;
+    }
 
-    const result = await User.insertMany([
-      {
-        name: "Udin",
-        age: 20,
-        address: "Jakarta",
-      },
-      {
-        name: "Kosasih",
-        age: 30,
-        address: "Jakarta",
-      },
+    class Flight extends Model<IFlight> {
+      static $schema: IFlight;
+      static $useSoftDelete = true;
+      static $useTimestamps = true;
+    }
+
+    const flightIds = await Flight.insertMany([
+      { name: "Flight 1" },
+      { name: "Flight 2" },
     ]);
-    expect(result).toEqual(expect.any(Array));
-    expect(result).toHaveLength(2);
-    expect(result[0]).toEqual(expect.any(ObjectId));
+    expect(flightIds).toEqual(expect.any(Array));
+    expect(flightIds).toHaveLength(2);
 
-    const user = await User.where("_id", result[0]).first();
-    expect(user).toEqual(expect.any(Object));
-    expect(user).toHaveProperty("_id");
-    expect(user).toHaveProperty("name", "Udin");
-    expect(user).toHaveProperty("age", 20);
-    expect(user).toHaveProperty("address", "Jakarta");
-    expect(user).toHaveProperty(query.getIsDeleted(), false);
-  });
+    const flights = await Flight.get();
+    expect(flights).toEqual(expect.any(Array));
+    expect(flights).toHaveLength(2);
 
-  it("should insert data with both soft delete and timestamps", async () => {
-    User["$useSoftDelete"] = true;
-    User["$useTimestamps"] = true;
-
-    const result = await User.insertMany([
-      {
-        name: "Udin",
-        age: 20,
-        address: "Jakarta",
-      },
-      {
-        name: "Kosasih",
-        age: 30,
-        address: "Jakarta",
-      },
-    ]);
-    expect(result).toEqual(expect.any(Array));
-    expect(result).toHaveLength(2);
-    expect(result[0]).toEqual(expect.any(ObjectId));
-
-    const user = await User.where("_id", result[0]).first();
-    expect(user).toEqual(expect.any(Object));
-    expect(user).toHaveProperty("_id");
-    expect(user).toHaveProperty("name", "Udin");
-    expect(user).toHaveProperty("age", 20);
-    expect(user).toHaveProperty("address", "Jakarta");
-    expect(user).toHaveProperty(query.getIsDeleted(), false);
-    expect(user).toHaveProperty(query["$createdAt"]);
-    expect(user).toHaveProperty(query["$updatedAt"]);
+    const flight = flights[0];
+    expect(flight).toEqual(expect.any(Object));
+    expect(flight).toHaveProperty("_id");
+    expect(flight).toHaveProperty("name", "Flight 1");
+    expect(flight).toHaveProperty(Flight.query()["$createdAt"]);
+    expect(flight).toHaveProperty(Flight.query()["$updatedAt"]);
+    expect(flight).not.toHaveProperty(Flight.query()["$deletedAt"]);
   });
 });
