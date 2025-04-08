@@ -38,33 +38,33 @@ export default class HasMany<T, M> extends QueryBuilder<M> {
     filter: Partial<FormSchema<M>>,
     doc?: Partial<FormSchema<M>>,
   ) {
-    const data = {
-      ...doc,
+    const _filter = {
+      ...filter,
       [this.foreignKey]: this.model["$original"][this.localKey],
     } as FormSchema<M>;
-    return super.firstOrNew(filter, data);
+    return super.firstOrNew(_filter, doc);
   }
 
   public firstOrCreate(
     filter: Partial<FormSchema<M>>,
     doc?: Partial<FormSchema<M>>,
   ) {
-    const data = {
-      ...doc,
+    const _filter = {
+      ...filter,
       [this.foreignKey]: this.model["$original"][this.localKey],
     } as FormSchema<M>;
-    return super.firstOrCreate(filter, data);
+    return super.firstOrCreate(_filter, doc);
   }
 
   public updateOrCreate(
     filter: Partial<FormSchema<M>>,
     doc: Partial<FormSchema<M>>,
   ) {
-    const data = {
-      ...doc,
+    const _filter = {
+      ...filter,
       [this.foreignKey]: this.model["$original"][this.localKey],
     } as FormSchema<M>;
-    return super.updateOrCreate(filter, data);
+    return super.updateOrCreate(_filter, doc);
   }
 
   // @ts-ignore
