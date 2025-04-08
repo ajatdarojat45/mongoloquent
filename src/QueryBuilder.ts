@@ -440,13 +440,20 @@ export default class QueryBuilder<T> {
    * @param ids IDs of documents to permanently delete
    * @returns Number of documents permanently deleted
    */
-  public async forceDestroy(...ids: (string | ObjectId)[]): Promise<number> {
+  public async forceDestroy(
+    ...ids: (string | ObjectId | (string | ObjectId)[])[]
+  ): Promise<number> {
     try {
-      ids = ids.map((el) => {
+      let flattenedIds = ids.reduce<(string | ObjectId)[]>((acc, id) => {
+        return acc.concat(Array.isArray(id) ? id : [id]);
+      }, []);
+
+      flattenedIds = flattenedIds.map((el) => {
         if (typeof el === "string") return new ObjectId(el);
         return el;
       });
-      this.where("_id" as keyof T, "in", ids);
+
+      this.where("_id" as keyof T, "in", flattenedIds);
       this.onlyTrashed();
       this.generateWheres();
       const stages = this.getStages();

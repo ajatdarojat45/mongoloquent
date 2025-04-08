@@ -155,7 +155,6 @@ export default class Model<T> extends QueryBuilder<T> {
    */
   public static destroy<M extends typeof Model<any>>(
     this: M,
-    // ...ids: (string | ObjectId)[]
     ...ids: (string | ObjectId | (string | ObjectId)[])[]
   ) {
     const flattenedIds = ids.reduce<(string | ObjectId)[]>((acc, id) => {
@@ -173,9 +172,12 @@ export default class Model<T> extends QueryBuilder<T> {
    */
   public static forceDestroy<M extends typeof Model<any>>(
     this: M,
-    ...ids: (string | ObjectId)[]
+    ...ids: (string | ObjectId | (string | ObjectId)[])[]
   ) {
-    return this.query().forceDestroy(...ids);
+    const flattenedIds = ids.reduce<(string | ObjectId)[]>((acc, id) => {
+      return acc.concat(Array.isArray(id) ? id : [id]);
+    }, []);
+    return this.query().forceDestroy(...flattenedIds);
   }
 
   /**
