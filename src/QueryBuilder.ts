@@ -296,7 +296,10 @@ export default class QueryBuilder<T> {
    * @param doc Document fields to update or insert
    * @returns Updated or created document
    */
-  async updateOrInsert(filter: Partial<T>, doc: Partial<FormSchema<T>>) {
+  async updateOrInsert(
+    filter: Partial<FormSchema<T>>,
+    doc?: Partial<FormSchema<T>>,
+  ) {
     return this.updateOrCreate(filter, doc);
   }
 
