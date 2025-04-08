@@ -361,7 +361,12 @@ export default class QueryBuilder<T> {
     }
 
     if (Object.keys(this.$original).length === 0) {
-      return this.insert(payload as FormSchema<T>);
+      const result = await this.insert(payload as FormSchema<T>);
+      this.$original = { ...result };
+      Object.assign(this, result);
+      // @ts-ignore
+      this.$id = this._id;
+      return result;
     } else {
       // @ts-ignore
       const id = this.$original?._id;
