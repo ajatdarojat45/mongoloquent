@@ -1,158 +1,216 @@
+import DB from "../../src/DB";
 import Model from "../../src/Model";
-import { IMongoloquentSchema } from "../../src/interfaces/ISchema";
+import {
+  IMongoloquentSchema,
+  IMongoloquentSoftDelete,
+  IMongoloquentTimestamps,
+} from "../../src/interfaces/ISchema";
 
-interface IUser extends IMongoloquentSchema {
-  name: string;
-  age: number;
-  address: string;
-}
-class User extends Model<IUser> {}
-
-const query = User["query"]();
-const userCollection = query["getCollection"]();
-
-beforeAll(async () => {
-  try {
-    await userCollection.deleteMany({});
-  } catch (error) {
-    console.error(error);
-  }
+beforeEach(async () => {
+  await DB.collection("flights").getCollection().deleteMany({});
 });
 
-afterEach(async () => {
-  try {
-    await userCollection.deleteMany({});
-  } catch (error) {
-    console.error(error);
-  }
-});
+describe("updateOrCreate method", () => {
+  describe("without timestamp and soft delete", () => {
+    it("with one parameter", async () => {
+      interface IFlight extends IMongoloquentSchema {
+        departure: string;
+        destination: string;
+        price: number;
+        discounted: boolean;
+      }
 
-describe("User Model - updateOrCreate Method", () => {
-  it("should create a new user if it does not exist", async () => {
-    const userData = {
-      name: "John Doe",
-      age: 30,
-      address: "New York",
-    };
+      class Flight extends Model<IFlight> {
+        static $schema: IFlight;
+        static $useTimestamps = false;
+        static $useSoftDelete = false;
+      }
 
-    const result = await User.updateOrCreate(userData, userData);
-    expect(result).toEqual(expect.any(Object));
-    expect(result).toHaveProperty("_id");
-    expect(result).toHaveProperty("name", "John Doe");
-    expect(result).toHaveProperty("age", 30);
-    expect(result).toHaveProperty("address", "New York");
+      const flight = await Flight.updateOrCreate({
+        departure: "New York",
+        destination: "Los Angeles",
+      });
+
+      expect(flight).toEqual(expect.any(Object));
+      expect(flight).toHaveProperty("_id");
+      expect(flight).toHaveProperty("departure", "New York");
+      expect(flight).toHaveProperty("destination", "Los Angeles");
+      expect(flight).not.toHaveProperty(Flight.query()["$createdAt"]);
+      expect(flight).not.toHaveProperty(Flight.query()["$updatedAt"]);
+      expect(flight).not.toHaveProperty(Flight.query()["$isDeleted"]);
+    });
+
+    it("with two parameters", async () => {
+      interface IFlight extends IMongoloquentSchema {
+        departure: string;
+        destination: string;
+        price: number;
+        discounted: boolean;
+      }
+
+      class Flight extends Model<IFlight> {
+        static $schema: IFlight;
+        static $useTimestamps = false;
+        static $useSoftDelete = false;
+      }
+
+      const flight = await Flight.updateOrCreate(
+        { departure: "New York", destination: "Los Angeles" },
+        { price: 300, discounted: false },
+      );
+
+      expect(flight).toEqual(expect.any(Object));
+      expect(flight).toHaveProperty("_id");
+      expect(flight).toHaveProperty("departure", "New York");
+      expect(flight).toHaveProperty("destination", "Los Angeles");
+      expect(flight).toHaveProperty("price", 300);
+      expect(flight).toHaveProperty("discounted", false);
+      expect(flight).not.toHaveProperty(Flight.query()["$createdAt"]);
+      expect(flight).not.toHaveProperty(Flight.query()["$updatedAt"]);
+      expect(flight).not.toHaveProperty(Flight.query()["$isDeleted"]);
+    });
   });
 
-  it("should update an existing user if it exists", async () => {
-    const userData = {
-      name: "Jane Doe",
-      age: 25,
-      address: "Los Angeles",
-    };
+  describe("with timestamp", () => {
+    it("with one parameter", async () => {
+      interface IFlight extends IMongoloquentSchema, IMongoloquentTimestamps {
+        departure: string;
+        destination: string;
+        price: number;
+        discounted: boolean;
+      }
+      class Flight extends Model<IFlight> {
+        static $schema: IFlight;
+        static $useTimestamps = true;
+        static $useSoftDelete = false;
+      }
+      const flight = await Flight.updateOrCreate({
+        departure: "New York",
+        destination: "Los Angeles",
+      });
+      expect(flight).toEqual(expect.any(Object));
+      expect(flight).toHaveProperty("_id");
+      expect(flight).toHaveProperty("departure", "New York");
+      expect(flight).toHaveProperty("destination", "Los Angeles");
+      expect(flight).toHaveProperty(Flight.query()["$createdAt"]);
+      expect(flight).toHaveProperty(Flight.query()["$updatedAt"]);
+      expect(flight).not.toHaveProperty(Flight.query()["$isDeleted"]);
+    });
 
-    const createdUser: any = await User.insert(userData);
-
-    const updatedData = {
-      name: "Jane Doe",
-      age: 26,
-      address: "San Francisco",
-    };
-
-    const updated = await User.updateOrCreate(userData, updatedData);
-    expect(updated).toEqual(expect.any(Object));
-    expect(updated).toEqual(expect.any(Object));
-    expect(updated).toHaveProperty("_id", createdUser._id);
-    expect(updated).toHaveProperty("name", "Jane Doe");
-    expect(updated).toHaveProperty("age", 26);
-    expect(updated).toHaveProperty("address", "San Francisco");
+    it("with two parameters", async () => {
+      interface IFlight extends IMongoloquentSchema, IMongoloquentTimestamps {
+        departure: string;
+        destination: string;
+        price: number;
+        discounted: boolean;
+      }
+      class Flight extends Model<IFlight> {
+        static $schema: IFlight;
+        static $useTimestamps = true;
+        static $useSoftDelete = false;
+      }
+      const flight = await Flight.updateOrCreate(
+        { departure: "New York", destination: "Los Angeles" },
+        { price: 300, discounted: false },
+      );
+      expect(flight).toEqual(expect.any(Object));
+      expect(flight).toHaveProperty("_id");
+      expect(flight).toHaveProperty("departure", "New York");
+      expect(flight).toHaveProperty("destination", "Los Angeles");
+      expect(flight).toHaveProperty("price", 300);
+      expect(flight).toHaveProperty("discounted", false);
+      expect(flight).toHaveProperty(Flight.query()["$createdAt"]);
+      expect(flight).toHaveProperty(Flight.query()["$updatedAt"]);
+      expect(flight).not.toHaveProperty(Flight.query()["$isDeleted"]);
+    });
   });
 
-  it("should create a new user if no matching data is found", async () => {
-    const userData = {
-      name: "Alice",
-      age: 28,
-      address: "Chicago",
-    };
-
-    const result = await User.updateOrCreate({ name: "Alice" }, userData);
-    expect(result).toEqual(expect.any(Object));
-    expect(result).toHaveProperty("_id");
-    expect(result).toHaveProperty("name", "Alice");
-    expect(result).toHaveProperty("age", 28);
-    expect(result).toHaveProperty("address", "Chicago");
+  describe("with soft delete", () => {
+    it("with one parameter", async () => {
+      interface IFlight extends IMongoloquentSchema, IMongoloquentSoftDelete {
+        departure: string;
+        destination: string;
+        price: number;
+        discounted: boolean;
+      }
+      class Flight extends Model<IFlight> {
+        static $schema: IFlight;
+        static $useTimestamps = false;
+        static $useSoftDelete = true;
+      }
+      const flight = await Flight.updateOrCreate({
+        departure: "New York",
+        destination: "Los Angeles",
+      });
+      expect(flight).toEqual(expect.any(Object));
+      expect(flight).toHaveProperty("_id");
+      expect(flight).toHaveProperty("departure", "New York");
+      expect(flight).toHaveProperty("destination", "Los Angeles");
+      expect(flight).not.toHaveProperty(Flight.query()["$createdAt"]);
+      expect(flight).not.toHaveProperty(Flight.query()["$updatedAt"]);
+      expect(flight).toHaveProperty(Flight.query()["$isDeleted"], false);
+    });
   });
 
-  it("should update an existing user including _id in payload", async () => {
-    const userData = {
-      name: "Bob",
-      age: 35,
-      address: "Houston",
-    };
+  describe("with soft delete and timestamp", () => {
+    it("with one parameter", async () => {
+      interface IFlight
+        extends IMongoloquentSchema,
+          IMongoloquentSoftDelete,
+          IMongoloquentTimestamps {
+        departure: string;
+        destination: string;
+        price: number;
+        discounted: boolean;
+      }
 
-    const createdUser: any = await User.insert(userData);
+      class Flight extends Model<IFlight> {
+        static $schema: IFlight;
+        static $useTimestamps = true;
+        static $useSoftDelete = true;
+      }
+      const flight = await Flight.updateOrCreate({
+        departure: "New York",
+        destination: "Los Angeles",
+      });
+      expect(flight).toEqual(expect.any(Object));
+      expect(flight).toHaveProperty("_id");
+      expect(flight).toHaveProperty("departure", "New York");
+      expect(flight).toHaveProperty("destination", "Los Angeles");
+      expect(flight).toHaveProperty(Flight.query()["$createdAt"]);
+      expect(flight).toHaveProperty(Flight.query()["$updatedAt"]);
+      expect(flight).toHaveProperty(Flight.query()["$isDeleted"], false);
+    });
 
-    const updatedData = {
-      _id: createdUser._id,
-      name: "Bob",
-      age: 36,
-      address: "Dallas",
-    };
+    it("with two parameters", async () => {
+      interface IFlight
+        extends IMongoloquentSchema,
+          IMongoloquentSoftDelete,
+          IMongoloquentTimestamps {
+        departure: string;
+        destination: string;
+        price: number;
+        discounted: boolean;
+      }
 
-    const updated = await User.updateOrCreate({ name: "Bob" }, updatedData);
-    expect(updated).toEqual(expect.any(Object));
-    expect(updated).toEqual(expect.any(Object));
-    expect(updated).toHaveProperty("_id", createdUser._id);
-    expect(updated).toHaveProperty("name", "Bob");
-    expect(updated).toHaveProperty("age", 36);
-    expect(updated).toHaveProperty("address", "Dallas");
-  });
-
-  it("should handle timestamps correctly when creating a new user", async () => {
-    User["$useTimestamps"] = true;
-
-    const userData = {
-      name: "Charlie",
-      age: 40,
-      address: "Miami",
-    };
-
-    const result = await User.updateOrCreate({ name: "Charlie" }, userData);
-    expect(result).toEqual(expect.any(Object));
-    expect(result).toHaveProperty("_id");
-    expect(result).toHaveProperty("name", "Charlie");
-    expect(result).toHaveProperty("age", 40);
-    expect(result).toHaveProperty("address", "Miami");
-    expect(result).toHaveProperty(query["$createdAt"]);
-    expect(result).toHaveProperty(query["$updatedAt"]);
-  });
-
-  it("should handle timestamps correctly when updating an existing user", async () => {
-    User["$useTimestamps"] = true;
-
-    const userData = {
-      name: "David",
-      age: 45,
-      address: "Seattle",
-    };
-
-    const createdUser: any = await User.insert(userData);
-
-    const updatedData = {
-      name: "David",
-      age: 46,
-      address: "Portland",
-    };
-
-    const updated = await User.updateOrCreate({ name: "David" }, updatedData);
-    expect(updated).toEqual(expect.any(Object));
-    expect(updated).toHaveProperty("_id", createdUser._id);
-    expect(updated).toHaveProperty("name", "David");
-    expect(updated).toHaveProperty("age", 46);
-    expect(updated).toHaveProperty("address", "Portland");
-    expect(updated).toHaveProperty(
-      query["$createdAt"],
-      createdUser[query["$createdAt"]],
-    );
-    expect(updated).toHaveProperty(query["$updatedAt"]);
+      class Flight extends Model<IFlight> {
+        static $schema: IFlight;
+        static $useTimestamps = true;
+        static $useSoftDelete = true;
+      }
+      const flight = await Flight.updateOrCreate(
+        { departure: "New York", destination: "Los Angeles" },
+        { price: 300, discounted: false },
+      );
+      expect(flight).toEqual(expect.any(Object));
+      expect(flight).toHaveProperty("_id");
+      expect(flight).toHaveProperty("departure", "New York");
+      expect(flight).toHaveProperty("destination", "Los Angeles");
+      expect(flight).toHaveProperty("price", 300);
+      expect(flight).toHaveProperty("discounted", false);
+      expect(flight).toHaveProperty(Flight.query()["$createdAt"]);
+      expect(flight).toHaveProperty(Flight.query()["$updatedAt"]);
+      expect(flight).toHaveProperty(Flight.query()["$isDeleted"], false);
+    });
   });
 });

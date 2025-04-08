@@ -272,17 +272,22 @@ export default class QueryBuilder<T> {
    * @param doc Document fields to update or insert
    * @returns Updated or created document
    */
-  async updateOrCreate(filter: Partial<T>, doc: Partial<FormSchema<T>>) {
+  async updateOrCreate(
+    filter: Partial<FormSchema<T>>,
+    doc?: Partial<FormSchema<T>>,
+  ) {
     for (var key in filter) {
-      if (doc.hasOwnProperty(key)) {
-        this.where(key, filter[key]);
+      if (filter.hasOwnProperty(key)) {
+        this.where(key as keyof T, filter[key as keyof typeof filter]);
       }
     }
 
-    const data = await this.update(doc);
+    const payload = { ...filter, ...doc };
+
+    const data = await this.update(payload);
     if (data) return data;
 
-    return this.insert(doc as FormSchema<T>);
+    return this.insert(payload as FormSchema<T>);
   }
 
   /**
