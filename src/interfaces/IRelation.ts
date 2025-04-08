@@ -1,4 +1,5 @@
 import { ObjectId } from "mongodb";
+
 import Model from "../Model";
 
 export enum IRelationTypes {

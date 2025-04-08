@@ -1,11 +1,12 @@
+import { Document } from "mongodb";
+
+import LookupBuilder from "./LookupBuilder.ts";
+
 import Model from "../Model";
 import QueryBuilder from "../QueryBuilder";
 import { IModelPaginate } from "../interfaces/IModel";
 import { IRelationHasMany } from "../interfaces/IRelation";
 import { FormSchema } from "../types/schema";
-import { Document } from "mongodb";
-
-import LookupBuilder from "./LookupBuilder.ts";
 
 export default class HasMany<T, M> extends QueryBuilder<M> {
   model: Model<T>;
@@ -137,25 +138,25 @@ export default class HasMany<T, M> extends QueryBuilder<M> {
     }
 
     // Generate the sort stages if options.sort is provided
-    if (hasMany.options?.sort) {
-      const sort = LookupBuilder.sort(
-        hasMany.options?.sort[0],
-        hasMany.options?.sort[1],
-      );
-      lookup.push(sort);
-    }
+    // if (hasMany.options?.sort) {
+    //   const sort = LookupBuilder.sort(
+    //     hasMany.options?.sort[0],
+    //     hasMany.options?.sort[1],
+    //   );
+    //   lookup.push(sort);
+    // }
 
     // Generate the skip stages if options.skip is provided
-    if (hasMany.options?.skip) {
-      const skip = LookupBuilder.skip(hasMany.options?.skip);
-      lookup.push(skip);
-    }
+    // if (hasMany.options?.skip) {
+    //   const skip = LookupBuilder.skip(hasMany.options?.skip);
+    //   lookup.push(skip);
+    // }
 
     // Generate the limit stages if options.limit is provided
-    if (hasMany.options?.limit) {
-      const limit = LookupBuilder.limit(hasMany.options?.limit);
-      lookup.push(limit);
-    }
+    // if (hasMany.options?.limit) {
+    //   const limit = LookupBuilder.limit(hasMany.options?.limit);
+    //   lookup.push(limit);
+    // }
 
     // Return the combined lookup, select, exclude, sort, skip, and limit stages
     return lookup;
