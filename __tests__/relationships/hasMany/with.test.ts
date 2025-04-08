@@ -11,6 +11,11 @@ beforeEach(async () => {
   await DB.collection("flights").getCollection().deleteMany({});
 });
 
+afterEach(async () => {
+  await DB.collection("posts").getCollection().deleteMany({});
+  await DB.collection("comments").getCollection().deleteMany({});
+});
+
 describe("with method", () => {
   describe("without soft delete", () => {
     interface IPost extends IMongoloquentSchema {

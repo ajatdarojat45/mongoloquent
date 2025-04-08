@@ -12,6 +12,11 @@ beforeEach(async () => {
   await DB.collection("comments").getCollection().deleteMany({});
 });
 
+afterEach(async () => {
+  await DB.collection("posts").getCollection().deleteMany({});
+  await DB.collection("comments").getCollection().deleteMany({});
+});
+
 describe("get method", () => {
   describe("without parameters", () => {
     it("should return all doc", async () => {

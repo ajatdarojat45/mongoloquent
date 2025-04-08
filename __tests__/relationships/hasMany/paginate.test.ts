@@ -12,6 +12,11 @@ beforeEach(async () => {
   await DB.collection("comments").getCollection().deleteMany({});
 });
 
+afterEach(async () => {
+  await DB.collection("posts").getCollection().deleteMany({});
+  await DB.collection("comments").getCollection().deleteMany({});
+});
+
 describe("paginate method", () => {
   it("without parameters", async () => {
     interface IPost extends IMongoloquentSchema {
