@@ -58,7 +58,7 @@ export default class HasMany<T, M> extends QueryBuilder<M> {
 
   public updateOrCreate(
     filter: Partial<FormSchema<M>>,
-    doc?: Partial<FormSchema<M>>,
+    doc: Partial<FormSchema<M>>,
   ) {
     const data = {
       ...doc,
