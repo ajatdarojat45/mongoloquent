@@ -1,156 +1,102 @@
+import DB from "../../src/DB";
 import Model from "../../src/Model";
-import { IMongoloquentSchema } from "../../src/interfaces/ISchema";
+import {
+  IMongoloquentSchema,
+  IMongoloquentTimestamps,
+} from "../../src/interfaces/ISchema";
 
-interface IUser extends IMongoloquentSchema {
-  name: string;
-  age: number;
-  address: string;
-}
-class User extends Model<IUser> {}
-
-const query = User["query"]();
-const userCollection = query["getCollection"]();
-
-beforeAll(async () => {
-  try {
-    await userCollection.deleteMany({});
-  } catch (error) {
-    console.error(error);
-  }
+beforeEach(async () => {
+  await DB.collection("flights").getCollection().deleteMany({});
 });
 
-afterAll(async () => {
-  try {
-    await userCollection.deleteMany({});
-  } catch (error) {
-    console.error(error);
-  }
+afterEach(async () => {
+  await DB.collection("flights").getCollection().deleteMany({});
 });
 
-describe("Model - update method", () => {
-  beforeAll(async () => {
-    try {
-    } catch (error) {
-      console.error(error);
+describe("update method", () => {
+  it("without timestamp", async () => {
+    interface IFlight extends IMongoloquentSchema {
+      departure: string;
+      destination: string;
+      price: number;
+      discounted: boolean;
+      active: boolean;
+      delayed: boolean;
     }
-  });
 
-  afterAll(async () => {
-    try {
-      await userCollection.deleteMany({});
-    } catch (error) {
-      console.error(error);
+    class Flight extends Model<IFlight> {
+      static $schema: IFlight;
+      static $useTimestamps = false;
     }
+
+    await Flight.insertMany([
+      {
+        departure: "New York",
+        destination: "Los Angeles",
+        price: 300,
+        discounted: false,
+        active: true,
+        delayed: false,
+      },
+      {
+        departure: "Chicago",
+        destination: "Miami",
+        price: 200,
+        discounted: true,
+        active: true,
+        delayed: false,
+      },
+    ]);
+
+    const update = await Flight.where("active", true).update({ delayed: true });
+    expect(update).toEqual(expect.any(Object));
+    expect(update).toHaveProperty("delayed", true);
+
+    const flights = await Flight.where("delayed", true).get();
+    expect(flights).toEqual(expect.any(Array));
+    expect(flights).toHaveLength(1);
   });
 
-  it("should update data", async () => {
-    User["$useSoftDelete"] = false;
-    User["$useTimestamps"] = false;
+  it("with timestamp", async () => {
+    interface IFlight extends IMongoloquentSchema, IMongoloquentTimestamps {
+      departure: string;
+      destination: string;
+      price: number;
+      discounted: boolean;
+      active: boolean;
+      delayed: boolean;
+    }
 
-    await User.insert({
-      name: "Udin",
-      age: 20,
-      address: "Bogor",
-    });
+    class Flight extends Model<IFlight> {
+      static $schema: IFlight;
+      static $useTimestamps = true;
+    }
 
-    const result = await User.where("name", "Udin").update({
-      name: "Udin Ganteng",
-      age: 21,
-      address: "Jakarta",
-    });
+    await Flight.insertMany([
+      {
+        departure: "New York",
+        destination: "Los Angeles",
+        price: 300,
+        discounted: false,
+        active: true,
+        delayed: false,
+      },
+      {
+        departure: "Chicago",
+        destination: "Miami",
+        price: 200,
+        discounted: true,
+        active: true,
+        delayed: false,
+      },
+    ]);
 
-    expect(result).toEqual(expect.any(Object));
-    expect(result).toHaveProperty("name", "Udin Ganteng");
-    expect(result).toHaveProperty("age", 21);
-    expect(result).toHaveProperty("address", "Jakarta");
-    expect(result).toHaveProperty("_id");
-  });
+    const update = await Flight.where("active", true).update({ delayed: true });
+    expect(update).toEqual(expect.any(Object));
+    expect(update).toHaveProperty("delayed", true);
 
-  it("should update data with timestamps", async () => {
-    User["$useSoftDelete"] = false;
-    User["$useTimestamps"] = true;
-
-    const user = await User.insert({
-      name: "Udin",
-      age: 20,
-      address: "Bogor",
-    });
-
-    const result = await User.where("name", "Udin").update({
-      name: "Udin Ganteng",
-      age: 21,
-      address: "Jakarta",
-    });
-
-    expect(result).toEqual(expect.any(Object));
-    expect(result).toHaveProperty("name", "Udin Ganteng");
-    expect(result).toHaveProperty("age", 21);
-    expect(result).toHaveProperty("address", "Jakarta");
-    expect(result).toHaveProperty("_id");
-    expect(result).toHaveProperty("createdAt", (user as any).createdAt);
-    expect(result).toHaveProperty("updatedAt");
-    // expect((result as any).updatedAt).not.toEqual((user as any).updatedAt);
-  });
-
-  it("with send _id in payload", async () => {
-    User["$useSoftDelete"] = false;
-    User["$useSoftDelete"] = false;
-
-    const user = await User.insert({
-      name: "Udin",
-      age: 20,
-      address: "Bogor",
-    });
-
-    const result = await User.where("name", "Udin").update({
-      _id: (user as any)._id,
-      name: "Udin Ganteng",
-      age: 21,
-      address: "Jakarta",
-    });
-
-    expect(result).toEqual(expect.any(Object));
-    expect(result).toHaveProperty("name", "Udin Ganteng");
-    expect(result).toHaveProperty("age", 21);
-    expect(result).toHaveProperty("address", "Jakarta");
-    expect(result).toHaveProperty("_id", (user as any)._id);
-  });
-
-  it("with send createdAt at in payload", async () => {
-    User["$useSoftDelete"] = false;
-    User["$useTimestamps"] = true;
-
-    const user = await User.insert({
-      name: "Udin",
-      age: 20,
-      address: "Bogor",
-    });
-
-    const result = await User.where("name", "Udin").update({
-      createdAt: (user as any).createdAt,
-      name: "Udin Ganteng",
-      age: 21,
-      address: "Jakarta",
-    });
-
-    expect(result).toEqual(expect.any(Object));
-    expect(result).toHaveProperty("name", "Udin Ganteng");
-    expect(result).toHaveProperty("age", 21);
-    expect(result).toHaveProperty("address", "Jakarta");
-    expect(result).toHaveProperty("_id", (user as any)._id);
-    expect(result).toHaveProperty("createdAt", (user as any).createdAt);
-  });
-
-  it("with not found data", async () => {
-    User["$useSoftDelete"] = false;
-    User["$useTimestamps"] = false;
-
-    const result = await User.where("name", "Udin").update({
-      name: "Udin Ganteng",
-      age: 21,
-      address: "Jakarta",
-    });
-
-    expect(result).toEqual(null);
+    const flights = await Flight.where("delayed", true).get();
+    expect(flights).toEqual(expect.any(Array));
+    expect(flights).toHaveLength(1);
   });
 });
