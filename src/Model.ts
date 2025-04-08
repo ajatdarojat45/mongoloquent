@@ -520,7 +520,7 @@ export default class Model<T> extends QueryBuilder<T> {
   public static paginate<M extends typeof Model<any>>(
     this: M,
     page: number = 1,
-    limit?: number,
+    limit: number = 15,
   ) {
     return this.query().paginate(page, limit);
   }

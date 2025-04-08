@@ -832,10 +832,9 @@ export default class QueryBuilder<T> {
    */
   public async paginate(
     page: number = 1,
-    limit: number = this.$limit,
+    limit: number = 15,
   ): Promise<IModelPaginate> {
     try {
-      // await this.checkRelation();
       this.checkSoftDelete();
       this.generateColumns();
       this.generateExcludes();
@@ -845,8 +844,8 @@ export default class QueryBuilder<T> {
 
       const collection = this.getCollection();
       const stages = this.getStages();
-      // const lookups = this.getLookups();
-      const aggregate = collection.aggregate([...stages]);
+      const lookups = this.getLookups();
+      const aggregate = collection.aggregate([...stages, ...lookups]);
 
       let totalResult = await collection
         .aggregate([
