@@ -14,7 +14,7 @@ class Flight extends Model<IFlight> {
   static $schema: IFlight;
 }
 
-describe("Model.firstOrCreate", () => {
+describe("Model.firstOrNew", () => {
   afterAll(async () => {
     await Flight.query()["getCollection"]().deleteMany({});
   });

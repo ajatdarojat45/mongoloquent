@@ -1,85 +1,73 @@
-import { ObjectId } from "mongodb";
-
 import Model from "../../src/Model";
 import { IMongoloquentSchema } from "../../src/interfaces/ISchema";
 
-interface IUser extends IMongoloquentSchema {
+interface IFlight extends IMongoloquentSchema {
   name: string;
-  email: string;
+  delayed: boolean;
+  arrival_time: string;
 }
 
-class User extends Model<IUser> {
-  static $collection = "users";
+class Flight extends Model<IFlight> {
+  static $collection = "flights";
   static $useSoftDelete = true;
   static $useTimestamps = true;
+  static $schema: IFlight;
 }
 
-const query = User["query"]();
-const userCollection = query["getCollection"]();
-
 describe("Model.firstOrCreate", () => {
-  let userIds: ObjectId[];
-
-  beforeAll(async () => {
-    userIds = await User.insertMany([
-      {
-        name: "John Doe",
-        email: "john@example.com",
-      },
-      {
-        name: "Jane Doe",
-        email: "jane@example.com",
-      },
-    ]);
-  });
-
   afterAll(async () => {
-    await userCollection?.deleteMany({});
+    await Flight.query()["getCollection"]().deleteMany({});
   });
 
-  it("should return the existing document if it matches the condition", async () => {
-    const user = await User.firstOrCreate(
-      { email: "john@example.com" },
-      { email: "john@example.com" },
-    );
-    expect(user).toEqual(expect.any(Object));
-    expect(user).toHaveProperty("name", "John Doe");
-    expect(user).toHaveProperty("email", "john@example.com");
+  it("should return new doc", async () => {
+    const flight = await Flight.firstOrCreate({ name: "London to Paris" });
+    expect(flight).toEqual(expect.any(Object));
+    expect(flight).toHaveProperty("_id");
+    expect(flight).toHaveProperty("name", "London to Paris");
   });
 
-  it("should create a new document if no matching document is found", async () => {
-    const newUser = await User.firstOrCreate(
+  it("should return exsiting doc", async () => {
+    const flight = await Flight.firstOrCreate({ name: "London to Paris" });
+    expect(flight).toEqual(expect.any(Object));
+    expect(flight).toHaveProperty("_id");
+    expect(flight).toHaveProperty("name", "London to Paris");
+
+    const flights = await Flight.where("name", "London to Paris").get();
+    expect(flights).toEqual(expect.any(Array));
+    expect(flights.length).toBe(1);
+  });
+
+  it("should return new doc with 2 params", async () => {
+    const flight = await Flight.firstOrCreate(
+      { name: "Paris to London" },
       {
-        name: "Alice",
-        email: "alice@example.com",
-      },
-      {
-        name: "Alice",
-        email: "alice@example.com",
+        delayed: true,
+        arrival_time: "2023-10-01T10:00:00Z",
       },
     );
-    expect(newUser).toEqual(expect.any(Object));
-    expect(newUser).toHaveProperty("name", "Alice");
-    expect(newUser).toHaveProperty("email", "alice@example.com");
-
-    const userInDb = await userCollection?.findOne({
-      email: "alice@example.com",
-    });
-    expect(userInDb).toEqual(expect.any(Object));
-    expect(userInDb).toHaveProperty("name", "Alice");
-    expect(userInDb).toHaveProperty("email", "alice@example.com");
+    expect(flight).toEqual(expect.any(Object));
+    expect(flight).toHaveProperty("_id");
+    expect(flight).toHaveProperty("name", "Paris to London");
+    expect(flight).toHaveProperty("delayed", true);
+    expect(flight).toHaveProperty("arrival_time", "2023-10-01T10:00:00Z");
   });
 
-  it("should handle documents with soft delete enabled", async () => {
-    await User.destroy(userIds[0]);
-
-    const user: any = await User.firstOrCreate(
-      { email: "john@example.com" },
-      { email: "john@example.com" },
+  it("should return existing doc with 2 params", async () => {
+    const flight = await Flight.firstOrCreate(
+      { name: "Paris to London" },
+      {
+        delayed: true,
+        arrival_time: "2023-10-01T10:00:00Z",
+      },
     );
-    expect(user).toEqual(expect.any(Object));
-    expect(user).toHaveProperty("email", "john@example.com");
-    expect(user).toHaveProperty(query.getIsDeleted(), false);
-    expect(user._id).not.toEqual(userIds[0]);
+    expect(flight).toEqual(expect.any(Object));
+    expect(flight).toHaveProperty("_id");
+    expect(flight).toHaveProperty("name", "Paris to London");
+    expect(flight).toHaveProperty("delayed", true);
+    expect(flight).toHaveProperty("arrival_time", "2023-10-01T10:00:00Z");
+
+    const flights = await Flight.where("name", "Paris to London").get();
+    expect(flights).toEqual(expect.any(Array));
+    expect(flights.length).toBe(1);
   });
 });
