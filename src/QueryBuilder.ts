@@ -126,7 +126,7 @@ export default class QueryBuilder<T> {
    * @returns MongoDB collection
    * @private
    */
-  private getCollection(collection?: string) {
+  public getCollection(collection?: string) {
     const db = Database.getDb(this.$connection, this.$databaseName);
     return db.collection<FormSchema<T>>(collection || this.$collection);
   }
