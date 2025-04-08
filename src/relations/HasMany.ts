@@ -34,15 +34,28 @@ export default class HasMany<T, M> extends QueryBuilder<M> {
     this.$isDeleted = relatedModel["$isDeleted"];
   }
 
-  public firstOrNew(filter: Partial<M>, doc: Partial<FormSchema<M>>) {
-    return super.firstOrNew(filter, doc);
+  public firstOrNew(
+    filter: Partial<FormSchema<M>>,
+    doc?: Partial<FormSchema<M>>,
+  ) {
+    const data = {
+      ...doc,
+      [this.foreignKey]: this.model["$original"][this.localKey],
+    } as FormSchema<M>;
+    return super.firstOrNew(filter, data);
   }
 
-  public firstOrCreate(filter: Partial<M>, doc: Partial<FormSchema<M>>) {
+  public firstOrCreate(
+    filter: Partial<FormSchema<M>>,
+    doc?: Partial<FormSchema<M>>,
+  ) {
     return super.firstOrCreate(filter, doc);
   }
 
-  public updateOrCreate(filter: Partial<M>, doc: Partial<FormSchema<M>>) {
+  public updateOrCreate(
+    filter: Partial<FormSchema<M>>,
+    doc?: Partial<FormSchema<M>>,
+  ) {
     return super.updateOrCreate(filter, doc);
   }
 
