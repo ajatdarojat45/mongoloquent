@@ -127,7 +127,7 @@ export default class Model<T> extends QueryBuilder<T> {
   public static async updateOrCreate<M extends typeof Model<any>>(
     this: M,
     filter: Partial<FormSchema<M["$schema"]>>,
-    doc: Partial<FormSchema<M["$schema"]>>,
+    doc?: Partial<FormSchema<M["$schema"]>>,
   ) {
     return this.query().updateOrCreate(filter, doc);
   }
@@ -142,7 +142,7 @@ export default class Model<T> extends QueryBuilder<T> {
   public static async updateOrInsert<M extends typeof Model<any>>(
     this: M,
     filter: Partial<FormSchema<M["$schema"]>>,
-    doc: Partial<FormSchema<M["$schema"]>>,
+    doc?: Partial<FormSchema<M["$schema"]>>,
   ) {
     return this.query().updateOrInsert(filter, doc);
   }

@@ -274,7 +274,7 @@ export default class QueryBuilder<T> {
    */
   async updateOrCreate(
     filter: Partial<FormSchema<T>>,
-    doc: Partial<FormSchema<T>>,
+    doc?: Partial<FormSchema<T>>,
   ) {
     for (var key in filter) {
       if (filter.hasOwnProperty(key)) {
@@ -298,7 +298,7 @@ export default class QueryBuilder<T> {
    */
   async updateOrInsert(
     filter: Partial<FormSchema<T>>,
-    doc: Partial<FormSchema<T>>,
+    doc?: Partial<FormSchema<T>>,
   ) {
     return this.updateOrCreate(filter, doc);
   }
