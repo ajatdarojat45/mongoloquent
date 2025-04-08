@@ -121,6 +121,12 @@ describe("delete method", () => {
       flights = await Flight.withTrashed().get();
       expect(flights).toEqual(expect.any(Array));
       expect(flights).toHaveLength(1);
+      expect(flights[0]).toHaveProperty(Flight.query()["$deletedAt"]);
+      expect(flights[0]).toHaveProperty(
+        Flight.query()["$deletedAt"],
+        expect.any(Date),
+      );
+      expect(flights[0]).toHaveProperty(Flight.query()["$isDeleted"], true);
     });
 
     it("delete with query", async () => {
@@ -152,6 +158,12 @@ describe("delete method", () => {
       flights = await Flight.withTrashed().get();
       expect(flights).toEqual(expect.any(Array));
       expect(flights).toHaveLength(1);
+      expect(flights[0]).toHaveProperty(Flight.query()["$deletedAt"]);
+      expect(flights[0]).toHaveProperty(
+        Flight.query()["$deletedAt"],
+        expect.any(Date),
+      );
+      expect(flights[0]).toHaveProperty(Flight.query()["$isDeleted"], true);
     });
 
     it("multiple delete with query", async () => {
@@ -180,6 +192,12 @@ describe("delete method", () => {
       flights = await Flight.withTrashed().get();
       expect(flights).toEqual(expect.any(Array));
       expect(flights).toHaveLength(2);
+      expect(flights[0]).toHaveProperty(Flight.query()["$deletedAt"]);
+      expect(flights[0]).toHaveProperty(
+        Flight.query()["$deletedAt"],
+        expect.any(Date),
+      );
+      expect(flights[0]).toHaveProperty(Flight.query()["$isDeleted"], true);
     });
   });
 });
