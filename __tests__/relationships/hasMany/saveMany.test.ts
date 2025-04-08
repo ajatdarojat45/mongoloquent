@@ -12,7 +12,7 @@ beforeEach(async () => {
   await DB.collection("comments").getCollection().deleteMany({});
 });
 
-describe("create method", () => {
+describe("saveMany method", () => {
   it("should create a new doc", async () => {
     interface IPost extends IMongoloquentSchema {
       title: string;
@@ -48,20 +48,18 @@ describe("create method", () => {
 
     const post = await Post.find(postsIds[0]);
 
-    const comment = await await post
-      .comments()
-      .create({ content: "Comment 1", active: true });
+    const comment = await await post.comments().saveMany([
+      { content: "Comment 1", active: true },
+      { content: "Comment 2", active: true },
+    ]);
 
-    expect(comment).toEqual(expect.any(Object));
-    expect(comment).toHaveProperty("_id");
-    expect(comment).toHaveProperty("postId", post._id);
-    expect(comment).toHaveProperty("content", "Comment 1");
-    expect(comment).toHaveProperty("active", true);
+    expect(comment).toEqual(expect.any(Array));
+    expect(comment).toHaveLength(2);
 
     const post2 = await Post.with("comments").where("_id", post._id).first();
     expect(post2).toEqual(expect.any(Object));
     expect(post2).toHaveProperty("comments");
     expect(post2?.comments).toEqual(expect.any(Array));
-    expect(post2?.comments).toHaveLength(1);
+    expect(post2?.comments).toHaveLength(2);
   });
 });
