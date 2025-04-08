@@ -1,115 +1,130 @@
+import DB from "../../src/DB";
 import Model from "../../src/Model";
 import { IMongoloquentSchema } from "../../src/interfaces/ISchema";
 
-interface IUser extends IMongoloquentSchema {
-  name: string;
-  email: string;
-  age: number;
-}
-class User extends Model<IUser> {
-  static $schema: IUser;
-  static $useSoftDelete = true;
-}
-
-const query = User["query"]();
-const userCollection = query["getCollection"]();
-
-const users = [
-  {
-    name: "John Doe",
-    email: "jhon@mail.com",
-    age: 20,
-    [query["$isDeleted"]]: false,
-  },
-  {
-    name: "Udin",
-    email: "udin@mail.com",
-    [query["$isDeleted"]]: false,
-    age: 10,
-  },
-  {
-    name: "Kosasih",
-    email: "kosasih@mail.com",
-    [query["$isDeleted"]]: true,
-    age: 50,
-  },
-];
-
-// Clear the collection before all tests
-beforeAll(async () => {
-  try {
-    await userCollection?.deleteMany({});
-  } catch (error) {
-    console.error(error);
-  }
+beforeEach(async () => {
+  await DB.collection("flights").getCollection().deleteMany({});
 });
 
-// Clear the collection after all tests
-afterAll(async () => {
-  try {
-    await userCollection?.deleteMany({});
-  } catch (error) {
-    console.error(error);
-  }
-});
-
-describe("User Model - first method", () => {
-  // Insert test data before each test
-  beforeAll(async () => {
-    try {
-      await userCollection?.insertMany(users);
-    } catch (error) {
-      console.error(error);
+describe("first method", () => {
+  it("without param", async () => {
+    interface IFlight extends IMongoloquentSchema {
+      name: string;
+      active: boolean;
+      delayed: boolean;
     }
-  });
 
-  // Clear test data after each test
-  afterAll(async () => {
-    try {
-      await userCollection?.deleteMany({});
-    } catch (error) {
-      console.error(error);
+    class Flight extends Model<IFlight> {
+      static $schema: IFlight;
+      static $useTimestamps = false;
     }
+
+    await Flight.insertMany([
+      { name: "Flight 1", active: true, delayed: false },
+      { name: "Flight 2", active: false, delayed: true },
+    ]);
+
+    const flight = await Flight.first();
+
+    expect(flight).toEqual(expect.any(Object));
+    expect(flight).toHaveProperty("name", "Flight 1");
+    expect(flight).toHaveProperty("active", true);
+    expect(flight).toHaveProperty("delayed", false);
   });
 
-  it("should return the first user matching the query", async () => {
-    User["$useSoftDelete"] = false;
-    const result = await User.where("name", "Kosasih").first();
+  it("with single param", async () => {
+    interface IFlight extends IMongoloquentSchema {
+      name: string;
+      active: boolean;
+      delayed: boolean;
+    }
 
-    expect(result).toEqual(expect.any(Object));
-    expect(result).toHaveProperty("name", "Kosasih");
+    class Flight extends Model<IFlight> {
+      static $schema: IFlight;
+      static $useTimestamps = false;
+    }
+
+    await Flight.insertMany([
+      { name: "Flight 1", active: true, delayed: false },
+      { name: "Flight 2", active: false, delayed: true },
+    ]);
+
+    const flight = await Flight.first("name");
+
+    expect(flight).toEqual(expect.any(Object));
+    expect(flight).toHaveProperty("name", "Flight 1");
+    expect(flight).not.toHaveProperty("active");
+    expect(flight).not.toHaveProperty("delayed");
   });
 
-  it("should return the first user with only the selected field", async () => {
-    User["$useSoftDelete"] = false;
-    const result = await User.where("name", "Kosasih").first("name");
-    expect(result).toEqual(expect.any(Object));
-    expect(result).toHaveProperty("name", "Kosasih");
-    expect(result).not.toHaveProperty("age");
-    expect(result).not.toHaveProperty("email");
+  it("with multiple param", async () => {
+    interface IFlight extends IMongoloquentSchema {
+      name: string;
+      active: boolean;
+      delayed: boolean;
+    }
+
+    class Flight extends Model<IFlight> {
+      static $schema: IFlight;
+      static $useTimestamps = false;
+    }
+
+    await Flight.insertMany([
+      { name: "Flight 1", active: true, delayed: false },
+      { name: "Flight 2", active: false, delayed: true },
+    ]);
+
+    const flight = await Flight.first("name", "active");
+
+    expect(flight).toEqual(expect.any(Object));
+    expect(flight).toHaveProperty("name", "Flight 1");
+    expect(flight).toHaveProperty("active", true);
+    expect(flight).not.toHaveProperty("delayed");
   });
 
-  it("should return the first user with the selected fields", async () => {
-    User["$useSoftDelete"] = false;
-    const result = await User.where("name", "Kosasih").first(["name", "age"]);
+  it("with array param", async () => {
+    interface IFlight extends IMongoloquentSchema {
+      name: string;
+      active: boolean;
+      delayed: boolean;
+    }
 
-    expect(result).toEqual(expect.any(Object));
-    expect(result).toHaveProperty("name", "Kosasih");
-    expect(result).toHaveProperty("age", 50);
-    expect(result).not.toHaveProperty("email");
+    class Flight extends Model<IFlight> {
+      static $schema: IFlight;
+      static $useTimestamps = false;
+    }
+
+    await Flight.insertMany([
+      { name: "Flight 1", active: true, delayed: false },
+      { name: "Flight 2", active: false, delayed: true },
+    ]);
+
+    const flight = await Flight.first(["name", "active"]);
+
+    expect(flight).toEqual(expect.any(Object));
+    expect(flight).toHaveProperty("name", "Flight 1");
+    expect(flight).toHaveProperty("active", true);
+    expect(flight).not.toHaveProperty("delayed");
   });
 
-  it("should return null for a non-existent user", async () => {
-    User["$useSoftDelete"] = false;
-    const result = await User.where("name", "Kosasih1").first();
+  it("with non exist data", async () => {
+    interface IFlight extends IMongoloquentSchema {
+      name: string;
+      active: boolean;
+      delayed: boolean;
+    }
 
-    expect(result).toEqual(null);
-  });
+    class Flight extends Model<IFlight> {
+      static $schema: IFlight;
+      static $useTimestamps = false;
+    }
 
-  it("should return null for a soft-deleted user", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("name", "Kosasih").first();
+    await Flight.insertMany([
+      { name: "Flight 1", active: true, delayed: false },
+      { name: "Flight 2", active: true, delayed: true },
+    ]);
 
-    expect(result).toEqual(null);
+    const flight = await Flight.where("active", false).first();
+    expect(flight).toEqual(null);
   });
 });
