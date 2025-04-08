@@ -1,97 +1,166 @@
+import DB from "../../src/DB";
 import Model from "../../src/Model";
 import { IMongoloquentSchema } from "../../src/interfaces/ISchema";
 
-interface IUser extends IMongoloquentSchema {
-  name: string;
-  email: string;
-  age: number;
-  balance: number;
-}
-class User extends Model<IUser> {
-  static $schema: IUser;
-  static $useSoftDelete = true;
-}
-
-const query = User["query"]();
-const userCollection = query["getCollection"]();
-
-beforeAll(async () => {
-  await userCollection?.deleteMany({});
-
-  await userCollection?.insertMany([
-    {
-      name: "John",
-      email: "john@mail.com",
-      age: 10,
-      balance: 100,
-      [query.getIsDeleted()]: false,
-    },
-    {
-      name: "doe",
-      email: "doe@mail.com",
-      age: 30,
-      balance: 200,
-      [query.getIsDeleted()]: false,
-    },
-    {
-      name: "Udin",
-      email: "udin@mail.com",
-      age: 5,
-      balance: 500,
-      [query.getIsDeleted()]: false,
-    },
-    {
-      name: "Kosasih",
-      email: "kosasih@mail.com",
-      age: 5,
-      balance: 400,
-      [query.getIsDeleted()]: false,
-    },
-    {
-      name: "Joko",
-      email: "joko@mail.com",
-      age: 45,
-      balance: 500,
-      [query.getIsDeleted()]: false,
-    },
-  ]);
+beforeEach(async () => {
+  await DB.collection("flights").getCollection().deleteMany({});
 });
 
-afterAll(async () => {
-  await userCollection?.deleteMany({});
-});
+describe("exclude method", () => {
+  describe("with get method", () => {
+    it("with single param", async () => {
+      interface IFlight extends IMongoloquentSchema {
+        name: string;
+        active: boolean;
+        delayed: boolean;
+      }
 
-describe("Query Builder - exclude() method", () => {
-  it("should exclude a single field when passing a string parameter", async () => {
-    const result = await User.exclude("name").first();
+      class Flight extends Model<IFlight> {
+        static $schema: IFlight;
+        static $useTimestamps = false;
+      }
 
-    expect(result).toEqual(expect.any(Object));
-    expect(result?.name).toBeUndefined();
-    expect(result?.email).toBeDefined();
-    expect(result?.age).toBeDefined();
-    expect(result?.balance).toBeDefined();
-    expect(result?.getIsDeleted()).toBeDefined();
+      await Flight.insertMany([
+        { name: "Flight 1", active: true, delayed: false },
+        { name: "Flight 2", active: false, delayed: true },
+      ]);
+
+      const flights = await Flight.exclude("name").get();
+
+      const flight = flights[0];
+      expect(flight).toEqual(expect.any(Object));
+      expect(flight).not.toHaveProperty("name");
+      expect(flight).toHaveProperty("active");
+      expect(flight).toHaveProperty("delayed");
+    });
+
+    it("with multiple param", async () => {
+      interface IFlight extends IMongoloquentSchema {
+        name: string;
+        active: boolean;
+        delayed: boolean;
+      }
+
+      class Flight extends Model<IFlight> {
+        static $schema: IFlight;
+        static $useTimestamps = false;
+      }
+
+      await Flight.insertMany([
+        { name: "Flight 1", active: true, delayed: false },
+        { name: "Flight 2", active: false, delayed: true },
+      ]);
+
+      const flights = await Flight.exclude("name", "active").get();
+
+      const flight = flights[0];
+      expect(flight).toEqual(expect.any(Object));
+      expect(flight).not.toHaveProperty("name");
+      expect(flight).not.toHaveProperty("active");
+      expect(flight).toHaveProperty("delayed");
+    });
+
+    it("with array param", async () => {
+      interface IFlight extends IMongoloquentSchema {
+        name: string;
+        active: boolean;
+        delayed: boolean;
+      }
+
+      class Flight extends Model<IFlight> {
+        static $schema: IFlight;
+        static $useTimestamps = false;
+      }
+
+      await Flight.insertMany([
+        { name: "Flight 1", active: true, delayed: false },
+        { name: "Flight 2", active: false, delayed: true },
+      ]);
+
+      const flights = await Flight.exclude(["name", "active"]).get();
+
+      const flight = flights[0];
+      expect(flight).toEqual(expect.any(Object));
+      expect(flight).not.toHaveProperty("name");
+      expect(flight).not.toHaveProperty("active");
+      expect(flight).toHaveProperty("delayed");
+    });
   });
 
-  it("should exclude multiple fields when passing an array parameter", async () => {
-    const result = await User.exclude(["name", "age"]).first();
+  describe("with first method", () => {
+    it("with single param", async () => {
+      interface IFlight extends IMongoloquentSchema {
+        name: string;
+        active: boolean;
+        delayed: boolean;
+      }
 
-    expect(result).toEqual(expect.any(Object));
-    expect(result?.name).toBeUndefined();
-    expect(result?.email).toBeDefined();
-    expect(result?.age).toBeUndefined();
-    expect(result?.balance).toBeDefined();
-    expect(result?.getIsDeleted()).toBeDefined();
-  });
+      class Flight extends Model<IFlight> {
+        static $schema: IFlight;
+        static $useTimestamps = false;
+      }
 
-  it("should exclude fields when chaining multiple exclude() calls", async () => {
-    const result = await User.exclude("name").exclude(["age", "email"]).first();
+      await Flight.insertMany([
+        { name: "Flight 1", active: true, delayed: false },
+        { name: "Flight 2", active: false, delayed: true },
+      ]);
 
-    expect(result).toEqual(expect.any(Object));
-    expect(result?.name).toBeUndefined();
-    expect(result?.email).toBeUndefined();
-    expect(result?.age).toBeUndefined();
-    expect(result?.balance).toBeDefined();
-    expect(result?.getIsDeleted()).toBeDefined();
+      const flight = await Flight.exclude("name").first();
+
+      expect(flight).toEqual(expect.any(Object));
+      expect(flight).not.toHaveProperty("name");
+      expect(flight).toHaveProperty("active");
+      expect(flight).toHaveProperty("delayed");
+    });
+
+    it("with multiple param", async () => {
+      interface IFlight extends IMongoloquentSchema {
+        name: string;
+        active: boolean;
+        delayed: boolean;
+      }
+
+      class Flight extends Model<IFlight> {
+        static $schema: IFlight;
+        static $useTimestamps = false;
+      }
+
+      await Flight.insertMany([
+        { name: "Flight 1", active: true, delayed: false },
+        { name: "Flight 2", active: false, delayed: true },
+      ]);
+
+      const flight = await Flight.exclude("name", "active").first();
+
+      expect(flight).toEqual(expect.any(Object));
+      expect(flight).not.toHaveProperty("name");
+      expect(flight).not.toHaveProperty("active");
+      expect(flight).toHaveProperty("delayed");
+    });
+
+    it("with array param", async () => {
+      interface IFlight extends IMongoloquentSchema {
+        name: string;
+        active: boolean;
+        delayed: boolean;
+      }
+
+      class Flight extends Model<IFlight> {
+        static $schema: IFlight;
+        static $useTimestamps = false;
+      }
+
+      await Flight.insertMany([
+        { name: "Flight 1", active: true, delayed: false },
+        { name: "Flight 2", active: false, delayed: true },
+      ]);
+
+      const flight = await Flight.exclude(["name", "active"]).first();
+
+      expect(flight).toEqual(expect.any(Object));
+      expect(flight).not.toHaveProperty("name");
+      expect(flight).not.toHaveProperty("active");
+      expect(flight).toHaveProperty("delayed");
+    });
   });
 });
