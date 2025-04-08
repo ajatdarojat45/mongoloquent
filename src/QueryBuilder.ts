@@ -901,17 +901,21 @@ export default class QueryBuilder<T> {
    * @param doc Data to use for creation if no match is found
    * @returns Existing or newly created document
    */
-  public async firstOrCreate(filter: Partial<T>, doc: Partial<FormSchema<T>>) {
+  public async firstOrCreate(
+    filter: Partial<FormSchema<T>>,
+    doc?: Partial<FormSchema<T>>,
+  ) {
     for (var key in filter) {
-      if (doc.hasOwnProperty(key)) {
-        this.where(key, filter[key]);
+      if (filter.hasOwnProperty(key)) {
+        this.where(key as keyof T, filter[key as keyof typeof filter]);
       }
     }
 
     const data = await this.first();
     if (data && Object.keys(data.$original).length > 0) return data;
 
-    return this.insert(doc as FormSchema<T>);
+    const payload = { ...filter, ...doc } as FormSchema<T>;
+    return this.insert(payload as FormSchema<T>);
   }
 
   /**
@@ -920,7 +924,10 @@ export default class QueryBuilder<T> {
    * @param doc Data to use for creation if no match is found
    * @returns Existing or newly created document
    */
-  public async firstOrNew(filter: Partial<T>, doc: Partial<FormSchema<T>>) {
+  public async firstOrNew(
+    filter: Partial<FormSchema<T>>,
+    doc?: Partial<FormSchema<T>>,
+  ) {
     return this.firstOrCreate(filter, doc);
   }
 

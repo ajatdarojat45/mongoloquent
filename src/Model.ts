@@ -541,7 +541,7 @@ export default class Model<T> extends QueryBuilder<T> {
   public static firstOrCreate<M extends typeof Model<any>>(
     this: M,
     filter: Partial<M["$schema"]>,
-    doc: Partial<FormSchema<M["$schema"]>>,
+    doc?: Partial<FormSchema<M["$schema"]>>,
   ) {
     return this.query().firstOrCreate(filter, doc);
   }
@@ -556,7 +556,7 @@ export default class Model<T> extends QueryBuilder<T> {
   public static firstOrNew<M extends typeof Model<any>>(
     this: M,
     filter: Partial<M["$schema"]>,
-    doc: Partial<FormSchema<M["$schema"]>>,
+    doc?: Partial<FormSchema<M["$schema"]>>,
   ) {
     return this.query().firstOrNew(filter, doc);
   }
