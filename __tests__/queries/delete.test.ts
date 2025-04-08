@@ -1,94 +1,185 @@
+import DB from "../../src/DB";
 import Model from "../../src/Model";
-import { IMongoloquentSchema } from "../../src/interfaces/ISchema";
+import {
+  IMongoloquentSchema,
+  IMongoloquentSoftDelete,
+  IMongoloquentTimestamps,
+} from "../../src/interfaces/ISchema";
 
-interface IUser extends IMongoloquentSchema {
-  name: string;
-  age: number;
-  address: string;
-}
-class User extends Model<IUser> {
-  static $schema: IUser;
-}
-
-const query = User["query"]();
-const userCollection = query["getCollection"]();
-
-beforeAll(async () => {
-  try {
-    await userCollection?.deleteMany({});
-  } catch (error) {
-    console.error(error);
-  }
+beforeEach(async () => {
+  await DB.collection("flights").getCollection().deleteMany({});
 });
 
-afterAll(async () => {
-  try {
-    await userCollection?.deleteMany({});
-  } catch (error) {
-    console.error(error);
-  }
-});
+describe("delete method", () => {
+  describe("without soft delete", () => {
+    it("delete model instance", async () => {
+      interface IFlight extends IMongoloquentSchema {
+        name: string;
+      }
 
-describe("User Model - delete method", () => {
-  beforeEach(async () => {
-    try {
-      await userCollection?.deleteMany({});
-    } catch (error) {
-      console.error(error);
-    }
-  });
+      class Flight extends Model<IFlight> {
+        static $schema: IFlight;
+        static $useSoftDelete = false;
+      }
 
-  afterAll(async () => {
-    try {
-      await userCollection?.deleteMany({});
-    } catch (error) {
-      console.error(error);
-    }
-  });
+      const flight = new Flight();
+      flight.name = "Flight 1";
+      await flight.save();
 
-  it("should delete a user without soft delete", async () => {
-    User["$useSoftDelete"] = false;
-    User["$useTimestamps"] = false;
+      expect(flight).toEqual(expect.any(Object));
+      expect(flight).toHaveProperty("_id");
+      expect(flight).toHaveProperty("name", "Flight 1");
 
-    await User.insert({
-      name: "Udin",
-      age: 20,
-      address: "Bogor",
+      const deleted = await flight.delete();
+      expect(deleted).toEqual(expect.any(Number));
+      expect(deleted).toBe(1);
+
+      const flights = await Flight.get();
+      expect(flights).toEqual(expect.any(Array));
+      expect(flights).toHaveLength(0);
     });
 
-    const result = await User.where("name", "Udin").delete();
-    const user = await User.where("name", "Udin").first();
+    it("delete with query", async () => {
+      interface IFlight extends IMongoloquentSchema {
+        name: string;
+      }
 
-    // Check if the user was deleted successfully
-    expect(result).toEqual(1);
-    expect(user).toBe(null);
-  });
+      class Flight extends Model<IFlight> {
+        static $schema: IFlight;
+        static $useSoftDelete = false;
+      }
 
-  it("should soft delete a user", async () => {
-    User["$useSoftDelete"] = true;
-    User["$useTimestamps"] = false;
+      const flight = new Flight();
+      flight.name = "Flight 1";
+      await flight.save();
 
-    await User.insert({
-      name: "Udin",
-      age: 20,
-      address: "Bogor",
+      expect(flight).toEqual(expect.any(Object));
+      expect(flight).toHaveProperty("_id");
+      expect(flight).toHaveProperty("name", "Flight 1");
+
+      const deleted = await Flight.query().where("_id", flight._id).delete();
+      expect(deleted).toEqual(expect.any(Number));
+      expect(deleted).toBe(1);
+
+      const flights = await Flight.get();
+      expect(flights).toEqual(expect.any(Array));
+      expect(flights).toHaveLength(0);
     });
 
-    const result = await User.where("name", "Udin").delete();
-    const user = await User.where("name", "Udin").withTrashed().first();
+    it("multiple delete with query", async () => {
+      interface IFlight extends IMongoloquentSchema {
+        name: string;
+        active: boolean;
+      }
+      class Flight extends Model<IFlight> {
+        static $schema: IFlight;
+        static $useSoftDelete = false;
+      }
 
-    // Check if the user was soft deleted successfully
-    expect(result).toEqual(1);
-    expect(user).not.toEqual(null);
+      await Flight.insertMany([
+        { name: "Flight 1", active: true },
+        { name: "Flight 2", active: true },
+      ]);
+
+      const deleted = await Flight.where("active", true).delete();
+      expect(deleted).toEqual(expect.any(Number));
+      expect(deleted).toBe(2);
+
+      const flights = await Flight.get();
+      expect(flights).toEqual(expect.any(Array));
+      expect(flights).toHaveLength(0);
+    });
   });
 
-  it("should return null when trying to delete a non-existent user", async () => {
-    User["$useSoftDelete"] = false;
-    User["$useTimestamps"] = false;
+  describe("with soft delete", () => {
+    it("delete model instance", async () => {
+      interface IFlight extends IMongoloquentSchema, IMongoloquentSoftDelete {
+        name: string;
+      }
 
-    const result = await User.where("name", "Udin").delete();
+      class Flight extends Model<IFlight> {
+        static $schema: IFlight;
+        static $useSoftDelete = true;
+      }
 
-    // Check if the result is null for non-existent user
-    expect(result).toEqual(0);
+      const flight = new Flight();
+      flight.name = "Flight 1";
+      await flight.save();
+
+      expect(flight).toEqual(expect.any(Object));
+      expect(flight).toHaveProperty("_id");
+      expect(flight).toHaveProperty("name", "Flight 1");
+
+      const deleted = await flight.delete();
+      expect(deleted).toEqual(expect.any(Number));
+      expect(deleted).toBe(1);
+
+      let flights = await Flight.get();
+      expect(flights).toEqual(expect.any(Array));
+      expect(flights).toHaveLength(0);
+
+      flights = await Flight.withTrashed().get();
+      expect(flights).toEqual(expect.any(Array));
+      expect(flights).toHaveLength(1);
+    });
+
+    it("delete with query", async () => {
+      interface IFlight extends IMongoloquentSchema, IMongoloquentSoftDelete {
+        name: string;
+      }
+
+      class Flight extends Model<IFlight> {
+        static $schema: IFlight;
+        static $useSoftDelete = true;
+      }
+
+      const flight = new Flight();
+      flight.name = "Flight 1";
+      await flight.save();
+
+      expect(flight).toEqual(expect.any(Object));
+      expect(flight).toHaveProperty("_id");
+      expect(flight).toHaveProperty("name", "Flight 1");
+
+      const deleted = await Flight.query().where("_id", flight._id).delete();
+      expect(deleted).toEqual(expect.any(Number));
+      expect(deleted).toBe(1);
+
+      let flights = await Flight.get();
+      expect(flights).toEqual(expect.any(Array));
+      expect(flights).toHaveLength(0);
+
+      flights = await Flight.withTrashed().get();
+      expect(flights).toEqual(expect.any(Array));
+      expect(flights).toHaveLength(1);
+    });
+
+    it("multiple delete with query", async () => {
+      interface IFlight extends IMongoloquentSchema, IMongoloquentSoftDelete {
+        name: string;
+        active: boolean;
+      }
+      class Flight extends Model<IFlight> {
+        static $schema: IFlight;
+        static $useSoftDelete = true;
+      }
+
+      await Flight.insertMany([
+        { name: "Flight 1", active: true },
+        { name: "Flight 2", active: true },
+      ]);
+
+      const deleted = await Flight.where("active", true).delete();
+      expect(deleted).toEqual(expect.any(Number));
+      expect(deleted).toBe(2);
+
+      let flights = await Flight.get();
+      expect(flights).toEqual(expect.any(Array));
+      expect(flights).toHaveLength(0);
+
+      flights = await Flight.withTrashed().get();
+      expect(flights).toEqual(expect.any(Array));
+      expect(flights).toHaveLength(2);
+    });
   });
 });
