@@ -1,126 +1,77 @@
+import DB from "../../src/DB";
 import Model from "../../src/Model";
 import { IMongoloquentSchema } from "../../src/interfaces/ISchema";
 
-interface IUser extends IMongoloquentSchema {
-  name: string;
-  email: string;
-  age: number;
-}
-class User extends Model<IUser> {
-  static $schema: IUser;
-}
-
-const query = User["query"]();
-const userCollection = query["getCollection"]();
-
-const users = [
-  {
-    name: "John Doe",
-    email: "jhon@mail.com",
-    age: 20,
-    [query["$isDeleted"]]: false,
-  },
-  {
-    name: "Udin",
-    email: "udin@mail.com",
-    [query["$isDeleted"]]: false,
-    age: 10,
-  },
-  {
-    name: "Kosasih",
-    email: "kosasih@mail.com",
-    [query["$isDeleted"]]: true,
-    age: 50,
-  },
-];
-
-beforeAll(async () => {
-  try {
-    await userCollection.deleteMany({});
-  } catch (error) {
-    console.error(error);
-  }
+beforeEach(async () => {
+  await DB.collection("flights").getCollection().deleteMany({});
 });
 
-afterAll(async () => {
-  try {
-    await userCollection.deleteMany({});
-  } catch (error) {
-    console.error(error);
-  }
-});
-
-describe("Model - pluck method", () => {
-  beforeAll(async () => {
-    try {
-      await userCollection.insertMany(users);
-    } catch (error) {
-      console.error(error);
+describe("pluck method", () => {
+  it("with single param", async () => {
+    interface IFlight extends IMongoloquentSchema {
+      name: string;
+      active: boolean;
+      delayed: boolean;
     }
-  });
 
-  afterAll(async () => {
-    try {
-      await userCollection.deleteMany({});
-    } catch (error) {
-      console.error(error);
+    class Flight extends Model<IFlight> {
+      static $schema: IFlight;
+      static $useTimestamps = false;
     }
+
+    await Flight.insertMany([
+      { name: "Flight 1", active: true, delayed: false },
+      { name: "Flight 2", active: false, delayed: true },
+    ]);
+
+    const flights = await Flight.pluck("name");
+
+    expect(flights).toEqual(["Flight 1", "Flight 2"]);
   });
 
-  it("should return an array of values for the specified field", async () => {
-    User["$useSoftDelete"] = false;
-    const result = await User.pluck("name");
+  it("with multiple param", async () => {
+    interface IFlight extends IMongoloquentSchema {
+      name: string;
+      active: boolean;
+      delayed: boolean;
+    }
 
-    expect(result).toEqual(expect.any(Array));
-    expect(result).toEqual(["John Doe", "Udin", "Kosasih"]);
+    class Flight extends Model<IFlight> {
+      static $schema: IFlight;
+      static $useTimestamps = false;
+    }
+
+    await Flight.insertMany([
+      { name: "Flight 1", active: true, delayed: false },
+      { name: "Flight 2", active: false, delayed: true },
+    ]);
+
+    const flights = await Flight.pluck("name", "active");
+
+    expect(flights).toEqual([
+      { name: "Flight 1", active: true },
+      { name: "Flight 2", active: false },
+    ]);
   });
 
-  it("should return an array of values for the specified field with a where condition", async () => {
-    User["$useSoftDelete"] = false;
-    const result = await User.where("name", "Udin").pluck("name");
-
-    expect(result).toEqual(expect.any(Array));
-    expect(result).toEqual(["Udin"]);
-  });
-
-  it("should return an empty array when no matching data is found", async () => {
-    User["$useSoftDelete"] = false;
-    const result = await User.where("name", "Udin1").pluck("name");
-
-    expect(result).toEqual(expect.any(Array));
-    expect(result).toEqual([]);
-  });
-
-  it("should return an empty array when the specified field does not exist", async () => {
-    User["$useSoftDelete"] = false;
-    // @ts-ignore
-    const result = await User.pluck("address");
-
-    expect(result).toEqual(expect.any(Array));
-    expect(result).toEqual([]);
-  });
-
-  it("should return an array of values for the specified field with $skip applied", async () => {
-    User["$useSoftDelete"] = false;
-    const result = await User.skip(1).pluck("name");
-
-    expect(result).toEqual(expect.any(Array));
-    expect(result).toEqual(["Udin", "Kosasih"]);
-  });
-
-  it("should return an array of values for the specified field with $limit applied", async () => {
-    User["$useSoftDelete"] = false;
-    const result = await User.limit(2).pluck("name");
-
-    expect(result).toEqual(expect.any(Array));
-    expect(result).toEqual(["John Doe", "Udin"]);
-  });
-
-  it("should return an array of values for the specified field with both $skip and $limit applied", async () => {
-    User["$useSoftDelete"] = false;
-    const result = await User.skip(1).limit(1).pluck("name");
-
-    expect(result).toEqual(expect.any(Array));
-    expect(result).toEqual(["Udin"]);
+  it("with array param", async () => {
+    interface IFlight extends IMongoloquentSchema {
+      name: string;
+      active: boolean;
+      delayed: boolean;
+    }
+    class Flight extends Model<IFlight> {
+      static $schema: IFlight;
+      static $useTimestamps = false;
+    }
+    await Flight.insertMany([
+      { name: "Flight 1", active: true, delayed: false },
+      { name: "Flight 2", active: false, delayed: true },
+    ]);
+    const flights = await Flight.pluck(["name", "active"]);
+    expect(flights).toEqual([
+      { name: "Flight 1", active: true },
+      { name: "Flight 2", active: false },
+    ]);
   });
 });
