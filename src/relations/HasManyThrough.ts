@@ -1,10 +1,11 @@
+import { Document } from "mongodb";
+
+import LookupBuilder from "./LookupBuilder.ts";
+
 import Model from "../Model";
 import QueryBuilder from "../QueryBuilder";
 import { IModelPaginate } from "../interfaces/IModel";
 import { IRelationHasManyThrough } from "../interfaces/IRelation";
-import { Document } from "mongodb";
-
-import LookupBuilder from "./LookupBuilder.ts";
 
 export default class HasManyThrough<T, M, TM> extends QueryBuilder<M> {
   model: Model<T>;
