@@ -19,7 +19,7 @@ afterEach(async () => {
   await DB.collection("deployments").getCollection().deleteMany({});
 });
 
-describe("get method", () => {
+describe("paginate method", () => {
   describe("without soft delete", () => {
     it("without parameter", async () => {
       interface IApplication extends IMongoloquentSchema {
