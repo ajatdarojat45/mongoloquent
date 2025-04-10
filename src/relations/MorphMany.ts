@@ -98,7 +98,7 @@ export default class MorphMany<T, M> extends QueryBuilder<M> {
 
   // @ts-ignore
   public createMany(docs: Partial<FormSchema<M>>[]) {
-    this.saveMany(docs);
+    return this.saveMany(docs);
   }
 
   public all(): Promise<M[]> {
