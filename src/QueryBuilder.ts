@@ -1005,7 +1005,6 @@ export default class QueryBuilder<T> {
     try {
       const collection = this.getCollection();
 
-      //     await this.checkRelation();
       this.checkSoftDelete();
       this.generateWheres();
 
