@@ -851,7 +851,7 @@ export default class Model<T> extends QueryBuilder<T> {
    */
   public belongsToMany<M, TM>(
     model: new () => Model<M>,
-    collection: string = "",
+    collection?: string,
     foreignPivotKey?: keyof TM,
     relatedPivotKey?: keyof TM,
     parentKey: keyof T = "_id" as keyof T,
@@ -862,10 +862,11 @@ export default class Model<T> extends QueryBuilder<T> {
       this.constructor.name.toLowerCase(),
       relation.constructor.name.toLowerCase(),
     ].sort();
-    const _collection = collection || `${names[0]}_${names[1]}`;
+
+    if (!collection) collection = `${names[0]}_${names[1]}`;
 
     const pivot = Model.query();
-    pivot.$collection = _collection;
+    pivot.$collection = collection;
 
     if (!foreignPivotKey)
       foreignPivotKey = (this.constructor.name.toLowerCase() +
