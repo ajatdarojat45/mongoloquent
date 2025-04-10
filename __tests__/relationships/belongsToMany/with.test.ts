@@ -1,5 +1,3 @@
-import { ObjectId } from "mongodb";
-
 import DB from "../../../src/DB";
 import Model from "../../../src/Model";
 import {
@@ -11,12 +9,14 @@ beforeEach(async () => {
   await DB.collection("users").getCollection().deleteMany({});
   await DB.collection("roles").getCollection().deleteMany({});
   await DB.collection("role_user").getCollection().deleteMany({});
+  await DB.collection("roleUser").getCollection().deleteMany({});
 });
 
 afterEach(async () => {
   await DB.collection("users").getCollection().deleteMany({});
   await DB.collection("roles").getCollection().deleteMany({});
   await DB.collection("role_user").getCollection().deleteMany({});
+  await DB.collection("roleUser").getCollection().deleteMany({});
 });
 
 describe("with methods", () => {
@@ -32,17 +32,12 @@ describe("with methods", () => {
       description: string;
     }
 
-    interface IRoleUser extends IMongoloquentSchema {
-      user_id: ObjectId;
-      role_id: ObjectId;
-    }
-
     class User extends Model<IUser> {
       static $collection: string = "users";
       static $schema: IUser;
 
       roles() {
-        return this.belongsToMany(Role, RoleUser, "user_id", "role_id");
+        return this.belongsToMany(Role);
       }
     }
 
@@ -51,10 +46,8 @@ describe("with methods", () => {
       static $schema: IRole;
     }
 
-    class RoleUser extends Model<IRoleUser> {
-      static $collection: string = "role_user";
-      static $schema: IMongoloquentSchema;
-    }
+    const names = [User.name.toLowerCase(), Role.name.toLowerCase()].sort();
+    const pivotCollection = `${names[0]}_${names[1]}`;
 
     it("without options", async () => {
       const userIds = await User.insertMany([
@@ -68,10 +61,10 @@ describe("with methods", () => {
         { name: "Guest", description: "Guest User" },
       ]);
 
-      await RoleUser.insertMany([
-        { user_id: userIds[0], role_id: roleIds[0] },
-        { user_id: userIds[0], role_id: roleIds[1] },
-        { user_id: userIds[1], role_id: roleIds[1] },
+      await DB.collection(pivotCollection).insertMany([
+        { userId: userIds[0], roleId: roleIds[0] },
+        { userId: userIds[0], roleId: roleIds[1] },
+        { userId: userIds[1], roleId: roleIds[1] },
       ]);
 
       const user = await User.with("roles").find(userIds[0]);
@@ -95,10 +88,10 @@ describe("with methods", () => {
         { name: "Guest", description: "Guest User" },
       ]);
 
-      await RoleUser.insertMany([
-        { user_id: userIds[0], role_id: roleIds[0] },
-        { user_id: userIds[0], role_id: roleIds[1] },
-        { user_id: userIds[1], role_id: roleIds[1] },
+      await DB.collection(pivotCollection).insertMany([
+        { userId: userIds[0], roleId: roleIds[0] },
+        { userId: userIds[0], roleId: roleIds[1] },
+        { userId: userIds[1], roleId: roleIds[1] },
       ]);
 
       const user = await User.with("roles", {
@@ -124,10 +117,10 @@ describe("with methods", () => {
         { name: "Guest", description: "Guest User" },
       ]);
 
-      await RoleUser.insertMany([
-        { user_id: userIds[0], role_id: roleIds[0] },
-        { user_id: userIds[0], role_id: roleIds[1] },
-        { user_id: userIds[1], role_id: roleIds[1] },
+      await DB.collection(pivotCollection).insertMany([
+        { userId: userIds[0], roleId: roleIds[0] },
+        { userId: userIds[0], roleId: roleIds[1] },
+        { userId: userIds[1], roleId: roleIds[1] },
       ]);
 
       const user = await User.with("roles", {
@@ -154,18 +147,13 @@ describe("with methods", () => {
       description: string;
     }
 
-    interface IRoleUser extends IMongoloquentSchema, IMongoloquentSoftDelete {
-      user_id: ObjectId;
-      role_id: ObjectId;
-    }
-
     class User extends Model<IUser> {
       static $collection: string = "users";
       static $schema: IUser;
       static $useSoftDelete: boolean = true;
 
       roles() {
-        return this.belongsToMany(Role, RoleUser, "user_id", "role_id");
+        return this.belongsToMany(Role, "roleUser", "user_id", "role_id");
       }
     }
 
@@ -175,10 +163,7 @@ describe("with methods", () => {
       static $useSoftDelete: boolean = true;
     }
 
-    class RoleUser extends Model<IRoleUser> {
-      static $collection: string = "role_user";
-      static $schema: IMongoloquentSchema;
-    }
+    const pivotCollection = "roleUser";
 
     it("without options", async () => {
       const userIds = await User.insertMany([
@@ -192,7 +177,7 @@ describe("with methods", () => {
         { name: "Guest", description: "Guest User" },
       ]);
 
-      await RoleUser.insertMany([
+      await DB.collection(pivotCollection).insertMany([
         { user_id: userIds[0], role_id: roleIds[0] },
         { user_id: userIds[0], role_id: roleIds[1] },
         { user_id: userIds[0], role_id: roleIds[2] },
@@ -226,7 +211,7 @@ describe("with methods", () => {
         { name: "Guest", description: "Guest User" },
       ]);
 
-      await RoleUser.insertMany([
+      await DB.collection(pivotCollection).insertMany([
         { user_id: userIds[0], role_id: roleIds[0] },
         { user_id: userIds[0], role_id: roleIds[1] },
         { user_id: userIds[0], role_id: roleIds[2] },
@@ -262,7 +247,7 @@ describe("with methods", () => {
         { name: "Guest", description: "Guest User" },
       ]);
 
-      await RoleUser.insertMany([
+      await DB.collection(pivotCollection).insertMany([
         { user_id: userIds[0], role_id: roleIds[0] },
         { user_id: userIds[0], role_id: roleIds[1] },
         { user_id: userIds[0], role_id: roleIds[2] },

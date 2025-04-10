@@ -1,4 +1,4 @@
-import { Document, ObjectId, OptionalUnlessRequiredId } from "mongodb";
+import { Document, ObjectId } from "mongodb";
 
 import LookupBuilder from "./LookupBuilder.ts";
 

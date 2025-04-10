@@ -1,5 +1,6 @@
 import { BulkWriteOptions, InsertOneOptions, ObjectId } from "mongodb";
 
+import DB from "./DB";
 import QueryBuilder from "./QueryBuilder";
 import {
   IRelationBelongsTo,
@@ -836,21 +837,33 @@ export default class Model<T> extends QueryBuilder<T> {
    */
   public belongsToMany<M, TM>(
     model: new () => Model<M>,
-    pivotModel: new () => Model<TM>,
-    foreignPivotKey: keyof TM,
-    relatedPivotKey: keyof TM,
+    collection: string = "",
+    foreignPivotKey: keyof TM = "" as keyof TM,
+    relatedPivotKey: keyof TM = "" as keyof TM,
     parentKey: keyof T = "_id" as keyof T,
     relatedKey: keyof M = "_id" as keyof M,
   ) {
     const relation = new model();
-    const pivot = new pivotModel();
+    const names = [
+      this.constructor.name.toLowerCase(),
+      relation.constructor.name.toLowerCase(),
+    ].sort();
+    const _collection = collection || `${names[0]}_${names[1]}`;
+
+    const pivot = Model.query();
+    pivot.$collection = _collection;
+
     const belongsToMany: IRelationBelongsToMany = {
       type: IRelationTypes.belongsToMany,
       model: this,
       relatedModel: relation,
       pivotModel: pivot,
-      foreignPivotKey: foreignPivotKey as string,
-      relatedPivotKey: relatedPivotKey as string,
+      foreignPivotKey:
+        (foreignPivotKey as string) ||
+        `${this.constructor.name.toLowerCase()}Id`,
+      relatedPivotKey:
+        (relatedPivotKey as string) ||
+        `${relation.constructor.name.toLowerCase()}Id`,
       parentKey: parentKey as string,
       relatedKey: relatedKey as string,
       alias: this.$alias,
