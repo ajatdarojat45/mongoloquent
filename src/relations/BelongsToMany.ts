@@ -89,9 +89,9 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
     return super.avg(field);
   }
 
-  public async attach(
+  public async attach<D>(
     ids: string | ObjectId | (string | ObjectId)[],
-    doc: Partial<PM> = {},
+    doc: Partial<D> = {},
   ) {
     let objectIds: ObjectId[] = [];
     let query: Document = {};
@@ -165,9 +165,9 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
     };
   }
 
-  public async sync(
+  public async sync<D>(
     ids: string | ObjectId | (string | ObjectId)[],
-    doc: Partial<PM> = {},
+    doc: Partial<D> = {},
   ) {
     let objectIds: ObjectId[] = [];
 
@@ -228,9 +228,9 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
     };
   }
 
-  public async syncWithoutDetaching(
+  public async syncWithoutDetaching<D>(
     ids: string | ObjectId | (string | ObjectId)[],
-    doc: Partial<PM> = {},
+    doc: Partial<D> = {},
   ) {
     let objectIds: ObjectId[] = [];
 
@@ -286,9 +286,9 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
     };
   }
 
-  public async syncWithPivotValues(
+  public async syncWithPivotValues<D>(
     ids: string | ObjectId | (string | ObjectId)[],
-    doc: Partial<PM> = {},
+    doc: Partial<D> = {},
   ) {
     let objectIds: ObjectId[] = [];
 
@@ -335,7 +335,7 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
       await this.pivotModel
         .whereIn(this.relatedPivotKey, idsToUpdate)
         .where(this.foreignPivotKey, this.model["$original"][this.parentKey])
-        .updateMany(doc);
+        .updateMany(doc as any);
     }
 
     await this.pivotModel

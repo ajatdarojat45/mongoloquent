@@ -76,7 +76,9 @@ describe("attach method", () => {
     ]);
 
     const user = await User.find(userIds[0]);
-    await user.roles().attach(roleIds[0], { additional: "value" });
+    await user.roles().attach<{
+      additional: string;
+    }>(roleIds[0], { additional: "value" });
 
     const roles = await user.roles().get();
     expect(roles.length).toBe(1);

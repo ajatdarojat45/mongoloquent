@@ -86,7 +86,9 @@ describe("sync method", () => {
     const roles = await user.roles().get();
     expect(roles.length).toBe(1);
 
-    await user.roles().sync([roleIds[0], roleIds[1]], { additional: "value" });
+    await user.roles().sync<{
+      additional: string;
+    }>([roleIds[0], roleIds[1]], { additional: "value" });
     const rolesAfterDetach = await user.roles().get();
     expect(rolesAfterDetach.length).toBe(2);
 

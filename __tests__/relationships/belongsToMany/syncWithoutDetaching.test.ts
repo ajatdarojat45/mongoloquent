@@ -83,7 +83,9 @@ describe("syncWithoutDetaching method", () => {
     const roles = await user.roles().get();
     expect(roles.length).toBe(1);
 
-    await user.roles().syncWithoutDetaching([roleIds[1], roleIds[2]], {
+    await user.roles().syncWithoutDetaching<{
+      additional: string;
+    }>([roleIds[1], roleIds[2]], {
       additional: "value",
     });
     const rolesAfterDetach = await user.roles().get();
