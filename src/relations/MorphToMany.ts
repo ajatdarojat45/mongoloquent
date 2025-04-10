@@ -1,10 +1,11 @@
+import { Document, ObjectId } from "mongodb";
+
+import LookupBuilder from "./LookupBuilder.ts";
+
 import Model from "../Model";
 import QueryBuilder from "../QueryBuilder";
 import { IModelPaginate } from "../interfaces/IModel";
 import { IRelationMorphToMany } from "../interfaces/IRelation";
-import { Document, ObjectId } from "mongodb";
-
-import LookupBuilder from "./LookupBuilder.ts";
 
 export default class MorphToMany<T, M> extends QueryBuilder<M> {
   model: Model<T>;
@@ -41,7 +42,10 @@ export default class MorphToMany<T, M> extends QueryBuilder<M> {
     return super.get(...fields);
   }
 
-  public async paginate(page: number, limit: number): Promise<IModelPaginate> {
+  public async paginate(
+    page: number = 1,
+    limit: number = 15,
+  ): Promise<IModelPaginate> {
     await this.setDefaultCondition();
 
     return super.paginate(page, limit);
