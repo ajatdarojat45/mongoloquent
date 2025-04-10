@@ -700,7 +700,7 @@ export default class Model<T> extends QueryBuilder<T> {
     const relation = new model();
 
     if (!foreignKey)
-      foreignKey = (relation.constructor.name.toLowerCase() + "_id") as keyof M;
+      foreignKey = (relation.constructor.name.toLowerCase() + "Id") as keyof M;
     if (!localKey) localKey = "_id" as keyof T;
 
     const hasMany: IRelationHasMany = {
@@ -764,7 +764,7 @@ export default class Model<T> extends QueryBuilder<T> {
     const relation = new model();
 
     if (!foreignKey)
-      foreignKey = (relation.constructor.name.toLowerCase() + "_id") as keyof T;
+      foreignKey = (relation.constructor.name.toLowerCase() + "Id") as keyof T;
     if (!ownerKey) ownerKey = "_id" as keyof M;
 
     const belongsTo: IRelationBelongsTo = {
@@ -797,13 +797,19 @@ export default class Model<T> extends QueryBuilder<T> {
   public hasManyThrough<M, TM>(
     model: new () => Model<M>,
     throughModel: new () => Model<TM>,
-    foreignKey: keyof TM,
-    foreignKeyThrough: keyof M,
+    foreignKey?: keyof TM,
+    foreignKeyThrough?: keyof M,
     localKey: keyof T = "_id" as keyof T,
     localKeyThrough: keyof TM = "_id" as keyof TM,
   ) {
     const relation = new model();
     const through = new throughModel();
+
+    if (!foreignKey)
+      foreignKey = (relation.constructor.name.toLowerCase() + "Id") as keyof TM;
+    if (!foreignKeyThrough)
+      foreignKeyThrough = (through.constructor.name.toLowerCase() +
+        "_id") as keyof M;
 
     const hasManyThrough: IRelationHasManyThrough = {
       type: IRelationTypes.hasManyThrough,
@@ -861,20 +867,20 @@ export default class Model<T> extends QueryBuilder<T> {
     const pivot = Model.query();
     pivot.$collection = _collection;
 
-    const _foreignPivotKey =
-      foreignPivotKey ||
-      (`${this.constructor.name.toLowerCase()}Id` as keyof TM);
-    const _relatedPivotKey =
-      relatedPivotKey ||
-      (`${relation.constructor.name.toLowerCase()}Id` as keyof TM);
+    if (!foreignPivotKey)
+      foreignPivotKey = (this.constructor.name.toLowerCase() +
+        "Id") as keyof TM;
+    if (!relatedPivotKey)
+      relatedPivotKey = (relation.constructor.name.toLowerCase() +
+        "Id") as keyof TM;
 
     const belongsToMany: IRelationBelongsToMany = {
       type: IRelationTypes.belongsToMany,
       model: this,
       relatedModel: relation,
       pivotModel: pivot,
-      foreignPivotKey: _foreignPivotKey as string,
-      relatedPivotKey: _relatedPivotKey as string,
+      foreignPivotKey: foreignPivotKey as string,
+      relatedPivotKey: relatedPivotKey as string,
       parentKey: parentKey as string,
       relatedKey: relatedKey as string,
       alias: this.$alias,
@@ -887,8 +893,8 @@ export default class Model<T> extends QueryBuilder<T> {
       this,
       relation,
       pivot,
-      _foreignPivotKey as keyof TM,
-      _relatedPivotKey as keyof TM,
+      foreignPivotKey,
+      relatedPivotKey,
       parentKey,
       relatedKey,
     );
