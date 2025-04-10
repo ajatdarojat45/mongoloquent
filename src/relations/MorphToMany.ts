@@ -297,6 +297,88 @@ export default class MorphToMany<T, M> extends QueryBuilder<M> {
     };
   }
 
+  public async syncWithPivotValue<D>(
+    ids: string | ObjectId | (string | ObjectId)[],
+    doc: Partial<D>,
+  ) {
+    let objectIds: ObjectId[] = [];
+    const foreignKey = `${this.relatedModel.constructor.name.toLowerCase()}Id`;
+
+    if (!Array.isArray(ids)) {
+      objectIds = [new ObjectId(ids)];
+    } else {
+      objectIds = ids.map((el) => new ObjectId(el));
+    }
+
+    const collection = this["getCollection"](this.morphCollectionName);
+    const _payload: object[] = [];
+    let qFind = {};
+    let qDelete = {};
+
+    qFind = {
+      [foreignKey]: { $in: objectIds },
+      [this.morphId]: this.model["$id"],
+      [this.morphType]: this.model.constructor.name,
+    };
+
+    qDelete = {
+      [foreignKey]: { $nin: objectIds },
+      [this.morphId]: this.model["$id"],
+      [this.morphType]: this.model.constructor.name,
+    };
+
+    objectIds.forEach((id) =>
+      _payload.push({
+        [foreignKey]: id,
+        [this.morphId]: this.model["$id"],
+        [this.morphType]: this.model.constructor.name,
+        ...doc,
+      }),
+    );
+
+    // find data
+    const existingData = await collection.find(qFind).toArray();
+
+    // payload to insert
+    const payloadToInsert: object[] = [];
+    const idsToUpdate: ObjectId[] = [];
+
+    // check data
+    for (let i = 0; i < objectIds.length; i++) {
+      const existingItem = existingData.find(
+        (item: any) =>
+          JSON.stringify(item[foreignKey]) === JSON.stringify(objectIds[i]),
+      );
+
+      // insert if data does not exist
+      if (!existingItem) payloadToInsert.push(_payload[i]);
+      else idsToUpdate.push(objectIds[i]);
+    }
+
+    // insert data
+    if (payloadToInsert.length > 0)
+      await collection.insertMany(payloadToInsert as any);
+
+    // update data
+    if (idsToUpdate.length > 0) {
+      await collection.updateMany(
+        {
+          [foreignKey as any]: { $in: idsToUpdate as any },
+        },
+        {
+          $set: doc as any,
+        },
+      );
+    }
+
+    // delete data
+    await collection.deleteMany(qDelete);
+
+    return {
+      message: "Sync successfully",
+    };
+  }
+
   public async toggle(ids: string | ObjectId | (string | ObjectId)[]) {
     let objectIds: ObjectId[] = [];
     const foreignKey = `${this.relatedModel.constructor.name.toLowerCase()}Id`;
