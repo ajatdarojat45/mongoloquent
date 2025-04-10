@@ -60,7 +60,8 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
     return super.paginate(page, limit);
   }
 
-  public first<K extends keyof M>(...fields: (K | K[])[]) {
+  public async first<K extends keyof M>(...fields: (K | K[])[]) {
+    await this.setDefaultCondition();
     return super.first(...fields);
   }
 
