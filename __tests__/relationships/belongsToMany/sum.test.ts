@@ -17,7 +17,7 @@ afterEach(async () => {
   await DB.collection("role_user").getCollection().deleteMany({});
 });
 
-describe("count method", () => {
+describe("sum method", () => {
   describe("without soft delete", () => {
     interface IUser extends IMongoloquentSchema {
       name: string;
@@ -28,6 +28,7 @@ describe("count method", () => {
     interface IRole extends IMongoloquentSchema {
       name: string;
       description: string;
+      likes?: number;
     }
 
     class User extends Model<IUser> {
@@ -47,16 +48,16 @@ describe("count method", () => {
     const names = [User.name.toLowerCase(), Role.name.toLowerCase()].sort();
     const pivotCollection = `${names[0]}_${names[1]}`;
 
-    it("return count documents", async () => {
+    it("return sum documents", async () => {
       const userIds = await User.insertMany([
         { name: "Udin", email: "udin@mail.com" },
         { name: "Kosasih", email: "kosasih@mail.com" },
       ]);
 
       const roleIds = await Role.insertMany([
-        { name: "Admin", description: "Administrator" },
-        { name: "User", description: "Regular User" },
-        { name: "Guest", description: "Guest User" },
+        { name: "Admin", description: "Administrator", likes: 10 },
+        { name: "User", description: "Regular User", likes: 20 },
+        { name: "Guest", description: "Guest User", likes: 30 },
       ]);
 
       await DB.collection(pivotCollection).insertMany([
@@ -66,8 +67,8 @@ describe("count method", () => {
       ]);
 
       const user = await User.find(userIds[0]);
-      const role = await user.roles().count();
-      expect(role).toBe(2);
+      const role = await user.roles().sum("likes");
+      expect(role).toBe(30);
     });
   });
 
@@ -81,6 +82,7 @@ describe("count method", () => {
     interface IRole extends IMongoloquentSchema, IMongoloquentSoftDelete {
       name: string;
       description: string;
+      likes?: number;
     }
 
     class User extends Model<IUser> {
@@ -109,9 +111,9 @@ describe("count method", () => {
       ]);
 
       const roleIds = await Role.insertMany([
-        { name: "Admin", description: "Administrator" },
-        { name: "User", description: "Regular User" },
-        { name: "Guest", description: "Guest User" },
+        { name: "Admin", description: "Administrator", likes: 10 },
+        { name: "User", description: "Regular User", likes: 20 },
+        { name: "Guest", description: "Guest User", likes: 30 },
       ]);
 
       await DB.collection(pivotCollection).insertMany([
@@ -122,11 +124,11 @@ describe("count method", () => {
 
       await Role.destroy(roleIds[1]);
       const user = await User.find(userIds[0]);
-      const role = await user.roles().count();
-      expect(role).toBe(1);
+      const role = await user.roles().sum("likes");
+      expect(role).toBe(10);
 
-      const role2 = await user.roles().withTrashed().count();
-      expect(role2).toBe(2);
+      const role2 = await user.roles().withTrashed().sum("likes");
+      expect(role2).toBe(30);
     });
   });
 });
