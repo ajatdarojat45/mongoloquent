@@ -491,26 +491,26 @@ export default class MorphToMany<T, M> extends QueryBuilder<M> {
       lookup.push(...exclude);
     }
 
-    // Generate the sort stages if options.sort is provided
-    if (morphToMany.options?.sort) {
-      const sort = LookupBuilder.sort(
-        morphToMany.options?.sort[0],
-        morphToMany.options?.sort[1],
-      );
-      lookup.push(sort);
-    }
+    // // Generate the sort stages if options.sort is provided
+    // if (morphToMany.options?.sort) {
+    //   const sort = LookupBuilder.sort(
+    //     morphToMany.options?.sort[0],
+    //     morphToMany.options?.sort[1],
+    //   );
+    //   lookup.push(sort);
+    // }
 
-    // Generate the skip stages if options.skip is provided
-    if (morphToMany.options?.skip) {
-      const skip = LookupBuilder.skip(morphToMany.options?.skip);
-      lookup.push(skip);
-    }
+    // // Generate the skip stages if options.skip is provided
+    // if (morphToMany.options?.skip) {
+    //   const skip = LookupBuilder.skip(morphToMany.options?.skip);
+    //   lookup.push(skip);
+    // }
 
-    // Generate the limit stages if options.limit is provided
-    if (morphToMany.options?.limit) {
-      const limit = LookupBuilder.limit(morphToMany.options?.limit);
-      lookup.push(limit);
-    }
+    // // Generate the limit stages if options.limit is provided
+    // if (morphToMany.options?.limit) {
+    //   const limit = LookupBuilder.limit(morphToMany.options?.limit);
+    //   lookup.push(limit);
+    // }
 
     // Return the combined lookup, select, exclude, sort, skip, and limit stages
     return lookup;
@@ -526,11 +526,13 @@ export default class MorphToMany<T, M> extends QueryBuilder<M> {
     const pipeline: Document[] = [];
 
     // Add soft delete condition to the pipeline if enabled
-    if (morphToMany.model["$useSoftDelete"]) {
+    if (morphToMany.relatedModel["$useSoftDelete"]) {
       pipeline.push({
         $match: {
           $expr: {
-            $and: [{ $eq: [`$${morphToMany.model.getIsDeleted()}`, false] }],
+            $and: [
+              { $eq: [`$${morphToMany.relatedModel.getIsDeleted()}`, false] },
+            ],
           },
         },
       });
