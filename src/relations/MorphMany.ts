@@ -1,11 +1,12 @@
+import { Document } from "mongodb";
+
+import LookupBuilder from "./LookupBuilder.ts";
+
 import Model from "../Model";
 import QueryBuilder from "../QueryBuilder";
 import { IModelPaginate } from "../interfaces/IModel";
 import { IRelationMorphMany } from "../interfaces/IRelation";
 import { FormSchema } from "../types/schema";
-import { Document } from "mongodb";
-
-import LookupBuilder from "./LookupBuilder.ts";
 
 export default class MorphMany<T, M> extends QueryBuilder<M> {
   model: Model<T>;
@@ -31,20 +32,29 @@ export default class MorphMany<T, M> extends QueryBuilder<M> {
     this.$isDeleted = relatedModel["$isDeleted"];
   }
 
-  public firstOrNew(filter: Partial<M>, doc: Partial<FormSchema<M>>) {
+  public firstOrNew(
+    filter: Partial<FormSchema<M>>,
+    doc?: Partial<FormSchema<M>>,
+  ) {
     return super.firstOrNew(filter, doc);
   }
 
-  public firstOrCreate(filter: Partial<M>, doc: Partial<FormSchema<M>>) {
+  public firstOrCreate(
+    filter: Partial<FormSchema<M>>,
+    doc?: Partial<FormSchema<M>>,
+  ) {
     return super.firstOrCreate(filter, doc);
   }
 
-  public updateOrCreate(filter: Partial<M>, doc: Partial<FormSchema<M>>) {
+  public updateOrCreate(
+    filter: Partial<FormSchema<M>>,
+    doc?: Partial<FormSchema<M>>,
+  ) {
     return super.updateOrCreate(filter, doc);
   }
 
   // @ts-ignore
-  public save(doc: Partial<M>) {
+  public save(doc: Partial<FormSchema<M>>) {
     const data = {
       ...doc,
       [this.morphType]: this.model.constructor.name,
@@ -54,7 +64,7 @@ export default class MorphMany<T, M> extends QueryBuilder<M> {
     return this.insert(data);
   }
 
-  public saveMany(docs: Partial<M>[]) {
+  public saveMany(docs: Partial<FormSchema<M>>[]) {
     const data = docs.map((doc) => ({
       ...doc,
       [this.morphType]: this.model.constructor.name,
@@ -65,8 +75,13 @@ export default class MorphMany<T, M> extends QueryBuilder<M> {
   }
 
   // @ts-ignore
-  public create(doc: Partial<M>) {
+  public create(doc: Partial<FormSchema<M>>) {
     return this.save(doc);
+  }
+
+  // @ts-ignore
+  public createMany(docs: Partial<FormSchema<M>>[]) {
+    this.saveMany(docs);
   }
 
   public all(): Promise<M[]> {
