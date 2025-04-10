@@ -758,10 +758,14 @@ export default class Model<T> extends QueryBuilder<T> {
    */
   public belongsTo<M>(
     model: new () => Model<M>,
-    foreignKey: keyof T,
-    ownerKey: keyof M,
+    foreignKey?: keyof T,
+    ownerKey?: keyof M,
   ) {
     const relation = new model();
+
+    if (!foreignKey)
+      foreignKey = (relation.constructor.name.toLowerCase() + "_id") as keyof T;
+    if (!ownerKey) ownerKey = "_id" as keyof M;
 
     const belongsTo: IRelationBelongsTo = {
       type: IRelationTypes.belongsTo,
