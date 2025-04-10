@@ -1,11 +1,6 @@
 import DB from "../../../src/DB";
 import Model from "../../../src/Model";
-import {
-  IMongoloquentSchema,
-  IMongoloquentSoftDelete,
-} from "../../../src/interfaces/ISchema";
-import MorphMany from "../../../src/relations/MorphMany";
-import MorphTo from "../../../src/relations/MorphTo";
+import { IMongoloquentSchema } from "../../../src/interfaces/ISchema";
 import MorphToMany from "../../../src/relations/MorphToMany";
 
 beforeEach(async () => {
