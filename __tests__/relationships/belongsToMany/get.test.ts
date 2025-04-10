@@ -1,11 +1,6 @@
-import exp from "constants";
-
 import DB from "../../../src/DB";
 import Model from "../../../src/Model";
-import {
-  IMongoloquentSchema,
-  IMongoloquentSoftDelete,
-} from "../../../src/interfaces/ISchema";
+import { IMongoloquentSchema } from "../../../src/interfaces/ISchema";
 
 beforeEach(async () => {
   await DB.collection("users").getCollection().deleteMany({});
