@@ -48,7 +48,13 @@ export default class MorphMany<T, M> extends QueryBuilder<M> {
     filter: Partial<FormSchema<M>>,
     doc?: Partial<FormSchema<M>>,
   ) {
-    return super.firstOrCreate(filter, doc);
+    const _filter = {
+      ...filter,
+      [this.morphType]: this.model.constructor.name,
+      [this.morphId]: (this.model["$original"] as any)["_id"],
+    } as FormSchema<M>;
+
+    return super.firstOrCreate(_filter, doc);
   }
 
   public updateOrCreate(
