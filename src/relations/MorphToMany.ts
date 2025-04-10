@@ -163,7 +163,10 @@ export default class MorphToMany<T, M> extends QueryBuilder<M> {
     };
   }
 
-  public async sync(ids: string | ObjectId | (string | ObjectId)[]) {
+  public async sync<D>(
+    ids: string | ObjectId | (string | ObjectId)[],
+    doc?: Partial<D>,
+  ) {
     let objectIds: ObjectId[] = [];
     const foreignKey = `${this.relatedModel.constructor.name.toLowerCase()}Id`;
 
@@ -195,6 +198,7 @@ export default class MorphToMany<T, M> extends QueryBuilder<M> {
         [foreignKey]: id,
         [this.morphId]: this.model["$id"],
         [this.morphType]: this.model.constructor.name,
+        ...doc,
       }),
     );
 
