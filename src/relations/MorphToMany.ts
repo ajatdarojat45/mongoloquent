@@ -81,7 +81,10 @@ export default class MorphToMany<T, M> extends QueryBuilder<M> {
     return super.avg(field);
   }
 
-  public async attach(ids: string | ObjectId | (string | ObjectId)[]) {
+  public async attach<D>(
+    ids: string | ObjectId | (string | ObjectId)[],
+    doc?: Partial<D>,
+  ) {
     let objectIds: ObjectId[] = [];
     let query = {};
     const foreignKey = `${this.relatedModel.constructor.name.toLowerCase()}Id`;
@@ -103,6 +106,7 @@ export default class MorphToMany<T, M> extends QueryBuilder<M> {
         [foreignKey]: id,
         [this.morphId]: this.model?.["$id"],
         [this.morphType]: this.model.constructor.name,
+        ...doc,
       }),
     );
 
@@ -111,6 +115,7 @@ export default class MorphToMany<T, M> extends QueryBuilder<M> {
 
     // payload to insert
     const payloadToInsert: object[] = [];
+    const idsToUpdate: ObjectId[] = [];
 
     // check data
     for (let i = 0; i < objectIds.length; i++) {
