@@ -838,8 +838,8 @@ export default class Model<T> extends QueryBuilder<T> {
   public belongsToMany<M, TM>(
     model: new () => Model<M>,
     collection: string = "",
-    foreignPivotKey: keyof TM = "" as keyof TM,
-    relatedPivotKey: keyof TM = "" as keyof TM,
+    foreignPivotKey?: keyof TM,
+    relatedPivotKey?: keyof TM,
     parentKey: keyof T = "_id" as keyof T,
     relatedKey: keyof M = "_id" as keyof M,
   ) {
@@ -853,17 +853,20 @@ export default class Model<T> extends QueryBuilder<T> {
     const pivot = Model.query();
     pivot.$collection = _collection;
 
+    const _foreignPivotKey =
+      foreignPivotKey ||
+      (`${this.constructor.name.toLowerCase()}Id` as keyof TM);
+    const _relatedPivotKey =
+      relatedPivotKey ||
+      (`${relation.constructor.name.toLowerCase()}Id` as keyof TM);
+
     const belongsToMany: IRelationBelongsToMany = {
       type: IRelationTypes.belongsToMany,
       model: this,
       relatedModel: relation,
       pivotModel: pivot,
-      foreignPivotKey:
-        (foreignPivotKey as string) ||
-        `${this.constructor.name.toLowerCase()}Id`,
-      relatedPivotKey:
-        (relatedPivotKey as string) ||
-        `${relation.constructor.name.toLowerCase()}Id`,
+      foreignPivotKey: _foreignPivotKey as string,
+      relatedPivotKey: _relatedPivotKey as string,
       parentKey: parentKey as string,
       relatedKey: relatedKey as string,
       alias: this.$alias,
@@ -876,8 +879,8 @@ export default class Model<T> extends QueryBuilder<T> {
       this,
       relation,
       pivot,
-      foreignPivotKey,
-      relatedPivotKey,
+      _foreignPivotKey as keyof TM,
+      _relatedPivotKey as keyof TM,
       parentKey,
       relatedKey,
     );

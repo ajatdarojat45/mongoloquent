@@ -428,7 +428,6 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
     const btmIds = await this.pivotModel
       .where(this.foreignPivotKey, this.model["$original"][this.parentKey])
       .pluck(this.relatedPivotKey);
-
     this.whereIn(this.relatedKey, btmIds);
   }
 
