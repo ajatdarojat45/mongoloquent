@@ -44,7 +44,10 @@ export default class HasOne<T, M> extends QueryBuilder<M> {
     return super.get(...fields);
   }
 
-  public paginate(page: number, limit: number): Promise<IModelPaginate> {
+  public paginate(
+    page: number = 1,
+    limit: number = 15,
+  ): Promise<IModelPaginate> {
     this.where(this.foreignKey, this.model["$original"][this.localKey]);
     return super.paginate(page, limit);
   }
