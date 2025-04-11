@@ -137,7 +137,7 @@ export default class MorphTo<T, M> extends QueryBuilder<M> {
       pipeline.push({
         $match: {
           $expr: {
-            $and: [{ $eq: [`$${morphTo.model.getIsDeleted()}`, false] }],
+            $and: [{ $eq: [`$${morphTo.relatedModel.getIsDeleted()}`, false] }],
           },
         },
       });
@@ -146,8 +146,8 @@ export default class MorphTo<T, M> extends QueryBuilder<M> {
     // Define the $lookup stage
     const $lookup = {
       from: morphTo.relatedModel["$collection"],
-      localField: "_id",
-      foreignField: `${morphTo.morphId}`,
+      foreignField: "_id",
+      localField: `${morphTo.morphId}`,
       as: alias,
       pipeline: pipeline,
     };
