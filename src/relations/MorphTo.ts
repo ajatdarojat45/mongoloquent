@@ -6,7 +6,6 @@ import Model from "../Model";
 import QueryBuilder from "../QueryBuilder";
 import { IModelPaginate } from "../interfaces/IModel";
 import { IRelationMorphTo } from "../interfaces/IRelation";
-import { FormSchema } from "../types/schema.js";
 
 export default class MorphTo<T, M> extends QueryBuilder<M> {
   private model: Model<T>;
@@ -30,22 +29,6 @@ export default class MorphTo<T, M> extends QueryBuilder<M> {
     this.$useSoftDelete = relatedModel["$useSoftDelete"];
     this.$useTimestamps = relatedModel["$useTimestamps"];
     this.$isDeleted = relatedModel["$isDeleted"];
-  }
-
-  // @ts-ignore
-  public save(doc: Partial<M>) {
-    const data = {
-      ...doc,
-      [this.morphId]: this.model["$original"]["_id" as keyof Partial<T>],
-      [this.morphType]: this.model.constructor.name,
-    } as FormSchema<M>;
-
-    return this.insert(data);
-  }
-
-  // @ts-ignore
-  public create(doc: Partial<M>) {
-    return this.save(doc);
   }
 
   public all(): Promise<M[]> {
