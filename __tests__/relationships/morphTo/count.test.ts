@@ -4,7 +4,7 @@ import {
   IMongoloquentSoftDelete,
 } from "../../../src/interfaces/ISchema";
 
-describe("first method", () => {
+describe("count method", () => {
   describe("without soft delete", () => {
     interface IPost extends IMongoloquentSchema {
       title: string;
@@ -50,10 +50,8 @@ describe("first method", () => {
       ]);
 
       const comment1 = await Comment.find(commentIds[0]);
-      const posts = await comment1.post().first();
-      expect(posts).toEqual(expect.any(Object));
-      expect(posts).toHaveProperty("title");
-      expect(posts).toHaveProperty("body");
+      const posts = await comment1.post().count();
+      expect(posts).toBe(1);
     });
   });
 
@@ -106,13 +104,11 @@ describe("first method", () => {
       await Post.destroy(postIds[0]);
 
       const comment1 = await Comment.find(commentIds[0]);
-      const posts = await comment1.post().first();
-      expect(posts).toBeNull();
+      const posts = await comment1.post().count();
+      expect(posts).toBe(0);
 
-      const posts2 = await comment1.post().withTrashed().first();
-      expect(posts2).toEqual(expect.any(Object));
-      expect(posts2).toHaveProperty("title");
-      expect(posts2).toHaveProperty("body");
+      const posts2 = await comment1.post().withTrashed().count();
+      expect(posts2).toBe(1);
     });
   });
 });
