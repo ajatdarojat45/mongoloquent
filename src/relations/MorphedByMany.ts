@@ -1,10 +1,11 @@
+import { Document, ObjectId } from "mongodb";
+
+import LookupBuilder from "./LookupBuilder.ts";
+
 import Model from "../Model";
 import QueryBuilder from "../QueryBuilder";
 import { IModelPaginate } from "../interfaces/IModel";
 import { IRelationMorphedByMany } from "../interfaces/IRelation";
-import { Document, ObjectId } from "mongodb";
-
-import LookupBuilder from "./LookupBuilder.ts";
 
 export default class MorphedByMany<T, M> extends QueryBuilder<M> {
   model: Model<T>;
@@ -32,7 +33,8 @@ export default class MorphedByMany<T, M> extends QueryBuilder<M> {
     this.$isDeleted = relatedModel["$isDeleted"];
   }
 
-  public all(): Promise<M[]> {
+  public async all(): Promise<M[]> {
+    await this.setDefaultCondition();
     return super.all();
   }
 
@@ -41,7 +43,10 @@ export default class MorphedByMany<T, M> extends QueryBuilder<M> {
     return super.get(...fields);
   }
 
-  public async paginate(page: number, limit: number): Promise<IModelPaginate> {
+  public async paginate(
+    page: number = 1,
+    limit: number = 15,
+  ): Promise<IModelPaginate> {
     await this.setDefaultCondition();
 
     return super.paginate(page, limit);
