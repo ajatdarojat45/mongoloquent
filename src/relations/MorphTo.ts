@@ -57,7 +57,10 @@ export default class MorphTo<T, M> extends QueryBuilder<M> {
     return super.get(...fields);
   }
 
-  public async paginate(page: number, limit: number): Promise<IModelPaginate> {
+  public async paginate(
+    page: number = 1,
+    limit: number = 15,
+  ): Promise<IModelPaginate> {
     await this.setDefaultCondition();
 
     return super.paginate(page, limit);
