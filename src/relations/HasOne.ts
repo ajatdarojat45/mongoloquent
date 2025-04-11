@@ -1,10 +1,11 @@
+import { Document } from "mongodb";
+
+import LookupBuilder from "./LookupBuilder.ts";
+
 import Model from "../Model";
 import QueryBuilder from "../QueryBuilder";
 import { IModelPaginate } from "../interfaces/IModel";
 import { IRelationHasOne } from "../interfaces/IRelation";
-import { Document } from "mongodb";
-
-import LookupBuilder from "./LookupBuilder.ts";
 
 export default class HasOne<T, M> extends QueryBuilder<M> {
   model: Model<T>;

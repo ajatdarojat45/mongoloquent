@@ -728,10 +728,15 @@ export default class Model<T> extends QueryBuilder<T> {
    */
   public hasOne<M>(
     model: new () => Model<M>,
-    foreignKey: keyof M,
-    localKey: keyof T,
+    foreignKey?: keyof M,
+    localKey?: keyof T,
   ) {
     const relation = new model();
+
+    if (!foreignKey)
+      foreignKey = (this.constructor.name.toLowerCase() + "Id") as keyof M;
+
+    if (!localKey) localKey = "_id" as keyof T;
 
     const hasOne: IRelationHasOne = {
       type: IRelationTypes.hasOne,
