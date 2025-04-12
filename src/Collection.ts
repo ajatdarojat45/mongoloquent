@@ -533,7 +533,7 @@ export default class Collection<T> extends Array<T> {
    * @returns {Collection<T>} A new collection with items keyed by the specified key
    */
   keyBy(keyOrCallback: string | ((item: T) => string)): Collection<T> {
-    const result: Record<string, T> = {};
+    const result: any = [];
 
     this.forEach((item) => {
       const key =
@@ -541,11 +541,13 @@ export default class Collection<T> extends Array<T> {
           ? keyOrCallback(item)
           : (item as any)[keyOrCallback];
       if (key !== undefined) {
-        result[key] = item;
+        result.push({
+          [key]: item,
+        });
       }
     });
 
-    return new Collection(...Object.values(result));
+    return new Collection(...(result as T[]));
   }
 
   /**
@@ -574,7 +576,7 @@ export default class Collection<T> extends Array<T> {
    * @param {...U} items - The items to include in the new collection
    * @returns {Collection<U>} A new collection instance
    */
-  static make<U>(...items: U[]): Collection<U> {
+  static make<U>(items: U[]): Collection<U> {
     return new Collection(...items);
   }
 
@@ -600,7 +602,7 @@ export default class Collection<T> extends Array<T> {
       grouped.get(key)?.push(value);
     });
 
-    return Collection.make(...Array.from(grouped.values()));
+    return Collection.make(Array.from(grouped.values()));
   }
 
   /**
@@ -619,9 +621,9 @@ export default class Collection<T> extends Array<T> {
       result[key] = entry[key];
     });
 
-    if (Object.keys(result).length === 0) return Collection.make();
+    if (Object.keys(result).length === 0) return Collection.make([]);
 
-    return Collection.make(...[result]);
+    return Collection.make([result]);
   }
 
   /**
