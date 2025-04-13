@@ -29,16 +29,32 @@ export default class Collection<T> extends Array<T> {
    * @returns {T | null} The next item in the collection or null if not found
    */
   after(
-    keyOrCallback: keyof T | ((item: T) => boolean),
+    keyOrCallbackOrValue: keyof T | ((item: T) => boolean) | any,
     value?: any,
-    strict: boolean = true,
+    strict: boolean = false,
   ): T | null {
+    // Case 1: Direct value comparison (e.g., after(3))
+    if (arguments.length === 1 && typeof keyOrCallbackOrValue !== "function") {
+      const index = this.findIndex((item) =>
+        strict ? item === keyOrCallbackOrValue : item == keyOrCallbackOrValue,
+      );
+
+      console.log(index);
+
+      return index !== -1 && index + 1 < this.length ? this[index + 1] : null;
+    }
+
+    // Case 2: Function callback (e.g., after(value => value > 5))
+    if (typeof keyOrCallbackOrValue === "function") {
+      const index = this.findIndex(keyOrCallbackOrValue);
+      return index !== -1 && index + 1 < this.length ? this[index + 1] : null;
+    }
+
+    // Case 3: Key-value pair (e.g., after("foo", 3))
     const index = this.findIndex((item) =>
-      typeof keyOrCallback === "function"
-        ? keyOrCallback(item)
-        : strict
-          ? item[keyOrCallback] === value
-          : item[keyOrCallback] == value,
+      strict
+        ? item[keyOrCallbackOrValue as keyof T] === value
+        : item[keyOrCallbackOrValue as keyof T] == value,
     );
     return index !== -1 && index + 1 < this.length ? this[index + 1] : null;
   }

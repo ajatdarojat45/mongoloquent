@@ -15,6 +15,6 @@ import Model from "./Model";
  */
 export const Mongoloquent = Model;
 
-export function collect(values: any[]) {
-  return new Collection(...values);
+export function collect<T>(values: T[]) {
+  return new Collection<T>(...values);
 }
