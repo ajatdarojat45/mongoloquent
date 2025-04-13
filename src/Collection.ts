@@ -409,23 +409,27 @@ export default class Collection<T> extends Array<T> {
 
   /**
    * Removes the specified keys from each item in the collection
-   * @param {string | string[]} keys - The keys to remove
+   * @param {keyof T | (keyof T)[] | string | string[]} keys - The keys to remove
    * @returns {Collection<T>} A new collection with the keys removed
    */
-  except(keys: string | string[]) {
-    let keysArray: string[] = Array.isArray(keys) ? keys : [keys];
+  except(keys: keyof T | (keyof T)[] | string | string[]): Collection<T> {
+    const keysArray: (keyof T | string)[] = Array.isArray(keys) ? keys : [keys];
 
-    return this.map((item: any) => {
-      if (typeof item !== "object" || item === null) {
-        return item;
-      }
+    return new Collection(
+      ...this.map((item: any) => {
+        if (typeof item !== "object" || item === null) {
+          return item;
+        }
 
-      keysArray.forEach((key) => {
-        delete item[key];
-      });
+        // Create a new object with only the keys we want to keep
+        const newItem = { ...item };
+        keysArray.forEach((key) => {
+          delete newItem[key as keyof object];
+        });
 
-      return item;
-    });
+        return newItem;
+      }),
+    );
   }
 
   /**
