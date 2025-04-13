@@ -107,22 +107,33 @@ export default class Collection<T> extends Array<T> {
 
   /**
    * Returns the item that comes before the first item that matches the given key/value pair or callback
-   * @param {keyof T | ((item: T) => boolean)} keyOrCallback - The key to match against or a callback function
-   * @param {any} [value] - The value to match (only used when keyOrCallback is a key)
+   * @param {keyof T | ((item: T) => boolean) | any} keyOrCallbackOrValue - The key to match against, a callback function, or a direct value
+   * @param {any} [value] - The value to match (only used when keyOrCallbackOrValue is a key)
    * @param {boolean} [strict=true] - Whether to use strict equality comparison
    * @returns {T | null} The previous item in the collection or null if not found
    */
   before(
-    keyOrCallback: keyof T | ((item: T) => boolean),
+    keyOrCallbackOrValue: keyof T | ((item: T) => boolean) | any,
     value?: any,
     strict: boolean = true,
   ): T | null {
+    // Case 1: Direct value comparison (e.g., before(3))
+    if (arguments.length === 1 && typeof keyOrCallbackOrValue !== "function") {
+      const index = this.findIndex((item) => item === keyOrCallbackOrValue);
+      return index > 0 ? this[index - 1] : null;
+    }
+
+    // Case 2: Function callback (e.g., before(value => value > 5))
+    if (typeof keyOrCallbackOrValue === "function") {
+      const index = this.findIndex(keyOrCallbackOrValue);
+      return index > 0 ? this[index - 1] : null;
+    }
+
+    // Case 3: Key-value pair (e.g., before("foo", 3))
     const index = this.findIndex((item) =>
-      typeof keyOrCallback === "function"
-        ? keyOrCallback(item)
-        : strict
-          ? item[keyOrCallback] === value
-          : item[keyOrCallback] == value,
+      strict
+        ? item[keyOrCallbackOrValue as keyof T] === value
+        : item[keyOrCallbackOrValue as keyof T] == value,
     );
     return index > 0 ? this[index - 1] : null;
   }

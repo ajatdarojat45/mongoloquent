@@ -1,80 +1,38 @@
-import Collection from "../../src/Collection";
+import { collect } from "../../src/index";
 
-interface IUser {
-  id: number | string;
-  name: string;
-}
+describe("before", () => {
+  it("array of number", () => {
+    const before = collect([1, 2, 3, 4, 5]).before(3);
 
-describe("Collection.before", () => {
-  it("should return the item before the matching item using a key and strict comparison", () => {
-    const collection = new Collection<IUser>(
-      ...[
-        { id: 1, name: "Alice" },
-        { id: 2, name: "Bob" },
-        { id: 3, name: "Charlie" },
-      ]
-    );
-
-    const result = collection.before("id", 3, true);
-    expect(result).toEqual({ id: 2, name: "Bob" });
+    expect(before).toEqual(2);
   });
 
-  it("should return the item before the matching item using a key and loose comparison", () => {
-    const collection = new Collection<IUser>(
-      ...[
-        { id: "1", name: "Alice" },
-        { id: 2, name: "Bob" },
-        { id: 3, name: "Charlie" },
-      ]
-    );
+  it("should return null", () => {
+    const before = collect([1, 2, 3, 4, 5]).before(1);
 
-    const result = collection.before("id", "3", false);
-    expect(result).toEqual({ id: 2, name: "Bob" });
+    expect(before).toEqual(null);
   });
 
-  it("should return the item before the matching item using a callback function", () => {
-    const collection = new Collection<IUser>(
-      ...[
-        { id: 1, name: "Alice" },
-        { id: 2, name: "Bob" },
-        { id: 3, name: "Charlie" },
-      ]
-    );
+  it("with strict true", () => {
+    const before = collect([2, 4, 6, 8]).before("4", true);
 
-    const result = collection.before((item) => item.name === "Charlie");
-    expect(result).toEqual({ id: 2, name: "Bob" });
+    expect(before).toEqual(null);
   });
 
-  it("should return null when the matching item is the first element", () => {
-    const collection = new Collection<IUser>(
-      ...[
-        { id: 1, name: "Alice" },
-        { id: 2, name: "Bob" },
-        { id: 3, name: "Charlie" },
-      ]
-    );
+  it("with array of object", () => {
+    const before = collect([
+      { foo: 1 },
+      { foo: 2 },
+      { foo: 3 },
+      { foo: 4 },
+    ]).before("foo", 3);
 
-    const result = collection.before("id", 1, true);
-    expect(result).toBeNull();
+    expect(before).toEqual({ foo: 2 });
   });
 
-  it("should return null when no matching item is found", () => {
-    const collection = new Collection<IUser>(
-      ...[
-        { id: 1, name: "Alice" },
-        { id: 2, name: "Bob" },
-        { id: 3, name: "Charlie" },
-      ]
-    );
+  it("with callback", () => {
+    const before = collect([2, 4, 6, 8]).before((item: any) => item > 5);
 
-    const result = collection.before("id", 4, true);
-    expect(result).toBeNull();
-  });
-
-  it("should return null when the collection is empty", () => {
-    const collection = new Collection<IUser>(...[]);
-
-    const result = collection.before("id", 1, true);
-    expect(result).toBeNull();
+    expect(before).toEqual(4);
   });
 });
