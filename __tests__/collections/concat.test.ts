@@ -1,48 +1,30 @@
-import Collection from "../../src/Collection";
+import { collect } from "../../src/index";
 
-describe("Collection.concat", () => {
-  it("should concatenate with another Collection instance", () => {
-    const collection1 = new Collection(...[1, 2, 3]);
-    const collection2 = new Collection(...[4, 5, 6]);
+describe("concat", () => {
+  it("with array of strings", () => {
+    const collection = collect(["Jhon Doe"]);
 
-    const result = collection1.concat(collection2);
+    const concatenated = collection.concat(["Jane Doe"]);
+    const result = concatenated.all();
 
-    expect(result).toBeInstanceOf(Collection);
-    expect(result).toEqual(new Collection(...[1, 2, 3, 4, 5, 6]));
-    expect(collection1).toEqual(new Collection(...[1, 2, 3])); // Ensure original remains unchanged
-    expect(collection2).toEqual(new Collection(...[4, 5, 6])); // Ensure original remains unchanged
+    expect(result).toEqual(["Jhon Doe", "Jane Doe"]);
   });
 
-  it("should concatenate with a plain array", () => {
-    const collection = new Collection(...[1, 2, 3]);
-    const array = [4, 5, 6];
+  it("with array of numbers", () => {
+    const collection = collect([1, 2, 3]);
 
-    const result = collection.concat(array);
+    const concatenated = collection.concat([4, 5, 6]);
+    const result = concatenated.all();
 
-    expect(result).toBeInstanceOf(Collection);
-    expect(result).toEqual(new Collection(...[1, 2, 3, 4, 5, 6]));
-    expect(collection).toEqual(new Collection(...[1, 2, 3])); // Ensure original remains unchanged
+    expect(result).toEqual([1, 2, 3, 4, 5, 6]);
   });
 
-  it("should concatenate with an empty Collection", () => {
-    const collection = new Collection(...[1, 2, 3]);
-    const emptyCollection = new Collection<number>(...[]);
+  it("with array of objects", () => {
+    const collection = collect([{ foo: 1 }, { foo: 2 }]);
 
-    const result = collection.concat(emptyCollection);
+    const concatenated = collection.concat([{ foo: 3 }, { foo: 4 }]);
+    const result = concatenated.all();
 
-    expect(result).toBeInstanceOf(Collection);
-    expect(result).toEqual(new Collection(...[1, 2, 3]));
-    expect(collection).toEqual(new Collection(...[1, 2, 3])); // Ensure original remains unchanged
-  });
-
-  it("should concatenate with an empty array", () => {
-    const collection = new Collection(...[1, 2, 3]);
-    const emptyArray: number[] = [];
-
-    const result = collection.concat(emptyArray);
-
-    expect(result).toBeInstanceOf(Collection);
-    expect(result).toEqual(new Collection(...[1, 2, 3]));
-    expect(collection).toEqual(new Collection(...[1, 2, 3])); // Ensure original remains unchanged
+    expect(result).toEqual([{ foo: 1 }, { foo: 2 }, { foo: 3 }, { foo: 4 }]);
   });
 });
