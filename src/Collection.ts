@@ -289,19 +289,45 @@ export default class Collection<T> extends Array<T> {
 
   /**
    * Checks if the collection does not contain an item that matches the given predicate or key/value pair
-   * @param {((item: T) => boolean) | string} predicate - A callback function or key to match against
-   * @param {any} [value] - The value to match (only used when predicate is a key)
+   * @param {((item: T) => boolean) | string | any} predicateOrValueOrKey - A callback function, value, or key to match against
+   * @param {any} [value] - The value to match (only used for key-value pairs)
    * @returns {boolean} True if the collection does not contain a matching item, false otherwise
    */
   doesntContain(
-    predicate: ((item: T) => boolean) | string,
+    predicateOrValueOrKey: ((item: T) => boolean) | string | any,
     value?: any,
   ): boolean {
-    if (typeof predicate === "function") {
-      return !this.some(predicate);
+    // Case 1: Function callback (e.g., doesntContain(value => value < 5))
+    if (typeof predicateOrValueOrKey === "function") {
+      return !this.some(predicateOrValueOrKey);
     }
 
-    return !this.some((item) => (item as any)?.[predicate] === value);
+    // Case 2: Key-value pair (e.g., doesntContain("product", "Bookcase"))
+    if (arguments.length === 2) {
+      return !this.some(
+        (item) =>
+          item &&
+          typeof item === "object" &&
+          item[predicateOrValueOrKey as keyof T] === value,
+      );
+    }
+
+    // Case 3: Direct value comparison (e.g., doesntContain("Desk"))
+    return !this.some((item) => {
+      // Check if the item itself equals the value
+      if (item === predicateOrValueOrKey) {
+        return true;
+      }
+
+      // Check if any property of the object equals the value
+      if (item && typeof item === "object") {
+        return Object.values(item).some(
+          (propValue) => propValue === predicateOrValueOrKey,
+        );
+      }
+
+      return false;
+    });
   }
 
   /**
