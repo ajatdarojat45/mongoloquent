@@ -172,12 +172,20 @@ export default class Collection<T> extends Array<T> {
   }
 
   /**
-   * Checks if the collection contains an item that matches the given callback function
-   * @param {(item: T) => boolean} cb - A callback function to match against
+   * Checks if the collection contains an item that matches the given key/value pair or callback
+   * @param {keyof T | ((item: T) => boolean)} keyOrCallback - The key to match against or a callback function
+   * @param {any} [value] - The value to match (only used when keyOrCallback is a key)
    * @returns {boolean} True if the collection contains a matching item, false otherwise
    */
-  contains(cb: (item: T) => boolean): boolean {
-    return this.some(cb);
+  contains(
+    keyOrCallback: keyof T | ((item: T) => boolean),
+    value?: any,
+  ): boolean {
+    if (typeof keyOrCallback === "function") {
+      return this.some(keyOrCallback);
+    }
+
+    return this.some((item) => item?.[keyOrCallback] == value);
   }
 
   /**

@@ -26,4 +26,20 @@ describe("contains", () => {
 
     expect(contains).toEqual(false);
   });
+
+  it("with key and value", () => {
+    const collection = collect([{ name: "Desk", price: 100 }]);
+
+    const result = collection.contains("name", "Desk");
+
+    expect(result).toBe(true);
+  });
+
+  it("with key and value", () => {
+    const collection = collect([{ name: "Desk", price: 100 }]);
+
+    const result = collection.contains("name", "New York");
+
+    expect(result).toBe(false);
+  });
 });
