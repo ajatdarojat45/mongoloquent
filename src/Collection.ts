@@ -141,17 +141,17 @@ export default class Collection<T> extends Array<T> {
   /**
    * Splits the collection into chunks of the specified size
    * @param {number} size - The size of each chunk
-   * @returns {Collection<T>[]} An array of collections, each containing a chunk of items
+   * @returns {Collection<T[]>} A new collection containing arrays of chunked items
    */
-  chunk(size: number): Collection<T>[] {
-    if (size <= 0) return [];
+  chunk(size: number): Collection<T[]> {
+    if (size <= 0) return new Collection();
 
-    const chunks: Collection<T>[] = [];
+    const chunks: T[][] = [];
     for (let i = 0; i < this.length; i += size) {
-      chunks.push(new Collection(...this.slice(i, i + size)));
+      chunks.push(this.slice(i, i + size));
     }
 
-    return chunks;
+    return new Collection(...chunks);
   }
 
   /**

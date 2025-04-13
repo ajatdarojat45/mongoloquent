@@ -1,30 +1,33 @@
-import Collection from "../../src/Collection";
-
-interface IUser {
-  id: number | string;
-  name: string;
-}
-
-let collection = new Collection<IUser>(
-  ...[
-    { id: 1, name: "Alice" },
-    { id: 2, name: "Bob" },
-    { id: 3, name: "Charlie" },
-  ]
-);
+import { collect } from "../../src/index";
 
 describe("chunk", () => {
-  it("should chunk the collection into multiple smaller collections", () => {
-    let chunks = collection.chunk(2);
+  it("with array of numbers", () => {
+    const collection = collect([1, 2, 3, 4, 5, 6, 7]);
 
-    expect(chunks).toHaveLength(2);
-    expect(chunks[0]).toHaveLength(2);
-    expect(chunks[1]).toHaveLength(1);
+    const chunked = collection.chunk(4).all();
+
+    expect(chunked).toEqual([
+      [1, 2, 3, 4],
+      [5, 6, 7],
+    ]);
   });
 
-  it("should return an empty collection if the size is 0", () => {
-    let chunks = collection.chunk(0);
+  it("with array of objects", () => {
+    const collection = collect([
+      { foo: 1 },
+      { foo: 2 },
+      { foo: 3 },
+      { foo: 4 },
+      { foo: 5 },
+      { foo: 6 },
+      { foo: 7 },
+    ]);
 
-    expect(chunks).toHaveLength(0);
+    const chunked = collection.chunk(4).all();
+
+    expect(chunked).toEqual([
+      [{ foo: 1 }, { foo: 2 }, { foo: 3 }, { foo: 4 }],
+      [{ foo: 5 }, { foo: 6 }, { foo: 7 }],
+    ]);
   });
 });
