@@ -331,29 +331,35 @@ export default class Collection<T> extends Array<T> {
   }
 
   /**
-   * Logs the collection to the console
-   * @returns {this} The current collection instance
+   * Finds duplicate values in the collection
+   * @param {keyof T} [key] - The key to check for duplicates (only for collections of objects)
+   * @returns {Record<number, any>} An object with indices as keys and duplicate values
    */
-  dump(): this {
-    console.log(this);
-    return this;
-  }
+  duplicates(key?: keyof T): Record<number, any> {
+    const result: Record<number, any> = {};
+    const seen = new Set<any>();
 
-  /**
-   * Finds duplicate values in the collection based on the specified key
-   * @param {keyof T} key - The key to check for duplicates
-   * @returns {Record<any, number>} An object containing the duplicate values and their counts
-   */
-  duplicates(key: keyof T) {
-    let result: any = {};
-    const seen = new Set();
-
+    // First pass: collect all unique values
     this.forEach((item) => {
-      const value = item[key];
-      if (seen.has(value)) {
-        result[value] = (result[value] || 1) + 1;
-      } else {
-        seen.add(value);
+      const value = key !== undefined ? item[key] : item;
+      seen.add(value);
+    });
+
+    // Second pass: track which values we've already found as duplicates
+    const alreadyAddedDuplicates = new Set<any>();
+
+    // Third pass: identify duplicates that appear second time or later
+    this.forEach((item, index) => {
+      const value = key !== undefined ? item[key] : item;
+
+      // If we've seen this value before but haven't added it as a duplicate yet
+      if (seen.has(value) && !alreadyAddedDuplicates.has(value)) {
+        // Mark that we've found this value as a duplicate
+        alreadyAddedDuplicates.add(value);
+      }
+      // If we've already identified this as a duplicate and we're not on the first occurrence
+      else if (alreadyAddedDuplicates.has(value)) {
+        result[index] = value;
       }
     });
 
