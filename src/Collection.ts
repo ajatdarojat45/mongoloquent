@@ -199,7 +199,7 @@ export default class Collection<T> extends Array<T> {
     // Case 3: Direct value comparison (e.g., contains("Desk"))
     return this.some((item) => {
       // Check if the item itself equals the value
-      if (item === keyOrCallbackOrValue || item == keyOrCallbackOrValue) {
+      if (item == keyOrCallbackOrValue || item == keyOrCallbackOrValue) {
         return true;
       }
 
@@ -207,7 +207,7 @@ export default class Collection<T> extends Array<T> {
       if (item && typeof item === "object") {
         return Object.values(item).some(
           (propValue) =>
-            propValue === keyOrCallbackOrValue ||
+            propValue == keyOrCallbackOrValue ||
             propValue == keyOrCallbackOrValue,
         );
       }
@@ -217,17 +217,48 @@ export default class Collection<T> extends Array<T> {
   }
 
   /**
-   * Checks if the collection contains an item that matches the given key/value pair or callback using strict equality
-   * @param {keyof T | ((item: T) => boolean)} keyOrCallback - The key to match against or a callback function
-   * @param {any} [value] - The value to match (only used when keyOrCallback is a key)
+   * Checks if the collection contains an item that matches the given key/value pair, callback, or direct value
+   * @param {keyof T | ((item: T) => boolean) | any} keyOrCallbackOrValue - The key to match against, a callback function, or a direct value
+   * @param {any} [value] - The value to match (only used when keyOrCallbackOrValue is a key)
    * @returns {boolean} True if the collection contains a matching item, false otherwise
    */
-  containsStrict(keyOrCallback: keyof T | ((item: T) => boolean), value?: any) {
-    if (typeof keyOrCallback === "function") {
-      return this.some(keyOrCallback);
+  containsStrict(
+    keyOrCallbackOrValue: keyof T | ((item: T) => boolean) | any,
+    value?: any,
+  ): boolean {
+    // Case 1: Function callback (e.g., contains(item => item > 5))
+    if (typeof keyOrCallbackOrValue === "function") {
+      return this.some(keyOrCallbackOrValue);
     }
 
-    return this.some((item) => item?.[keyOrCallback] === value);
+    // Case 2: Key-value pair (e.g., contains("name", "Desk"))
+    if (arguments.length === 2) {
+      return this.some(
+        (item) =>
+          item &&
+          typeof item === "object" &&
+          item[keyOrCallbackOrValue as keyof T] === value,
+      );
+    }
+
+    // Case 3: Direct value comparison (e.g., contains("Desk"))
+    return this.some((item) => {
+      // Check if the item itself equals the value
+      if (item === keyOrCallbackOrValue || item === keyOrCallbackOrValue) {
+        return true;
+      }
+
+      // Check if any property of the object equals the value
+      if (item && typeof item === "object") {
+        return Object.values(item).some(
+          (propValue) =>
+            propValue === keyOrCallbackOrValue ||
+            propValue === keyOrCallbackOrValue,
+        );
+      }
+
+      return false;
+    });
   }
 
   /**

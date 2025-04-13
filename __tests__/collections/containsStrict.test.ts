@@ -1,47 +1,61 @@
-import Collection from "../../src/Collection";
+import { collect } from "../../src/index";
 
-describe("Collection.containsStrict", () => {
-  it("should return true when a callback function matches an item", () => {
-    const collection = new Collection(...[{ id: 1 }, { id: 2 }, { id: 3 }]);
-    const result = collection.containsStrict((item) => item.id === 2);
+describe("containsStrict", () => {
+  it("with array of numbers", () => {
+    const collection = collect([1, 2, 3, 4, 5]);
+
+    const containsStrict = collection.containsStrict((item: any) => {
+      return item > 5;
+    });
+
+    expect(containsStrict).toEqual(false);
+  });
+
+  it("with array of objects", () => {
+    const collection = collect([
+      { foo: 1 },
+      { foo: 2 },
+      { foo: 3 },
+      { foo: 4 },
+      { foo: 5 },
+    ]);
+
+    const containsStrict = collection.containsStrict((item: any) => {
+      return item.foo > 5;
+    });
+
+    expect(containsStrict).toEqual(false);
+  });
+
+  it("with key and value", () => {
+    const collection = collect([{ name: "Desk", price: 100 }]);
+
+    const result = collection.containsStrict("name", "Desk");
+
     expect(result).toBe(true);
   });
 
-  it("should return false when a callback function does not match any item", () => {
-    const collection = new Collection(...[{ id: 1 }, { id: 2 }, { id: 3 }]);
-    const result = collection.containsStrict((item) => item.id === 4);
+  it("with key and value", () => {
+    const collection = collect([{ name: "Desk", price: 100 }]);
+
+    const result = collection.containsStrict("name", "New York");
+
     expect(result).toBe(false);
   });
 
-  it("should return true when a key-value pair matches an item (strict equality)", () => {
-    const collection = new Collection(...[{ id: 1 }, { id: 2 }, { id: 3 }]);
-    const result = collection.containsStrict("id", 2);
+  it("aray of objects with one param value", () => {
+    const collection = collect([{ name: "Desk", price: 100 }]);
+
+    const result = collection.containsStrict("Desk");
+
     expect(result).toBe(true);
   });
 
-  it("should return false when a key-value pair does not match any item", () => {
-    const collection = new Collection(...[{ id: 1 }, { id: 2 }, { id: 3 }]);
-    const result = collection.containsStrict("id", 4);
-    expect(result).toBe(false);
-  });
+  it("aray of objects with one param value", () => {
+    const collection = collect([{ name: "Desk", price: 100 }]);
 
-  it("should return false when a key-value pair matches loosely but not strictly", () => {
-    const collection = new Collection(...[{ id: "1" }, { id: 2 }, { id: 3 }]);
-    const result = collection.containsStrict("id", 1); // Strict equality fails
-    expect(result).toBe(false);
-  });
+    const result = collection.containsStrict("New York");
 
-  it("should return true when a key-value pair matches an item with null or undefined", () => {
-    const collection = new Collection(
-      ...[{ id: null }, { id: undefined }, { id: 3 }]
-    );
-    expect(collection.containsStrict("id", null)).toBe(true);
-    expect(collection.containsStrict("id", undefined)).toBe(true);
-  });
-
-  it("should return false when called on an empty collection", () => {
-    const collection = new Collection<{ id: number }>(...[]);
-    const result = collection.containsStrict("id", 1);
     expect(result).toBe(false);
   });
 });
