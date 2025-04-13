@@ -1,17 +1,20 @@
-import { collect } from "../../src";
+import { collect } from "../../src/index";
 
-describe("all method", () => {
-  it("should return all items", () => {
-    const collection = collect([1, 2, 3, 4, 5]);
+describe("all", () => {
+  it("array of number", () => {
+    const all = collect([1, 1, 2, 4]).all();
 
-    const result = collection.all();
-    expect(result).toEqual([1, 2, 3, 4, 5]);
+    expect(all).toEqual([1, 1, 2, 4]);
   });
 
-  it("with object", () => {
-    const collection = collect([{ foo: 1 }, { foo: 2 }, { foo: 3 }]);
+  it("with array of object", () => {
+    const all = collect([
+      { foo: 10 },
+      { foo: 10 },
+      { foo: 20 },
+      { foo: 40 },
+    ]).all();
 
-    const result = collection.all();
-    expect(result).toEqual([{ foo: 1 }, { foo: 2 }, { foo: 3 }]);
+    expect(all).toEqual([{ foo: 10 }, { foo: 10 }, { foo: 20 }, { foo: 40 }]);
   });
 });
