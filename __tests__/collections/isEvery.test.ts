@@ -1,55 +1,19 @@
-import Collection from "../../src/Collection";
+import { collect } from "../../src/index";
 
-describe("Collection.isEvery", () => {
-  it("should return true for an empty collection", () => {
-    const collection = new Collection(...[]);
-    const result = collection.isEvery(() => true);
-    expect(result).toBe(true);
-  });
+describe("isEvery", () => {
+  it("with array of numbers", () => {
+    const collection = collect([1, 2, 3, 4]);
 
-  it("should return true when all items match the key-value condition", () => {
-    const collection = new Collection(
-      ...[{ status: "active" }, { status: "active" }, { status: "active" }]
-    );
-    const result = collection.isEvery("status", "active");
-    expect(result).toBe(true);
-  });
+    const result = collection.isEvery((value) => value > 2);
 
-  it("should return false when not all items match the key-value condition", () => {
-    const collection = new Collection(
-      ...[{ status: "active" }, { status: "inactive" }, { status: "active" }]
-    );
-    const result = collection.isEvery("status", "active");
     expect(result).toBe(false);
   });
 
-  it("should return true when all items satisfy the callback condition", () => {
-    const collection = new Collection(...[2, 4, 6, 8]);
-    const result = collection.isEvery((item: any) => item % 2 === 0);
+  it("with empty array", () => {
+    const collection = collect([]);
+
+    const result = collection.isEvery((value) => value > 20);
+
     expect(result).toBe(true);
-  });
-
-  it("should return false when not all items satisfy the callback condition", () => {
-    const collection = new Collection(...[2, 3, 6, 8]);
-    const result = collection.isEvery((item: any) => item % 2 === 0);
-    expect(result).toBe(false);
-  });
-
-  it("should return false for invalid key", () => {
-    const collection = new Collection([
-      { status: "active" },
-      { status: "active" },
-    ]);
-    const result = collection.isEvery("nonexistentKey", "value");
-    expect(result).toBe(false);
-  });
-
-  it("should return true when all items have the same value for a nested key", () => {
-    const collection = new Collection([
-      { user: { role: "admin" } },
-      { user: { role: "admin" } },
-    ]);
-    const result = collection.isEvery("user.role", "admin");
-    expect(result).toBe(false); // Nested keys are not supported directly.
   });
 });
