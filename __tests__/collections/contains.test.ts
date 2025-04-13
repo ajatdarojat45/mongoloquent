@@ -4,7 +4,7 @@ describe("contains", () => {
   it("with array of numbers", () => {
     const collection = collect([1, 2, 3, 4, 5]);
 
-    const contains = collection.contains((item) => {
+    const contains = collection.contains((item: any) => {
       return item > 5;
     });
 
@@ -20,7 +20,7 @@ describe("contains", () => {
       { foo: 5 },
     ]);
 
-    const contains = collection.contains((item) => {
+    const contains = collection.contains((item: any) => {
       return item.foo > 5;
     });
 
@@ -39,6 +39,22 @@ describe("contains", () => {
     const collection = collect([{ name: "Desk", price: 100 }]);
 
     const result = collection.contains("name", "New York");
+
+    expect(result).toBe(false);
+  });
+
+  it("aray of objects with one param value", () => {
+    const collection = collect([{ name: "Desk", price: 100 }]);
+
+    const result = collection.contains("Desk");
+
+    expect(result).toBe(true);
+  });
+
+  it("aray of objects with one param value", () => {
+    const collection = collect([{ name: "Desk", price: 100 }]);
+
+    const result = collection.contains("New York");
 
     expect(result).toBe(false);
   });
