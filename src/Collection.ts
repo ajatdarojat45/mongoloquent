@@ -72,23 +72,32 @@ export default class Collection<T> extends Array<T> {
    * @param {keyof T | ((item: T) => number)} keyOrCallback - The key to average or a callback function
    * @returns {number | null} The average value or null if collection is empty
    */
-  average(keyOrCallback: keyof T | ((item: T) => number)): number | null {
+  average(keyOrCallback?: keyof T | ((item: T) => number)): number | null {
     return this.avg(keyOrCallback);
   }
 
   /**
    * Calculates the average value of a given key or callback result
-   * @param {keyof T | ((item: T) => number)} keyOrCallback - The key to average or a callback function
+   * @param {keyof T | ((item: T) => number)} [keyOrCallback] - The key to average or a callback function
    * @returns {number | null} The average value or null if collection is empty
    */
-  avg(keyOrCallback: keyof T | ((item: T) => number)): number | null {
+  avg(keyOrCallback?: keyof T | ((item: T) => number)): number | null {
     if (this.length === 0) return null;
 
+    // When no parameter is provided (e.g., for arrays of numbers)
+    if (keyOrCallback === undefined) {
+      const sum = this.reduce((total, item) => {
+        return total + (typeof item === "number" ? item : 0);
+      }, 0);
+      return sum / this.length;
+    }
+
+    // When key or callback is provided
     const sum = this.reduce((total, item) => {
       const value =
         typeof keyOrCallback === "function"
           ? keyOrCallback(item)
-          : (item[keyOrCallback] as unknown as number);
+          : (item[keyOrCallback as keyof T] as unknown as number);
 
       return total + (typeof value === "number" ? value : 0);
     }, 0);
