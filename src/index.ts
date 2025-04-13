@@ -4,6 +4,7 @@
  */
 import "dotenv/config";
 
+import Collection from "./Collection";
 import Model from "./Model";
 
 /**
@@ -13,3 +14,7 @@ import Model from "./Model";
  * @type {typeof Model}
  */
 export const Mongoloquent = Model;
+
+export function collect(values: any[]) {
+  return new Collection(...values);
+}

@@ -817,6 +817,7 @@ export default class Collection<T> extends Array<T> {
     const index = this.findIndex((item: any) => key in item);
     if (index !== -1) {
       const [removedItem] = this.splice(index, 1);
+      delete this[index][key];
       return removedItem[key];
     }
     return null;
