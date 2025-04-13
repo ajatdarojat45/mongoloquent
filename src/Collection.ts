@@ -272,9 +272,9 @@ export default class Collection<T> extends Array<T> {
   /**
    * Counts the occurrences of each unique value in the collection
    * @param {(item: T) => any} [callback] - A callback function to determine the value to count
-   * @returns {Record<string, number>} An object containing the counts of each unique value
+   * @returns {Collection<Record<string, number>>} A Collection containing an object with counts of each unique value
    */
-  countBy(callback?: (item: T) => any): Record<string, number> {
+  countBy(callback?: (item: T) => any): Collection<Record<string, number>> {
     const result: Record<string, number> = {};
 
     this.forEach((item) => {
@@ -284,7 +284,7 @@ export default class Collection<T> extends Array<T> {
       result[keyStr] = (result[keyStr] || 0) + 1;
     });
 
-    return result;
+    return new Collection(result);
   }
 
   /**
