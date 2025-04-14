@@ -24,4 +24,12 @@ describe("get", () => {
 
     expect(result).toEqual("ajat@example.com");
   });
+
+  it("not exists", () => {
+    const collection = collect([{ name: "Ajat", framework: "Mongoloquent" }]);
+
+    const result = collection.get("email");
+
+    expect(result).toEqual(null);
+  });
 });
