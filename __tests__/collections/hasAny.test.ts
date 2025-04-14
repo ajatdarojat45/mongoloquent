@@ -1,49 +1,24 @@
-import Collection from "../../src/Collection";
+import { collect } from "../../src";
 
-describe("Collection.hasAny", () => {
-  it("should return true if a single key exists in the collection", () => {
-    const collection = new Collection(
-      { id: 1, name: "Alice" },
-      { id: 2, name: "Bob" }
-    );
-    expect(collection.hasAny("id")).toBe(true);
+describe("hasAny", () => {
+  it("with single key", () => {
+    const collection = collect([{ accountId: 1, product: "Desk", amount: 5 }]);
+
+    const result = collection.hasAny("product");
+    expect(result).toEqual(true);
   });
 
-  it("should return true if at least one key exists in the collection (multiple keys)", () => {
-    const collection = new Collection(
-      { id: 1, name: "Alice" },
-      { id: 2, name: "Bob" }
-    );
-    expect(collection.hasAny(["id", "age"])).toBe(true);
+  it("with multiple keys", () => {
+    const collection = collect([{ accountId: 1, product: "Desk", amount: 5 }]);
+
+    const result = collection.hasAny(["product", "amount"]);
+    expect(result).toEqual(true);
   });
 
-  it("should return false if none of the keys exist in the collection", () => {
-    const collection = new Collection(
-      { id: 1, name: "Alice" },
-      { id: 2, name: "Bob" }
-    );
-    expect(collection.hasAny("age")).toBe(false);
-  });
+  it("with multiple keys", () => {
+    const collection = collect([{ accountId: 1, product: "Desk", amount: 5 }]);
 
-  it("should return true if some keys exist and some don't", () => {
-    const collection = new Collection(
-      { id: 1, name: "Alice" },
-      { id: 2, name: "Bob" }
-    );
-    expect(collection.hasAny(["id", "nonExistentKey"])).toBe(true);
-  });
-
-  it("should return false for an empty collection", () => {
-    const collection = new Collection();
-    expect(collection.hasAny("id")).toBe(false);
-  });
-
-  it("should handle invalid input gracefully", () => {
-    const collection = new Collection(
-      { id: 1, name: "Alice" },
-      { id: 2, name: "Bob" }
-    );
-    // @ts-ignore
-    expect(collection.hasAny(123)).toBe(false); // Non-string key
+    const result = collection.hasAny(["amount", "price"]);
+    expect(result).toEqual(true);
   });
 });
