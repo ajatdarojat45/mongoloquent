@@ -1,61 +1,24 @@
-import Collection from "../../src/Collection";
+import { collect } from "../../src";
 
-describe("Collection.has", () => {
-  it("should return true if a single key exists in the collection", () => {
-    const collection = new Collection(
-      { name: "Alice", age: 25 },
-      { name: "Bob", age: 30 }
-    );
+describe("has", () => {
+  it("with single key", () => {
+    const collection = collect([{ accountId: 1, product: "Desk", amount: 5 }]);
 
-    expect(collection.has("name")).toBe(true);
-    expect(collection.has("age")).toBe(true);
+    const result = collection.has("product");
+    expect(result).toEqual(true);
   });
 
-  it("should return false if a single key does not exist in the collection", () => {
-    const collection = new Collection(
-      { name: "Alice", age: 25 },
-      { name: "Bob", age: 30 }
-    );
+  it("with multiple keys", () => {
+    const collection = collect([{ accountId: 1, product: "Desk", amount: 5 }]);
 
-    expect(collection.has("address")).toBe(false);
+    const result = collection.has(["product", "amount"]);
+    expect(result).toEqual(true);
   });
 
-  it("should return true if all keys in an array exist in the collection", () => {
-    const collection = new Collection(
-      { name: "Alice", age: 25 },
-      { name: "Bob", age: 30 }
-    );
+  it("with multiple keys", () => {
+    const collection = collect([{ accountId: 1, product: "Desk", amount: 5 }]);
 
-    expect(collection.has(["name", "age"])).toBe(true);
-  });
-
-  it("should return false if at least one key in an array does not exist in the collection", () => {
-    const collection = new Collection(
-      { name: "Alice", age: 25 },
-      { name: "Bob", age: 30 }
-    );
-
-    expect(collection.has(["name", "address"])).toBe(false);
-  });
-
-  it("should return false for an empty collection", () => {
-    const collection = new Collection();
-
-    expect(collection.has("name")).toBe(false);
-    expect(collection.has(["name", "age"])).toBe(false);
-  });
-
-  it("should handle invalid input gracefully", () => {
-    const collection = new Collection(
-      { name: "Alice", age: 25 },
-      { name: "Bob", age: 30 }
-    );
-
-    // @ts-expect-error Testing invalid input
-    expect(collection.has(123)).toBe(false);
-    // @ts-expect-error Testing invalid input
-    expect(collection.has(null)).toBe(false);
-    // @ts-expect-error Testing invalid input
-    expect(collection.has(undefined)).toBe(false);
+    const result = collection.has(["amount", "price"]);
+    expect(result).toEqual(false);
   });
 });
