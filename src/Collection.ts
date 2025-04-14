@@ -726,52 +726,6 @@ export default class Collection<T> extends Array<T> {
   }
 
   /**
-   * Groups the items in the collection by the results of the callback function
-   * @param {(item: T, index: number) => Record<string, U>} callback - A callback function to determine the grouping
-   * @returns {Collection<U[]>} A new collection containing the grouped items
-   */
-  mapToGroups<U>(
-    callback: (item: T, index: number) => Record<string, U>,
-  ): Collection<U[]> {
-    const grouped = new Map<string, U[]>();
-
-    this.forEach((item, index) => {
-      const result = callback(item, index);
-      const key = Object.keys(result)[0];
-      const value = result[key];
-
-      if (!grouped.has(key)) {
-        grouped.set(key, []);
-      }
-
-      grouped.get(key)?.push(value);
-    });
-
-    return Collection.make(Array.from(grouped.values()));
-  }
-
-  /**
-   * Maps the items in the collection to key-value pairs using the callback function
-   * @param {(item: T, index: number) => Record<string, U>} callback - A callback function to determine the key-value pairs
-   * @returns {Collection<{ [key: string]: U }>} A new collection containing the mapped key-value pairs
-   */
-  mapWithKeys<U>(
-    callback: (item: T, index: number) => Record<string, U>,
-  ): Collection<{ [key: string]: U }> {
-    const result: { [key: string]: U } = {};
-
-    this.forEach((item, index) => {
-      const entry = callback(item, index);
-      const key = Object.keys(entry)[0];
-      result[key] = entry[key];
-    });
-
-    if (Object.keys(result).length === 0) return Collection.make([]);
-
-    return Collection.make([result]);
-  }
-
-  /**
    * Finds the maximum value in the collection based on the specified key
    * @param {keyof T} [key] - The key to find the maximum value for
    * @returns {number | null} The maximum value or null if the collection is empty
