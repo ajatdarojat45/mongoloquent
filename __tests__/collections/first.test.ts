@@ -19,4 +19,9 @@ describe("first method", () => {
     ]).first((item) => item.id > 1);
     expect(result).toEqual({ id: 2, name: "Jane" });
   });
+
+  it("return null if not found", () => {
+    const result = collect([1, 2, 3, 4]).first((item) => item > 5);
+    expect(result).toBeNull();
+  });
 });
