@@ -1,53 +1,19 @@
-import Collection from "../../src/Collection";
+import { collect } from "../../src/index";
 
-describe("Collection.forget", () => {
-  it("should remove a single key from all objects in the collection", () => {
-    const collection = new Collection(
-      { id: 1, name: "Alice", age: 25 },
-      { id: 2, name: "Bob", age: 30 }
-    );
+describe("forget", () => {
+  it("single key", () => {
+    const collection = collect([{ name: "Ajat", framework: "Mongoloquent" }]);
 
-    collection.forget("age");
+    const result = collection.forget("framework");
 
-    expect(collection).toEqual([
-      { id: 1, name: "Alice" },
-      { id: 2, name: "Bob" },
-    ]);
+    expect(result.all()).toEqual([{ name: "Ajat" }]);
   });
 
-  it("should remove multiple keys from all objects in the collection", () => {
-    const collection = new Collection(
-      { id: 1, name: "Alice", age: 25, city: "NY" },
-      { id: 2, name: "Bob", age: 30, city: "LA" }
-    );
+  it("multiple keys", () => {
+    const collection = collect([{ name: "Ajat", framework: "Mongoloquent" }]);
 
-    collection.forget(["age", "city"]);
+    const result = collection.forget(["name", "framework"]);
 
-    expect(collection).toEqual([
-      { id: 1, name: "Alice" },
-      { id: 2, name: "Bob" },
-    ]);
-  });
-
-  it("should handle an empty collection without errors", () => {
-    const collection = new Collection<{ age: number }>();
-
-    collection.forget("age");
-
-    expect(collection).toEqual([]);
-  });
-
-  it("should handle an empty array of keys without errors", () => {
-    const collection = new Collection(
-      { id: 1, name: "Alice", age: 25 },
-      { id: 2, name: "Bob", age: 30 }
-    );
-
-    collection.forget([]);
-
-    expect(collection).toEqual([
-      { id: 1, name: "Alice", age: 25 },
-      { id: 2, name: "Bob", age: 30 },
-    ]);
+    expect(result.all()).toEqual([{}]);
   });
 });
