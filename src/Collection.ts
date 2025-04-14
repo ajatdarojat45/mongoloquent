@@ -639,23 +639,24 @@ export default class Collection<T> extends Array<T> {
   }
 
   /**
-   * Joins the values of the specified key or callback results into a string
-   * @param {string | ((item: T) => any)} keyOrGlue - The key to join or a callback function
+   * Joins the values of the collection into a string
+   * @param {string | ((item: T) => any)} keyOrGlue - The key to join or the glue string
    * @param {string} [glue] - The string to use as a separator
    * @returns {string} The joined string
    */
   implode(keyOrGlue: string | ((item: T) => any), glue?: string): string {
+    // Case 1: Callback function to extract values before joining
     if (typeof keyOrGlue === "function") {
       return this.map(keyOrGlue).join(glue ?? "");
     }
 
-    if (typeof keyOrGlue === "string") {
-      return this.map((item) => (item as any)?.[keyOrGlue] ?? "").join(
-        glue ?? "",
-      );
+    // Case 2: Array of objects with a key to extract values from
+    if (glue !== undefined && typeof this[0] === "object") {
+      return this.map((item) => (item as any)?.[keyOrGlue] ?? "").join(glue);
     }
 
-    return "";
+    // Case 3: Array of primitives, keyOrGlue is actually the glue
+    return this.join(keyOrGlue);
   }
 
   /**

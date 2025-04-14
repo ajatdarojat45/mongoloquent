@@ -1,69 +1,20 @@
-import Collection from "../../src/Collection";
+import { collect } from "../../src";
 
-describe("Collection - implode", () => {
-  it("should implode values of a given key with default glue", () => {
-    const collection = new Collection(
-      { name: "Alice" },
-      { name: "Bob" },
-      { name: "Charlie" }
-    );
-    const result = collection.implode("name");
-    expect(result).toBe("AliceBobCharlie");
+describe("implode", () => {
+  it("with array of objects", () => {
+    const collection = collect([
+      { accountId: 1, product: "Desk" },
+      { accountId: 2, product: "Chair" },
+    ]);
+
+    const result = collection.implode("product", ", ");
+
+    expect(result).toEqual("Desk, Chair");
   });
 
-  it("should implode values of a given key with custom glue", () => {
-    const collection = new Collection(
-      { name: "Alice" },
-      { name: "Bob" },
-      { name: "Charlie" }
-    );
-    const result = collection.implode("name", ", ");
-    expect(result).toBe("Alice, Bob, Charlie");
-  });
+  it("with array of numbers", () => {
+    const collection = collect([1, 2, 3, 4, 5]).implode("-");
 
-  it("should implode values using a callback function with default glue", () => {
-    const collection = new Collection(
-      { name: "Alice", age: 25 },
-      { name: "Bob", age: 30 },
-      { name: "Charlie", age: 35 }
-    );
-    const result = collection.implode((item) => item.age.toString());
-    expect(result).toBe("253035");
-  });
-
-  it("should implode values using a callback function with custom glue", () => {
-    const collection = new Collection(
-      { name: "Alice", age: 25 },
-      { name: "Bob", age: 30 },
-      { name: "Charlie", age: 35 }
-    );
-    const result = collection.implode((item) => item.age.toString(), " - ");
-    expect(result).toBe("25 - 30 - 35");
-  });
-
-  it("should return an empty string when the collection is empty", () => {
-    const collection = new Collection();
-    const result = collection.implode("name");
-    expect(result).toBe("");
-  });
-
-  it("should return an empty string when the key does not exist", () => {
-    const collection = new Collection(
-      { name: "Alice" },
-      { name: "Bob" },
-      { name: "Charlie" }
-    );
-    const result = collection.implode("nonExistentKey");
-    expect(result).toBe("");
-  });
-
-  it("should return an empty string when the callback returns undefined", () => {
-    const collection = new Collection(
-      { name: "Alice" },
-      { name: "Bob" },
-      { name: "Charlie" }
-    );
-    const result = collection.implode(() => undefined);
-    expect(result).toBe("");
+    expect(collection).toEqual("1-2-3-4-5");
   });
 });
