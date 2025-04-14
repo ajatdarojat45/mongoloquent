@@ -676,26 +676,23 @@ export default class Collection<T> extends Array<T> {
   }
 
   /**
-   * Creates a new collection with items keyed by the specified key or callback result
-   * @param {string | ((item: T) => string)} keyOrCallback - The key to use for grouping or a callback function
-   * @returns {Collection<T>} A new collection with items keyed by the specified key
+   * Creates a new object with items keyed by the specified key or callback result
+   * @param {string | ((item: T) => string)} keyOrCallback - The key to use for organizing or a callback function
+   * @returns {Record<string, T>} An object with items keyed by the specified key or callback result
    */
-  keyBy(keyOrCallback: string | ((item: T) => string)): Collection<T> {
-    const result: any = [];
+  keyBy(keyOrCallback: string | ((item: T) => string)): Record<string, T> {
+    const result: Record<string, T> = {};
 
     this.forEach((item) => {
       const key =
         typeof keyOrCallback === "function"
           ? keyOrCallback(item)
           : (item as any)[keyOrCallback];
-      if (key !== undefined) {
-        result.push({
-          [key]: item,
-        });
-      }
+
+      result[key] = item;
     });
 
-    return new Collection(...(result as T[]));
+    return result;
   }
 
   /**
