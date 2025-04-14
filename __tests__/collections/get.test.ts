@@ -1,33 +1,27 @@
-import Collection from "../../src/Collection";
+import { collect } from "../../src";
 
-describe("Collection.get", () => {
-  let collection: Collection<{ id: number; name?: string }>;
+describe("get", () => {
+  it("with key", () => {
+    const collection = collect([{ name: "Ajat", framework: "Mongoloquent" }]);
 
-  beforeEach(() => {
-    collection = new Collection(
-      { id: 1, name: "Alice" },
-      { id: 2 },
-      { id: 3, name: "Charlie" }
-    );
-  });
-
-  it("should return the value of an existing key", () => {
     const result = collection.get("name");
-    expect(result).toBe("Alice");
+
+    expect(result).toEqual("Ajat");
   });
 
-  it("should return null for a non-existing key with no default value", () => {
-    const result = collection.get("nonExistentKey");
-    expect(result).toBeNull();
+  it("with key and default value", () => {
+    const collection = collect([{ name: "Ajat", framework: "Mongoloquent" }]);
+
+    const result = collection.get("age", 34);
+
+    expect(result).toEqual(34);
   });
 
-  it("should return undefined if the key exists but the value is undefined", () => {
-    const result = collection.get("name", null);
-    expect(result).toBe("Alice");
-  });
+  it("with closure", () => {
+    const collection = collect([{ name: "Ajat", framework: "Mongoloquent" }]);
 
-  it("should return null if the key exists but the value is undefined", () => {
-    const result = collection.get("name", null);
-    expect(result).toBe("Alice");
+    const result = collection.get("email", () => "ajat@example.com");
+
+    expect(result).toEqual("ajat@example.com");
   });
 });

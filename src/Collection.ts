@@ -564,14 +564,17 @@ export default class Collection<T> extends Array<T> {
    * Retrieves the value of the specified key from the first item in the collection
    * @param {string} key - The key to retrieve
    * @param {T | (() => T) | null} [defaultValue=null] - The default value to return if the key is not found
-   * @returns {T | null} The value of the key or the default value
+   * @returns {any} The value of the key or the default value
    */
-  get(key: string, defaultValue: T | (() => T) | null = null): T | null {
-    const item = this.find((obj) => (obj as any)?.[key] !== undefined);
-    if (item) return (item as any)[key];
+  get(key: string, defaultValue: any = null): any {
+    const item = this[0] as any;
+
+    if (item && key in item) {
+      return item[key];
+    }
 
     return typeof defaultValue === "function"
-      ? (defaultValue as () => T)()
+      ? (defaultValue as () => any)()
       : defaultValue;
   }
 
