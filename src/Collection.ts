@@ -481,21 +481,33 @@ export default class Collection<T> extends Array<T> {
   /**
    * Returns the first item in the collection that matches the given key/operator/value condition
    * @param {keyof T} key - The key to match against
-   * @param {string | T[keyof T]} operator - The operator to use for comparison
-   * @param {any} [value] - The value to compare against
+   * @param {string | T[K]} [operator] - The operator to use for comparison or the value to compare against
+   * @param {any} [value] - The value to compare against (only when operator is a string operator)
    * @returns {T | null} The first matching item or null if not found
    * @throws {MongoloquentInvalidOperatorException} If the operator is invalid
    */
   firstWhere<K extends keyof T>(
     key: K,
-    operator: string | T[K],
+    operator?: string | T[K],
     value?: any,
   ): T | null {
+    // Case 1: firstWhere("key") - Find first item where the key has a truthy value
+    if (operator === undefined) {
+      for (const item of this) {
+        if (item[key]) {
+          return item;
+        }
+      }
+      return null;
+    }
+
+    // Case 2: firstWhere("key", value) - Find first item where key equals value
     if (value === undefined) {
       value = operator as T[K];
       operator = "=";
     }
 
+    // Find the operator in the operators array
     const op = operators.find(
       (o) => o.operator === operator || o.mongoOperator === operator,
     );
@@ -503,6 +515,7 @@ export default class Collection<T> extends Array<T> {
       throw new MongoloquentInvalidOperatorException();
     }
 
+    // Find the first item that matches the condition
     for (const item of this) {
       if (this.compare(item[key], op.mongoOperator, value, op.options)) {
         return item;
