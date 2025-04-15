@@ -908,18 +908,26 @@ export default class Collection<T> extends Array<T> {
   }
 
   /**
-   * Removes the first item in the collection that contains the specified key and returns its value
-   * @param {keyof T} key - The key to remove
-   * @returns {T[keyof T] | null} The value of the removed item or null if not found
+   * Removes the specified key from each object in the collection
+   * @param {string} key - The key to remove
+   * @returns {Collection<T>} The updated collection with the key removed
    */
-  pull<K extends keyof T>(key: K): T[K] | null {
-    const index = this.findIndex((item: any) => key in item);
-    if (index !== -1) {
-      const [removedItem] = this.splice(index, 1);
-      delete this[index][key];
-      return removedItem[key];
-    }
-    return null;
+  pull(key: string): Collection<T> {
+    // Create a new collection with the specified key removed from each object
+    return new Collection(
+      ...this.map((item: any) => {
+        if (typeof item !== "object" || item === null) {
+          return item;
+        }
+
+        // Create a shallow copy to avoid mutating the original object
+        const newItem = { ...item };
+        // Remove the specified key
+        delete newItem[key];
+
+        return newItem;
+      }),
+    );
   }
 
   /**
