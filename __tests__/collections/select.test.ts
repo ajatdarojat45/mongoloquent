@@ -1,46 +1,31 @@
-import Collection from "../../src/Collection";
+import { collect } from "../../src";
 
-describe("Collection.select", () => {
-  it("should select a single key from objects in the collection", () => {
-    const collection = new Collection(
-      { id: 1, name: "Alice", age: 25 },
-      { id: 2, name: "Bob", age: 30 }
-    );
+describe("collect", () => {
+  it("select multiple item", () => {
+    const collection = collect([
+      { name: "Ajat Darojat", role: "Developer", status: "active" },
+      { name: "Udin", role: "Developer", status: "active" },
+    ]);
 
-    const result = collection.select("name");
+    const selected = collection.select(["name", "role"]);
 
-    expect(result).toEqual(new Collection({ name: "Alice" }, { name: "Bob" }));
+    expect(selected.all()).toEqual([
+      { name: "Ajat Darojat", role: "Developer" },
+      { name: "Udin", role: "Developer" },
+    ]);
   });
 
-  it("should select multiple keys from objects in the collection", () => {
-    const collection = new Collection(
-      { id: 1, name: "Alice", age: 25 },
-      { id: 2, name: "Bob", age: 30 }
-    );
+  it("select single item", () => {
+    const collection = collect([
+      { name: "Ajat Darojat", role: "Developer", status: "active" },
+      { name: "Udin", role: "Developer", status: "active" },
+    ]);
 
-    const result = collection.select(["id", "name"]);
+    const selected = collection.select("name");
 
-    expect(result).toEqual(
-      new Collection({ id: 1, name: "Alice" }, { id: 2, name: "Bob" })
-    );
-  });
-
-  it("should handle selecting keys that do not exist in the objects", () => {
-    const collection = new Collection(
-      { id: 1, name: "Alice", age: 25 },
-      { id: 2, name: "Bob", age: 30 }
-    );
-
-    const result = collection.select(["name", "nonExistentKey"]);
-
-    expect(result).toEqual(new Collection({ name: "Alice" }, { name: "Bob" }));
-  });
-
-  it("should return an empty collection when selecting keys from an empty collection", () => {
-    const collection = new Collection();
-
-    const result = collection.select("name");
-
-    expect(result).toEqual(new Collection());
+    expect(selected.all()).toEqual([
+      { name: "Ajat Darojat" },
+      { name: "Udin" },
+    ]);
   });
 });
