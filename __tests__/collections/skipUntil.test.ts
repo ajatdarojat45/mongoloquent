@@ -36,4 +36,12 @@ describe("skipUntil", () => {
       },
     ]);
   });
+
+  it("without parameter", () => {
+    const collection = collect([1, 2, 3, 4]);
+
+    const result = collection.skipUntil();
+
+    expect(result.all()).toEqual([]);
+  });
 });

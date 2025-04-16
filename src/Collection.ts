@@ -1060,18 +1060,25 @@ export default class Collection<T> extends Array<T> {
 
   /**
    * Skips items in the collection until the callback condition is met
-   * @param {(item: T) => boolean} callback - A callback function to determine when to stop skipping
+   * @param {(item: T) => boolean} [callback] - A callback function to determine when to stop skipping
    * @returns {Collection<T>} A new collection containing the remaining items
    */
-  skipUntil(callback: (item: T) => boolean): Collection<T> {
+  skipUntil(callback?: (item: T) => boolean): Collection<T> {
+    // If no callback is provided, return an empty collection
+    if (!callback) {
+      return new Collection();
+    }
+
     let found = false;
     const result = [];
 
     for (const item of this) {
-      if (callback(item)) {
+      // Check if this item matches the condition to stop skipping
+      if (!found && callback(item)) {
         found = true;
       }
 
+      // If we've found a match, include this and all subsequent items
       if (found) {
         result.push(item);
       }
@@ -1080,25 +1087,30 @@ export default class Collection<T> extends Array<T> {
     return new Collection(...result);
   }
 
-  /**
-   * Skips items in the collection while the callback condition is true
-   * @param {(item: T) => boolean} callback - A callback function to determine when to stop skipping
-   * @returns {Collection<T>} A new collection containing the remaining items
-   */
-  skipWhile(callback: (item: T) => boolean): Collection<T> {
-    let skip = true;
-    const result = [];
-
-    for (const item of this) {
-      if (skip && callback(item)) {
-        continue;
-      }
-
-      skip = false;
-      result.push(item);
+  skipWhile(callback?: (item: T) => boolean): Collection<T> {
+    // If no callback is provided, return an empty collection
+    if (!callback) {
+      return new Collection();
     }
 
-    return new Collection(...result);
+    let index = 0;
+
+    // Find the first item that doesn't satisfy the condition
+    for (let i = 0; i < this.length; i++) {
+      if (!callback(this[i])) {
+        index = i;
+        break;
+      }
+
+      // If all items satisfy the condition, return empty collection
+      if (i === this.length - 1) {
+        return new Collection();
+      }
+    }
+
+    // Return all items starting from the index where the condition became false
+    console.log(...this.slice(index));
+    return new Collection(...this.slice(index));
   }
 
   /**
