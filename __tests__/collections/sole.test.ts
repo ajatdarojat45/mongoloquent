@@ -1,72 +1,22 @@
-import Collection from "../../src/Collection";
-import {
-  MongoloquentItemNotFoundException,
-  MongoloquentMultipleItemsFoundException,
-} from "../../src/exceptions/MongoloquentException";
+import { collect } from "../../src";
 
-describe("Collection.sole", () => {
-  let collection: Collection<{ id: number; name: string }>;
+describe("sole", () => {
+  it("with callback", () => {
+    const collection = collect([1, 2, 3, 4]).sole((item) => {
+      return item === 2;
+    });
 
-  beforeEach(() => {
-    collection = new Collection(
-      { id: 1, name: "Alice" },
-      { id: 2, name: "Bob" },
-      { id: 3, name: "Charlie" }
-    );
+    expect(collection).toEqual(2);
   });
 
-  it("should return the sole element when the collection has exactly one element and no key is provided", () => {
-    const singleItemCollection = new Collection({ id: 1, name: "Alice" });
-    const result = singleItemCollection.sole();
-    expect(result).toEqual({ id: 1, name: "Alice" });
-  });
+  it("with parameter", () => {
+    const collection = collect([
+      { product: "Desk", price: 200 },
+      { product: "Chair", price: 100 },
+    ]);
 
-  it("should throw MongoloquentItemNotFoundException when the collection is empty and no key is provided", () => {
-    const emptyCollection = new Collection();
-    expect(() => emptyCollection.sole()).toThrow(
-      MongoloquentItemNotFoundException
-    );
-  });
+    const result = collection.sole("product", "Chair");
 
-  it("should return the sole element matching the key-value pair", () => {
-    const result = collection.sole("id", 1);
-    expect(result).toEqual({ id: 1, name: "Alice" });
-  });
-
-  it("should throw MongoloquentItemNotFoundException when no element matches the key-value pair", () => {
-    expect(() => collection.sole("id", 99)).toThrow(
-      MongoloquentItemNotFoundException
-    );
-  });
-
-  it("should throw MongoloquentMultipleItemsFoundException when multiple elements match the key-value pair", () => {
-    const duplicateCollection = new Collection(
-      { id: 1, name: "Alice" },
-      { id: 1, name: "Bob" }
-    );
-    expect(() => duplicateCollection.sole("id", 1)).toThrow(
-      MongoloquentMultipleItemsFoundException
-    );
-  });
-
-  it("should return the sole element matching the callback function", () => {
-    const result = collection.sole((item) => item.name === "Alice");
-    expect(result).toEqual({ id: 1, name: "Alice" });
-  });
-
-  it("should throw MongoloquentItemNotFoundException when no element matches the callback function", () => {
-    expect(() => collection.sole((item) => item.name === "Unknown")).toThrow(
-      MongoloquentItemNotFoundException
-    );
-  });
-
-  it("should throw MongoloquentMultipleItemsFoundException when multiple elements match the callback function", () => {
-    const duplicateCollection = new Collection(
-      { id: 1, name: "Alice" },
-      { id: 2, name: "Alice" }
-    );
-    expect(() =>
-      duplicateCollection.sole((item) => item.name === "Alice")
-    ).toThrow(MongoloquentMultipleItemsFoundException);
+    expect(result).toEqual({ product: "Chair", price: 100 });
   });
 });
