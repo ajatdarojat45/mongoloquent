@@ -1282,7 +1282,7 @@ export default class Collection<T> extends Array<T> {
    * @returns {Collection<T>[]} An array of collections, each containing a group of items
    * @throws {MongoloquentInvalidArgumentException} If numGroups is invalid
    */
-  split(numGroups: number): Collection<T>[] {
+  split(numGroups: number): Collection<T[]> {
     if (numGroups <= 0) {
       throw new MongoloquentInvalidArgumentException(
         "The number of groups must be greater than zero.",
@@ -1290,13 +1290,13 @@ export default class Collection<T> extends Array<T> {
     }
 
     const groupSize = Math.ceil(this.length / numGroups);
-    const result: Collection<T>[] = [];
+    const result: T[][] = [];
 
     for (let i = 0; i < this.length; i += groupSize) {
-      result.push(new Collection(...this.slice(i, i + groupSize)));
+      result.push(this.slice(i, i + groupSize));
     }
 
-    return result;
+    return new Collection(...result);
   }
 
   /**
@@ -1305,23 +1305,23 @@ export default class Collection<T> extends Array<T> {
    * @returns {Collection<T>[]} An array of collections, each containing a group of items
    * @throws {Error} If numGroups is invalid
    */
-  splitIn(numGroups: number): Collection<T>[] {
+  splitIn(numGroups: number): Collection<T[]> {
     if (numGroups <= 0) {
       throw new Error("The number of groups must be greater than zero.");
     }
 
     const minGroupSize = Math.floor(this.length / numGroups);
     const remainder = this.length % numGroups;
-    const result: Collection<T>[] = [];
+    const result: T[][] = [];
 
     let start = 0;
     for (let i = 0; i < numGroups; i++) {
       const groupSize = minGroupSize + (i < remainder ? 1 : 0);
-      result.push(new Collection(...this.slice(start, start + groupSize)));
+      result.push(this.slice(start, start + groupSize));
       start += groupSize;
     }
 
-    return result;
+    return new Collection(...result);
   }
 
   /**
