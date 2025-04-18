@@ -1370,8 +1370,17 @@ export default class Collection<T> extends Array<T> {
    * @param {(item: T) => boolean} callback - A callback function to determine when to stop taking
    * @returns {Collection<T>} A new collection containing the taken items
    */
-  takeUntil(callback: (item: T) => boolean): Collection<T> {
-    const index = this.findIndex(callback);
+  takeUntil(callbackOrValue: ((item: T) => boolean) | any): Collection<T> {
+    let index: number;
+
+    if (typeof callbackOrValue === "function") {
+      // Handle function callback case
+      index = this.findIndex(callbackOrValue);
+    } else {
+      // Handle direct value comparison case
+      index = this.findIndex((item) => item === callbackOrValue);
+    }
+
     const result = index === -1 ? this : this.slice(0, index);
     return new Collection(...result);
   }
@@ -1381,8 +1390,17 @@ export default class Collection<T> extends Array<T> {
    * @param {(item: T) => boolean} callback - A callback function to determine when to stop taking
    * @returns {Collection<T>} A new collection containing the taken items
    */
-  takeWhile(callback: (item: T) => boolean): Collection<T> {
-    const index = this.findIndex((item) => !callback(item));
+  takeWhile(callbackOrValue: ((item: T) => boolean) | any): Collection<T> {
+    let index: number;
+
+    if (typeof callbackOrValue === "function") {
+      // Handle function callback case
+      index = this.findIndex((item) => !callbackOrValue(item));
+    } else {
+      // Handle direct value comparison case where we take elements until we encounter the specified value
+      index = this.findIndex((item) => item === callbackOrValue);
+    }
+
     const result = index === -1 ? this : this.slice(0, index);
     return new Collection(...result);
   }
