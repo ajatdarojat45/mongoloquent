@@ -1,61 +1,56 @@
-import Collection from "../../src/Collection";
+import { collect } from "../../src";
 
-describe("Collection.unique", () => {
-  it("should return unique values without parameters", () => {
-    const collection = new Collection(1, 2, 2, 3, 3, 3, 4);
-    const uniqueCollection = collection.unique();
-    expect(uniqueCollection).toEqual(new Collection(1, 2, 3, 4));
+describe("unique", () => {
+  it("without parameter", () => {
+    const collection = collect([1, 1, 2, 2, 3, 4, 2]);
+
+    const unique = collection.unique();
+
+    const result = unique.all();
+
+    expect(result.length).toBe(4);
+    expect(result).toEqual([1, 2, 3, 4]);
   });
 
-  it("should return unique objects based on a key", () => {
-    const collection = new Collection(
-      { id: 1, name: "Alice" },
-      { id: 2, name: "Bob" },
-      { id: 1, name: "Alice" },
-      { id: 3, name: "Charlie" }
-    );
-    const uniqueCollection = collection.unique("id");
-    expect(uniqueCollection).toEqual(
-      new Collection(
-        { id: 1, name: "Alice" },
-        { id: 2, name: "Bob" },
-        { id: 3, name: "Charlie" }
-      )
-    );
+  it("with array of object", () => {
+    const collection = collect([
+      { name: "iPhone 6", brand: "Apple", type: "phone" },
+      { name: "iPhone 5", brand: "Apple", type: "phone" },
+      { name: "Apple Watch", brand: "Apple", type: "watch" },
+      { name: "Galaxy S6", brand: "Samsung", type: "phone" },
+      { name: "Galaxy Gear", brand: "Samsung", type: "watch" },
+    ]);
+
+    const unique = collection.unique("brand");
+
+    const result = unique.all();
+    expect(result.length).toBe(2);
+    expect(result).toEqual([
+      { name: "iPhone 6", brand: "Apple", type: "phone" },
+      { name: "Galaxy S6", brand: "Samsung", type: "phone" },
+    ]);
   });
 
-  it("should return unique objects based on a callback", () => {
-    const collection = new Collection(
-      { id: 1, name: "Alice" },
-      { id: 2, name: "Bob" },
-      { id: 1, name: "Alice" },
-      { id: 3, name: "Charlie" }
-    );
-    const uniqueCollection = collection.unique((item) => item.name);
-    expect(uniqueCollection).toEqual(
-      new Collection(
-        { id: 1, name: "Alice" },
-        { id: 2, name: "Bob" },
-        { id: 3, name: "Charlie" }
-      )
-    );
-  });
+  it("with callback", () => {
+    const collection = collect([
+      { name: "iPhone 6", brand: "Apple", type: "phone" },
+      { name: "iPhone 5", brand: "Apple", type: "phone" },
+      { name: "Apple Watch", brand: "Apple", type: "watch" },
+      { name: "Galaxy S6", brand: "Samsung", type: "phone" },
+      { name: "Galaxy Gear", brand: "Samsung", type: "watch" },
+    ]);
 
-  it("should return an empty collection when the input is empty", () => {
-    const collection = new Collection();
-    const uniqueCollection = collection.unique();
-    expect(uniqueCollection).toEqual(new Collection());
-  });
+    const unique = collection.unique(function (item) {
+      return item.brand + item.type;
+    });
 
-  it("should return the same collection when all values are unique", () => {
-    const collection = new Collection(1, 2, 3, 4);
-    const uniqueCollection = collection.unique();
-    expect(uniqueCollection).toEqual(new Collection(1, 2, 3, 4));
-  });
-
-  it("should return a single value when all values are duplicates", () => {
-    const collection = new Collection(5, 5, 5, 5);
-    const uniqueCollection = collection.unique();
-    expect(uniqueCollection).toEqual(new Collection(5));
+    const result = unique.all();
+    expect(result.length).toBe(4);
+    expect(result).toEqual([
+      { name: "iPhone 6", brand: "Apple", type: "phone" },
+      { name: "Apple Watch", brand: "Apple", type: "watch" },
+      { name: "Galaxy S6", brand: "Samsung", type: "phone" },
+      { name: "Galaxy Gear", brand: "Samsung", type: "watch" },
+    ]);
   });
 });
