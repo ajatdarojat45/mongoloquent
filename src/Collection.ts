@@ -1178,16 +1178,11 @@ export default class Collection<T> extends Array<T> {
     throw new MongoloquentItemNotFoundException();
   }
 
-  /**
-   * Sorts the collection by the specified key or callback
-   * @param {keyof T | ((a: T, b: T) => number) | [keyof T, "asc" | "desc"][]} keyOrCallback - The key or callback to sort by
-   * @param {"asc" | "desc"} [direction="asc"] - The sort direction
-   * @returns {Collection<T>} A new collection containing the sorted items
-   */
   sortBy(
     keyOrCallback:
       | keyof T
       | ((a: T, b: T) => number)
+      | ((a: T) => any)
       | [keyof T, "asc" | "desc"][],
     direction: "asc" | "desc" = "asc",
   ): Collection<T> {
@@ -1205,11 +1200,24 @@ export default class Collection<T> extends Array<T> {
         return 0;
       });
     } else if (typeof keyOrCallback === "function") {
-      sortedArray.sort(keyOrCallback);
+      // Handle the case where the callback takes a single argument and returns a value to sort by
+      if (keyOrCallback.length === 1) {
+        sortedArray.sort((a, b) => {
+          const valueA = (keyOrCallback as (item: T) => any)(a);
+          const valueB = (keyOrCallback as (item: T) => any)(b);
+
+          if (valueA > valueB) return direction === "asc" ? 1 : -1;
+          if (valueA < valueB) return direction === "asc" ? -1 : 1;
+          return 0;
+        });
+      } else {
+        // Traditional compare function with two arguments
+        sortedArray.sort(keyOrCallback as (a: T, b: T) => number);
+      }
     } else {
       sortedArray.sort((a, b) => {
-        const valueA = a[keyOrCallback];
-        const valueB = b[keyOrCallback];
+        const valueA = a[keyOrCallback as keyof T];
+        const valueB = b[keyOrCallback as keyof T];
 
         if (valueA > valueB) return direction === "asc" ? 1 : -1;
         if (valueA < valueB) return direction === "asc" ? -1 : 1;

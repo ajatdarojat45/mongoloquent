@@ -1,47 +1,51 @@
-import Collection from "../../src/Collection";
+import { collect } from "../../src";
 
-describe("Collection.sortByDesc", () => {
-  it("should sort by a single key in descending order", () => {
-    const collection = new Collection(
-      { id: 1, value: 10 },
-      { id: 2, value: 30 },
-      { id: 3, value: 20 }
-    );
+describe("sortByDesc", () => {
+  it("should sort by a given key", () => {
+    const collection = collect([
+      { name: "Desk", price: 200 },
+      { name: "Chair", price: 100 },
+      { name: "Bookcase", price: 150 },
+    ]);
 
-    const sorted = collection.sortByDesc("value");
+    const sorted = collection.sortByDesc("price");
 
-    expect(sorted).toEqual([
-      { id: 2, value: 30 },
-      { id: 3, value: 20 },
-      { id: 1, value: 10 },
+    expect(sorted.all()).toEqual([
+      { name: "Desk", price: 200 },
+      { name: "Bookcase", price: 150 },
+      { name: "Chair", price: 100 },
     ]);
   });
 
-  it("should sort using multiple keys with specified directions", () => {
-    const collection = new Collection(
-      { id: 1, value: 10, priority: 2 },
-      { id: 2, value: 10, priority: 1 },
-      { id: 3, value: 20, priority: 3 }
-    );
-
-    const sorted = collection.sortByDesc([
-      ["value", "desc"],
-      ["priority", "asc"],
+  it("with two params", () => {
+    const collection = collect([
+      { title: "Item 1" },
+      { title: "Item 12" },
+      { title: "Item 3" },
     ]);
 
-    expect(sorted).toEqual([
-      { id: 3, value: 20, priority: 3 },
-      { id: 2, value: 10, priority: 1 },
-      { id: 1, value: 10, priority: 2 },
+    const sorted = collection.sortByDesc("title");
+
+    expect(sorted.all()).toEqual([
+      { title: "Item 3" },
+      { title: "Item 12" },
+      { title: "Item 1" },
     ]);
   });
 
-  it("should handle an empty collection", () => {
-    const collection = new Collection();
+  it("with a callback", () => {
+    const collection = collect([
+      { name: "Desk", colors: ["Black", "Mahogany"] },
+      { name: "Chair", colors: ["Black"] },
+      { name: "Bookcase", colors: ["Red", "Beige", "Brown"] },
+    ]);
 
-    // @ts-ignore
-    const sorted = collection.sortByDesc("value");
+    const sorted = collection.sortByDesc((item: any) => item.colors.length);
 
-    expect(sorted).toEqual([]);
+    expect(sorted.all()).toEqual([
+      { name: "Bookcase", colors: ["Red", "Beige", "Brown"] },
+      { name: "Desk", colors: ["Black", "Mahogany"] },
+      { name: "Chair", colors: ["Black"] },
+    ]);
   });
 });
