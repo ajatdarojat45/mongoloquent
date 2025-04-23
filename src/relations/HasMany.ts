@@ -8,12 +8,44 @@ import { IModelPaginate } from "../interfaces/IModel";
 import { IRelationHasMany } from "../interfaces/IRelation";
 import { FormSchema } from "../types/schema";
 
+/**
+ * HasMany relationship class for handling one-to-many relationships between models
+ * @template T Type of the parent model
+ * @template M Type of the related model(s)
+ * @extends QueryBuilder<M>
+ */
 export default class HasMany<T, M> extends QueryBuilder<M> {
+  /**
+   * Parent model instance
+   * @type {Model<T>}
+   */
   model: Model<T>;
+
+  /**
+   * Related model instance
+   * @type {Model<M>}
+   */
   relatedModel: Model<M>;
+
+  /**
+   * Local key on the parent model (usually the primary key)
+   * @type {keyof T}
+   */
   localKey: keyof T;
+
+  /**
+   * Foreign key on the related model that references the parent model
+   * @type {keyof M}
+   */
   foreignKey: keyof M;
 
+  /**
+   * Creates a new HasMany relationship instance
+   * @param {Model<T>} model Parent model instance
+   * @param {Model<M>} relatedModel Related model instance
+   * @param {keyof M} foreignKey Foreign key on the related model
+   * @param {keyof T} localKey Local key on the parent model
+   */
   constructor(
     model: Model<T>,
     relatedModel: Model<M>,
@@ -34,6 +66,12 @@ export default class HasMany<T, M> extends QueryBuilder<M> {
     this.$isDeleted = relatedModel["$isDeleted"];
   }
 
+  /**
+   * Gets the first matching related model or initializes a new one with the relationship context
+   * @param {Partial<FormSchema<M>>} filter Filter to find an existing model
+   * @param {Partial<FormSchema<M>>} [doc] Default values for the new model if none found
+   * @returns {Promise<M>} Found or initialized model with relationship attributes
+   */
   public firstOrNew(
     filter: Partial<FormSchema<M>>,
     doc?: Partial<FormSchema<M>>,
@@ -45,6 +83,12 @@ export default class HasMany<T, M> extends QueryBuilder<M> {
     return super.firstOrNew(_filter, doc);
   }
 
+  /**
+   * Gets the first matching related model or creates a new one with the relationship context
+   * @param {Partial<FormSchema<M>>} filter Filter to find an existing model
+   * @param {Partial<FormSchema<M>>} [doc] Values for the new model if none found
+   * @returns {Promise<M>} Found or created model with relationship attributes
+   */
   public firstOrCreate(
     filter: Partial<FormSchema<M>>,
     doc?: Partial<FormSchema<M>>,
@@ -56,6 +100,12 @@ export default class HasMany<T, M> extends QueryBuilder<M> {
     return super.firstOrCreate(_filter, doc);
   }
 
+  /**
+   * Updates a related model if it exists or creates it with the relationship context
+   * @param {Partial<FormSchema<M>>} filter Filter to find an existing model
+   * @param {Partial<FormSchema<M>>} doc Values for update or creation
+   * @returns {Promise<M>} Updated or created model with relationship attributes
+   */
   public updateOrCreate(
     filter: Partial<FormSchema<M>>,
     doc: Partial<FormSchema<M>>,
@@ -67,6 +117,11 @@ export default class HasMany<T, M> extends QueryBuilder<M> {
     return super.updateOrCreate(_filter, doc);
   }
 
+  /**
+   * Saves a new related model with the relationship context
+   * @param {Partial<M>} doc Model data to save
+   * @returns {Promise<M>} Created model with relationship attributes
+   */
   // @ts-ignore
   public save(doc: Partial<M>) {
     const data = {
@@ -77,6 +132,11 @@ export default class HasMany<T, M> extends QueryBuilder<M> {
     return this.insert(data);
   }
 
+  /**
+   * Saves multiple new related models with the relationship context
+   * @param {Partial<M>[]} docs Array of model data to save
+   * @returns {Promise<ObjectId[]>} Array of created model IDs
+   */
   public saveMany(docs: Partial<M>[]) {
     const data = docs.map((doc) => ({
       ...doc,
@@ -86,26 +146,52 @@ export default class HasMany<T, M> extends QueryBuilder<M> {
     return this.insertMany(data);
   }
 
+  /**
+   * Alias for save method
+   * @param {Partial<M>} doc Model data to create
+   * @returns {Promise<M>} Created model with relationship attributes
+   */
   // @ts-ignore
   public create(doc: Partial<M>) {
     return this.save(doc);
   }
 
+  /**
+   * Alias for saveMany method
+   * @param {Partial<M>[]} docs Array of model data to create
+   * @returns {Promise<ObjectId[]>} Array of created model IDs
+   */
   // @ts-ignore
   public createMany(docs: Partial<M>[]) {
     return this.saveMany(docs);
   }
 
+  /**
+   * Gets all related models for this relationship
+   * @returns {Promise<M[]>} Array of related models
+   */
   public all(): Promise<M[]> {
     this.where(this.foreignKey, this.model["$original"][this.localKey]);
     return super.all();
   }
 
+  /**
+   * Gets related models with specified fields
+   * @template K Key type of the related model
+   * @param {...(K | K[])[]} fields Fields to select
+   * @returns {Promise<Collection<M>>} Collection of related models
+   */
   public get<K extends keyof M>(...fields: (K | K[])[]) {
     this.where(this.foreignKey, this.model["$original"][this.localKey]);
     return super.get(...fields);
   }
 
+  /**
+   * Gets paginated related models
+   * @param {number} [page=1] Page number
+   * @param {number} [limit=15] Items per page
+   * @returns {Promise<IModelPaginate>} Paginated results with metadata
+   */
   public paginate(
     page: number = 1,
     limit: number = 15,
@@ -114,36 +200,75 @@ export default class HasMany<T, M> extends QueryBuilder<M> {
     return super.paginate(page, limit);
   }
 
+  /**
+   * Gets the first related model matching the criteria
+   * @template K Key type of the related model
+   * @param {...(K | K[])[]} fields Fields to select
+   * @returns {Promise<M | null>} First matching related model or null
+   */
   public first<K extends keyof M>(...fields: (K | K[])[]) {
     this.where(this.foreignKey, this.model["$original"][this.localKey]);
     return super.first(...fields);
   }
 
+  /**
+   * Counts the number of related models
+   * @returns {Promise<number>} Count of related models
+   */
   public count(): Promise<number> {
     this.where(this.foreignKey, this.model["$original"][this.localKey]);
     return super.count();
   }
 
+  /**
+   * Calculates the sum of a field across all related models
+   * @template K Key type of the related model
+   * @param {K} field Field to sum
+   * @returns {Promise<number>} Sum of the field values
+   */
   public sum<K extends keyof M>(field: K): Promise<number> {
     this.where(this.foreignKey, this.model["$original"][this.localKey]);
     return super.sum(field);
   }
 
+  /**
+   * Finds the minimum value of a field across all related models
+   * @template K Key type of the related model
+   * @param {K} field Field to check
+   * @returns {Promise<number>} Minimum value of the field
+   */
   public min<K extends keyof M>(field: K): Promise<number> {
     this.where(this.foreignKey, this.model["$original"][this.localKey]);
     return super.min(field);
   }
 
+  /**
+   * Finds the maximum value of a field across all related models
+   * @template K Key type of the related model
+   * @param {K} field Field to check
+   * @returns {Promise<number>} Maximum value of the field
+   */
   public max<K extends keyof M>(field: K): Promise<number> {
     this.where(this.foreignKey, this.model["$original"][this.localKey]);
     return super.max(field);
   }
 
+  /**
+   * Calculates the average value of a field across all related models
+   * @template K Key type of the related model
+   * @param {K} field Field to average
+   * @returns {Promise<number>} Average value of the field
+   */
   public avg<K extends keyof M>(field: K): Promise<number> {
     this.where(this.foreignKey, this.model["$original"][this.localKey]);
     return super.avg(field);
   }
 
+  /**
+   * Generates MongoDB aggregation pipeline stages for hasMany relationship
+   * @param {IRelationHasMany} hasMany Relationship configuration
+   * @returns {Document[]} Array of MongoDB aggregation stages
+   */
   public static generate(hasMany: IRelationHasMany): Document[] {
     // Generate the lookup stages for the hasMany relationship
     const lookup = this.lookup(hasMany);
@@ -191,6 +316,11 @@ export default class HasMany<T, M> extends QueryBuilder<M> {
     return lookup;
   }
 
+  /**
+   * Creates the lookup stage for the hasMany relationship
+   * @param {IRelationHasMany} hasMany Relationship configuration
+   * @returns {Document[]} Array of MongoDB aggregation lookup stages
+   */
   public static lookup(hasMany: IRelationHasMany): Document[] {
     const lookup: Document[] = [];
     const pipeline: Document[] = [];
