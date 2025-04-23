@@ -39,4 +39,4 @@ export const MONGOLOQUENT_DATABASE_URI: string =
  * Uses environment variable if available, otherwise defaults to "Asia/Jakarta"
  * @type {string}
  */
-export const TIMEZONE: string = process.env.TIMEZONE || "Asia/Jakarta";
+export const TIMEZONE: string = process.env.MONGOLOQUENT_TIMEZONE || "Asia/Jakarta";
