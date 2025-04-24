@@ -5,16 +5,48 @@
 import "dotenv/config";
 
 import Collection from "./Collection";
+import DB from "./DB";
 import Model from "./Model";
+import QueryBuilder from "./QueryBuilder";
 
 /**
- * @exports Mongoloquent
- * @description The main export of the Mongoloquent package, providing the base Model class
- * for creating MongoDB models with an eloquent-style interface.
- * @type {typeof Model}
+ * Base Model class for document mapping
+ * @export
+ * @class Model
+ * @template T - Type of the document data
  */
-export const Mongoloquent = Model;
+export { Model };
 
+/**
+ * Collection class for working with arrays of documents
+ * @export
+ * @class Collection
+ * @template T - Type of items in the collection
+ */
+export { Collection };
+
+/**
+ * Query builder for MongoDB operations with a fluent API
+ * @export
+ * @class QueryBuilder
+ * @template T - Type of the document being queried
+ */
+export { QueryBuilder };
+
+/**
+ * Database connection and management utilities
+ * @export
+ * @namespace DB
+ */
+export { DB };
+
+/**
+ * Creates a new collection instance from an array of values
+ * @export
+ * @template T - Type of items to collect
+ * @param {T[]} values - Array of values to wrap in a Collection
+ * @returns {Collection<T>} A new Collection instance containing the provided values
+ */
 export function collect<T>(values: T[]) {
   return new Collection<T>(...values);
 }
