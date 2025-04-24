@@ -5,9 +5,8 @@
 import "dotenv/config";
 
 import Collection from "./Collection";
-import DB from "./DB";
-import Model from "./Model";
-import QueryBuilder from "./QueryBuilder";
+
+export * from "./interfaces/ISchema";
 
 /**
  * Base Model class for document mapping
@@ -15,7 +14,7 @@ import QueryBuilder from "./QueryBuilder";
  * @class Model
  * @template T - Type of the document data
  */
-export { Model };
+export { default as Model } from "./Model";
 
 /**
  * Collection class for working with arrays of documents
@@ -31,14 +30,14 @@ export { Collection };
  * @class QueryBuilder
  * @template T - Type of the document being queried
  */
-export { QueryBuilder };
+export { default as QueryBuilder } from "./QueryBuilder";
 
 /**
  * Database connection and management utilities
  * @export
  * @namespace DB
  */
-export { DB };
+export { default as DB } from "./DB";
 
 /**
  * Creates a new collection instance from an array of values
