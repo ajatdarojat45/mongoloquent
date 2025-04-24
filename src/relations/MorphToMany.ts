@@ -7,6 +7,16 @@ import QueryBuilder from "../QueryBuilder";
 import { IModelPaginate } from "../interfaces/IModel";
 import { IRelationMorphToMany } from "../interfaces/IRelation";
 
+/**
+ * MorphToMany relationship class
+ *
+ * Represents a polymorphic many-to-many relationship where a model can be related to many instances
+ * of another model through a morph table.
+ *
+ * @template T - Type of the parent model
+ * @template M - Type of the related model
+ * @extends {QueryBuilder<M>}
+ */
 export default class MorphToMany<T, M> extends QueryBuilder<M> {
   model: Model<T>;
   relatedModel: Model<M>;
@@ -15,6 +25,13 @@ export default class MorphToMany<T, M> extends QueryBuilder<M> {
   morphType: string;
   morphCollectionName: string;
 
+  /**
+   * Creates a new MorphToMany relationship
+   *
+   * @param {Model<T>} model - The parent model
+   * @param {Model<M>} relatedModel - The related model
+   * @param {string} morph - The base name for the morph relation
+   */
   constructor(model: Model<T>, relatedModel: Model<M>, morph: string) {
     super();
     this.model = model;
@@ -33,15 +50,34 @@ export default class MorphToMany<T, M> extends QueryBuilder<M> {
     this.$isDeleted = relatedModel["$isDeleted"];
   }
 
+  /**
+   * Retrieves all related records
+   *
+   * @returns {Promise<M[]>} Promise resolving to an array of related model instances
+   */
   public all(): Promise<M[]> {
     return super.all();
   }
 
+  /**
+   * Retrieves related records with specified fields
+   *
+   * @template K - Keys of the related model
+   * @param {...(K | K[])[]} fields - Fields to retrieve
+   * @returns {Promise<Pick<M, K>[]>} Promise resolving to an array of related model instances with selected fields
+   */
   public async get<K extends keyof M>(...fields: (K | K[])[]) {
     await this.setDefaultCondition();
     return super.get(...fields);
   }
 
+  /**
+   * Paginates the related records
+   *
+   * @param {number} page - Page number (starting from 1)
+   * @param {number} limit - Number of records per page
+   * @returns {Promise<IModelPaginate>} Promise resolving to paginated results
+   */
   public async paginate(
     page: number = 1,
     limit: number = 15,
@@ -51,36 +87,84 @@ export default class MorphToMany<T, M> extends QueryBuilder<M> {
     return super.paginate(page, limit);
   }
 
+  /**
+   * Retrieves the first related record with specified fields
+   *
+   * @template K - Keys of the related model
+   * @param {...(K | K[])[]} fields - Fields to retrieve
+   * @returns {Promise<Pick<M, K> | null>} Promise resolving to the first related record or null
+   */
   public async first<K extends keyof M>(...fields: (K | K[])[]) {
     await this.setDefaultCondition();
     return super.first(...fields);
   }
 
+  /**
+   * Counts the number of related records
+   *
+   * @returns {Promise<number>} Promise resolving to the count of related records
+   */
   public async count(): Promise<number> {
     await this.setDefaultCondition();
     return super.count();
   }
 
+  /**
+   * Calculates the sum of a field in related records
+   *
+   * @template K - Keys of the related model
+   * @param {K} field - The field to sum
+   * @returns {Promise<number>} Promise resolving to the sum
+   */
   public async sum<K extends keyof M>(field: K): Promise<number> {
     await this.setDefaultCondition();
     return super.sum(field);
   }
 
+  /**
+   * Finds the minimum value of a field in related records
+   *
+   * @template K - Keys of the related model
+   * @param {K} field - The field to find minimum value for
+   * @returns {Promise<number>} Promise resolving to the minimum value
+   */
   public async min<K extends keyof M>(field: K): Promise<number> {
     await this.setDefaultCondition();
     return super.min(field);
   }
 
+  /**
+   * Finds the maximum value of a field in related records
+   *
+   * @template K - Keys of the related model
+   * @param {K} field - The field to find maximum value for
+   * @returns {Promise<number>} Promise resolving to the maximum value
+   */
   public async max<K extends keyof M>(field: K): Promise<number> {
     await this.setDefaultCondition();
     return super.max(field);
   }
 
+  /**
+   * Calculates the average value of a field in related records
+   *
+   * @template K - Keys of the related model
+   * @param {K} field - The field to calculate average for
+   * @returns {Promise<number>} Promise resolving to the average value
+   */
   public async avg<K extends keyof M>(field: K): Promise<number> {
     await this.setDefaultCondition();
     return super.avg(field);
   }
 
+  /**
+   * Attaches one or more related models to the parent model
+   *
+   * @template D - Type of additional pivot table data
+   * @param {string | ObjectId | (string | ObjectId)[]} ids - ID or IDs of related models to attach
+   * @param {Partial<D>} [doc] - Additional data to store in the pivot table
+   * @returns {Promise<{message: string}>} Promise resolving to a success message
+   */
   public async attach<D>(
     ids: string | ObjectId | (string | ObjectId)[],
     doc?: Partial<D>,
@@ -137,6 +221,12 @@ export default class MorphToMany<T, M> extends QueryBuilder<M> {
     };
   }
 
+  /**
+   * Detaches one or more related models from the parent model
+   *
+   * @param {string | ObjectId | (string | ObjectId)[]} ids - ID or IDs of related models to detach (null/undefined to detach all)
+   * @returns {Promise<{message: string}>} Promise resolving to a success message
+   */
   public async detach(ids: string | ObjectId | (string | ObjectId)[]) {
     let objectIds: ObjectId[] = [];
     let isDeleteAll = false;
@@ -163,6 +253,14 @@ export default class MorphToMany<T, M> extends QueryBuilder<M> {
     };
   }
 
+  /**
+   * Syncs the relationship with the given IDs (attaches new relations, detaches removed relations)
+   *
+   * @template D - Type of additional pivot table data
+   * @param {string | ObjectId | (string | ObjectId)[]} ids - ID or IDs to sync with
+   * @param {Partial<D>} [doc] - Additional data to store in the pivot table
+   * @returns {Promise<{message: string}>} Promise resolving to a success message
+   */
   public async sync<D>(
     ids: string | ObjectId | (string | ObjectId)[],
     doc?: Partial<D>,
@@ -231,6 +329,14 @@ export default class MorphToMany<T, M> extends QueryBuilder<M> {
     };
   }
 
+  /**
+   * Syncs the relationship with the given IDs without detaching existing relations
+   *
+   * @template D - Type of additional pivot table data
+   * @param {string | ObjectId | (string | ObjectId)[]} ids - ID or IDs to sync with
+   * @param {Partial<D>} [doc] - Additional data to store in the pivot table
+   * @returns {Promise<{message: string}>} Promise resolving to a success message
+   */
   public async syncWithoutDetaching<D>(
     ids: string | ObjectId | (string | ObjectId)[],
     doc?: Partial<D>,
@@ -297,6 +403,14 @@ export default class MorphToMany<T, M> extends QueryBuilder<M> {
     };
   }
 
+  /**
+   * Syncs the relationship with the given IDs and updates pivot values for existing relations
+   *
+   * @template D - Type of additional pivot table data
+   * @param {string | ObjectId | (string | ObjectId)[]} ids - ID or IDs to sync with
+   * @param {Partial<D>} doc - Additional data to store/update in the pivot table
+   * @returns {Promise<{message: string}>} Promise resolving to a success message
+   */
   public async syncWithPivotValue<D>(
     ids: string | ObjectId | (string | ObjectId)[],
     doc: Partial<D>,
@@ -379,6 +493,12 @@ export default class MorphToMany<T, M> extends QueryBuilder<M> {
     };
   }
 
+  /**
+   * Toggles the relationship with the given IDs (attaches if not present, detaches if present)
+   *
+   * @param {string | ObjectId | (string | ObjectId)[]} ids - ID or IDs to toggle
+   * @returns {Promise<{message: string}>} Promise resolving to a success message
+   */
   public async toggle(ids: string | ObjectId | (string | ObjectId)[]) {
     let objectIds: ObjectId[] = [];
     const foreignKey = `${this.relatedModel.constructor.name.toLowerCase()}Id`;
@@ -449,6 +569,12 @@ export default class MorphToMany<T, M> extends QueryBuilder<M> {
     };
   }
 
+  /**
+   * Sets default condition for relation queries based on the parent model
+   *
+   * @private
+   * @returns {Promise<void>}
+   */
   private async setDefaultCondition() {
     const mtmColl = this["getCollection"](this.morphCollectionName);
     const key = `${this.relatedModel.constructor.name.toLowerCase()}Id`;
