@@ -7,6 +7,17 @@ import QueryBuilder from "../QueryBuilder";
 import { IModelPaginate } from "../interfaces/IModel";
 import { IRelationHasManyThrough } from "../interfaces/IRelation";
 
+/**
+ * HasManyThrough relationship class
+ *
+ * Represents a relationship where a model can access distant relations through an intermediate model.
+ * For example, a Country model might have many Posts through a User model.
+ *
+ * @template T - Type of the parent model
+ * @template M - Type of the related model
+ * @template TM - Type of the intermediate/through model
+ * @extends {QueryBuilder<M>}
+ */
 export default class HasManyThrough<T, M, TM> extends QueryBuilder<M> {
   model: Model<T>;
   relatedModel: Model<M>;
@@ -16,6 +27,17 @@ export default class HasManyThrough<T, M, TM> extends QueryBuilder<M> {
   localKey: keyof T;
   localKeyThrough: keyof TM;
 
+  /**
+   * Creates a new HasManyThrough relationship
+   *
+   * @param {Model<T>} model - The parent model
+   * @param {Model<M>} relatedModel - The related model
+   * @param {Model<TM>} throughModel - The intermediate model
+   * @param {keyof TM} foreignKey - The foreign key on the intermediate model that references the parent model
+   * @param {keyof M} foreignKeyThrough - The foreign key on the related model that references the intermediate model
+   * @param {keyof T} localKey - The primary key on the parent model
+   * @param {keyof TM} localKeyThrough - The primary key on the intermediate model
+   */
   constructor(
     model: Model<T>,
     relatedModel: Model<M>,
@@ -42,15 +64,34 @@ export default class HasManyThrough<T, M, TM> extends QueryBuilder<M> {
     this.$isDeleted = relatedModel["$isDeleted"];
   }
 
+  /**
+   * Retrieves all related records
+   *
+   * @returns {Promise<M[]>} Promise resolving to an array of related model instances
+   */
   public all(): Promise<M[]> {
     return super.all();
   }
 
+  /**
+   * Retrieves related records with specified fields
+   *
+   * @template K - Keys of the related model
+   * @param {...(K | K[])[]} fields - Fields to retrieve
+   * @returns {Promise<Pick<M, K>[]>} Promise resolving to an array of related model instances with selected fields
+   */
   public async get<K extends keyof M>(...fields: (K | K[])[]) {
     await this.setDefaultCondition();
     return super.get(...fields);
   }
 
+  /**
+   * Paginates the related records
+   *
+   * @param {number} page - Page number (starting from 1)
+   * @param {number} limit - Number of records per page
+   * @returns {Promise<IModelPaginate>} Promise resolving to paginated results
+   */
   public async paginate(
     page: number = 1,
     limit: number = 15,
@@ -60,36 +101,82 @@ export default class HasManyThrough<T, M, TM> extends QueryBuilder<M> {
     return super.paginate(page, limit);
   }
 
+  /**
+   * Retrieves the first related record with specified fields
+   *
+   * @template K - Keys of the related model
+   * @param {...(K | K[])[]} fields - Fields to retrieve
+   * @returns {Promise<Pick<M, K> | null>} Promise resolving to the first related record or null
+   */
   public async first<K extends keyof M>(...fields: (K | K[])[]) {
     await this.setDefaultCondition();
     return super.first(...fields);
   }
 
+  /**
+   * Counts the number of related records
+   *
+   * @returns {Promise<number>} Promise resolving to the count of related records
+   */
   public async count(): Promise<number> {
     await this.setDefaultCondition();
     return super.count();
   }
 
+  /**
+   * Calculates the sum of a field in related records
+   *
+   * @template K - Keys of the related model
+   * @param {K} field - The field to sum
+   * @returns {Promise<number>} Promise resolving to the sum
+   */
   public async sum<K extends keyof M>(field: K): Promise<number> {
     await this.setDefaultCondition();
     return super.sum(field);
   }
 
+  /**
+   * Finds the minimum value of a field in related records
+   *
+   * @template K - Keys of the related model
+   * @param {K} field - The field to find minimum value for
+   * @returns {Promise<number>} Promise resolving to the minimum value
+   */
   public async min<K extends keyof M>(field: K): Promise<number> {
     await this.setDefaultCondition();
     return super.min(field);
   }
 
+  /**
+   * Finds the maximum value of a field in related records
+   *
+   * @template K - Keys of the related model
+   * @param {K} field - The field to find maximum value for
+   * @returns {Promise<number>} Promise resolving to the maximum value
+   */
   public async max<K extends keyof M>(field: K): Promise<number> {
     await this.setDefaultCondition();
     return super.max(field);
   }
 
+  /**
+   * Calculates the average value of a field in related records
+   *
+   * @template K - Keys of the related model
+   * @param {K} field - The field to calculate average for
+   * @returns {Promise<number>} Promise resolving to the average value
+   */
   public async avg<K extends keyof M>(field: K): Promise<number> {
     await this.setDefaultCondition();
     return super.avg(field);
   }
 
+  /**
+   * Sets default condition for relation queries based on the parent model
+   *
+   * @private
+   * @returns {Promise<void>}
+   */
   private async setDefaultCondition() {
     const hmtIds = await this.throughModel
       .withTrashed()
