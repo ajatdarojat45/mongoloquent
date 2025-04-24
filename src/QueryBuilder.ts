@@ -32,7 +32,7 @@ import operators from "./utils/operators";
  */
 export default class QueryBuilder<T> {
   /** Schema definition for the document */
-  public static $schema: Record<string, any>;
+  public static $schema: any;
   /** Default MongoDB connection string */
   public static $connection: string = MONGOLOQUENT_DATABASE_URI;
   /** Default database name */
