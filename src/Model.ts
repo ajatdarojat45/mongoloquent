@@ -1,6 +1,5 @@
 import { BulkWriteOptions, InsertOneOptions, ObjectId } from "mongodb";
 
-import DB from "./DB";
 import QueryBuilder from "./QueryBuilder";
 import {
   IRelationBelongsTo,
@@ -478,6 +477,12 @@ export default class Model<T> extends QueryBuilder<T> {
     return this.query().limit(value);
   }
 
+  /**
+   * Sets the limit for the query (alias for limit)
+   * @template M Type of the model class
+   * @param {number} value Maximum number of documents to return
+   * @returns {Model<M["$schema"]>} Query builder instance
+   */
   public static take<M extends typeof Model<any>>(this: M, value: number) {
     return this.query().limit(value);
   }
@@ -504,6 +509,12 @@ export default class Model<T> extends QueryBuilder<T> {
     return this.query().all();
   }
 
+  /**
+   * Gets values from specified fields as an array
+   * @template M Type of the model class
+   * @param {...(keyof M["$schema"] | Array<keyof M["$schema"]>)[]} fields Fields to retrieve values from
+   * @returns {Promise<any[]>} Array of field values
+   */
   public static async pluck<M extends typeof Model<any>>(
     this: M,
     ...fields: (keyof M["$schema"] | Array<keyof M["$schema"]>)[]
@@ -643,6 +654,12 @@ export default class Model<T> extends QueryBuilder<T> {
     return this.query().sum(column);
   }
 
+  /**
+   * Groups the query results by specified fields
+   * @template M Type of the model class
+   * @param {...(keyof M["$schema"] | Array<keyof M["$schema"]>)[]} fields Fields to group by
+   * @returns {Model<M["$schema"]>} Query builder instance
+   */
   public static groupBy<M extends typeof Model<any>>(
     this: M,
     ...fields: (keyof M["$schema"] | Array<keyof M["$schema"]>)[]
@@ -847,11 +864,11 @@ export default class Model<T> extends QueryBuilder<T> {
    * @template M Type of the related model
    * @template TM Type of the pivot model
    * @param {new () => Model<M>} model Related model class
-   * @param {new () => Model<TM>} pivotModel Pivot model class
-   * @param {keyof TM} foreignPivotKey Foreign key on pivot model for this model
-   * @param {keyof TM} relatedPivotKey Foreign key on pivot model for related model
-   * @param {keyof T} parentKey Primary key on this model
-   * @param {keyof M} relatedKey Primary key on related model
+   * @param {string} [collection] Pivot collection name
+   * @param {keyof TM} [foreignPivotKey] Foreign key on pivot model for this model
+   * @param {keyof TM} [relatedPivotKey] Foreign key on pivot model for related model
+   * @param {keyof T} [parentKey="_id"] Primary key on this model
+   * @param {keyof M} [relatedKey="_id"] Primary key on related model
    * @returns {BelongsToMany<T, M, TM>} BelongsToMany relationship instance
    */
   public belongsToMany<M, TM>(
