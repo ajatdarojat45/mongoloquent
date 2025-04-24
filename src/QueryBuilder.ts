@@ -32,19 +32,21 @@ import operators from "./utils/operators";
  */
 export default class QueryBuilder<T> {
   /** Schema definition for the document */
-  static $schema: Record<string, any>;
+  public static $schema: Record<string, any>;
   /** Default MongoDB connection string */
-  protected static $connection: string = MONGOLOQUENT_DATABASE_URI;
+  public static $connection: string = MONGOLOQUENT_DATABASE_URI;
   /** Default database name */
-  protected static $databaseName: string = MONGOLOQUENT_DATABASE_NAME;
+  public static $databaseName: string = MONGOLOQUENT_DATABASE_NAME;
   /** Collection name */
-  protected static $collection: string = "";
+  public static $collection: string = "";
   /** Flag to enable soft delete functionality */
-  protected static $useSoftDelete: boolean = false;
+  public static $useSoftDelete: boolean = false;
   /** Flag to enable timestamps */
-  protected static $useTimestamps: boolean = true;
+  public static $useTimestamps: boolean = true;
   /** Field name for the isDeleted flag */
-  protected static $isDeleted: string = "isDeleted";
+  public static $isDeleted: string = "isDeleted";
+  /** Field name for the timezone */
+  public static $timezone: string = TIMEZONE;
 
   /** Timezone setting for dates */
   private $timezone: string = TIMEZONE;
@@ -120,6 +122,7 @@ export default class QueryBuilder<T> {
       this.constructor as typeof QueryBuilder
     ).$useTimestamps;
     this.$isDeleted = (this.constructor as typeof QueryBuilder).$isDeleted;
+    this.$timezone = (this.constructor as typeof QueryBuilder).$timezone;
   }
 
   /**
