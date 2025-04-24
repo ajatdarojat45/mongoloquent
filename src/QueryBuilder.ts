@@ -1,4 +1,3 @@
-import { lookup } from "dns";
 import {
   BulkWriteOptions,
   Document,
@@ -26,7 +25,10 @@ import operators from "./utils/operators";
 
 /**
  * QueryBuilder class for MongoDB operations with Mongoloquent
- * @template T The document type
+ * Provides a fluent interface for building MongoDB queries with advanced features like
+ * soft deletes, timestamps, relationships, and more.
+ *
+ * @template T The document type that this query will operate on
  */
 export default class QueryBuilder<T> {
   /** Schema definition for the document */
@@ -122,9 +124,9 @@ export default class QueryBuilder<T> {
 
   /**
    * Gets the MongoDB collection
-   * @param collection Optional collection name
-   * @returns MongoDB collection
-   * @private
+   * @param {string} [collection] - Optional collection name to override the default
+   * @returns {import('mongodb').Collection<FormSchema<T>>} MongoDB collection object
+   * @public
    */
   public getCollection(collection?: string) {
     const db = Database.getDb(this.$connection, this.$databaseName);
@@ -133,9 +135,10 @@ export default class QueryBuilder<T> {
 
   /**
    * Inserts a document into the collection
-   * @param doc Document to insert
-   * @param options Insert options
-   * @returns Inserted document
+   * @param {FormSchema<T>} doc - Document to insert
+   * @param {InsertOneOptions} [options] - MongoDB insert options
+   * @returns {Promise<T>} Inserted document with _id
+   * @throws {Error} If insertion fails
    */
   public async insert(doc: FormSchema<T>, options?: InsertOneOptions) {
     try {
@@ -156,10 +159,10 @@ export default class QueryBuilder<T> {
   }
 
   /**
-   * Alias for insert
-   * @param doc Document to insert
-   * @param options Insert options
-   * @returns Inserted document
+   * Alias for insert - creates a new document in the collection
+   * @param {FormSchema<T>} doc - Document to create
+   * @param {InsertOneOptions} [options] - MongoDB insert options
+   * @returns {Promise<T>} Created document with _id
    */
   public async create(
     doc: FormSchema<T>,
@@ -170,9 +173,10 @@ export default class QueryBuilder<T> {
 
   /**
    * Inserts multiple documents into the collection
-   * @param docs Array of documents to insert
-   * @param options Bulk write options
-   * @returns Array of inserted ObjectIds
+   * @param {FormSchema<T>[]} docs - Array of documents to insert
+   * @param {BulkWriteOptions} [options] - MongoDB bulk write options
+   * @returns {Promise<ObjectId[]>} Array of inserted document IDs
+   * @throws {Error} If bulk insertion fails
    */
   public async insertMany(
     docs: FormSchema<T>[],
@@ -211,10 +215,10 @@ export default class QueryBuilder<T> {
   }
 
   /**
-   * Alias for insertMany
-   * @param docs Array of documents to insert
-   * @param options Bulk write options
-   * @returns Array of inserted ObjectIds
+   * Alias for insertMany - creates multiple documents in the collection
+   * @param {FormSchema<T>[]} docs - Array of documents to create
+   * @param {BulkWriteOptions} [options] - MongoDB bulk write options
+   * @returns {Promise<ObjectId[]>} Array of created document IDs
    */
   public async createMany(
     docs: FormSchema<T>[],
@@ -224,10 +228,11 @@ export default class QueryBuilder<T> {
   }
 
   /**
-   * Updates a document in the collection
-   * @param doc Document fields to update
-   * @param options FindOneAndUpdate options
-   * @returns Updated document
+   * Updates a document in the collection based on the current query
+   * @param {Partial<FormSchema<T>>} doc - Document fields to update
+   * @param {FindOneAndUpdateOptions} [options={}] - MongoDB findOneAndUpdate options
+   * @returns {Promise<Document>} Updated document
+   * @throws {Error} If update fails
    */
   public async update(
     doc: Partial<FormSchema<T>>,
@@ -268,9 +273,9 @@ export default class QueryBuilder<T> {
 
   /**
    * Updates a document if it exists, otherwise creates it
-   * @param filter Filter to find the document
-   * @param doc Document fields to update or insert
-   * @returns Updated or created document
+   * @param {Partial<FormSchema<T>>} filter - Filter to find the document
+   * @param {Partial<FormSchema<T>>} [doc] - Document fields to update or insert
+   * @returns {Promise<Document>} Updated or created document
    */
   async updateOrCreate(
     filter: Partial<FormSchema<T>>,
@@ -292,9 +297,9 @@ export default class QueryBuilder<T> {
 
   /**
    * Alias for updateOrCreate
-   * @param filter Filter to find the document
-   * @param doc Document fields to update or insert
-   * @returns Updated or created document
+   * @param {Partial<FormSchema<T>>} filter - Filter to find the document
+   * @param {Partial<FormSchema<T>>} [doc] - Document fields to update or insert
+   * @returns {Promise<Document>} Updated or created document
    */
   async updateOrInsert(
     filter: Partial<FormSchema<T>>,
@@ -304,10 +309,11 @@ export default class QueryBuilder<T> {
   }
 
   /**
-   * Updates multiple documents in the collection
-   * @param doc Document fields to update
-   * @param options Update options
-   * @returns Number of documents modified
+   * Updates multiple documents in the collection matching the current query
+   * @param {Partial<FormSchema<T>>} doc - Document fields to update
+   * @param {UpdateOptions} [options] - MongoDB updateMany options
+   * @returns {Promise<number>} Number of documents modified
+   * @throws {Error} If bulk update fails
    */
   public async updateMany(
     doc: Partial<FormSchema<T>>,
@@ -347,7 +353,7 @@ export default class QueryBuilder<T> {
 
   /**
    * Saves the current instance to the database (insert or update)
-   * @returns Saved document
+   * @returns {Promise<T|Document>} Saved document
    */
   public async save() {
     let payload = {};
@@ -375,8 +381,9 @@ export default class QueryBuilder<T> {
   }
 
   /**
-   * Deletes documents matching the current query
-   * @returns Number of documents deleted or soft-deleted
+   * Deletes documents matching the current query (soft delete if enabled)
+   * @returns {Promise<number>} Number of documents deleted or soft-deleted
+   * @throws {Error} If deletion fails
    */
   public async delete(): Promise<number> {
     try {
@@ -415,9 +422,9 @@ export default class QueryBuilder<T> {
   }
 
   /**
-   * Deletes documents by IDs
-   * @param ids IDs of documents to delete
-   * @returns Number of documents deleted or soft-deleted
+   * Deletes documents by IDs (soft delete if enabled)
+   * @param {...(string|ObjectId|Array<string|ObjectId>)[]} ids - IDs of documents to delete
+   * @returns {Promise<number>} Number of documents deleted or soft-deleted
    */
   public async destroy(
     ...ids: (string | ObjectId | (string | ObjectId)[])[]
@@ -437,8 +444,9 @@ export default class QueryBuilder<T> {
 
   /**
    * Permanently deletes soft-deleted documents by IDs
-   * @param ids IDs of documents to permanently delete
-   * @returns Number of documents permanently deleted
+   * @param {...(string|ObjectId|Array<string|ObjectId>)[]} ids - IDs of documents to permanently delete
+   * @returns {Promise<number>} Number of documents permanently deleted
+   * @throws {Error} If force deletion fails
    */
   public async forceDestroy(
     ...ids: (string | ObjectId | (string | ObjectId)[])[]
@@ -473,8 +481,9 @@ export default class QueryBuilder<T> {
   }
 
   /**
-   * Restores soft-deleted documents
-   * @returns Number of documents restored
+   * Restores soft-deleted documents matching the current query
+   * @returns {Promise<number>} Number of documents restored
+   * @throws {Error} If restoration fails
    */
   public async restore(): Promise<number> {
     try {
@@ -492,8 +501,8 @@ export default class QueryBuilder<T> {
 
   /**
    * Fills the current instance with data
-   * @param doc Data to fill into the instance
-   * @returns Current instance
+   * @param {Partial<FormSchema<T>>} doc - Data to fill into the instance
+   * @returns {this} Current query builder instance
    */
   public fill(doc: Partial<FormSchema<T>>) {
     Object.assign(this, doc);
@@ -502,8 +511,9 @@ export default class QueryBuilder<T> {
 
   /**
    * Selects columns to include in the query result
-   * @param columns Columns to include
-   * @returns Current query builder instance
+   * @param {...(K|K[])[]} columns - Columns to include
+   * @returns {QueryBuilder<T>} Current query builder instance
+   * @template K - Keys of document type T
    */
   public select<K extends keyof T>(...columns: (K | K[])[]): QueryBuilder<T> {
     this.setColumns(...columns);
@@ -512,8 +522,9 @@ export default class QueryBuilder<T> {
 
   /**
    * Excludes columns from the query result
-   * @param columns Columns to exclude
-   * @returns Current query builder instance
+   * @param {...(K|K[])[]} columns - Columns to exclude
+   * @returns {QueryBuilder<T>} Current query builder instance
+   * @template K - Keys of document type T
    */
   public exclude<K extends keyof T>(...columns: (K | K[])[]): QueryBuilder<T> {
     this.setExcludes(...columns);
@@ -522,10 +533,11 @@ export default class QueryBuilder<T> {
 
   /**
    * Adds a where condition to the query
-   * @param column Column name
-   * @param operator Operator or value if comparing equality
-   * @param value Value to compare against (optional if operator is the value)
-   * @returns Current query builder instance
+   * @param {K} column - Column name
+   * @param {any} operator - Operator or value if comparing equality
+   * @param {any} [value=null] - Value to compare against (optional if operator is the value)
+   * @returns {QueryBuilder<T>} Current query builder instance
+   * @template K - Keys of document type T
    */
   public where<K extends keyof T>(
     column: K,
@@ -542,10 +554,11 @@ export default class QueryBuilder<T> {
 
   /**
    * Adds an OR where condition to the query
-   * @param column Column name
-   * @param operator Operator or value if comparing equality
-   * @param value Value to compare against (optional if operator is the value)
-   * @returns Current query builder instance
+   * @param {K} column - Column name
+   * @param {any} operator - Operator or value if comparing equality
+   * @param {any} [value=null] - Value to compare against (optional if operator is the value)
+   * @returns {QueryBuilder<T>} Current query builder instance
+   * @template K - Keys of document type T
    */
   public orWhere<K extends keyof T>(
     column: K,
@@ -562,9 +575,10 @@ export default class QueryBuilder<T> {
 
   /**
    * Adds a where not equal condition to the query
-   * @param column Column name
-   * @param value Value to compare against
-   * @returns Current query builder instance
+   * @param {K} column - Column name
+   * @param {any} value - Value to compare against
+   * @returns {QueryBuilder<T>} Current query builder instance
+   * @template K - Keys of document type T
    */
   public whereNot<K extends keyof T>(column: K, value: any): QueryBuilder<T> {
     this.setWheres(column, "ne", value, "and");
@@ -574,9 +588,10 @@ export default class QueryBuilder<T> {
 
   /**
    * Adds an OR where not equal condition to the query
-   * @param column Column name
-   * @param value Value to compare against
-   * @returns Current query builder instance
+   * @param {K} column - Column name
+   * @param {any} value - Value to compare against
+   * @returns {QueryBuilder<T>} Current query builder instance
+   * @template K - Keys of document type T
    */
   public orWhereNot<K extends keyof T>(column: K, value: any): QueryBuilder<T> {
     this.setWheres(column, "ne", value, "or");
@@ -586,9 +601,10 @@ export default class QueryBuilder<T> {
 
   /**
    * Adds a where in condition to the query
-   * @param column Column name
-   * @param values Array of values to check against
-   * @returns Current query builder instance
+   * @param {K} column - Column name
+   * @param {any[]} values - Array of values to check against
+   * @returns {QueryBuilder<T>} Current query builder instance
+   * @template K - Keys of document type T
    */
   public whereIn<K extends keyof T>(column: K, values: any[]): QueryBuilder<T> {
     this.setWheres(column, "in", values, "and");
@@ -598,9 +614,10 @@ export default class QueryBuilder<T> {
 
   /**
    * Adds an OR where in condition to the query
-   * @param column Column name
-   * @param values Array of values to check against
-   * @returns Current query builder instance
+   * @param {K} column - Column name
+   * @param {any[]} values - Array of values to check against
+   * @returns {QueryBuilder<T>} Current query builder instance
+   * @template K - Keys of document type T
    */
   public orWhereIn<K extends keyof T>(
     column: K,
@@ -613,9 +630,10 @@ export default class QueryBuilder<T> {
 
   /**
    * Adds a where not in condition to the query
-   * @param column Column name
-   * @param values Array of values to check against
-   * @returns Current query builder instance
+   * @param {K} column - Column name
+   * @param {any[]} values - Array of values to check against
+   * @returns {QueryBuilder<T>} Current query builder instance
+   * @template K - Keys of document type T
    */
   public whereNotIn<K extends keyof T>(
     column: K,
@@ -628,9 +646,10 @@ export default class QueryBuilder<T> {
 
   /**
    * Adds an OR where not in condition to the query
-   * @param column Column name
-   * @param values Array of values to check against
-   * @returns Current query builder instance
+   * @param {K} column - Column name
+   * @param {any[]} values - Array of values to check against
+   * @returns {QueryBuilder<T>} Current query builder instance
+   * @template K - Keys of document type T
    */
   public orWhereNotIn<K extends keyof T>(
     column: K,
@@ -643,9 +662,10 @@ export default class QueryBuilder<T> {
 
   /**
    * Adds a where between condition to the query
-   * @param column Column name
-   * @param values Array with lower and upper bounds
-   * @returns Current query builder instance
+   * @param {K} column - Column name
+   * @param {[number, number?]} values - Array with lower and upper bounds
+   * @returns {QueryBuilder<T>} Current query builder instance
+   * @template K - Keys of document type T
    */
   public whereBetween<K extends keyof T>(
     column: K,
@@ -658,9 +678,10 @@ export default class QueryBuilder<T> {
 
   /**
    * Adds an OR where between condition to the query
-   * @param column Column name
-   * @param values Array with lower and upper bounds
-   * @returns Current query builder instance
+   * @param {K} column - Column name
+   * @param {[number, number?]} values - Array with lower and upper bounds
+   * @returns {QueryBuilder<T>} Current query builder instance
+   * @template K - Keys of document type T
    */
   public orWhereBetween<K extends keyof T>(
     column: K,
@@ -673,8 +694,9 @@ export default class QueryBuilder<T> {
 
   /**
    * Adds a where null condition to the query
-   * @param column Column name
-   * @returns Current query builder instance
+   * @param {K} column - Column name
+   * @returns {QueryBuilder<T>} Current query builder instance
+   * @template K - Keys of document type T
    */
   public whereNull<K extends keyof T>(column: K): QueryBuilder<T> {
     this.setWheres(column, "eq", null, "and");
@@ -684,8 +706,9 @@ export default class QueryBuilder<T> {
 
   /**
    * Adds an OR where null condition to the query
-   * @param column Column name
-   * @returns Current query builder instance
+   * @param {K} column - Column name
+   * @returns {QueryBuilder<T>} Current query builder instance
+   * @template K - Keys of document type T
    */
   public orWhereNull<K extends keyof T>(column: K): QueryBuilder<T> {
     this.setWheres(column, "eq", null, "or");
@@ -695,8 +718,9 @@ export default class QueryBuilder<T> {
 
   /**
    * Adds a where not null condition to the query
-   * @param column Column name
-   * @returns Current query builder instance
+   * @param {K} column - Column name
+   * @returns {QueryBuilder<T>} Current query builder instance
+   * @template K - Keys of document type T
    */
   public whereNotNull<K extends keyof T>(column: K): QueryBuilder<T> {
     this.setWheres(column, "ne", null, "and");
@@ -706,8 +730,9 @@ export default class QueryBuilder<T> {
 
   /**
    * Adds an OR where not null condition to the query
-   * @param column Column name
-   * @returns Current query builder instance
+   * @param {K} column - Column name
+   * @returns {QueryBuilder<T>} Current query builder instance
+   * @template K - Keys of document type T
    */
   public orWhereNotNull<K extends keyof T>(column: K): QueryBuilder<T> {
     this.setWheres(column, "ne", null, "or");
@@ -717,7 +742,7 @@ export default class QueryBuilder<T> {
 
   /**
    * Includes soft-deleted documents in the query
-   * @returns Current query builder instance
+   * @returns {QueryBuilder<T>} Current query builder instance
    */
   public withTrashed(): QueryBuilder<T> {
     this.$withTrashed = true;
@@ -727,7 +752,7 @@ export default class QueryBuilder<T> {
 
   /**
    * Only retrieves soft-deleted documents in the query
-   * @returns Current query builder instance
+   * @returns {QueryBuilder<T>} Current query builder instance
    */
   public onlyTrashed(): QueryBuilder<T> {
     this.$onlyTrashed = true;
@@ -736,8 +761,8 @@ export default class QueryBuilder<T> {
 
   /**
    * Sets the number of documents to skip
-   * @param value Number of documents to skip
-   * @returns Current query builder instance
+   * @param {number} value - Number of documents to skip
+   * @returns {QueryBuilder<T>} Current query builder instance
    */
   public offset(value: number): QueryBuilder<T> {
     this.$offset = value;
@@ -746,9 +771,9 @@ export default class QueryBuilder<T> {
   }
 
   /**
-   * Alias for offset
-   * @param value Number of documents to skip
-   * @returns Current query builder instance
+   * Alias for offset - sets the number of documents to skip
+   * @param {number} value - Number of documents to skip
+   * @returns {QueryBuilder<T>} Current query builder instance
    */
   public skip(value: number): QueryBuilder<T> {
     return this.offset(value);
@@ -756,8 +781,8 @@ export default class QueryBuilder<T> {
 
   /**
    * Sets the maximum number of documents to return
-   * @param value Maximum number of documents
-   * @returns Current query builder instance
+   * @param {number} value - Maximum number of documents
+   * @returns {QueryBuilder<T>} Current query builder instance
    */
   public limit(value: number): QueryBuilder<T> {
     this.$limit = value;
@@ -767,10 +792,11 @@ export default class QueryBuilder<T> {
 
   /**
    * Sets the order for the query results
-   * @param column Column to order by
-   * @param direction Sort direction (asc or desc)
-   * @param caseSensitive Whether sorting should be case sensitive
-   * @returns Current query builder instance
+   * @param {K} column - Column to order by
+   * @param {"asc"|"desc"} [direction="asc"] - Sort direction (asc or desc)
+   * @param {boolean} [caseSensitive=false] - Whether sorting should be case sensitive
+   * @returns {this} Current query builder instance
+   * @template K - Keys of document type T
    */
   public orderBy<K extends keyof T>(
     column: K,
@@ -789,8 +815,10 @@ export default class QueryBuilder<T> {
 
   /**
    * Executes the query and returns all matching documents
-   * @param fields Optional fields to select
-   * @returns Collection of matching documents
+   * @param {...(K|K[])[]} fields - Optional fields to select
+   * @returns {Promise<Collection<T>>} Collection of matching documents
+   * @throws {Error} If query execution fails
+   * @template K - Keys of document type T
    */
   public async get<K extends keyof T>(...fields: (K | K[])[]) {
     try {
@@ -806,8 +834,8 @@ export default class QueryBuilder<T> {
   }
 
   /**
-   * Alias for get() with no parameters
-   * @returns Collection of all documents
+   * Alias for get() with no parameters - returns all documents
+   * @returns {Promise<T[]>} Collection of all documents
    */
   public async all(): Promise<T[]> {
     return this.get();
@@ -815,8 +843,9 @@ export default class QueryBuilder<T> {
 
   /**
    * Returns only specified field values from matching documents
-   * @param fields Fields to retrieve
-   * @returns Object with field values
+   * @param {...(K|K[])[]} fields - Fields to retrieve
+   * @returns {Promise<any>} Object with field values
+   * @template K - Keys of document type T
    */
   public async pluck<K extends keyof T>(...fields: (K | K[])[]) {
     const result = await this.get(...fields);
@@ -825,10 +854,11 @@ export default class QueryBuilder<T> {
   }
 
   /**
-   * Returns paginated results
-   * @param page Page number (starting from 1)
-   * @param limit Number of items per page
-   * @returns Object containing data and pagination metadata
+   * Returns paginated results with metadata
+   * @param {number} [page=1] - Page number (starting from 1)
+   * @param {number} [limit=15] - Number of items per page
+   * @returns {Promise<IModelPaginate>} Object containing data and pagination metadata
+   * @throws {Error} If pagination fails
    */
   public async paginate(
     page: number = 1,
@@ -883,9 +913,10 @@ export default class QueryBuilder<T> {
   }
 
   /**
-   * Returns the first document matching the query
-   * @param fields Optional fields to select
-   * @returns First matching document as an enhanced instance
+   * Returns the first document matching the query as an enhanced instance
+   * @param {...(K|K[])[]} fields - Optional fields to select
+   * @returns {Promise<(this & T) | null>} First matching document or null if none found
+   * @template K - Keys of document type T
    */
   public async first<K extends keyof T>(
     ...fields: (K | K[])[]
@@ -923,9 +954,9 @@ export default class QueryBuilder<T> {
 
   /**
    * Returns first matching document or creates a new one
-   * @param filter Filter to find existing document
-   * @param doc Data to use for creation if no match is found
-   * @returns Existing or newly created document
+   * @param {Partial<FormSchema<T>>} filter - Filter to find existing document
+   * @param {Partial<FormSchema<T>>} [doc] - Data to use for creation if no match is found
+   * @returns {Promise<any>} Existing or newly created document
    */
   public async firstOrCreate(
     filter: Partial<FormSchema<T>>,
@@ -945,10 +976,10 @@ export default class QueryBuilder<T> {
   }
 
   /**
-   * Alias for firstOrCreate
-   * @param filter Filter to find existing document
-   * @param doc Data to use for creation if no match is found
-   * @returns Existing or newly created document
+   * Alias for firstOrCreate - returns existing document or creates a new model instance
+   * @param {Partial<FormSchema<T>>} filter - Filter to find existing document
+   * @param {Partial<FormSchema<T>>} [doc] - Data to use for the new instance if no match is found
+   * @returns {Promise<any>} Existing or newly created document
    */
   public async firstOrNew(
     filter: Partial<FormSchema<T>>,
@@ -959,9 +990,10 @@ export default class QueryBuilder<T> {
 
   /**
    * Returns the first document matching the query or throws exception if none found
-   * @param columns Optional fields to select
-   * @returns First matching document
-   * @throws MongoloquentNotFoundException if no document found
+   * @param {...(K|K[])[]} columns - Optional fields to select
+   * @returns {Promise<any>} First matching document
+   * @throws {MongoloquentNotFoundException} If no document found
+   * @template K - Keys of document type T
    */
   public async firstOrFail<K extends keyof T>(...columns: (K | K[])[]) {
     const data = await this.first(...columns);
@@ -974,8 +1006,8 @@ export default class QueryBuilder<T> {
 
   /**
    * Finds a document by ID
-   * @param id Document ID
-   * @returns Document if found
+   * @param {string|ObjectId} id - Document ID
+   * @returns {Promise<any>} Document if found, or null
    */
   public async find(id: string | ObjectId) {
     const _id = new ObjectId(id);
@@ -985,9 +1017,9 @@ export default class QueryBuilder<T> {
 
   /**
    * Finds a document by ID or throws exception if not found
-   * @param id Document ID
-   * @returns Document
-   * @throws MongoloquentNotFoundException if no document found
+   * @param {string|ObjectId} id - Document ID
+   * @returns {Promise<any>} Document
+   * @throws {MongoloquentNotFoundException} If no document found
    */
   public async findOrFail(id: string | ObjectId) {
     const data = await this.find(id);
@@ -999,7 +1031,8 @@ export default class QueryBuilder<T> {
 
   /**
    * Counts documents matching the query
-   * @returns Number of matching documents
+   * @returns {Promise<number>} Number of matching documents
+   * @throws {Error} If count operation fails
    */
   public async count(): Promise<number> {
     try {
@@ -1028,8 +1061,9 @@ export default class QueryBuilder<T> {
 
   /**
    * Returns the maximum value of a field
-   * @param field Field name
-   * @returns Maximum value
+   * @param {K} field - Field name
+   * @returns {Promise<number>} Maximum value
+   * @template K - Keys of document type T
    */
   public async max<K extends keyof T>(field: K): Promise<number> {
     return this.aggregates(field, "max");
@@ -1037,8 +1071,9 @@ export default class QueryBuilder<T> {
 
   /**
    * Returns the minimum value of a field
-   * @param field Field name
-   * @returns Minimum value
+   * @param {K} field - Field name
+   * @returns {Promise<number>} Minimum value
+   * @template K - Keys of document type T
    */
   public async min<K extends keyof T>(field: K): Promise<number> {
     return this.aggregates(field, "min");
@@ -1046,8 +1081,9 @@ export default class QueryBuilder<T> {
 
   /**
    * Returns the average value of a field
-   * @param field Field name
-   * @returns Average value
+   * @param {K} field - Field name
+   * @returns {Promise<number>} Average value
+   * @template K - Keys of document type T
    */
   public async avg<K extends keyof T>(field: K): Promise<number> {
     return this.aggregates(field, "avg");
@@ -1055,13 +1091,20 @@ export default class QueryBuilder<T> {
 
   /**
    * Returns the sum of values for a field
-   * @param field Field name
-   * @returns Sum of values
+   * @param {K} field - Field name
+   * @returns {Promise<number>} Sum of values
+   * @template K - Keys of document type T
    */
   public async sum<K extends keyof T>(field: K): Promise<number> {
     return this.aggregates(field, "sum");
   }
 
+  /**
+   * Groups the query results by specified fields
+   * @param {...(K|K[])[]} fields - Fields to group by
+   * @returns {QueryBuilder<T>} Current query builder instance
+   * @template K - Keys of document type T
+   */
   public groupBy<K extends keyof T>(...fields: (K | K[])[]): QueryBuilder<T> {
     const flattenedFields = fields.flat() as (keyof T)[];
     this.$groups = [...this.$groups, ...flattenedFields];
@@ -1070,10 +1113,11 @@ export default class QueryBuilder<T> {
 
   /**
    * Performs aggregation operations on a field
-   * @param field Field to aggregate
-   * @param type Type of aggregation (avg, sum, max, min)
-   * @returns Result of aggregation operation
+   * @param {K} field - Field to aggregate
+   * @param {"avg"|"sum"|"max"|"min"} type - Type of aggregation operation
+   * @returns {Promise<number>} Result of aggregation operation
    * @private
+   * @template K - Keys of document type T
    */
   private async aggregates<K extends keyof T>(
     field: K,
@@ -1112,7 +1156,7 @@ export default class QueryBuilder<T> {
 
   /**
    * Checks if the model has any changes
-   * @returns True if there are changes, false otherwise
+   * @returns {boolean} True if there are changes, false otherwise
    */
   public hasChanges(): boolean {
     return Object.keys(this.$changes).length > 0;
@@ -1120,8 +1164,9 @@ export default class QueryBuilder<T> {
 
   /**
    * Checks if any of the specified fields have been changed
-   * @param fields Fields to check
-   * @returns True if any field is dirty, false otherwise
+   * @param {...(K|K[])[]} fields - Fields to check
+   * @returns {boolean} True if any field is dirty, false otherwise
+   * @template K - Keys of document type T
    */
   public isDirty<K extends keyof T>(...fields: (K | K[])[]): boolean {
     if (fields && fields.length > 0) {
@@ -1134,8 +1179,9 @@ export default class QueryBuilder<T> {
 
   /**
    * Checks if all of the specified fields are unchanged
-   * @param fields Fields to check
-   * @returns True if all fields are clean, false otherwise
+   * @param {...(K|K[])[]} fields - Fields to check
+   * @returns {boolean} True if all fields are clean, false otherwise
+   * @template K - Keys of document type T
    */
   public isClean<K extends keyof T>(...fields: (K | K[])[]): boolean {
     if (fields && fields.length > 0) {
@@ -1147,8 +1193,9 @@ export default class QueryBuilder<T> {
 
   /**
    * Checks if any of the specified fields were changed
-   * @param fields Fields to check
-   * @returns True if any field was changed, false otherwise
+   * @param {...(K|K[])[]} fields - Fields to check
+   * @returns {boolean} True if any field was changed, false otherwise
+   * @template K - Keys of document type T
    */
   public wasChanged<K extends keyof T>(...fields: (K | K[])[]): boolean {
     if (fields && fields.length > 0) {
@@ -1164,7 +1211,7 @@ export default class QueryBuilder<T> {
 
   /**
    * Gets all changes made to the model
-   * @returns Object containing changes
+   * @returns {Partial<Record<keyof T, { old: any; new: any }>>} Object containing changes
    */
   public getChanges(): Partial<Record<keyof T, { old: any; new: any }>> {
     const changes: Partial<Record<keyof T, { old: any; new: any }>> = {};
@@ -1183,8 +1230,9 @@ export default class QueryBuilder<T> {
 
   /**
    * Gets original values of specified fields
-   * @param fields Fields to get original values for
-   * @returns Original values
+   * @param {...(K|K[])[]} fields - Fields to get original values for
+   * @returns {any} Original values
+   * @template K - Keys of document type T
    */
   public getOriginal<K extends keyof T>(...fields: (K | K[])[]): any {
     if (fields && fields.length > 0) {
@@ -1202,7 +1250,7 @@ export default class QueryBuilder<T> {
 
   /**
    * Refreshes the model with its original values
-   * @returns Current query builder instance
+   * @returns {QueryBuilder<T>} Current query builder instance
    */
   public refresh(): QueryBuilder<T> {
     this.$changes = {};
@@ -1212,7 +1260,7 @@ export default class QueryBuilder<T> {
 
   /**
    * Creates a proxy for the instance to track property changes
-   * @returns Proxied instance
+   * @returns {this & T} Proxied instance
    * @protected
    */
   protected createProxy(): this & T {
@@ -1233,9 +1281,10 @@ export default class QueryBuilder<T> {
 
   /**
    * Tracks changes to a field
-   * @param field Field being changed
-   * @param value New value
+   * @param {K} field - Field being changed
+   * @param {any} value - New value
    * @protected
+   * @template K - Keys of document type T
    */
   protected trackChange<K extends keyof T>(field: K, value: any): void {
     // check if property starts with $
@@ -1265,7 +1314,7 @@ export default class QueryBuilder<T> {
 
   /**
    * Sets the document ID for query
-   * @param id Document ID
+   * @param {ObjectId|string} id - Document ID
    * @private
    */
   private setId(id: ObjectId | string) {
@@ -1274,7 +1323,7 @@ export default class QueryBuilder<T> {
 
   /**
    * Adds stages to the aggregation pipeline
-   * @param doc Stage or array of stages to add
+   * @param {Document|Document[]} doc - Stage or array of stages to add
    * @private
    */
   private setStages(doc: Document | Document[]): void {
@@ -1284,7 +1333,7 @@ export default class QueryBuilder<T> {
 
   /**
    * Gets the current aggregation pipeline stages
-   * @returns Array of stages
+   * @returns {Document[]} Array of stages
    * @protected
    */
   protected getStages(): Document[] {
@@ -1293,7 +1342,7 @@ export default class QueryBuilder<T> {
 
   /**
    * Gets the current lookup stages
-   * @returns Array of lookup stages
+   * @returns {Document[]} Array of lookup stages
    * @protected
    */
   protected getLookups(): Document[] {
@@ -1302,8 +1351,9 @@ export default class QueryBuilder<T> {
 
   /**
    * Adds columns to select
-   * @param columns Columns to select
+   * @param {...(K|K[])[]} columns - Columns to select
    * @private
+   * @template K - Keys of document type T
    */
   private setColumns<K extends keyof T>(...columns: (K | K[])[]): void {
     if (Array.isArray(columns)) {
@@ -1317,8 +1367,9 @@ export default class QueryBuilder<T> {
 
   /**
    * Adds columns to exclude
-   * @param columns Columns to exclude
+   * @param {...(K|K[])[]} columns - Columns to exclude
    * @private
+   * @template K - Keys of document type T
    */
   private setExcludes<K extends keyof T>(...columns: (K | K[])[]): void {
     if (Array.isArray(columns)) {
@@ -1332,11 +1383,12 @@ export default class QueryBuilder<T> {
 
   /**
    * Adds a where condition
-   * @param column Column name
-   * @param operator Operator for comparison
-   * @param value Value to compare against
-   * @param boolean Boolean type (and/or)
+   * @param {K} column - Column name
+   * @param {any} operator - Operator for comparison
+   * @param {any} value - Value to compare against
+   * @param {string} [boolean="and"] - Boolean type (and/or)
    * @private
+   * @template K - Keys of document type T
    */
   private setWheres<K extends keyof T>(
     column: K,
@@ -1358,7 +1410,7 @@ export default class QueryBuilder<T> {
 
   /**
    * Sets order by clauses
-   * @param doc Order specification
+   * @param {IQueryOrder} doc - Order specification
    * @private
    */
   private setOrders(doc: IQueryOrder): void {
@@ -1368,7 +1420,7 @@ export default class QueryBuilder<T> {
 
   /**
    * Sets lookup stages for aggregation
-   * @param doc Lookup stage or array of stages
+   * @param {Document} doc - Lookup stage or array of stages
    * @protected
    */
   protected setLookups(doc: Document): void {
@@ -1378,7 +1430,7 @@ export default class QueryBuilder<T> {
 
   /**
    * Gets the field name used for soft delete
-   * @returns Field name
+   * @returns {string} Field name
    */
   public getIsDeleted() {
     return this.$isDeleted;
@@ -1591,7 +1643,7 @@ export default class QueryBuilder<T> {
 
   /**
    * Performs MongoDB aggregation with all generated stages
-   * @returns Aggregation cursor
+   * @returns {Promise<import('mongodb').AggregationCursor>} Aggregation cursor
    * @private
    */
   private async aggregate() {
@@ -1622,9 +1674,9 @@ export default class QueryBuilder<T> {
 
   /**
    * Adds timestamps to document if enabled
-   * @param doc Document to modify
-   * @param isNew Whether document is new
-   * @returns Modified document with timestamps
+   * @param {Partial<FormSchema<T>>} doc - Document to modify
+   * @param {boolean} [isNew=true] - Whether document is new
+   * @returns {Partial<FormSchema<T>>} Modified document with timestamps
    * @private
    */
   private checkUseTimestamps(
@@ -1645,9 +1697,9 @@ export default class QueryBuilder<T> {
 
   /**
    * Adds soft delete flags to document if enabled
-   * @param doc Document to modify
-   * @param isDeleted Whether document is being deleted
-   * @returns Modified document with soft delete flags
+   * @param {Partial<FormSchema<T>>} doc - Document to modify
+   * @param {boolean} [isDeleted=false] - Whether document is being deleted
+   * @returns {Partial<FormSchema<T>>} Modified document with soft delete flags
    * @private
    */
   private checkUseSoftdelete(
