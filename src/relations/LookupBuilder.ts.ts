@@ -1,7 +1,16 @@
 import { Document } from "mongodb";
 
+/**
+ * LookupBuilder class
+ *
+ * Utility class that builds various MongoDB aggregation pipeline stages for relationships.
+ * Provides methods to generate stages for selecting fields, excluding fields, sorting,
+ * limiting, and skipping documents in aggregation pipelines.
+ */
 export default class LookupBuilder {
   /**
+   * Constructs the stages required to select specific columns in a relation.
+   *
    * @note This method constructs the stages required to select specific columns in a "has one" relation.
    * @param {string|string[]} columns - The columns to select. Can be a single column name or an array of column names.
    * @param {string} alias - The alias for the relation.
@@ -53,6 +62,8 @@ export default class LookupBuilder {
   }
 
   /**
+   * Constructs the stages required to exclude specific columns in a relation.
+   *
    * @note This method constructs the stages required to exclude specific columns in a "has one" relation.
    * @param {string|string[]} columns - The columns to exclude. Can be a single column name or an array of column names.
    * @param {string} alias - The alias for the relation.
@@ -85,6 +96,8 @@ export default class LookupBuilder {
   }
 
   /**
+   * Constructs the stage required for sorting documents in an aggregation pipeline.
+   *
    * @note This method constructs the stage required to sort documents by a specified column.
    * @param {string} column - The column to sort by.
    * @param {"asc" | "desc"} sort - The sort order, either "asc" for ascending or "desc" for descending.
@@ -100,6 +113,8 @@ export default class LookupBuilder {
   }
 
   /**
+   * Constructs the stage required to skip documents in an aggregation pipeline.
+   *
    * @note This method constructs the stage required to skip a specified number of documents.
    * @param {number} skip - The number of documents to skip.
    * @return {Document} The skip stage to be used in an aggregation pipeline.
@@ -109,6 +124,8 @@ export default class LookupBuilder {
   }
 
   /**
+   * Constructs the stage required to limit documents in an aggregation pipeline.
+   *
    * @note This method constructs the stage required to limit the number of documents.
    * @param {number} limit - The maximum number of documents to return.
    * @return {Document} The limit stage to be used in an aggregation pipeline.
