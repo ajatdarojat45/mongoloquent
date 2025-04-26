@@ -8,7 +8,7 @@ interface IUser extends IMongoloquentSchema {
   balance: number;
 }
 class User extends Model<IUser> {
-  protected static $useSoftDelete = true;
+  static $useSoftDelete = true;
 }
 
 const query = User["query"]();
