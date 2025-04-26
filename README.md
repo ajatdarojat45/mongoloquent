@@ -20,10 +20,12 @@ Mongoloquent is a lightweight [MongoDB](https://www.mongodb.com) ORM library for
 
 ## Features
 
--   Easy to use
--   Intuitive and expressive syntax
--   Support several relationship types
--   Support the test environment
+- Easy, intuitive and expressive syntax
+- Type-safe
+- Support several relationship types
+- Interact with ORM or Query Builder
+- Support multiple database connections
+- Support the test environment
 
 ## Getting started
 
@@ -52,5 +54,8 @@ Mongoloquent is an MIT-licensed open source project. It can grow thanks to the s
 
 ## Stay in touch
 
--   Author - [Ajat Darojat](https://linkedin.com/in/ajatdarojat45)
--   Website - https://mongoloquent.com
+- Author: [Ajat Darojat](https://linkedin.com/in/ajatdarojat45)
+
+- Contributors:
+  - [Fachri Hawari](https://linkedin.com/in/fachrihawari)
+- Website - https://mongoloquent.com
