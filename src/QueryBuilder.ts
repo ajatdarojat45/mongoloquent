@@ -425,6 +425,33 @@ export default class QueryBuilder<T> {
   }
 
   /**
+   * Deletes documents matching the current query
+   * @returns {Promise<number>} Number of documents deleted
+   * @throws {Error} If deletion fails
+   */
+  public async forceDelete(): Promise<number> {
+    try {
+      if (Object.keys(this.$original).length) {
+        this.where("_id" as keyof T, (this.$original as any)._id);
+      }
+
+      const collection = this.getCollection();
+      this.generateWheres();
+      const stages = this.getStages();
+      let filter = {};
+      if (stages.length > 0) filter = stages[0].$match;
+
+      const data = await collection?.deleteMany(filter);
+      this.resetQuery();
+
+      return data?.deletedCount || 0;
+    } catch (error) {
+      console.log(error);
+      throw new Error(`Deleting multiple documents failed`);
+    }
+  }
+
+  /**
    * Deletes documents by IDs (soft delete if enabled)
    * @param {...(string|ObjectId|Array<string|ObjectId>)[]} ids - IDs of documents to delete
    * @returns {Promise<number>} Number of documents deleted or soft-deleted
