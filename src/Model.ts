@@ -24,6 +24,7 @@ import MorphTo from "./relations/MorphTo";
 import MorphToMany from "./relations/MorphToMany";
 import MorphedByMany from "./relations/MorphedByMany";
 import { FormSchema } from "./types/schema";
+import { throws } from "assert";
 
 /**
  * Base model class for all MongoDB models
@@ -682,7 +683,10 @@ export default class Model<T> extends QueryBuilder<T> {
     const model = this.query();
     model.$alias = relation;
     model.$options = options;
-    model[relation]();
+
+    if (typeof model[relation] === "function") {
+      model[relation]();
+    }
 
     return model;
   }
@@ -696,7 +700,10 @@ export default class Model<T> extends QueryBuilder<T> {
   public with(relation: string, options: IRelationOptions = {}) {
     this.$alias = relation;
     this.$options = options;
-    this[relation]();
+
+    if (typeof this[relation] === "function") {
+      this[relation]();
+    }
 
     return this;
   }
