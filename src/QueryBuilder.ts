@@ -431,10 +431,6 @@ export default class QueryBuilder<T> {
    */
   public async forceDelete(): Promise<number> {
     try {
-      if (Object.keys(this.$original).length) {
-        this.where("_id" as keyof T, (this.$original as any)._id);
-      }
-
       const collection = this.getCollection();
       this.generateWheres();
       const stages = this.getStages();
