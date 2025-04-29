@@ -3,7 +3,7 @@
  * @class MongoloquentException
  * @extends Error
  */
-export default class MongoloquentException extends Error {
+export class MongoloquentException extends Error {
   public status: number | null;
 
   /**

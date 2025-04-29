@@ -7,6 +7,7 @@ import "dotenv/config";
 import Collection from "./Collection";
 
 export * from "./interfaces/ISchema";
+export * from "./exceptions/MongoloquentException"
 
 /**
  * Base Model class for document mapping
