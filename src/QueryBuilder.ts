@@ -1049,7 +1049,7 @@ export default class QueryBuilder<T> {
    */
   public async findOrFail(id: string | ObjectId) {
     const data = await this.find(id);
-    if (data && Object.keys(data.$original).length === 0) {
+    if (!data) {
       throw new MongoloquentNotFoundException();
     }
     return data;

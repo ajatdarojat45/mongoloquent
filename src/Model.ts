@@ -595,6 +595,16 @@ export default class Model<T> extends QueryBuilder<T> {
   }
 
   /**
+   * Finds a document by ID or throws exception if not found
+   * @param {string|ObjectId} id - Document ID
+   * @returns {Promise<any>} Document
+   * @throws {MongoloquentNotFoundException} If no document found
+   */
+  public static async findOrFail(id: string | ObjectId) {
+    return this.query().findOrFail(id)
+  }
+
+  /**
    * Counts documents matching the query
    * @template M Type of the model class
    * @returns {Promise<number>} Document count
