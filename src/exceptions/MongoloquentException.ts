@@ -4,7 +4,7 @@
  * @extends Error
  */
 export default class MongoloquentException extends Error {
-  protected status: number | null;
+  public status: number | null;
 
   /**
    * Creates a new MongoloquentException
@@ -29,7 +29,7 @@ export class MongoloquentNotFoundException extends MongoloquentException {
    * @param {string} message - Error message (defaults to "Not found")
    * @param {number|null} status - HTTP status code (optional)
    */
-  constructor(message: string = "Not found", status: number | null = null) {
+  constructor(message: string = "Not found", status: number | null = 404) {
     super(message, status);
     this.name = "MongoloquentNotFoundException";
   }
@@ -48,7 +48,7 @@ export class MongoloquentInvalidArgumentException extends MongoloquentException 
    */
   constructor(
     message: string = "Invalid argument",
-    status: number | null = null,
+    status: number | null = 500,
   ) {
     super(message, status);
     this.name = "MongoloquentInvalidArgumentException";
@@ -66,10 +66,7 @@ export class MongoloquentItemNotFoundException extends MongoloquentException {
    * @param {string} message - Error message (defaults to "Item not found")
    * @param {number|null} status - HTTP status code (optional)
    */
-  constructor(
-    message: string = "Item not found",
-    status: number | null = null,
-  ) {
+  constructor(message: string = "Item not found", status: number | null = 404) {
     super(message, status);
     this.name = "MongoloquentItemNotFoundException";
   }
@@ -88,7 +85,7 @@ export class MongoloquentMultipleItemsFoundException extends MongoloquentExcepti
    */
   constructor(
     message: string = "Multiple items found",
-    status: number | null = null,
+    status: number | null = 404,
   ) {
     super(message, status);
     this.name = "MongoloquentMultipleItemsFoundException";
@@ -108,7 +105,7 @@ export class MongoloquentInvalidOperatorException extends MongoloquentException 
    */
   constructor(
     message: string = "Invalid operator",
-    status: number | null = null,
+    status: number | null = 500,
   ) {
     super(message, status);
     this.name = "MongoloquentInvalidOperatorException";

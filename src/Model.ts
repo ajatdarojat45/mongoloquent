@@ -24,6 +24,7 @@ import MorphTo from "./relations/MorphTo";
 import MorphToMany from "./relations/MorphToMany";
 import MorphedByMany from "./relations/MorphedByMany";
 import { FormSchema } from "./types/schema";
+import { throws } from "assert";
 
 /**
  * Base model class for all MongoDB models
@@ -594,6 +595,16 @@ export default class Model<T> extends QueryBuilder<T> {
   }
 
   /**
+   * Finds a document by ID or throws exception if not found
+   * @param {string|ObjectId} id - Document ID
+   * @returns {Promise<any>} Document
+   * @throws {MongoloquentNotFoundException} If no document found
+   */
+  public static async findOrFail(id: string | ObjectId) {
+    return this.query().findOrFail(id)
+  }
+
+  /**
    * Counts documents matching the query
    * @template M Type of the model class
    * @returns {Promise<number>} Document count
@@ -682,7 +693,10 @@ export default class Model<T> extends QueryBuilder<T> {
     const model = this.query();
     model.$alias = relation;
     model.$options = options;
-    model[relation]();
+
+    if (typeof model[relation] === "function") {
+      model[relation]();
+    }
 
     return model;
   }
@@ -696,7 +710,10 @@ export default class Model<T> extends QueryBuilder<T> {
   public with(relation: string, options: IRelationOptions = {}) {
     this.$alias = relation;
     this.$options = options;
-    this[relation]();
+
+    if (typeof this[relation] === "function") {
+      this[relation]();
+    }
 
     return this;
   }

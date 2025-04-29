@@ -431,10 +431,6 @@ export default class QueryBuilder<T> {
    */
   public async forceDelete(): Promise<number> {
     try {
-      if (Object.keys(this.$original).length) {
-        this.where("_id" as keyof T, (this.$original as any)._id);
-      }
-
       const collection = this.getCollection();
       this.generateWheres();
       const stages = this.getStages();
@@ -1053,7 +1049,7 @@ export default class QueryBuilder<T> {
    */
   public async findOrFail(id: string | ObjectId) {
     const data = await this.find(id);
-    if (data && Object.keys(data.$original).length === 0) {
+    if (!data) {
       throw new MongoloquentNotFoundException();
     }
     return data;

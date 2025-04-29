@@ -3,6 +3,7 @@ node_modules
 # models
 dist
 coverage
+docs
 
 # Files
 .DS_Store
