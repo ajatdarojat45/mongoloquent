@@ -1257,10 +1257,10 @@ export default class QueryBuilder<T> {
   /**
    * Gets original values of specified fields
    * @param {...(K|K[])[]} fields - Fields to get original values for
-   * @returns {any} Original values
+   * @returns {Partial<Record<keyof T, any>>} Original values of specified fields, or all original values if no fields specified
    * @template K - Keys of document type T
    */
-  public getOriginal<K extends keyof T>(...fields: (K | K[])[]): any {
+  public getOriginal<K extends keyof T>(...fields: (K | K[])[]) {
     if (fields && fields.length > 0) {
       const flattenedFields = fields.flat() as (keyof T)[];
       const original: Partial<Record<keyof T, any>> = {};
