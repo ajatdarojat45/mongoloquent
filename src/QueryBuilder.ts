@@ -538,10 +538,10 @@ export default class QueryBuilder<T> {
   /**
    * Selects columns to include in the query result
    * @param {...(K|K[])[]} columns - Columns to include
-   * @returns {QueryBuilder<T>} Current query builder instance
+   * @returns {this} Current query builder instance
    * @template K - Keys of document type T
    */
-  public select<K extends keyof T>(...columns: (K | K[])[]): QueryBuilder<T> {
+  public select<K extends keyof T>(...columns: (K | K[])[]) {
     this.setColumns(...columns);
     return this;
   }
@@ -549,10 +549,10 @@ export default class QueryBuilder<T> {
   /**
    * Excludes columns from the query result
    * @param {...(K|K[])[]} columns - Columns to exclude
-   * @returns {QueryBuilder<T>} Current query builder instance
+   * @returns {this} Current query builder instance
    * @template K - Keys of document type T
    */
-  public exclude<K extends keyof T>(...columns: (K | K[])[]): QueryBuilder<T> {
+  public exclude<K extends keyof T>(...columns: (K | K[])[]) {
     this.setExcludes(...columns);
     return this;
   }
@@ -562,14 +562,10 @@ export default class QueryBuilder<T> {
    * @param {K} column - Column name
    * @param {any} operator - Operator or value if comparing equality
    * @param {any} [value=null] - Value to compare against (optional if operator is the value)
-   * @returns {QueryBuilder<T>} Current query builder instance
+   * @returns {this} Current query builder instance
    * @template K - Keys of document type T
    */
-  public where<K extends keyof T>(
-    column: K,
-    operator: any,
-    value: any = null,
-  ): QueryBuilder<T> {
+  public where<K extends keyof T>(column: K, operator: any, value: any = null) {
     let _value = value || operator;
     let _operator = value ? operator : "eq";
 
@@ -583,14 +579,14 @@ export default class QueryBuilder<T> {
    * @param {K} column - Column name
    * @param {any} operator - Operator or value if comparing equality
    * @param {any} [value=null] - Value to compare against (optional if operator is the value)
-   * @returns {QueryBuilder<T>} Current query builder instance
+   * @returns {this} Current query builder instance
    * @template K - Keys of document type T
    */
   public orWhere<K extends keyof T>(
     column: K,
     operator: any,
     value: any = null,
-  ): QueryBuilder<T> {
+  ) {
     let _value = value || operator;
     let _operator = value ? operator : "eq";
 
@@ -603,10 +599,10 @@ export default class QueryBuilder<T> {
    * Adds a where not equal condition to the query
    * @param {K} column - Column name
    * @param {any} value - Value to compare against
-   * @returns {QueryBuilder<T>} Current query builder instance
+   * @returns {this} Current query builder instance
    * @template K - Keys of document type T
    */
-  public whereNot<K extends keyof T>(column: K, value: any): QueryBuilder<T> {
+  public whereNot<K extends keyof T>(column: K, value: any) {
     this.setWheres(column, "ne", value, "and");
 
     return this;
@@ -616,10 +612,10 @@ export default class QueryBuilder<T> {
    * Adds an OR where not equal condition to the query
    * @param {K} column - Column name
    * @param {any} value - Value to compare against
-   * @returns {QueryBuilder<T>} Current query builder instance
+   * @returns {this} Current query builder instance
    * @template K - Keys of document type T
    */
-  public orWhereNot<K extends keyof T>(column: K, value: any): QueryBuilder<T> {
+  public orWhereNot<K extends keyof T>(column: K, value: any) {
     this.setWheres(column, "ne", value, "or");
 
     return this;
@@ -629,10 +625,10 @@ export default class QueryBuilder<T> {
    * Adds a where in condition to the query
    * @param {K} column - Column name
    * @param {any[]} values - Array of values to check against
-   * @returns {QueryBuilder<T>} Current query builder instance
+   * @returns {this} Current query builder instance
    * @template K - Keys of document type T
    */
-  public whereIn<K extends keyof T>(column: K, values: any[]): QueryBuilder<T> {
+  public whereIn<K extends keyof T>(column: K, values: any[]) {
     this.setWheres(column, "in", values, "and");
 
     return this;
@@ -642,13 +638,10 @@ export default class QueryBuilder<T> {
    * Adds an OR where in condition to the query
    * @param {K} column - Column name
    * @param {any[]} values - Array of values to check against
-   * @returns {QueryBuilder<T>} Current query builder instance
+   * @returns {this} Current query builder instance
    * @template K - Keys of document type T
    */
-  public orWhereIn<K extends keyof T>(
-    column: K,
-    values: any[],
-  ): QueryBuilder<T> {
+  public orWhereIn<K extends keyof T>(column: K, values: any[]) {
     this.setWheres(column, "in", values, "or");
 
     return this;
@@ -658,13 +651,10 @@ export default class QueryBuilder<T> {
    * Adds a where not in condition to the query
    * @param {K} column - Column name
    * @param {any[]} values - Array of values to check against
-   * @returns {QueryBuilder<T>} Current query builder instance
+   * @returns {this} Current query builder instance
    * @template K - Keys of document type T
    */
-  public whereNotIn<K extends keyof T>(
-    column: K,
-    values: any[],
-  ): QueryBuilder<T> {
+  public whereNotIn<K extends keyof T>(column: K, values: any[]) {
     this.setWheres(column, "nin", values, "and");
 
     return this;
@@ -674,13 +664,10 @@ export default class QueryBuilder<T> {
    * Adds an OR where not in condition to the query
    * @param {K} column - Column name
    * @param {any[]} values - Array of values to check against
-   * @returns {QueryBuilder<T>} Current query builder instance
+   * @returns {this} Current query builder instance
    * @template K - Keys of document type T
    */
-  public orWhereNotIn<K extends keyof T>(
-    column: K,
-    values: any[],
-  ): QueryBuilder<T> {
+  public orWhereNotIn<K extends keyof T>(column: K, values: any[]) {
     this.setWheres(column, "nin", values, "or");
 
     return this;
@@ -690,13 +677,10 @@ export default class QueryBuilder<T> {
    * Adds a where between condition to the query
    * @param {K} column - Column name
    * @param {[number, number?]} values - Array with lower and upper bounds
-   * @returns {QueryBuilder<T>} Current query builder instance
+   * @returns {this} Current query builder instance
    * @template K - Keys of document type T
    */
-  public whereBetween<K extends keyof T>(
-    column: K,
-    values: [number, number?],
-  ): QueryBuilder<T> {
+  public whereBetween<K extends keyof T>(column: K, values: [number, number?]) {
     this.setWheres(column, "between", values, "and");
 
     return this;
@@ -706,13 +690,13 @@ export default class QueryBuilder<T> {
    * Adds an OR where between condition to the query
    * @param {K} column - Column name
    * @param {[number, number?]} values - Array with lower and upper bounds
-   * @returns {QueryBuilder<T>} Current query builder instance
+   * @returns {this} Current query builder instance
    * @template K - Keys of document type T
    */
   public orWhereBetween<K extends keyof T>(
     column: K,
     values: [number, number?],
-  ): QueryBuilder<T> {
+  ) {
     this.setWheres(column, "between", values, "or");
 
     return this;
@@ -721,10 +705,10 @@ export default class QueryBuilder<T> {
   /**
    * Adds a where null condition to the query
    * @param {K} column - Column name
-   * @returns {QueryBuilder<T>} Current query builder instance
+   * @returns {this} Current query builder instance
    * @template K - Keys of document type T
    */
-  public whereNull<K extends keyof T>(column: K): QueryBuilder<T> {
+  public whereNull<K extends keyof T>(column: K) {
     this.setWheres(column, "eq", null, "and");
 
     return this;
@@ -733,10 +717,10 @@ export default class QueryBuilder<T> {
   /**
    * Adds an OR where null condition to the query
    * @param {K} column - Column name
-   * @returns {QueryBuilder<T>} Current query builder instance
+   * @returns {this} Current query builder instance
    * @template K - Keys of document type T
    */
-  public orWhereNull<K extends keyof T>(column: K): QueryBuilder<T> {
+  public orWhereNull<K extends keyof T>(column: K) {
     this.setWheres(column, "eq", null, "or");
 
     return this;
@@ -745,10 +729,10 @@ export default class QueryBuilder<T> {
   /**
    * Adds a where not null condition to the query
    * @param {K} column - Column name
-   * @returns {QueryBuilder<T>} Current query builder instance
+   * @returns {this} Current query builder instance
    * @template K - Keys of document type T
    */
-  public whereNotNull<K extends keyof T>(column: K): QueryBuilder<T> {
+  public whereNotNull<K extends keyof T>(column: K) {
     this.setWheres(column, "ne", null, "and");
 
     return this;
@@ -757,10 +741,10 @@ export default class QueryBuilder<T> {
   /**
    * Adds an OR where not null condition to the query
    * @param {K} column - Column name
-   * @returns {QueryBuilder<T>} Current query builder instance
+   * @returns {this} Current query builder instance
    * @template K - Keys of document type T
    */
-  public orWhereNotNull<K extends keyof T>(column: K): QueryBuilder<T> {
+  public orWhereNotNull<K extends keyof T>(column: K) {
     this.setWheres(column, "ne", null, "or");
 
     return this;
@@ -768,9 +752,9 @@ export default class QueryBuilder<T> {
 
   /**
    * Includes soft-deleted documents in the query
-   * @returns {QueryBuilder<T>} Current query builder instance
+   * @returns {this} Current query builder instance
    */
-  public withTrashed(): QueryBuilder<T> {
+  public withTrashed() {
     this.$withTrashed = true;
 
     return this;
@@ -778,9 +762,9 @@ export default class QueryBuilder<T> {
 
   /**
    * Only retrieves soft-deleted documents in the query
-   * @returns {QueryBuilder<T>} Current query builder instance
+   * @returns {this} Current query builder instance
    */
-  public onlyTrashed(): QueryBuilder<T> {
+  public onlyTrashed() {
     this.$onlyTrashed = true;
     return this;
   }
@@ -788,9 +772,9 @@ export default class QueryBuilder<T> {
   /**
    * Sets the number of documents to skip
    * @param {number} value - Number of documents to skip
-   * @returns {QueryBuilder<T>} Current query builder instance
+   * @returns {this} Current query builder instance
    */
-  public offset(value: number): QueryBuilder<T> {
+  public offset(value: number) {
     this.$offset = value;
 
     return this;
@@ -799,18 +783,18 @@ export default class QueryBuilder<T> {
   /**
    * Alias for offset - sets the number of documents to skip
    * @param {number} value - Number of documents to skip
-   * @returns {QueryBuilder<T>} Current query builder instance
+   * @returns {this} Current query builder instance
    */
-  public skip(value: number): QueryBuilder<T> {
+  public skip(value: number) {
     return this.offset(value);
   }
 
   /**
    * Sets the maximum number of documents to return
    * @param {number} value - Maximum number of documents
-   * @returns {QueryBuilder<T>} Current query builder instance
+   * @returns {this} Current query builder instance
    */
-  public limit(value: number): QueryBuilder<T> {
+  public limit(value: number) {
     this.$limit = value;
 
     return this;
@@ -828,7 +812,7 @@ export default class QueryBuilder<T> {
     column: K,
     direction: "asc" | "desc" = "asc",
     caseSensitive: boolean = false,
-  ): this {
+  ) {
     const payload = {
       column,
       order: direction,
@@ -854,7 +838,6 @@ export default class QueryBuilder<T> {
       const collection = new Collection<T>(...data);
       return collection;
     } catch (error) {
-      console.log(error);
       throw new Error(`Fetching documents failed`);
     }
   }
@@ -933,7 +916,6 @@ export default class QueryBuilder<T> {
         },
       };
     } catch (error) {
-      console.log(error);
       throw new Error(`Pagination failed`);
     }
   }
@@ -1139,10 +1121,10 @@ export default class QueryBuilder<T> {
   /**
    * Groups the query results by specified fields
    * @param {...(K|K[])[]} fields - Fields to group by
-   * @returns {QueryBuilder<T>} Current query builder instance
+   * @returns {this} Current query builder instance
    * @template K - Keys of document type T
    */
-  public groupBy<K extends keyof T>(...fields: (K | K[])[]): QueryBuilder<T> {
+  public groupBy<K extends keyof T>(...fields: (K | K[])[]) {
     const flattenedFields = fields.flat() as (keyof T)[];
     this.$groups = [...this.$groups, ...flattenedFields];
     return this;
@@ -1287,9 +1269,9 @@ export default class QueryBuilder<T> {
 
   /**
    * Refreshes the model with its original values
-   * @returns {QueryBuilder<T>} Current query builder instance
+   * @returns {this} Current query builder instance
    */
-  public refresh(): QueryBuilder<T> {
+  public refresh() {
     this.$changes = {};
     Object.assign(this, this.$original);
     return this;
