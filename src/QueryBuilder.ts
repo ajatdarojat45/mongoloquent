@@ -941,12 +941,12 @@ export default class QueryBuilder<T> {
   /**
    * Returns the first document matching the query as an enhanced instance
    * @param {...(K|K[])[]} fields - Optional fields to select
-   * @returns {Promise<(this & T) | null>} First matching document or null if none found
+   * @returns {Promise<T | null>} First matching document or null if none found
    * @template K - Keys of document type T
    */
   public async first<K extends keyof T>(
     ...fields: (K | K[])[]
-  ): Promise<(this & T) | null> {
+  ): Promise<T | null> {
     let data = await this.get(...fields);
     if (data && data.length > 0) {
       this.$original = { ...data[0] };
@@ -957,25 +957,7 @@ export default class QueryBuilder<T> {
     }
 
     let result = data[0] as T;
-    const self = this;
-    const handler = {
-      set(target: any, prop: string, value: any) {
-        // @ts-ignore
-        if (prop in result) {
-          self.trackChange(prop as keyof T, value);
-        }
-        target[prop] = value;
-        return true;
-      },
-    };
-
-    // Assign properties to this instance
-    // @ts-ignore
-    this.$id = result?._id;
-    Object.assign(this, result);
-
-    // Create a proxy for the combined object
-    return new Proxy(this, handler) as this & T;
+    return result as T;
   }
 
   /**
@@ -995,7 +977,7 @@ export default class QueryBuilder<T> {
     }
 
     const data = await this.first();
-    if (data && Object.keys(data.$original).length > 0) return data;
+    if (data) return data;
 
     const payload = { ...filter, ...doc } as FormSchema<T>;
     return this.insert(payload as FormSchema<T>);
@@ -1038,7 +1020,36 @@ export default class QueryBuilder<T> {
   public async find(id: string | ObjectId) {
     const _id = new ObjectId(id);
     this.setId(_id);
-    return this.first();
+
+    let data = await this.get();
+    if (data && data.length > 0) {
+      this.$original = { ...data[0] };
+    }
+
+    if (data.length === 0) {
+      return null;
+    }
+
+    let result = data[0] as T;
+    const self = this;
+    const handler = {
+      set(target: any, prop: string, value: any) {
+        // @ts-ignore
+        if (prop in result) {
+          self.trackChange(prop as keyof T, value);
+        }
+        target[prop] = value;
+        return true;
+      },
+    };
+
+    // Assign properties to this instance
+    // @ts-ignore
+    this.$id = result?._id;
+    Object.assign(this, result);
+
+    // Create a proxy for the combined object
+    return new Proxy(this, handler) as this & T;
   }
 
   /**
