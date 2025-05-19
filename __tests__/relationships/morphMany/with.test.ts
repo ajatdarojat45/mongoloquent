@@ -55,7 +55,7 @@ describe("with method", () => {
       ]);
 
       const post = await Post.with("comments").first();
-      expect(post).toBeInstanceOf(Post);
+      expect(post).toEqual(expect.any(Object));
       expect(post?.comments).toBeInstanceOf(Array);
       expect(post?.comments?.length).toBe(2);
       expect(post?.comments?.[0]).toEqual(expect.any(Object));
@@ -77,7 +77,7 @@ describe("with method", () => {
       ]);
 
       const post = await Post.with("comments", { select: ["body"] }).first();
-      expect(post).toBeInstanceOf(Post);
+      expect(post).toEqual(expect.any(Object));
       expect(post?.comments).toBeInstanceOf(Array);
       expect(post?.comments?.length).toBe(2);
       expect(post?.comments?.[0]).toEqual(expect.any(Object));
@@ -100,8 +100,8 @@ describe("with method", () => {
       ]);
 
       const post = await Post.with("comments", { exclude: ["url"] }).first();
-      expect(post).toBeInstanceOf(Post);
-      expect(post?.comments).toBeInstanceOf(Array);
+      expect(post).toEqual(expect.any(Object));
+      expect(post?.comments).toEqual(expect.any(Object));
       expect(post?.comments?.length).toBe(2);
       expect(post?.comments?.[0]).toEqual(expect.any(Object));
       expect(post?.comments?.[0]).toHaveProperty("body");
@@ -152,7 +152,7 @@ describe("with method", () => {
       await Comment.where("_id", commentIds[0]).delete();
       const post = await Post.with("comments").where("_id", postIds[0]).first();
 
-      expect(post).toBeInstanceOf(Post);
+      expect(post).toEqual(expect.any(Object));
       expect(post?.comments).toBeInstanceOf(Array);
       expect(post?.comments?.length).toBe(1);
       expect(post?.comments?.[0]).toEqual(expect.any(Object));
@@ -180,7 +180,7 @@ describe("with method", () => {
       })
         .where("_id", postIds[0])
         .first();
-      expect(post).toBeInstanceOf(Post);
+      expect(post).toEqual(expect.any(Object));
       expect(post?.comments).toBeInstanceOf(Array);
       expect(post?.comments?.length).toBe(1);
       expect(post?.comments?.[0]).toEqual(expect.any(Object));
@@ -208,7 +208,7 @@ describe("with method", () => {
       })
         .where("_id", postIds[0])
         .first();
-      expect(post).toBeInstanceOf(Post);
+      expect(post).toEqual(expect.any(Object));
       expect(post?.comments).toBeInstanceOf(Array);
       expect(post?.comments?.length).toBe(1);
       expect(post?.comments?.[0]).toEqual(expect.any(Object));

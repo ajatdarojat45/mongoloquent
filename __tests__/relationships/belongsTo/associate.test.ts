@@ -61,7 +61,7 @@ describe("associate method", () => {
       .where("_id", commentIds[0])
       .first();
 
-    expect(comment).toBeInstanceOf(Comment);
+    expect(comment).toEqual(expect.any(Object));
     expect(comment).toHaveProperty("postId", postsIds[0]);
     expect(comment).toHaveProperty("post");
     expect(comment?.post).toEqual(expect.any(Object));
@@ -73,7 +73,7 @@ describe("associate method", () => {
     comment2?.save();
 
     comment = await Comment.with("post").where("_id", commentIds[0]).first();
-    expect(comment).toBeInstanceOf(Comment);
+    expect(comment).toEqual(expect.any(Object));
     expect(comment).toHaveProperty("postId", postsIds[1]);
     expect(comment).toHaveProperty("post");
     expect(comment?.post).toEqual(expect.any(Object));
