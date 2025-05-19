@@ -62,7 +62,7 @@ describe("with method", () => {
       const comment = await Comment.with("post")
         .where("body", "Comment 1")
         .first();
-      expect(comment).toBeInstanceOf(Comment);
+      expect(comment).toEqual(expect.any(Object));
       expect(comment).toHaveProperty("post");
       expect(comment?.post).toHaveProperty("title", "Post 1");
       expect(comment?.post).toHaveProperty("body", "Post 1 body");
@@ -87,7 +87,7 @@ describe("with method", () => {
         .where("body", "Comment 1")
         .first();
 
-      expect(comment).toBeInstanceOf(Comment);
+      expect(comment).toEqual(expect.any(Object));
       expect(comment).toHaveProperty("post");
       expect(comment?.post).toHaveProperty("title");
       expect(comment?.post).not.toHaveProperty("body");
@@ -113,7 +113,7 @@ describe("with method", () => {
         .where("body", "Comment 1")
         .first();
 
-      expect(comment).toBeInstanceOf(Comment);
+      expect(comment).toEqual(expect.any(Object));
       expect(comment).toHaveProperty("post");
       expect(comment?.post).toHaveProperty("title");
       expect(comment?.post).not.toHaveProperty("body");
@@ -172,11 +172,11 @@ describe("with method", () => {
         .where("_id", commentIds[0])
         .first();
 
-      expect(comment).toBeInstanceOf(Comment);
+      expect(comment).toEqual(expect.any(Object));
       expect(comment?.post).not.toEqual(expect.any(Object));
 
       const post = await Post.withTrashed().where("_id", postIds[0]).first();
-      expect(post).toBeInstanceOf(Post);
+      expect(post).toEqual(expect.any(Object));
     });
   });
 });

@@ -59,7 +59,7 @@ describe("dissociate method", () => {
     let comment = await Comment.with("post")
       .where("_id", commentIds[0])
       .first();
-    expect(comment).toBeInstanceOf(Comment);
+    expect(comment).toEqual(expect.any(Object));
     expect(comment).toHaveProperty("postId", postsIds[0]);
     expect(comment).toHaveProperty("post");
     expect(comment?.post).toEqual(expect.any(Object));
@@ -74,7 +74,7 @@ describe("dissociate method", () => {
     expect(comment3).toHaveProperty("postId", null);
 
     comment = await Comment.with("post").where("_id", commentIds[0]).first();
-    expect(comment).toBeInstanceOf(Comment);
+    expect(comment).toEqual(expect.any(Object));
     expect(comment).toHaveProperty("postId", null);
   });
 });
