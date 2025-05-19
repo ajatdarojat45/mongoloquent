@@ -47,6 +47,8 @@ export default class QueryBuilder<T> {
   public static $isDeleted: string = "isDeleted";
   /** Field name for the timezone */
   public static $timezone: string = TIMEZONE;
+  /** The model's default values for attributes */
+  public static $attributes: Partial<unknown> = {};
 
   /** Timezone setting for dates */
   private $timezone: string = TIMEZONE;
@@ -97,6 +99,8 @@ export default class QueryBuilder<T> {
   protected $deletedAt: string = "deletedAt";
   /** Number of documents to limit in query */
   protected $limit: number = 0;
+  /** The model's default values for attributes */
+  protected $attributes: Partial<T> = {};
 
   /** Alias for relationship */
   protected $alias: string = "";
@@ -123,6 +127,7 @@ export default class QueryBuilder<T> {
     ).$useTimestamps;
     this.$isDeleted = (this.constructor as typeof QueryBuilder).$isDeleted;
     this.$timezone = (this.constructor as typeof QueryBuilder).$timezone;
+    this.$attributes = (this.constructor as typeof QueryBuilder).$attributes;
   }
 
   /**
@@ -148,6 +153,9 @@ export default class QueryBuilder<T> {
       const collection = this.getCollection();
       let newDoc = this.checkUseTimestamps(doc);
       newDoc = this.checkUseSoftdelete(newDoc);
+
+      if (typeof this.$attributes === "object")
+        newDoc = { ...newDoc, ...this.$attributes };
 
       const data = await collection?.insertOne(
         newDoc as OptionalUnlessRequiredId<FormSchema<T>>,
@@ -191,6 +199,9 @@ export default class QueryBuilder<T> {
         let newEl = this.checkUseTimestamps(el);
         newEl = this.checkUseSoftdelete(newEl);
 
+        if (typeof this.$attributes === "object")
+          newEl = { ...newEl, ...this.$attributes };
+
         return newEl;
       });
 
@@ -212,7 +223,6 @@ export default class QueryBuilder<T> {
       this.resetQuery();
       return result;
     } catch (error) {
-      console.log(error);
       throw new Error(`Inserting multiple documents failed`);
     }
   }
@@ -269,7 +279,6 @@ export default class QueryBuilder<T> {
       this.resetQuery();
       return data;
     } catch (error) {
-      console.log(error);
       throw new Error(`Updating documents failed`);
     }
   }
