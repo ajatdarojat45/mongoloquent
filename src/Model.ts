@@ -734,7 +734,7 @@ export default class Model<T> extends QueryBuilder<T> {
     const relation = new model();
 
     if (!foreignKey)
-      foreignKey = (relation.constructor.name.toLowerCase() + "Id") as keyof M;
+      foreignKey = (this.constructor.name.toLowerCase() + "Id") as keyof M;
     if (!localKey) localKey = "_id" as keyof T;
 
     const hasMany: IRelationHasMany = {
@@ -845,10 +845,10 @@ export default class Model<T> extends QueryBuilder<T> {
     const through = new throughModel();
 
     if (!foreignKey)
-      foreignKey = (relation.constructor.name.toLowerCase() + "Id") as keyof TM;
+      foreignKey = (this.constructor.name.toLowerCase() + "Id") as keyof TM;
     if (!foreignKeyThrough)
       foreignKeyThrough = (through.constructor.name.toLowerCase() +
-        "_id") as keyof M;
+        "Id") as keyof M;
 
     const hasManyThrough: IRelationHasManyThrough = {
       type: IRelationTypes.hasManyThrough,
