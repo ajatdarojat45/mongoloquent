@@ -30,7 +30,7 @@ describe("with method", () => {
     }
 
     class Post extends Model<IPost> {
-      static $collection = "posts";
+      protected $collection = "posts";
       static $schema: IPost;
 
       tags() {
@@ -39,7 +39,7 @@ describe("with method", () => {
     }
 
     class Tag extends Model<ITag> {
-      static $collection = "tags";
+      protected $collection = "tags";
       static $schema: ITag;
     }
 
@@ -132,7 +132,7 @@ describe("with method", () => {
     }
 
     class Post extends Model<IPost> {
-      static $collection = "posts";
+      protected $collection = "posts";
       static $schema: IPost;
 
       tags() {
@@ -141,9 +141,9 @@ describe("with method", () => {
     }
 
     class Tag extends Model<ITag> {
-      static $collection = "tags";
+      protected $collection = "tags";
       static $schema: ITag;
-      static $useSoftDelete: boolean = true;
+      protected $useSoftDelete: boolean = true;
     }
 
     it("without option", async () => {

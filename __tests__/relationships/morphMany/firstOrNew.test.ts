@@ -31,8 +31,8 @@ describe("firstOrNew method", () => {
   }
 
   class Post extends Model<IPost> {
-    static $collection = "posts";
-    static $useTimestamps = false;
+    protected $collection = "posts";
+    protected $useTimestamps = false;
     static $schema: Post;
 
     comments() {
@@ -41,8 +41,8 @@ describe("firstOrNew method", () => {
   }
 
   class Comment extends Model<IComment> {
-    static $collection = "comments";
-    static $useTimestamps = false;
+    protected $collection = "comments";
+    protected $useTimestamps = false;
     static $schema: Comment;
   }
 

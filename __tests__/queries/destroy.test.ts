@@ -19,7 +19,7 @@ describe("destroy method", () => {
 
         class Flight extends Model<IFlight> {
           static $schema: IFlight;
-          static $useSoftDelete = true;
+          protected $useSoftDelete = true;
         }
 
         const flightIds = await Flight.insertMany([{ name: "Flight 1" }]);
@@ -45,7 +45,7 @@ describe("destroy method", () => {
 
         class Flight extends Model<IFlight> {
           static $schema: IFlight;
-          static $useSoftDelete = true;
+          protected $useSoftDelete = true;
         }
 
         const flightIds = await Flight.insertMany([
@@ -77,7 +77,7 @@ describe("destroy method", () => {
 
         class Flight extends Model<IFlight> {
           static $schema: IFlight;
-          static $useSoftDelete = true;
+          protected $useSoftDelete = true;
         }
 
         const flightIds = await Flight.insertMany([
@@ -111,7 +111,7 @@ describe("destroy method", () => {
 
         class Flight extends Model<IFlight> {
           static $schema: IFlight;
-          static $useSoftDelete = true;
+          protected $useSoftDelete = true;
         }
 
         const flightIds = await Flight.insertMany([{ name: "Flight 1" }]);
@@ -137,7 +137,7 @@ describe("destroy method", () => {
 
         class Flight extends Model<IFlight> {
           static $schema: IFlight;
-          static $useSoftDelete = true;
+          protected $useSoftDelete = true;
         }
 
         const flightIds = await Flight.insertMany([
@@ -166,7 +166,7 @@ describe("destroy method", () => {
 
         class Flight extends Model<IFlight> {
           static $schema: IFlight;
-          static $useSoftDelete = true;
+          protected $useSoftDelete = true;
         }
 
         const flightIds = await Flight.insertMany([
@@ -199,7 +199,7 @@ describe("destroy method", () => {
 
         class Flight extends Model<IFlight> {
           static $schema: IFlight;
-          static $useSoftDelete = true;
+          protected $useSoftDelete = true;
         }
 
         const flightIds = await Flight.insertMany([
@@ -231,7 +231,7 @@ describe("destroy method", () => {
 
         class Flight extends Model<IFlight> {
           static $schema: IFlight;
-          static $useSoftDelete = true;
+          protected $useSoftDelete = true;
         }
 
         const flightIds = await Flight.insertMany([
@@ -260,7 +260,7 @@ describe("destroy method", () => {
 
         class Flight extends Model<IFlight> {
           static $schema: IFlight;
-          static $useSoftDelete = true;
+          protected $useSoftDelete = true;
         }
 
         const flightIds = await Flight.insertMany([
@@ -296,7 +296,7 @@ describe("destroy method", () => {
 
         class Flight extends Model<IFlight> {
           static $schema: IFlight;
-          static $useSoftDelete = false;
+          protected $useSoftDelete = false;
         }
 
         const flightIds = await Flight.insertMany([{ name: "Flight 1" }]);

@@ -31,7 +31,7 @@ describe("max method", () => {
     }
 
     class Post extends Model<IPost> {
-      static $collection = "posts";
+      protected $collection = "posts";
       static $schema: IPost;
 
       tags() {
@@ -40,9 +40,9 @@ describe("max method", () => {
     }
 
     class Tag extends Model<ITag> {
-      static $collection = "tags";
+      protected $collection = "tags";
       static $schema: ITag;
-      static $useSoftDelete: boolean = true;
+      protected $useSoftDelete: boolean = true;
     }
 
     it("return max of tags", async () => {
@@ -81,7 +81,7 @@ describe("max method", () => {
     }
 
     class Post extends Model<IPost> {
-      static $collection = "posts";
+      protected $collection = "posts";
       static $schema: IPost;
 
       tags() {
@@ -90,9 +90,9 @@ describe("max method", () => {
     }
 
     class Tag extends Model<ITag> {
-      static $collection = "tags";
+      protected $collection = "tags";
       static $schema: ITag;
-      static $useSoftDelete: boolean = true;
+      protected $useSoftDelete: boolean = true;
     }
 
     it("return max of tags", async () => {

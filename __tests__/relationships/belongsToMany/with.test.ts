@@ -33,7 +33,7 @@ describe("with methods", () => {
     }
 
     class User extends Model<IUser> {
-      static $collection: string = "users";
+      protected $collection: string = "users";
       static $schema: IUser;
 
       roles() {
@@ -42,7 +42,7 @@ describe("with methods", () => {
     }
 
     class Role extends Model<IRole> {
-      static $collection: string = "roles";
+      protected $collection: string = "roles";
       static $schema: IRole;
     }
 
@@ -148,9 +148,9 @@ describe("with methods", () => {
     }
 
     class User extends Model<IUser> {
-      static $collection: string = "users";
+      protected $collection: string = "users";
       static $schema: IUser;
-      static $useSoftDelete: boolean = true;
+      protected $useSoftDelete: boolean = true;
 
       roles() {
         return this.belongsToMany(Role, "roleUser", "user_id", "role_id");
@@ -158,9 +158,9 @@ describe("with methods", () => {
     }
 
     class Role extends Model<IRole> {
-      static $collection: string = "roles";
+      protected $collection: string = "roles";
       static $schema: IRole;
-      static $useSoftDelete: boolean = true;
+      protected $useSoftDelete: boolean = true;
     }
 
     const pivotCollection = "roleUser";

@@ -9,6 +9,13 @@ interface IUser extends IMongoloquentSchema {
 }
 class User extends Model<IUser> {
   static $schema: IUser;
+  protected $collection: string = "users";
+}
+
+class UserD extends Model<IUser> {
+  static $schema: IUser;
+  protected $collection: string = "users";
+  protected $useSoftDelete: boolean = true;
 }
 
 const query = User["query"]();
@@ -75,7 +82,6 @@ describe("User Model - count method", () => {
 
   // Test case: should return count of all users excluding soft deleted users
   it("should return count of all users excluding soft deleted users", async () => {
-    User["$useSoftDelete"] = false;
     const result = await User.count();
 
     expect(result).toEqual(expect.any(Number));
@@ -84,8 +90,7 @@ describe("User Model - count method", () => {
 
   // Test case: should return count of all users including soft deleted users
   it("should return count of all users including soft deleted users", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.count();
+    const result = await UserD.count();
 
     expect(result).toEqual(expect.any(Number));
     expect(result).toBe(2);
@@ -93,7 +98,6 @@ describe("User Model - count method", () => {
 
   // Test case: should return count of users with a specific name
   it("should return count of users named 'Udin'", async () => {
-    User["$useSoftDelete"] = false;
     const result = await User.where("name", "Udin").count();
 
     expect(result).toEqual(expect.any(Number));
@@ -102,7 +106,6 @@ describe("User Model - count method", () => {
 
   // Test case: should return 0 for non-existent user data
   it("should return 0 for non-existent user data", async () => {
-    User["$useSoftDelete"] = false;
     const result = await User.where("name", "Udin1").count();
 
     expect(result).toEqual(expect.any(Number));

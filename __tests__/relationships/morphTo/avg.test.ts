@@ -20,7 +20,7 @@ describe("avg method", () => {
     }
 
     class Post extends Model<IPost> {
-      static $collection: string = "posts";
+      protected $collection: string = "posts";
       static $schema: IPost;
 
       comments() {
@@ -29,7 +29,7 @@ describe("avg method", () => {
     }
 
     class Comment extends Model<IComment> {
-      static $collection: string = "comments";
+      protected $collection: string = "comments";
       static $schema: IComment;
 
       post() {
@@ -71,9 +71,9 @@ describe("avg method", () => {
     }
 
     class Post extends Model<IPost> {
-      static $collection: string = "posts";
+      protected $collection: string = "posts";
       static $schema: IPost;
-      static $useSoftDelete: boolean = true;
+      protected $useSoftDelete: boolean = true;
 
       comments() {
         return this.morphMany(Comment, "commentable");
@@ -81,9 +81,9 @@ describe("avg method", () => {
     }
 
     class Comment extends Model<IComment> {
-      static $collection: string = "comments";
+      protected $collection: string = "comments";
       static $schema: IComment;
-      static $useSoftDelete: boolean = true;
+      protected $useSoftDelete: boolean = true;
 
       post() {
         return this.morphTo(Post, "commentable");

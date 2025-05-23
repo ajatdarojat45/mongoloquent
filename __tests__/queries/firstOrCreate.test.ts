@@ -8,9 +8,9 @@ interface IFlight extends IMongoloquentSchema {
 }
 
 class Flight extends Model<IFlight> {
-  static $collection = "flights";
-  static $useSoftDelete = true;
-  static $useTimestamps = true;
+  protected $collection = "flights";
+  protected $useSoftDelete = true;
+  protected $useTimestamps = true;
   static $schema: IFlight;
 }
 

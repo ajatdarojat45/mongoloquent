@@ -18,7 +18,7 @@ describe("restore method", () => {
 
     class Flight extends Model<IFlight> {
       static $schema: IFlight;
-      static $useSoftDelete = true;
+      protected $useSoftDelete = true;
     }
 
     const flightIds = await Flight.insertMany([
@@ -56,7 +56,7 @@ describe("restore method", () => {
 
     class Flight extends Model<IFlight> {
       static $schema: IFlight;
-      static $useSoftDelete = true;
+      protected $useSoftDelete = true;
     }
 
     await Flight.insertMany([

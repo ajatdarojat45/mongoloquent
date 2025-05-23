@@ -31,7 +31,7 @@ describe("syncWithPivotValues method", () => {
   }
 
   class User extends Model<IUser> {
-    static $collection: string = "users";
+    protected $collection: string = "users";
     static $schema: IUser;
 
     roles() {
@@ -40,7 +40,7 @@ describe("syncWithPivotValues method", () => {
   }
 
   class Role extends Model<IRole> {
-    static $collection: string = "roles";
+    protected $collection: string = "roles";
     static $schema: IRole;
   }
 

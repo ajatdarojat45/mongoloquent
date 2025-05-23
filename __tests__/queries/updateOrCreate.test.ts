@@ -22,8 +22,8 @@ describe("updateOrCreate method", () => {
 
       class Flight extends Model<IFlight> {
         static $schema: IFlight;
-        static $useTimestamps = false;
-        static $useSoftDelete = false;
+        protected $useTimestamps = false;
+        protected $useSoftDelete = false;
       }
 
       const flight = await Flight.updateOrCreate({
@@ -50,8 +50,8 @@ describe("updateOrCreate method", () => {
 
       class Flight extends Model<IFlight> {
         static $schema: IFlight;
-        static $useTimestamps = false;
-        static $useSoftDelete = false;
+        protected $useTimestamps = false;
+        protected $useSoftDelete = false;
       }
 
       const flight = await Flight.updateOrCreate(
@@ -81,8 +81,8 @@ describe("updateOrCreate method", () => {
       }
       class Flight extends Model<IFlight> {
         static $schema: IFlight;
-        static $useTimestamps = true;
-        static $useSoftDelete = false;
+        protected $useTimestamps = true;
+        protected $useSoftDelete = false;
       }
       const flight = await Flight.updateOrCreate({
         departure: "New York",
@@ -106,8 +106,8 @@ describe("updateOrCreate method", () => {
       }
       class Flight extends Model<IFlight> {
         static $schema: IFlight;
-        static $useTimestamps = true;
-        static $useSoftDelete = false;
+        protected $useTimestamps = true;
+        protected $useSoftDelete = false;
       }
       const flight = await Flight.updateOrCreate(
         { departure: "New York", destination: "Los Angeles" },
@@ -135,8 +135,8 @@ describe("updateOrCreate method", () => {
       }
       class Flight extends Model<IFlight> {
         static $schema: IFlight;
-        static $useTimestamps = false;
-        static $useSoftDelete = true;
+        protected $useTimestamps = false;
+        protected $useSoftDelete = true;
       }
       const flight = await Flight.updateOrCreate({
         departure: "New York",
@@ -166,8 +166,8 @@ describe("updateOrCreate method", () => {
 
       class Flight extends Model<IFlight> {
         static $schema: IFlight;
-        static $useTimestamps = true;
-        static $useSoftDelete = true;
+        protected $useTimestamps = true;
+        protected $useSoftDelete = true;
       }
       const flight = await Flight.updateOrCreate({
         departure: "New York",
@@ -195,8 +195,8 @@ describe("updateOrCreate method", () => {
 
       class Flight extends Model<IFlight> {
         static $schema: IFlight;
-        static $useTimestamps = true;
-        static $useSoftDelete = true;
+        protected $useTimestamps = true;
+        protected $useSoftDelete = true;
       }
       const flight = await Flight.updateOrCreate(
         { departure: "New York", destination: "Los Angeles" },

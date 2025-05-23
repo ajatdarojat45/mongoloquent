@@ -22,7 +22,7 @@ describe("insert method", () => {
 
     class Flight extends Model<IFlight> {
       static $schema: IFlight;
-      static $useTimestamps = false;
+      protected $useTimestamps = false;
     }
 
     const flight = await Flight.insert({
@@ -48,7 +48,7 @@ describe("insert method", () => {
 
     class Flight extends Model<IFlight> {
       static $schema: IFlight;
-      static $useTimestamps = true;
+      protected $useTimestamps = true;
     }
 
     const flight = await Flight.insert({
@@ -74,8 +74,8 @@ describe("insert method", () => {
 
     class Flight extends Model<IFlight> {
       static $schema: IFlight;
-      static $useSoftDelete = true;
-      static $useTimestamps = false;
+      protected $useSoftDelete = true;
+      protected $useTimestamps = false;
     }
 
     const flight = await Flight.insert({
@@ -104,8 +104,8 @@ describe("insert method", () => {
 
     class Flight extends Model<IFlight> {
       static $schema: IFlight;
-      static $useSoftDelete = true;
-      static $useTimestamps = true;
+      protected $useSoftDelete = true;
+      protected $useTimestamps = true;
     }
 
     const flight = await Flight.insert({

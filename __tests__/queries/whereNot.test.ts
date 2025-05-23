@@ -9,6 +9,12 @@ interface IUser extends IMongoloquentSchema {
 }
 class User extends Model<IUser> {}
 
+class UserD extends Model<IUser> {
+  static $schema: IUser;
+  protected $useSoftDelete = true;
+  protected $collection: string = "users";
+}
+
 const query = User["query"]();
 const userCollection = query["getCollection"]();
 
@@ -103,98 +109,74 @@ describe("QueryBuilder - whereNot() method tests", () => {
   });
 
   it("should respect soft delete when using whereNot", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.whereNot("balance", 400).get();
+    const result = await UserD.whereNot("balance", 400).get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(3);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should handle soft delete with whereNot and where conditions", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.whereNot("balance", 500)
+    const result = await UserD.whereNot("balance", 500)
       .where("name", "Kosasih")
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should handle soft delete with whereNot and orWhere conditions", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.whereNot("balance", 500)
+    const result = await UserD.whereNot("balance", 500)
       .orWhere("name", "Kosasih")
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(3);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should include trashed records when using withTrashed and orWhere", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.whereNot("balance", 100)
+    const result = await UserD.whereNot("balance", 100)
       .orWhere("name", "Kosasih")
       .withTrashed()
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(4);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should include trashed records when using withTrashed and where", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.whereNot("balance", 500)
+    const result = await UserD.whereNot("balance", 500)
       .where("age", 5)
       .withTrashed()
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should only return trashed records with whereNot", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.whereNot("balance", 200).onlyTrashed().get();
+    const result = await UserD.whereNot("balance", 200).onlyTrashed().get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should handle onlyTrashed with whereNot and orWhere conditions", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.whereNot("balance", 200)
+    const result = await UserD.whereNot("balance", 200)
       .orWhere("name", "Kosasih")
       .onlyTrashed()
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should handle onlyTrashed with whereNot and where conditions", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.whereNot("balance", 200)
+    const result = await UserD.whereNot("balance", 200)
       .where("age", 100)
       .onlyTrashed()
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(0);
-
-    User["$useSoftDelete"] = false;
   });
 });

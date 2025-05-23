@@ -10,6 +10,11 @@ interface IUser extends IMongoloquentSchema {
 }
 class User extends Model<IUser> {}
 
+class UserD extends Model<IUser> {
+  protected $useSoftDelete = true;
+  protected $collection: string = "users";
+}
+
 const query = User["query"]();
 const userCollection = query["getCollection"]();
 
@@ -97,100 +102,82 @@ describe("User Model - orWhereNotNull Query Tests", () => {
   });
 
   it("should respect soft delete when using orWhereNotNull", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("balance", 500)
+    const result = await UserD.where("balance", 500)
       .orWhereNotNull("subscription")
       .get();
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(2);
-    User["$useSoftDelete"] = false;
   });
 
   it("should combine soft delete with or conditions and orWhereNotNull", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("balance", 500)
+    const result = await UserD.where("balance", 500)
       .orWhereNotNull("subscription")
       .get();
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(2);
-    User["$useSoftDelete"] = false;
   });
 
   it("should combine soft delete with and conditions and orWhereNotNull", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("balance", 500)
+    const result = await UserD.where("balance", 500)
       .where("age", 5)
       .orWhereNotNull("subscription")
       .get();
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(2);
-    User["$useSoftDelete"] = false;
   });
 
   it("should include trashed records when using withTrashed and orWhereNotNull", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("balance", 500)
+    const result = await UserD.where("balance", 500)
       .orWhereNotNull("subscription")
       .withTrashed()
       .get();
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(3);
-    User["$useSoftDelete"] = false;
   });
 
   it("should combine withTrashed, or conditions and orWhereNotNull", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("balance", 500)
+    const result = await UserD.where("balance", 500)
       .orWhereNotNull("subscription")
       .withTrashed()
       .get();
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(3);
-    User["$useSoftDelete"] = false;
   });
 
   it("should combine withTrashed, and conditions and orWhereNotNull", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("balance", 500)
+    const result = await UserD.where("balance", 500)
       .where("age", 45)
       .orWhereNotNull("subscription")
       .withTrashed()
       .get();
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(2);
-    User["$useSoftDelete"] = false;
   });
 
   it("should only return trashed records with orWhereNotNull", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.onlyTrashed()
+    const result = await UserD.onlyTrashed()
       .orWhereNotNull("subscription")
       .get();
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
-    User["$useSoftDelete"] = false;
   });
 
   it("should combine onlyTrashed with or conditions and orWhereNotNull", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("balance", 500)
+    const result = await UserD.where("balance", 500)
       .orWhereNotNull("subscription")
       .onlyTrashed()
       .get();
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
-    User["$useSoftDelete"] = false;
   });
 
   it("should combine onlyTrashed with and conditions and orWhereNotNull", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("balance", 500)
+    const result = await UserD.where("balance", 500)
       .where("age", 100)
       .orWhereNotNull("subscription")
       .onlyTrashed()
       .get();
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
-    User["$useSoftDelete"] = false;
   });
 });

@@ -18,7 +18,7 @@ describe("forceDelete method", () => {
 
       class Flight extends Model<IFlight> {
         static $schema: IFlight;
-        static $useSoftDelete = true;
+        protected $useSoftDelete = true;
       }
 
       const flight = new Flight();

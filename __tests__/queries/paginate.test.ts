@@ -16,7 +16,7 @@ describe("paginate method", () => {
 
     class Flight extends Model<IFlight> {
       static $schema: IFlight;
-      static $useTimestamps = false;
+      protected $useTimestamps = false;
     }
 
     await Flight.insertMany([
@@ -50,7 +50,7 @@ describe("paginate method", () => {
 
     class Flight extends Model<IFlight> {
       static $schema: IFlight;
-      static $useTimestamps = false;
+      protected $useTimestamps = false;
     }
 
     await Flight.insertMany([
@@ -84,7 +84,7 @@ describe("paginate method", () => {
 
     class Flight extends Model<IFlight> {
       static $schema: IFlight;
-      static $useTimestamps = false;
+      protected $useTimestamps = false;
     }
 
     await Flight.insertMany([

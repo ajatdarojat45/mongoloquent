@@ -16,7 +16,7 @@ describe("pluck method", () => {
 
     class Flight extends Model<IFlight> {
       static $schema: IFlight;
-      static $useTimestamps = false;
+      protected $useTimestamps = false;
     }
 
     await Flight.insertMany([
@@ -38,7 +38,7 @@ describe("pluck method", () => {
 
     class Flight extends Model<IFlight> {
       static $schema: IFlight;
-      static $useTimestamps = false;
+      protected $useTimestamps = false;
     }
 
     await Flight.insertMany([
@@ -62,7 +62,7 @@ describe("pluck method", () => {
     }
     class Flight extends Model<IFlight> {
       static $schema: IFlight;
-      static $useTimestamps = false;
+      protected $useTimestamps = false;
     }
     await Flight.insertMany([
       { name: "Flight 1", active: true, delayed: false },

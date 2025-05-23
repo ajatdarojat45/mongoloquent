@@ -11,6 +11,12 @@ class User extends Model<IUser> {
   static $schema: IUser;
 }
 
+class UserD extends Model<IUser> {
+  static $schema: IUser;
+  protected $useSoftDelete = true;
+  protected $collection: string = "users";
+}
+
 const query = User["query"]();
 const userCollection = query["getCollection"]();
 
@@ -106,77 +112,58 @@ describe("Model - limit() method", () => {
   });
 
   it("should limit result to 2 records with soft delete enabled", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.limit(2).get();
+    const result = await UserD.limit(2).get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(2);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should limit result to 1 record with soft delete and AND conditions", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("age", 5)
+    const result = await UserD.where("age", 5)
       .where(query.getIsDeleted() as keyof IUser, false)
       .limit(1)
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should limit result to 1 record with soft delete and OR conditions", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("balance", 500)
+    const result = await UserD.where("balance", 500)
       .orWhere("age", 30)
       .limit(1)
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should limit result to 1 record with soft delete and mixed AND & OR conditions", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("age", 5)
+    const result = await UserD.where("age", 5)
       .orWhere("balance", 500)
       .limit(1)
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should limit result to 2 records with soft delete and whereBetween", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.whereBetween("age", [5, 10]).limit(2).get();
+    const result = await UserD.whereBetween("age", [5, 10]).limit(2).get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(2);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should limit result to 2 records with withTrashed option", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.limit(2).withTrashed().get();
+    const result = await UserD.limit(2).withTrashed().get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(2);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should limit result to 1 record with withTrashed and AND conditions", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("age", 45)
+    const result = await UserD.where("age", 45)
       .where("balance", 500)
       .withTrashed()
       .limit(2)
@@ -184,13 +171,10 @@ describe("Model - limit() method", () => {
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should limit result to 1 record with withTrashed and OR conditions", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("age", 45)
+    const result = await UserD.where("age", 45)
       .orWhere("balance", 500)
       .withTrashed()
       .limit(1)
@@ -198,23 +182,17 @@ describe("Model - limit() method", () => {
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should limit result to 1 record with onlyTrashed option", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.limit(2).onlyTrashed().get();
+    const result = await UserD.limit(2).onlyTrashed().get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should limit result to 1 record with onlyTrashed and AND conditions", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("age", 45)
+    const result = await UserD.where("age", 45)
       .where("balance", 500)
       .onlyTrashed()
       .limit(2)
@@ -222,13 +200,10 @@ describe("Model - limit() method", () => {
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should limit result to 1 record with onlyTrashed and OR conditions", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("age", 45)
+    const result = await UserD.where("age", 45)
       .orWhere("balance", 500)
       .onlyTrashed()
       .limit(1)
@@ -236,7 +211,5 @@ describe("Model - limit() method", () => {
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
-
-    User["$useSoftDelete"] = false;
   });
 });

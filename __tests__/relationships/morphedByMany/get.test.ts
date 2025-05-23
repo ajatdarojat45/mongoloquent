@@ -31,7 +31,7 @@ describe("get method", () => {
     }
 
     class Post extends Model<IPost> {
-      static $collection = "posts";
+      protected $collection = "posts";
       static $schema: IPost;
 
       tags() {
@@ -40,7 +40,7 @@ describe("get method", () => {
     }
 
     class Tag extends Model<ITag> {
-      static $collection = "tags";
+      protected $collection = "tags";
       static $schema: ITag;
 
       posts() {
@@ -162,18 +162,18 @@ describe("get method", () => {
     }
 
     class Post extends Model<IPost> {
-      static $collection = "posts";
+      protected $collection = "posts";
       static $schema: IPost;
-      static $useSoftDelete: boolean = true;
+      protected $useSoftDelete: boolean = true;
       tags() {
         return this.morphToMany(Tag, "taggable");
       }
     }
 
     class Tag extends Model<ITag> {
-      static $collection = "tags";
+      protected $collection = "tags";
       static $schema: ITag;
-      static $useSoftDelete: boolean = true;
+      protected $useSoftDelete: boolean = true;
 
       posts() {
         return this.morphedByMany(Post, "taggable");

@@ -30,7 +30,7 @@ describe("all method", () => {
     }
 
     class Post extends Model<IPost> {
-      static $collection = "posts";
+      protected $collection = "posts";
       static $schema: IPost;
 
       tags() {
@@ -39,7 +39,7 @@ describe("all method", () => {
     }
 
     class Tag extends Model<ITag> {
-      static $collection = "tags";
+      protected $collection = "tags";
       static $schema: ITag;
     }
 
@@ -82,7 +82,7 @@ describe("all method", () => {
     }
 
     class Post extends Model<IPost> {
-      static $collection = "posts";
+      protected $collection = "posts";
       static $schema: IPost;
 
       tags() {
@@ -91,9 +91,9 @@ describe("all method", () => {
     }
 
     class Tag extends Model<ITag> {
-      static $collection = "tags";
+      protected $collection = "tags";
       static $schema: ITag;
-      static $useSoftDelete: boolean = true;
+      protected $useSoftDelete: boolean = true;
     }
 
     it("should return all doc", async () => {

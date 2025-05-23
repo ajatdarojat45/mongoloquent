@@ -31,7 +31,7 @@ describe("with method", () => {
     }
 
     class Post extends Model<IPost> {
-      static $collection: string = "posts";
+      protected $collection: string = "posts";
       static $schema: IPost;
 
       comments() {
@@ -40,7 +40,7 @@ describe("with method", () => {
     }
 
     class Comment extends Model<IComment> {
-      static $collection: string = "comments";
+      protected $collection: string = "comments";
       static $schema: IComment;
     }
 
@@ -128,7 +128,7 @@ describe("with method", () => {
     }
 
     class Post extends Model<IPost> {
-      static $collection: string = "posts";
+      protected $collection: string = "posts";
       static $schema: IPost;
 
       comments() {
@@ -137,9 +137,9 @@ describe("with method", () => {
     }
 
     class Comment extends Model<IComment> {
-      static $collection: string = "comments";
+      protected $collection: string = "comments";
       static $schema: IComment;
-      static $useSoftDelete: boolean = true;
+      protected $useSoftDelete: boolean = true;
     }
 
     it("without options", async () => {

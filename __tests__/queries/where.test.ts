@@ -9,6 +9,12 @@ interface IUser extends IMongoloquentSchema {
 }
 class User extends Model<IUser> {}
 
+class UserD extends Model<IUser> {
+  static $schema: IUser;
+  protected $useSoftDelete = true;
+  protected $collection: string = "users";
+}
+
 const query = User["query"]();
 const userCollection = query["getCollection"]();
 
@@ -98,104 +104,79 @@ describe("Query Builder - Where Clause Tests", () => {
   });
 
   it("should respect soft delete when filtering records", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("balance", 500).get();
+    const result = await UserD.where("balance", 500).get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should handle OR conditions with soft delete enabled", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("balance", 500)
+    const result = await UserD.where("balance", 500)
       .orWhere("name", "Kosasih")
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(2);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should handle AND conditions with soft delete enabled", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("balance", 500).where("age", 5).get();
+    const result = await UserD.where("balance", 500).where("age", 5).get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
   });
 
   it("should include soft deleted records when using withTrashed", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("balance", 500).withTrashed().get();
+    const result = await UserD.where("balance", 500).withTrashed().get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(2);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should combine withTrashed and OR conditions", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("balance", 500)
+    const result = await UserD.where("balance", 500)
       .orWhere("name", "Kosasih")
       .withTrashed()
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(3);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should combine withTrashed and AND conditions", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("balance", 500)
+    const result = await UserD.where("balance", 500)
       .where("age", 45)
       .withTrashed()
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should retrieve only soft deleted records with onlyTrashed", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.onlyTrashed().get();
+    const result = await UserD.onlyTrashed().get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should combine onlyTrashed with OR conditions", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("balance", 500)
+    const result = await UserD.where("balance", 500)
       .orWhere("name", "Kosasih")
       .onlyTrashed()
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should combine onlyTrashed with AND conditions", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("balance", 500)
+    const result = await UserD.where("balance", 500)
       .where("age", 100)
       .onlyTrashed()
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(0);
-
-    User["$useSoftDelete"] = false;
   });
 });

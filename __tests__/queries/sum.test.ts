@@ -10,6 +10,11 @@ class User extends Model<IUser> {
   static $schema: IUser;
 }
 
+class UserD extends Model<IUser> {
+  protected $useSoftDelete = true;
+  protected $collection: string = "users";
+}
+
 const query = User["query"]();
 const userCollection = query["getCollection"]();
 
@@ -68,7 +73,6 @@ describe("User Model - sum method", () => {
   });
 
   it("should return the sum of ages without soft delete", async () => {
-    User["$useSoftDelete"] = false;
     const result = await User.sum("age");
 
     expect(result).toEqual(expect.any(Number));
@@ -76,15 +80,13 @@ describe("User Model - sum method", () => {
   });
 
   it("should return the sum of ages with soft delete enabled", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.sum("age");
+    const result = await UserD.sum("age");
 
     expect(result).toEqual(expect.any(Number));
     expect(result).toBe(30);
   });
 
   it("should return the sum of ages with a where condition", async () => {
-    User["$useSoftDelete"] = false;
     const result = await User.where("name", "Udin").sum("age");
 
     expect(result).toEqual(expect.any(Number));
@@ -92,7 +94,6 @@ describe("User Model - sum method", () => {
   });
 
   it("should return 0 when no matching data is found", async () => {
-    User["$useSoftDelete"] = false;
     const result = await User.where("name", "Udin1").sum("age");
 
     expect(result).toEqual(expect.any(Number));
@@ -100,7 +101,6 @@ describe("User Model - sum method", () => {
   });
 
   it("should return 0 when summing a non-numeric field", async () => {
-    User["$useSoftDelete"] = false;
     const result = await User.sum("name");
 
     expect(result).toEqual(expect.any(Number));

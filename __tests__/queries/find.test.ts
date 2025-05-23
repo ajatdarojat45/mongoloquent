@@ -9,7 +9,8 @@ interface IUser extends IMongoloquentSchema {
 }
 class User extends Model<IUser> {
   static $schema: IUser;
-  static $useSoftDelete = true;
+  protected $useSoftDelete = true;
+  protected $collection: string = "users";
 }
 
 const query = User["query"]();
@@ -82,7 +83,6 @@ describe("Find Method Tests", () => {
   });
 
   it("should return null when finding soft deleted document using first() method", async () => {
-    User["$useSoftDelete"] = true;
     const user = await User.find(userIds["4"]);
     expect(user).toBeNull();
   });
