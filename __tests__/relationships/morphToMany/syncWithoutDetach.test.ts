@@ -29,7 +29,7 @@ describe("syncWithoutDetach method", () => {
   }
 
   class Post extends Model<IPost> {
-    static $collection = "posts";
+    protected $collection = "posts";
     static $schema: IPost;
 
     tags() {
@@ -38,7 +38,7 @@ describe("syncWithoutDetach method", () => {
   }
 
   class Tag extends Model<ITag> {
-    static $collection = "tags";
+    protected $collection = "tags";
     static $schema: ITag;
   }
 

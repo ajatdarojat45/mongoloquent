@@ -16,7 +16,7 @@ describe("first method", () => {
 
     class Flight extends Model<IFlight> {
       static $schema: IFlight;
-      static $useTimestamps = false;
+      protected $useTimestamps = false;
     }
 
     await Flight.insertMany([

@@ -19,7 +19,7 @@ describe("save method", () => {
 
       class Flight extends Model<IFlight> {
         static $schema: IFlight;
-        static $useTimestamps = false;
+        protected $useTimestamps = false;
       }
 
       const flight = new Flight();
@@ -45,7 +45,7 @@ describe("save method", () => {
 
       class Flight extends Model<IFlight> {
         static $schema: IFlight;
-        static $useTimestamps = true;
+        protected $useTimestamps = true;
       }
 
       const flight = new Flight();
@@ -71,7 +71,7 @@ describe("save method", () => {
 
       class Flight extends Model<IFlight> {
         static $schema: IFlight;
-        static $useTimestamps = false;
+        protected $useTimestamps = false;
       }
 
       const flight = new Flight();
@@ -100,7 +100,7 @@ describe("save method", () => {
 
       class Flight extends Model<IFlight> {
         static $schema: IFlight;
-        static $useTimestamps = true;
+        protected $useTimestamps = true;
       }
 
       const flight = new Flight();
@@ -128,7 +128,7 @@ describe("save method", () => {
 
       class Flight extends Model<IFlight> {
         static $schema: IFlight;
-        static $useTimestamps = false;
+        protected $useTimestamps = false;
       }
 
       const flight = new Flight();

@@ -31,27 +31,19 @@ import operators from "./utils/operators";
  * @template T The document type that this query will operate on
  */
 export default class QueryBuilder<T> {
-  /** Schema definition for the document */
-  public static $schema: any;
-  /** Default MongoDB connection string */
-  public static $connection: string = MONGOLOQUENT_DATABASE_URI;
-  /** Default database name */
-  public static $databaseName: string = MONGOLOQUENT_DATABASE_NAME;
-  /** Collection name */
-  public static $collection: string = "";
-  /** Flag to enable soft delete functionality */
-  public static $useSoftDelete: boolean = false;
-  /** Flag to enable timestamps */
-  public static $useTimestamps: boolean = true;
-  /** Field name for the isDeleted flag */
-  public static $isDeleted: string = "isDeleted";
-  /** Field name for the timezone */
-  public static $timezone: string = TIMEZONE;
-  /** The model's default values for attributes */
-  public static $attributes: Partial<unknown> = {};
-
   /** Timezone setting for dates */
-  private $timezone: string = TIMEZONE;
+  protected $timezone: string = "";
+  /** MongoDB connection string */
+  protected $connection: string = "";
+  /** Database name */
+  protected $databaseName: string = "";
+  /** Collection name */
+  protected $collection: string = "";
+  /** Flag to enable timestamps */
+  protected $useTimestamps: boolean = true;
+  /** Flag to enable soft delete functionality */
+  protected $useSoftDelete: boolean = false;
+
   /** Field name for the createdAt timestamp */
   private $createdAt: string = "createdAt";
   /** Field name for the updatedAt timestamp */
@@ -81,16 +73,6 @@ export default class QueryBuilder<T> {
   protected $original: Partial<T> = {};
   /** Changes made to the document */
   protected $changes: Partial<Record<keyof T, any>> = {};
-  /** MongoDB connection string */
-  protected $connection: string = "";
-  /** Database name */
-  protected $databaseName: string = "";
-  /** Collection name */
-  protected $collection: string = "mongoloquent";
-  /** Flag to enable timestamps */
-  protected $useTimestamps: boolean = true;
-  /** Flag to enable soft delete functionality */
-  protected $useSoftDelete: boolean = false;
   /** Lookup stages for aggregation pipelines */
   protected $lookups: Document[] = [];
   /** Field name for the isDeleted flag */
@@ -101,7 +83,6 @@ export default class QueryBuilder<T> {
   protected $limit: number = 0;
   /** The model's default values for attributes */
   protected $attributes: Partial<T> = {};
-
   /** Alias for relationship */
   protected $alias: string = "";
   /** Relationship options */
@@ -112,22 +93,11 @@ export default class QueryBuilder<T> {
    * Initializes properties from class static properties
    */
   constructor() {
-    this.$connection = (this.constructor as typeof QueryBuilder).$connection;
-    this.$databaseName = (
-      this.constructor as typeof QueryBuilder
-    ).$databaseName;
+    this.$timezone = this.$timezone || TIMEZONE;
+    this.$connection = this.$connection || MONGOLOQUENT_DATABASE_URI;
+    this.$databaseName = this.$databaseName || MONGOLOQUENT_DATABASE_NAME;
     this.$collection =
-      (this.constructor as typeof QueryBuilder).$collection ||
-      `${this.constructor.name.toLowerCase()}s`;
-    this.$useSoftDelete = (
-      this.constructor as typeof QueryBuilder
-    ).$useSoftDelete;
-    this.$useTimestamps = (
-      this.constructor as typeof QueryBuilder
-    ).$useTimestamps;
-    this.$isDeleted = (this.constructor as typeof QueryBuilder).$isDeleted;
-    this.$timezone = (this.constructor as typeof QueryBuilder).$timezone;
-    this.$attributes = (this.constructor as typeof QueryBuilder).$attributes;
+      this.$collection || `${this.constructor.name.toLowerCase()}s`;
   }
 
   /**

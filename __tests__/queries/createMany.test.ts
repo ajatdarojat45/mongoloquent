@@ -22,7 +22,7 @@ describe("createMany method", () => {
 
     class Flight extends Model<IFlight> {
       static $schema: IFlight;
-      static $useTimestamps = false;
+      protected $useTimestamps = false;
     }
 
     const flightIds = await Flight.createMany([
@@ -52,7 +52,7 @@ describe("createMany method", () => {
 
     class Flight extends Model<IFlight> {
       static $schema: IFlight;
-      static $useTimestamps = true;
+      protected $useTimestamps = true;
     }
 
     const flightIds = await Flight.createMany([
@@ -81,8 +81,8 @@ describe("createMany method", () => {
 
     class Flight extends Model<IFlight> {
       static $schema: IFlight;
-      static $useSoftDelete = true;
-      static $useTimestamps = false;
+      protected $useSoftDelete = true;
+      protected $useTimestamps = false;
     }
 
     const flightIds = await Flight.createMany([
@@ -115,8 +115,8 @@ describe("createMany method", () => {
 
     class Flight extends Model<IFlight> {
       static $schema: IFlight;
-      static $useSoftDelete = true;
-      static $useTimestamps = true;
+      protected $useSoftDelete = true;
+      protected $useTimestamps = true;
     }
 
     const flightIds = await Flight.createMany([

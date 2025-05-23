@@ -9,6 +9,12 @@ interface IUser extends IMongoloquentSchema {
 }
 class User extends Model<IUser> {}
 
+class UserD extends Model<IUser> {
+  static $schema: IUser;
+  protected $useSoftDelete = true;
+  protected $collection: string = "users";
+}
+
 const query = User["query"]();
 const userCollection = query["getCollection"]();
 
@@ -112,100 +118,76 @@ describe("Model - whereIn query method", () => {
   });
 
   it("whereIn with soft delete", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.whereIn("balance", [500, 200]).get();
+    const result = await UserD.whereIn("balance", [500, 200]).get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(2);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("whereIn with soft delete & and condition", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.whereIn("balance", [500, 200])
+    const result = await UserD.whereIn("balance", [500, 200])
       .where("name", "Udin")
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("whereIn with soft delete & or condition", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.whereIn("balance", [500, 200])
+    const result = await UserD.whereIn("balance", [500, 200])
       .orWhere("name", "Kosasih")
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(3);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("whereIn with soft delete, withTrashed & or condition", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.whereIn("balance", [500, 200])
+    const result = await UserD.whereIn("balance", [500, 200])
       .orWhere("name", "Kosasih")
       .withTrashed()
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(4);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("whereIn with soft delete, withTrashed & and condition", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.whereIn("balance", [500, 200])
+    const result = await UserD.whereIn("balance", [500, 200])
       .where("age", 5)
       .withTrashed()
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("whereIn with soft delete & onlyTrashed", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.whereIn("balance", [500, 200])
+    const result = await UserD.whereIn("balance", [500, 200])
       .onlyTrashed()
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("whereIn with soft delete, onlyTrashed & or condition", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.whereIn("balance", [500, 200])
+    const result = await UserD.whereIn("balance", [500, 200])
       .orWhere("name", "Kosasih")
       .onlyTrashed()
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("whereIn with soft delete, onlyTrashed & and condition", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.whereIn("balance", [500, 200])
+    const result = await UserD.whereIn("balance", [500, 200])
       .where("age", 100)
       .onlyTrashed()
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(0);
-
-    User["$useSoftDelete"] = false;
   });
 });

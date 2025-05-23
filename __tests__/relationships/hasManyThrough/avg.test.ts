@@ -35,7 +35,7 @@ describe("avg method", () => {
     }
 
     class Application extends Model<IApplication> {
-      static $collection: string = "applications";
+      protected $collection: string = "applications";
       static $schema: IApplication;
 
       deployments() {
@@ -51,12 +51,12 @@ describe("avg method", () => {
     }
 
     class Environment extends Model<IEnveronment> {
-      static $collection: string = "environments";
+      protected $collection: string = "environments";
       static $schema: IEnveronment;
     }
 
     class Deployment extends Model<IDeployment> {
-      static $collection: string = "deployments";
+      protected $collection: string = "deployments";
       static $schema: Deployment;
     }
 

@@ -9,6 +9,11 @@ interface IUser extends IMongoloquentSchema {
 }
 class User extends Model<IUser> {}
 
+class UserD extends Model<IUser> {
+  protected $useSoftDelete = true;
+  protected $collection: string = "users";
+}
+
 const query = User["query"]();
 const userCollection = query["getCollection"]();
 
@@ -113,114 +118,87 @@ describe("Model - orWhereNotIn Query Builder Method", () => {
   });
 
   it("should handle orWhereNotIn with soft delete enabled", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.whereNotIn("balance", [100, 200, 400])
+    const result = await UserD.whereNotIn("balance", [100, 200, 400])
       .orWhereNotIn("name", ["John"])
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(3);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should combine where and orWhereNotIn with soft delete enabled", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("age", 5)
+    const result = await UserD.where("age", 5)
       .orWhereNotIn("balance", [100, 200, 400])
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(2);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should combine orWhereNotIn and orWhere with soft delete enabled", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.whereNotIn("balance", [100, 200, 400])
+    const result = await UserD.whereNotIn("balance", [100, 200, 400])
       .orWhere("name", "doe")
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(2);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should handle orWhereNotIn with withTrashed option", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.orWhereNotIn("balance", [100, 200, 400])
+    const result = await UserD.orWhereNotIn("balance", [100, 200, 400])
       .withTrashed()
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(2);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should combine where and orWhereNotIn with withTrashed option", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.orWhereNotIn("balance", [100, 200, 400, 500])
+    const result = await UserD.orWhereNotIn("balance", [100, 200, 400, 500])
       .where("name", "Joko")
       .withTrashed()
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should combine orWhereNotIn and orWhere with withTrashed option", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.orWhereNotIn("balance", [100, 200, 400])
+    const result = await UserD.orWhereNotIn("balance", [100, 200, 400])
       .orWhere("name", "Kosasih")
       .withTrashed()
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(3);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should handle orWhereNotIn with onlyTrashed option", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.orWhereNotIn("balance", [100, 200, 400])
+    const result = await UserD.orWhereNotIn("balance", [100, 200, 400])
       .onlyTrashed()
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should combine where and orWhereNotIn with onlyTrashed option", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("age", 5)
+    const result = await UserD.where("age", 5)
       .orWhereNotIn("balance", [100, 200, 400, 500])
       .onlyTrashed()
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(0);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should combine orWhereNotIn and orWhere with onlyTrashed option", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.whereNotIn("balance", [100, 200, 400])
+    const result = await UserD.whereNotIn("balance", [100, 200, 400])
       .orWhere("name", "Kosasih")
       .onlyTrashed()
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
-
-    User["$useSoftDelete"] = false;
   });
 });

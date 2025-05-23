@@ -9,6 +9,11 @@ interface IUser extends IMongoloquentSchema {
 
 class User extends Model<IUser> {}
 
+class UserD extends Model<IUser> {
+  protected $useSoftDelete = true;
+  protected $collection: string = "users";
+}
+
 const query = User["query"]();
 const userCollection = query["getCollection"]();
 
@@ -51,7 +56,6 @@ afterEach(async () => {
 
 describe("User Model - min method", () => {
   it("should return the minimum value of the specified field", async () => {
-    User["$useSoftDelete"] = false;
     const result = await User.min("age");
 
     expect(result).toEqual(expect.any(Number));
@@ -59,16 +63,13 @@ describe("User Model - min method", () => {
   });
 
   it("should return the minimum value of the specified field considering soft delete", async () => {
-    User["$useSoftDelete"] = true;
-
-    const user = await User.withTrashed().get();
-    const result = await User.min("age");
+    const user = await UserD.withTrashed().get();
+    const result = await UserD.min("age");
     expect(result).toEqual(expect.any(Number));
     expect(result).toBe(10);
   });
 
   it("should return the minimum value of the specified field with a where condition", async () => {
-    User["$useSoftDelete"] = false;
     const result = await User.where("name", "Kosasih").min("age");
 
     expect(result).toEqual(expect.any(Number));
@@ -76,7 +77,6 @@ describe("User Model - min method", () => {
   });
 
   it("should return 0 when no matching data is found", async () => {
-    User["$useSoftDelete"] = false;
     const result = await User.where("name", "Udin1").min("age");
 
     expect(result).toEqual(expect.any(Number));
@@ -84,7 +84,6 @@ describe("User Model - min method", () => {
   });
 
   it("should return 0 when the specified field is not a number", async () => {
-    User["$useSoftDelete"] = false;
     const result = await User.min("name");
 
     expect(result).toEqual(expect.any(Number));

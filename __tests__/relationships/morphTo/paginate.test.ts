@@ -19,7 +19,7 @@ describe("paginate method", () => {
     }
 
     class Post extends Model<IPost> {
-      static $collection: string = "posts";
+      protected $collection: string = "posts";
       static $schema: IPost;
 
       comments() {
@@ -28,7 +28,7 @@ describe("paginate method", () => {
     }
 
     class Comment extends Model<IComment> {
-      static $collection: string = "comments";
+      protected $collection: string = "comments";
       static $schema: IComment;
 
       post() {
@@ -72,9 +72,9 @@ describe("paginate method", () => {
     }
 
     class Post extends Model<IPost> {
-      static $collection: string = "posts";
+      protected $collection: string = "posts";
       static $schema: IPost;
-      static $useSoftDelete: boolean = true;
+      protected $useSoftDelete: boolean = true;
 
       comments() {
         return this.morphMany(Comment, "commentable");
@@ -82,9 +82,9 @@ describe("paginate method", () => {
     }
 
     class Comment extends Model<IComment> {
-      static $collection: string = "comments";
+      protected $collection: string = "comments";
       static $schema: IComment;
-      static $useSoftDelete: boolean = true;
+      protected $useSoftDelete: boolean = true;
 
       post() {
         return this.morphTo(Post, "commentable");

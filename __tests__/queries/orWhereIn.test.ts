@@ -9,6 +9,11 @@ interface IUser extends IMongoloquentSchema {
 }
 class User extends Model<IUser> {}
 
+class UserD extends Model<IUser> {
+  protected $useSoftDelete = true;
+  protected $collection: string = "users";
+}
+
 const query = User["query"]();
 const userCollection = query["getCollection"]();
 
@@ -94,97 +99,75 @@ describe("Model - orWhereIn Query Builder Tests", () => {
   });
 
   it("should respect soft delete when using orWhereIn", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.whereIn("age", [10])
+    const result = await UserD.whereIn("age", [10])
       .orWhereIn("balance", [500, 200])
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(3);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should combine soft delete with where and orWhereIn conditions", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("age", 10)
+    const result = await UserD.where("age", 10)
       .orWhereIn("balance", [500, 200])
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(3);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should combine soft delete with orWhere and orWhereIn conditions", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("name", "Kosasih")
+    const result = await UserD.where("name", "Kosasih")
       .orWhere("age", 10)
       .orWhereIn("balance", [500, 200])
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(4);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should include deleted records when using withTrashed with orWhereIn", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.whereIn("age", [10])
+    const result = await UserD.whereIn("age", [10])
       .orWhereIn("balance", [500, 200])
       .withTrashed()
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(4);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should combine withTrashed, where, and orWhereIn conditions", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("age", 10)
+    const result = await UserD.where("age", 10)
       .orWhereIn("balance", [500, 200])
       .withTrashed()
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(4);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should filter only deleted records when using onlyTrashed with orWhereIn", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.whereIn("age", [10])
+    const result = await UserD.whereIn("age", [10])
       .orWhereIn("balance", [500, 200])
       .onlyTrashed()
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should combine onlyTrashed with where and orWhereIn conditions", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("age", 10)
+    const result = await UserD.where("age", 10)
       .orWhereIn("balance", [500, 200])
       .onlyTrashed()
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should combine onlyTrashed with multiple conditions including orWhereIn", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("name", "Kosasih")
+    const result = await UserD.where("name", "Kosasih")
       .orWhere("age", 10)
       .orWhereIn("balance", [500, 200])
       .onlyTrashed()
@@ -192,7 +175,5 @@ describe("Model - orWhereIn Query Builder Tests", () => {
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
-
-    User["$useSoftDelete"] = false;
   });
 });

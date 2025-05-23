@@ -10,6 +10,11 @@ interface IUser extends IMongoloquentSchema {
 
 class User extends Model<IUser> {}
 
+class UserD extends Model<IUser> {
+  protected $useSoftDelete = true;
+  protected $collection: string = "users";
+}
+
 const query = User["query"]();
 const userCollection = query["getCollection"]();
 
@@ -103,69 +108,52 @@ describe("Query builder - orWhere Clause Tests", () => {
   });
 
   it("should respect soft delete when using orWhere", async () => {
-    User["$useSoftDelete"] = true;
-
-    const result = await User.where("name", "Kosasih")
+    const result = await UserD.where("name", "Kosasih")
       .orWhere("balance", 500)
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(2);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should combine soft delete with orWhere conditions", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("balance", 500)
+    const result = await UserD.where("balance", 500)
       .orWhere("name", "Kosasih")
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(2);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should apply soft delete with multiple where and orWhere conditions", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("balance", 500)
+    const result = await UserD.where("balance", 500)
       .where("age", 45)
       .orWhere("name", "Kosasih")
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should include soft deleted records when using withTrashed", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("balance", 500).withTrashed().get();
+    const result = await UserD.where("balance", 500).withTrashed().get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(2);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should combine withTrashed with where and orWhere conditions", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("balance", 500)
+    const result = await UserD.where("balance", 500)
       .orWhere("name", "Kosasih")
       .withTrashed()
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(3);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should handle complex queries with withTrashed and multiple conditions", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("balance", 500)
+    const result = await UserD.where("balance", 500)
       .where("age", 5)
       .orWhere("name", "Joko")
       .withTrashed()
@@ -173,36 +161,27 @@ describe("Query builder - orWhere Clause Tests", () => {
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(2);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should return only soft deleted records with onlyTrashed", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.onlyTrashed().get();
+    const result = await UserD.onlyTrashed().get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should filter soft deleted records with orWhere and onlyTrashed", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("balance", 500)
+    const result = await UserD.where("balance", 500)
       .orWhere("name", "Kosasih")
       .onlyTrashed()
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should handle complex queries with onlyTrashed and multiple conditions", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("balance", 500)
+    const result = await UserD.where("balance", 500)
       .where("age", 100)
       .orWhere("name", "Kosasih")
       .onlyTrashed()
@@ -210,7 +189,5 @@ describe("Query builder - orWhere Clause Tests", () => {
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(0);
-
-    User["$useSoftDelete"] = false;
   });
 });

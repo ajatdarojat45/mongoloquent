@@ -32,7 +32,7 @@ describe("get method", () => {
     }
 
     class User extends Model<IUser> {
-      static $collection: string = "users";
+      protected $collection: string = "users";
       static $schema: IUser;
 
       phone() {
@@ -41,7 +41,7 @@ describe("get method", () => {
     }
 
     class Phone extends Model<IPhone> {
-      static $collection: string = "phones";
+      protected $collection: string = "phones";
       static $schema: IPhone;
     }
 
@@ -78,7 +78,7 @@ describe("get method", () => {
     }
 
     class User extends Model<IUser> {
-      static $collection: string = "users";
+      protected $collection: string = "users";
       static $schema: IUser;
 
       phone() {
@@ -87,9 +87,9 @@ describe("get method", () => {
     }
 
     class Phone extends Model<IPhone> {
-      static $collection: string = "phones";
+      protected $collection: string = "phones";
       static $schema: IPhone;
-      static $useSoftDelete: boolean = true;
+      protected $useSoftDelete: boolean = true;
     }
 
     it("return all documents", async () => {

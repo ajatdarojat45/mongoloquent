@@ -9,7 +9,7 @@ interface IUser extends IMongoloquentSchema {
 }
 
 class User extends Model<IUser> {
-  public static $useSoftDelete = true;
+  protected $useSoftDelete = true;
   public static $schema: IUser;
 }
 

@@ -37,7 +37,7 @@ describe("first method", () => {
     }
 
     class Application extends Model<IApplication> {
-      static $collection: string = "applications";
+      protected $collection: string = "applications";
       static $schema: IApplication;
 
       deployments() {
@@ -53,12 +53,12 @@ describe("first method", () => {
     }
 
     class Environment extends Model<IEnveronment> {
-      static $collection: string = "environments";
+      protected $collection: string = "environments";
       static $schema: IEnveronment;
     }
 
     class Deployment extends Model<Deployment> {
-      static $collection: string = "deployments";
+      protected $collection: string = "deployments";
       static $schema: Deployment;
     }
 
@@ -105,7 +105,7 @@ describe("first method", () => {
     }
 
     class Application extends Model<IApplication> {
-      static $collection: string = "applications";
+      protected $collection: string = "applications";
       static $schema: IApplication;
 
       deployments() {
@@ -121,12 +121,12 @@ describe("first method", () => {
     }
 
     class Environment extends Model<IEnveronment> {
-      static $collection: string = "environments";
+      protected $collection: string = "environments";
       static $schema: IEnveronment;
     }
 
     class Deployment extends Model<Deployment> {
-      static $collection: string = "deployments";
+      protected $collection: string = "deployments";
       static $schema: Deployment;
     }
 

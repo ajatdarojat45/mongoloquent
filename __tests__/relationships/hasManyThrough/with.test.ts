@@ -37,7 +37,7 @@ describe("with method", () => {
     }
 
     class Application extends Model<IApplication> {
-      static $collection: string = "applications";
+      protected $collection: string = "applications";
       static $schema: IApplication;
 
       deployments() {
@@ -53,12 +53,12 @@ describe("with method", () => {
     }
 
     class Environment extends Model<IEnveronment> {
-      static $collection: string = "environments";
+      protected $collection: string = "environments";
       static $schema: IEnveronment;
     }
 
     class Deployment extends Model<Deployment> {
-      static $collection: string = "deployments";
+      protected $collection: string = "deployments";
       static $schema: Deployment;
     }
 
@@ -187,8 +187,8 @@ describe("with method", () => {
     }
 
     class Application extends Model<IApplication> {
-      static $collection: string = "applications";
-      static $useSoftDelete: boolean = true;
+      protected $collection: string = "applications";
+      protected $useSoftDelete: boolean = true;
       static $schema: IApplication;
 
       deployments() {
@@ -204,14 +204,14 @@ describe("with method", () => {
     }
 
     class Environment extends Model<IEnveronment> {
-      static $collection: string = "environments";
-      static $useSoftDelete: boolean = true;
+      protected $collection: string = "environments";
+      protected $useSoftDelete: boolean = true;
       static $schema: IEnveronment;
     }
 
     class Deployment extends Model<Deployment> {
-      static $collection: string = "deployments";
-      static $useSoftDelete: boolean = true;
+      protected $collection: string = "deployments";
+      protected $useSoftDelete: boolean = true;
       static $schema: Deployment;
     }
 

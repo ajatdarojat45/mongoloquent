@@ -9,6 +9,14 @@ interface IUser extends IMongoloquentSchema {
 }
 class User extends Model<IUser> {
   static $schema: IUser;
+  protected $collection: string = "users";
+  protected $useSoftDelete: boolean = false;
+}
+
+class UserD extends Model<IUser> {
+  static $schema: IUser;
+  protected $collection: string = "users";
+  protected $useSoftDelete: boolean = true;
 }
 
 const query = User["query"]();
@@ -75,8 +83,6 @@ describe("User Model - all method", () => {
 
   // Test case: should return all users excluding soft deleted users
   it("should return all users excluding soft deleted users", async () => {
-    User["$useSoftDelete"] = false;
-
     const result = await User.all();
     expect(result?.length).toBe(3);
     expect(result).toEqual(expect.any(Array));
@@ -85,18 +91,14 @@ describe("User Model - all method", () => {
 
   // Test case: should return all users including soft deleted users
   it("should return all users including soft deleted users", async () => {
-    User["$useSoftDelete"] = true;
-
-    const result = await User.all();
+    const result = await UserD.all();
     expect(result?.length).toBe(2);
     expect(result).toEqual(expect.any(Array));
     expect(result?.[0]).toEqual(expect.any(Object));
   });
 
   it("all method with condition", async () => {
-    User["$useSoftDelete"] = true;
-
-    const result = await User.where("age", 20).all();
+    const result = await UserD.where("age", 20).all();
     expect(result?.length).toBe(1);
     expect(result).toEqual(expect.any(Array));
     expect(result?.[0]).toEqual(expect.any(Object));

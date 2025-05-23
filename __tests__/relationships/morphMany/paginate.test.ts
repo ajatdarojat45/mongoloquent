@@ -31,7 +31,7 @@ describe("paginate method", () => {
     }
 
     class Post extends Model<IPost> {
-      static $collection = "posts";
+      protected $collection = "posts";
       static $schema: Post;
 
       comments() {
@@ -40,8 +40,8 @@ describe("paginate method", () => {
     }
 
     class Comment extends Model<IComment> {
-      static $collection = "comments";
-      static $useTimestamps = false;
+      protected $collection = "comments";
+      protected $useTimestamps = false;
       static $schema: Comment;
     }
 
@@ -89,7 +89,7 @@ describe("paginate method", () => {
     }
 
     class Post extends Model<IPost> {
-      static $collection = "posts";
+      protected $collection = "posts";
       static $schema: Post;
 
       comments() {
@@ -98,8 +98,8 @@ describe("paginate method", () => {
     }
 
     class Comment extends Model<IComment> {
-      static $collection = "comments";
-      static $useTimestamps = false;
+      protected $collection = "comments";
+      protected $useTimestamps = false;
       static $schema: Comment;
     }
 

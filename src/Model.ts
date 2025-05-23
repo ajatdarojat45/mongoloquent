@@ -24,7 +24,6 @@ import MorphTo from "./relations/MorphTo";
 import MorphToMany from "./relations/MorphToMany";
 import MorphedByMany from "./relations/MorphedByMany";
 import { FormSchema } from "./types/schema";
-import { throws } from "assert";
 
 /**
  * Base model class for all MongoDB models
@@ -34,8 +33,34 @@ import { throws } from "assert";
 export default class Model<T> extends QueryBuilder<T> {
   /**
    * Dynamic property accessor for model attributes
+   *
+   * * @var any
    */
   [key: string]: any;
+
+  /** Schema definition for the document */
+  public static $schema: any;
+
+  /**
+   * The relationships that should always be loaded.
+   *
+   * @var Array
+   */
+  protected $with: string[] = [];
+
+  /**
+   * The relationships that should not be loaded.
+   *
+   * @var Array
+   */
+  private $without: string[] = [];
+
+  /**
+   * The relationships that should be loaded.
+   *
+   * @var Array
+   */
+  private $withOnly: string[] = [];
 
   /**
    * Creates a new model instance with a proxy to track property changes
@@ -601,7 +626,7 @@ export default class Model<T> extends QueryBuilder<T> {
    * @throws {MongoloquentNotFoundException} If no document found
    */
   public static async findOrFail(id: string | ObjectId) {
-    return this.query().findOrFail(id)
+    return this.query().findOrFail(id);
   }
 
   /**
@@ -1047,6 +1072,45 @@ export default class Model<T> extends QueryBuilder<T> {
   }
 
   /**
+   * Excludes default relations from the query
+   * @param {string | string[]} Name of the relation
+   *
+   * @returns {this} Model instance
+   **/
+  static without(this: typeof Model<any>, ...relations: (string | string[])[]) {
+    const flattenedRelations = relations.reduce<string[]>((acc, relation) => {
+      return acc.concat(Array.isArray(relation) ? relation : [relation]);
+    }, []);
+
+    const model = new this();
+    model.$without = [...flattenedRelations];
+
+    model.runDefaultRelation();
+    return model;
+  }
+
+  /**
+   * Includes only specific default relations in the query
+   * @param {string | string[]} Name of the relation
+   *
+   * @returns {this} Model instance
+   **/
+  static withOnly(
+    this: typeof Model<any>,
+    ...relations: (string | string[])[]
+  ) {
+    const flattenedRelations = relations.reduce<string[]>((acc, relation) => {
+      return acc.concat(Array.isArray(relation) ? relation : [relation]);
+    }, []);
+
+    const model = new this();
+    model.$withOnly = [...flattenedRelations];
+
+    model.runDefaultRelation();
+    return model;
+  }
+
+  /**
    * Creates a new query builder instance
    * @template M Type of the model class
    * @returns {Model<M["$schema"]>} New query builder instance
@@ -1054,6 +1118,26 @@ export default class Model<T> extends QueryBuilder<T> {
   public static query<M extends typeof Model<any>>(
     this: M,
   ): Model<M["$schema"]> {
-    return new this();
+    return new this().runDefaultRelation();
+  }
+
+  /**
+   * Runs the default relations based on the current state of the model
+   * @returns {this} Model instance
+   */
+  private runDefaultRelation() {
+    let _with = this.$with;
+
+    if (this.$withOnly.length > 0) _with = this.$withOnly;
+
+    if (this.$withOnly.length === 0 && this.$without.length > 0) {
+      _with = this.$with.filter((el) => !this.$without.includes(el));
+    }
+
+    _with.forEach((el) => {
+      this.with(el);
+    });
+
+    return this;
   }
 }

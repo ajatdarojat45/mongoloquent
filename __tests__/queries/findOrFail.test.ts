@@ -9,7 +9,7 @@ interface IUser extends IMongoloquentSchema {
 }
 class User extends Model<IUser> {
   static $schema: IUser;
-  static $useSoftDelete = true;
+  protected $useSoftDelete = true;
 }
 
 const query = User["query"]();

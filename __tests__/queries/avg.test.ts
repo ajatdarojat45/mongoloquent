@@ -10,6 +10,14 @@ interface IUser extends IMongoloquentSchema {
 // Define User model extending from Model
 class User extends Model<IUser> {
   static $schema: IUser;
+  protected $collection: string = "users";
+  protected $useSoftDelete: boolean = false;
+}
+
+class UserD extends Model<IUser> {
+  static $schema: IUser;
+  protected $collection: string = "users";
+  protected $useSoftDelete: boolean = true;
 }
 
 const query = User["query"]();
@@ -76,7 +84,6 @@ describe("User Model - avg method", () => {
 
   // Test case: should return average age excluding soft deleted users
   it("should return average age excluding soft deleted users", async () => {
-    User["$useSoftDelete"] = false;
     const result = await User.avg("age");
     expect(result).toEqual(expect.any(Number));
     expect(Math.round(result)).toBe(27);
@@ -84,8 +91,7 @@ describe("User Model - avg method", () => {
 
   // Test case: should return average age including soft deleted users
   it("should return average age including soft deleted users", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.avg("age");
+    const result = await UserD.avg("age");
 
     expect(result).toEqual(expect.any(Number));
     expect(result).toBe(15);
@@ -93,7 +99,6 @@ describe("User Model - avg method", () => {
 
   // Test case: should return average age for users with a specific name
   it("should return average age for users named 'Udin'", async () => {
-    User["$useSoftDelete"] = false;
     const result = await User.where("name", "Udin").avg("age");
 
     expect(result).toEqual(expect.any(Number));
@@ -102,7 +107,6 @@ describe("User Model - avg method", () => {
 
   // Test case: should return 0 for non-existent user data
   it("should return 0 for non-existent user data", async () => {
-    User["$useSoftDelete"] = false;
     const result = await User.where("name", "Udin1").avg("age");
 
     expect(result).toEqual(expect.any(Number));
@@ -111,7 +115,6 @@ describe("User Model - avg method", () => {
 
   // Test case: should return 0 for non-numeric field
   it("should return 0 for non-numeric field", async () => {
-    User["$useSoftDelete"] = false;
     const result = await User.avg("name");
     expect(result).toEqual(expect.any(Number));
     expect(result).toEqual(0);

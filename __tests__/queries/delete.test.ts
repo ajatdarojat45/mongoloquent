@@ -18,7 +18,7 @@ describe("delete method", () => {
 
       class Flight extends Model<IFlight> {
         static $schema: IFlight;
-        static $useSoftDelete = false;
+        protected $useSoftDelete = false;
       }
 
       const flight = new Flight();
@@ -45,7 +45,7 @@ describe("delete method", () => {
 
       class Flight extends Model<IFlight> {
         static $schema: IFlight;
-        static $useSoftDelete = false;
+        protected $useSoftDelete = false;
       }
 
       const flight = new Flight();
@@ -72,7 +72,7 @@ describe("delete method", () => {
       }
       class Flight extends Model<IFlight> {
         static $schema: IFlight;
-        static $useSoftDelete = false;
+        protected $useSoftDelete = false;
       }
 
       await Flight.insertMany([
@@ -98,7 +98,7 @@ describe("delete method", () => {
 
       class Flight extends Model<IFlight> {
         static $schema: IFlight;
-        static $useSoftDelete = true;
+        protected $useSoftDelete = true;
       }
 
       const flight = new Flight();
@@ -135,7 +135,7 @@ describe("delete method", () => {
 
       class Flight extends Model<IFlight> {
         static $schema: IFlight;
-        static $useSoftDelete = true;
+        protected $useSoftDelete = true;
       }
 
       const flight = new Flight();
@@ -172,7 +172,7 @@ describe("delete method", () => {
       }
       class Flight extends Model<IFlight> {
         static $schema: IFlight;
-        static $useSoftDelete = true;
+        protected $useSoftDelete = true;
       }
 
       await Flight.insertMany([

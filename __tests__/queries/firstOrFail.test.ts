@@ -9,7 +9,7 @@ interface ITestModel {
 }
 
 class TestModel extends Model<ITestModel> {
-  static $collection = "testCollection";
+  protected $collection = "testCollection";
   static $schema: ITestModel;
 }
 

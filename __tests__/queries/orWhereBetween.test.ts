@@ -9,6 +9,11 @@ interface IUser extends IMongoloquentSchema {
 }
 class User extends Model<IUser> {}
 
+class UserD extends Model<IUser> {
+  protected $useSoftDelete = true;
+  protected $collection: string = "users";
+}
+
 const query = User["query"]();
 const userCollection = query["getCollection"]();
 
@@ -104,111 +109,84 @@ describe("QueryBuilder - orWhereBetween method", () => {
   });
 
   it("should apply soft delete with orWhereBetween", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.orWhereBetween("balance", [400, 500]).get();
+    const result = await UserD.orWhereBetween("balance", [400, 500]).get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(4);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should combine soft delete with multiple orWhereBetween conditions", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.orWhereBetween("age", [5, 10])
+    const result = await UserD.orWhereBetween("age", [5, 10])
       .orWhereBetween("balance", [400, 500])
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(4);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should combine soft delete with whereBetween and orWhereBetween", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.whereBetween("age", [5, 10])
+    const result = await UserD.whereBetween("age", [5, 10])
       .orWhereBetween("balance", [400, 500])
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(3);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should include soft deleted records with withTrashed and orWhereBetween", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.orWhereBetween("age", [5, 10])
+    const result = await UserD.orWhereBetween("age", [5, 10])
       .withTrashed()
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(3);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should combine withTrashed, soft delete and mixed conditions", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("age", 5)
+    const result = await UserD.where("age", 5)
       .orWhereBetween("balance", [400, 500])
       .withTrashed()
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(3);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should combine withTrashed, soft delete and multiple between conditions", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.whereBetween("age", [5, 10])
+    const result = await UserD.whereBetween("age", [5, 10])
       .orWhereBetween("balance", [400, 500])
       .withTrashed()
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(4);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should filter only soft deleted records with onlyTrashed", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.whereBetween("age", [5, 50]).onlyTrashed().get();
+    const result = await UserD.whereBetween("age", [5, 50]).onlyTrashed().get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should combine onlyTrashed with mixed conditions", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("age", 5)
+    const result = await UserD.where("age", 5)
       .orWhereBetween("balance", [400, 500])
       .onlyTrashed()
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should combine onlyTrashed with multiple between conditions", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.whereBetween("age", [5, 10])
+    const result = await UserD.whereBetween("age", [5, 10])
       .orWhereBetween("balance", [200, 500])
       .onlyTrashed()
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should handle orWhereBetween with incomplete range values", async () => {

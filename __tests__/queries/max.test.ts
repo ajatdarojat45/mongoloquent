@@ -9,6 +9,11 @@ interface IUser extends IMongoloquentSchema {
 
 class User extends Model<IUser> {}
 
+class UserD extends Model<IUser> {
+  protected $useSoftDelete = true;
+  protected $collection: string = "users";
+}
+
 const query = User["query"]();
 const userCollection = query["getCollection"]();
 
@@ -71,7 +76,6 @@ describe("User Model - max method", () => {
   });
 
   it("should return the maximum age value without soft delete", async () => {
-    User["$useSoftDelete"] = false;
     const result = await User.max("age");
 
     expect(result).toEqual(expect.any(Number));
@@ -79,16 +83,13 @@ describe("User Model - max method", () => {
   });
 
   it("should return the maximum age value with soft delete enabled", async () => {
-    User["$useSoftDelete"] = true;
-
-    const result = await User.max("age");
+    const result = await UserD.max("age");
 
     expect(result).toEqual(expect.any(Number));
     expect(result).toBe(20);
   });
 
   it("should return the maximum age value for a specific user", async () => {
-    User["$useSoftDelete"] = false;
     const result = await User.where("name", "Udin").max("age");
 
     expect(result).toEqual(expect.any(Number));
@@ -96,7 +97,6 @@ describe("User Model - max method", () => {
   });
 
   it("should return 0 when no matching data is found", async () => {
-    User["$useSoftDelete"] = false;
     const result = await User.where("name", "Udin1").max("age");
 
     expect(result).toEqual(expect.any(Number));
@@ -104,7 +104,6 @@ describe("User Model - max method", () => {
   });
 
   it("should return 0 when the field is not a number", async () => {
-    User["$useSoftDelete"] = false;
     const result = await User.max("name");
     expect(result).toEqual(expect.any(Number));
     expect(result).toEqual(0);

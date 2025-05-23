@@ -33,7 +33,7 @@ describe("all method", () => {
     }
 
     class User extends Model<IUser> {
-      static $collection: string = "users";
+      protected $collection: string = "users";
       static $schema: IUser;
 
       roles() {
@@ -42,7 +42,7 @@ describe("all method", () => {
     }
 
     class Role extends Model<IRole> {
-      static $collection: string = "roles";
+      protected $collection: string = "roles";
       static $schema: IRole;
     }
 
@@ -93,9 +93,9 @@ describe("all method", () => {
     }
 
     class User extends Model<IUser> {
-      static $collection: string = "users";
+      protected $collection: string = "users";
       static $schema: IUser;
-      static $useSoftDelete: boolean = true;
+      protected $useSoftDelete: boolean = true;
 
       roles() {
         return this.belongsToMany(Role);
@@ -103,9 +103,9 @@ describe("all method", () => {
     }
 
     class Role extends Model<IRole> {
-      static $collection: string = "roles";
+      protected $collection: string = "roles";
       static $schema: IRole;
-      static $useSoftDelete: boolean = true;
+      protected $useSoftDelete: boolean = true;
     }
 
     const names = [User.name.toLowerCase(), Role.name.toLowerCase()].sort();

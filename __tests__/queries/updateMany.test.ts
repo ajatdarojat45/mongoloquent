@@ -26,7 +26,7 @@ describe("updateMany method", () => {
 
     class Flight extends Model<IFlight> {
       static $schema: IFlight;
-      static $useTimestamps = false;
+      protected $useTimestamps = false;
     }
 
     await Flight.insertMany([
@@ -71,7 +71,7 @@ describe("updateMany method", () => {
 
     class Flight extends Model<IFlight> {
       static $schema: IFlight;
-      static $useTimestamps = true;
+      protected $useTimestamps = true;
     }
 
     await Flight.insertMany([

@@ -38,7 +38,7 @@ describe("paginate method", () => {
       }
 
       class Application extends Model<IApplication> {
-        static $collection: string = "applications";
+        protected $collection: string = "applications";
         static $schema: IApplication;
 
         deployments() {
@@ -54,12 +54,12 @@ describe("paginate method", () => {
       }
 
       class Environment extends Model<IEnveronment> {
-        static $collection: string = "environments";
+        protected $collection: string = "environments";
         static $schema: IEnveronment;
       }
 
       class Deployment extends Model<Deployment> {
-        static $collection: string = "deployments";
+        protected $collection: string = "deployments";
         static $schema: Deployment;
       }
 
@@ -115,7 +115,7 @@ describe("paginate method", () => {
       }
 
       class Application extends Model<IApplication> {
-        static $collection: string = "applications";
+        protected $collection: string = "applications";
         static $schema: IApplication;
 
         deployments() {
@@ -131,12 +131,12 @@ describe("paginate method", () => {
       }
 
       class Environment extends Model<IEnveronment> {
-        static $collection: string = "environments";
+        protected $collection: string = "environments";
         static $schema: IEnveronment;
       }
 
       class Deployment extends Model<Deployment> {
-        static $collection: string = "deployments";
+        protected $collection: string = "deployments";
         static $schema: Deployment;
       }
 
@@ -200,9 +200,9 @@ describe("paginate method", () => {
       }
 
       class Application extends Model<IApplication> {
-        static $collection: string = "applications";
+        protected $collection: string = "applications";
         static $schema: IApplication;
-        static $useSoftDelete: boolean = true;
+        protected $useSoftDelete: boolean = true;
 
         deployments() {
           return this.hasManyThrough(
@@ -217,15 +217,15 @@ describe("paginate method", () => {
       }
 
       class Environment extends Model<IEnveronment> {
-        static $collection: string = "environments";
+        protected $collection: string = "environments";
         static $schema: IEnveronment;
-        static $useSoftDelete: boolean = true;
+        protected $useSoftDelete: boolean = true;
       }
 
       class Deployment extends Model<Deployment> {
-        static $collection: string = "deployments";
+        protected $collection: string = "deployments";
         static $schema: Deployment;
-        static $useSoftDelete: boolean = true;
+        protected $useSoftDelete: boolean = true;
       }
 
       const applicationIds = await Application.insertMany([
@@ -303,9 +303,9 @@ describe("paginate method", () => {
       }
 
       class Application extends Model<IApplication> {
-        static $collection: string = "applications";
+        protected $collection: string = "applications";
         static $schema: IApplication;
-        static $useSoftDelete: boolean = true;
+        protected $useSoftDelete: boolean = true;
 
         deployments() {
           return this.hasManyThrough(
@@ -320,15 +320,15 @@ describe("paginate method", () => {
       }
 
       class Environment extends Model<IEnveronment> {
-        static $collection: string = "environments";
+        protected $collection: string = "environments";
         static $schema: IEnveronment;
-        static $useSoftDelete: boolean = true;
+        protected $useSoftDelete: boolean = true;
       }
 
       class Deployment extends Model<Deployment> {
-        static $collection: string = "deployments";
+        protected $collection: string = "deployments";
         static $schema: Deployment;
-        static $useSoftDelete: boolean = true;
+        protected $useSoftDelete: boolean = true;
       }
 
       const applicationIds = await Application.insertMany([

@@ -33,7 +33,7 @@ describe("get method", () => {
       }
 
       class Post extends Model<IPost> {
-        static $collection = "posts";
+        protected $collection = "posts";
         static $schema: Post;
 
         comments() {
@@ -42,8 +42,8 @@ describe("get method", () => {
       }
 
       class Comment extends Model<IComment> {
-        static $collection = "comments";
-        static $useTimestamps = false;
+        protected $collection = "comments";
+        protected $useTimestamps = false;
         static $schema: Comment;
       }
 
@@ -86,7 +86,7 @@ describe("get method", () => {
       }
 
       class Post extends Model<IPost> {
-        static $collection = "posts";
+        protected $collection = "posts";
         static $schema: Post;
 
         comments() {
@@ -95,8 +95,8 @@ describe("get method", () => {
       }
 
       class Comment extends Model<IComment> {
-        static $collection = "comments";
-        static $useTimestamps = false;
+        protected $collection = "comments";
+        protected $useTimestamps = false;
         static $schema: Comment;
       }
 
@@ -137,7 +137,7 @@ describe("get method", () => {
       }
 
       class Post extends Model<IPost> {
-        static $collection = "posts";
+        protected $collection = "posts";
         static $schema: Post;
 
         comments() {
@@ -146,8 +146,8 @@ describe("get method", () => {
       }
 
       class Comment extends Model<IComment> {
-        static $collection = "comments";
-        static $useTimestamps = false;
+        protected $collection = "comments";
+        protected $useTimestamps = false;
         static $schema: Comment;
       }
 
@@ -188,7 +188,7 @@ describe("get method", () => {
       }
 
       class Post extends Model<IPost> {
-        static $collection = "posts";
+        protected $collection = "posts";
         static $schema: Post;
 
         comments() {
@@ -197,8 +197,8 @@ describe("get method", () => {
       }
 
       class Comment extends Model<IComment> {
-        static $collection = "comments";
-        static $useTimestamps = false;
+        protected $collection = "comments";
+        protected $useTimestamps = false;
         static $schema: Comment;
       }
 

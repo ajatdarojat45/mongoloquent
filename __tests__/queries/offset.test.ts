@@ -10,6 +10,11 @@ interface IUser extends IMongoloquentSchema {
 
 class User extends Model<IUser> {}
 
+class UserD extends Model<IUser> {
+  protected $useSoftDelete = true;
+  protected $collection: string = "users";
+}
+
 const query = User["query"]();
 const userCollection = query["getCollection"]();
 
@@ -118,61 +123,45 @@ describe("Offset Query Tests - Pagination and Result Skipping", () => {
   });
 
   it("should skip first 3 records when using offset with limit and soft delete", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.limit(2).offset(3).get();
+    const result = await UserD.limit(2).offset(3).get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should skip first 2 records when using offset with soft delete", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.offset(2).get();
+    const result = await UserD.offset(2).get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(2);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should skip first record when using offset with soft delete and where condition", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("age", 5).offset(1).get();
+    const result = await UserD.where("age", 5).offset(1).get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should skip first record when using offset with soft delete and or condition", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.orWhere("IS_DELETED", false).offset(1).get();
+    const result = await UserD.orWhere("IS_DELETED", false).offset(1).get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(3);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should skip first record when using offset with soft delete and and condition", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("age", 5)
+    const result = await UserD.where("age", 5)
       .where(query.getIsDeleted(), false)
       .offset(1)
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should skip first record when using offset with soft delete and and & or condition", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("age", 5)
+    const result = await UserD.where("age", 5)
       .where("Name", "Udin")
       .orWhere("balance", 500)
       .offset(1)
@@ -180,56 +169,41 @@ describe("Offset Query Tests - Pagination and Result Skipping", () => {
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(0);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should skip first record when using offset with soft delete and whereBetween", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.whereBetween("age", [5, 10]).offset(1).get();
+    const result = await UserD.whereBetween("age", [5, 10]).offset(1).get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(2);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should skip first record when using offset with soft delete and withTrashed", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.withTrashed().offset(1).get();
+    const result = await UserD.withTrashed().offset(1).get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(4);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should skip first record when using offset with soft delete, withTrashed and where condition", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("age", 5).withTrashed().offset(1).get();
+    const result = await UserD.where("age", 5).withTrashed().offset(1).get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should skip first record when using offset with soft delete, withTrashed and or condition", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.orWhere(query.getIsDeleted(), false)
+    const result = await UserD.orWhere(query.getIsDeleted(), false)
       .withTrashed()
       .offset(1)
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(3);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should skip first record when using offset with soft delete, withTrashed and and condition", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("age", 5)
+    const result = await UserD.where("age", 5)
       .where(query.getIsDeleted(), false)
       .withTrashed()
       .offset(1)
@@ -237,13 +211,10 @@ describe("Offset Query Tests - Pagination and Result Skipping", () => {
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(1);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should skip first record when using offset with soft delete, withTrashed and and & or condition", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("age", 5)
+    const result = await UserD.where("age", 5)
       .where("name", "Kosasih")
       .orWhere("balance", 500)
       .withTrashed()
@@ -252,46 +223,34 @@ describe("Offset Query Tests - Pagination and Result Skipping", () => {
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(2);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should skip first record when using offset with soft delete and onlyTrashed", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.onlyTrashed().offset(1).get();
+    const result = await UserD.onlyTrashed().offset(1).get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(0);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should skip first record when using offset with soft delete, onlyTrashed and where condition", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("age", 45).onlyTrashed().offset(1).get();
+    const result = await UserD.where("age", 45).onlyTrashed().offset(1).get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(0);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should skip first record when using offset with soft delete, onlyTrashed and or condition", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.orWhere("balance", 500)
+    const result = await UserD.orWhere("balance", 500)
       .onlyTrashed()
       .offset(1)
       .get();
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(0);
-
-    User["$useSoftDelete"] = false;
   });
 
   it("should skip first record when using offset with soft delete, onlyTrashed and and condition", async () => {
-    User["$useSoftDelete"] = true;
-    const result = await User.where("age", 45)
+    const result = await UserD.where("age", 45)
       .where("balance", 500)
       .onlyTrashed()
       .offset(1)
@@ -299,7 +258,5 @@ describe("Offset Query Tests - Pagination and Result Skipping", () => {
 
     expect(result).toEqual(expect.any(Array));
     expect(result).toHaveLength(0);
-
-    User["$useSoftDelete"] = false;
   });
 });
