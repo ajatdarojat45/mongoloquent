@@ -24,7 +24,6 @@ import MorphTo from "./relations/MorphTo";
 import MorphToMany from "./relations/MorphToMany";
 import MorphedByMany from "./relations/MorphedByMany";
 import { FormSchema } from "./types/schema";
-import { throws } from "assert";
 
 /**
  * Base model class for all MongoDB models
@@ -34,8 +33,13 @@ import { throws } from "assert";
 export default class Model<T> extends QueryBuilder<T> {
   /**
    * Dynamic property accessor for model attributes
+   *
+   * * @var any
    */
   [key: string]: any;
+
+  /** Schema definition for the document */
+  public static $schema: any;
 
   /**
    * Creates a new model instance with a proxy to track property changes
@@ -601,7 +605,7 @@ export default class Model<T> extends QueryBuilder<T> {
    * @throws {MongoloquentNotFoundException} If no document found
    */
   public static async findOrFail(id: string | ObjectId) {
-    return this.query().findOrFail(id)
+    return this.query().findOrFail(id);
   }
 
   /**
