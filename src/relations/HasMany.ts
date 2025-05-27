@@ -336,6 +336,14 @@ export default class HasMany<T, M> extends QueryBuilder<M> {
       });
     }
 
+    hasMany.model["$nested"].forEach(el => {
+      if (typeof hasMany.relatedModel[el] === "function") {
+        hasMany.relatedModel["$alias"] = el
+        const nested = hasMany.relatedModel[el]()
+        pipeline.push(...nested.model.$lookups)
+      }
+    })
+
     // Define the $lookup stage
     const $lookup = {
       from: hasMany.relatedModel["$collection"],
