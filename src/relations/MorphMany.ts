@@ -373,6 +373,14 @@ export default class MorphMany<T, M> extends QueryBuilder<M> {
       });
     }
 
+    morphMany.model["$nested"].forEach(el => {
+      if (typeof morphMany.relatedModel[el] === "function") {
+        morphMany.relatedModel["$alias"] = el
+        const nested = morphMany.relatedModel[el]()
+        pipeline.push(...nested.model.$lookups)
+      }
+    })
+
     // Define the $lookup stage
     const $lookup = {
       from: morphMany.relatedModel["$collection"],
