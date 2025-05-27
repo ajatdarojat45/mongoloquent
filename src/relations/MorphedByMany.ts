@@ -251,6 +251,14 @@ export default class MorphedByMany<T, M> extends QueryBuilder<M> {
       });
     }
 
+    morphedByMany.model["$nested"].forEach(el => {
+      if (typeof morphedByMany.relatedModel[el] === "function") {
+        morphedByMany.relatedModel["$alias"] = el
+        const nested = morphedByMany.relatedModel[el]()
+        pipeline.push(...nested.model.$lookups)
+      }
+    })
+
     // Define the $lookup stages
     lookup.push(
       {
