@@ -664,6 +664,14 @@ export default class MorphToMany<T, M> extends QueryBuilder<M> {
       });
     }
 
+    morphToMany.model["$nested"].forEach(el => {
+      if (typeof morphToMany.relatedModel[el] === "function") {
+        morphToMany.relatedModel["$alias"] = el
+        const nested = morphToMany.relatedModel[el]()
+        pipeline.push(...nested.model.$lookups)
+      }
+    })
+
     // Define the $lookup stages
     lookup.push(
       {
