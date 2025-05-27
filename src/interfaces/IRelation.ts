@@ -31,7 +31,7 @@ export interface IRelationHasOne {
   localKey: string;
   alias: string;
   options: IRelationOptions;
-  nested?: string[]
+  nested?: string[];
 }
 
 export interface IRelationBelongsTo {
@@ -42,6 +42,7 @@ export interface IRelationBelongsTo {
   ownerKey: string;
   alias: string;
   options: IRelationOptions;
+  nested?: string[];
 }
 
 export interface IRelationHasMany {
@@ -52,7 +53,7 @@ export interface IRelationHasMany {
   localKey: string;
   alias: string;
   options: IRelationOptions;
-  nested?: string[]
+  nested?: string[];
 }
 
 export interface IRelationHasManyThrough {
@@ -66,7 +67,7 @@ export interface IRelationHasManyThrough {
   localKeyThrough: string;
   alias: string;
   options: IRelationOptions;
-  nested?: string[]
+  nested?: string[];
 }
 
 export interface IRelationBelongsToMany {
@@ -80,7 +81,7 @@ export interface IRelationBelongsToMany {
   relatedKey: string;
   alias: string;
   options: IRelationOptions;
-  nested?: string[]
+  nested?: string[];
 }
 
 export interface IRelationMorphTo {
@@ -92,6 +93,7 @@ export interface IRelationMorphTo {
   morphType: string;
   alias: string;
   options: IRelationOptions;
+  nested?: string[];
 }
 
 export interface IRelationMorphMany {
@@ -103,6 +105,7 @@ export interface IRelationMorphMany {
   morphType: string;
   alias: string;
   options: IRelationOptions;
+  nested?: string[];
 }
 
 export interface IRelationMorphToMany {
@@ -115,6 +118,7 @@ export interface IRelationMorphToMany {
   morphCollectionName: string;
   alias: string;
   options: IRelationOptions;
+  nested?: string[];
 }
 
 export interface IRelationMorphedByMany {
@@ -127,4 +131,5 @@ export interface IRelationMorphedByMany {
   morphCollectionName: string;
   alias: string;
   options: IRelationOptions;
+  nested?: string[];
 }
