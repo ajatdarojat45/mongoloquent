@@ -62,6 +62,8 @@ export default class Model<T> extends QueryBuilder<T> {
    */
   private $withOnly: string[] = [];
 
+  protected $nested: string[] = []
+
   /**
    * Creates a new model instance with a proxy to track property changes
    */
@@ -712,15 +714,34 @@ export default class Model<T> extends QueryBuilder<T> {
    */
   public static with<M extends typeof Model<any>>(
     this: M,
-    relation: string,
+    relation: string | Record<string, string[]>,
     options: IRelationOptions = {},
   ) {
     const model = this.query();
-    model.$alias = relation;
-    model.$options = options;
 
-    if (typeof model[relation] === "function") {
-      model[relation]();
+    if (typeof relation === "string") {
+      if (relation.includes(".")) {
+        const [_relation, ...rest] = relation.split(".")
+
+        relation = _relation
+        model.$nested = [...model.$nested, ...rest]
+      }
+
+      model.$alias = relation;
+      model.$options = options;
+
+      if (typeof model[relation] === "function") {
+        model[relation]();
+      }
+    } else if (typeof relation === "object") {
+      for (const key in relation) {
+        model.$alias = key
+        model.$nested = relation[key]
+
+        if (typeof model[key] === "function") {
+          model[key]();
+        }
+      }
     }
 
     return model;
@@ -732,12 +753,30 @@ export default class Model<T> extends QueryBuilder<T> {
    * @param {IRelationOptions} [options={}] Relation loading options
    * @returns {this} Model instance
    */
-  public with(relation: string, options: IRelationOptions = {}) {
-    this.$alias = relation;
-    this.$options = options;
+  public with(relation: string | Record<string, string[]>, options: IRelationOptions = {}) {
+    if (typeof relation === "string") {
+      const [_relation, ...rest] = relation.split(".")
+      if (relation.includes(".")) {
 
-    if (typeof this[relation] === "function") {
-      this[relation]();
+        relation = _relation
+        this.$nested = [...this.$nested, ...rest]
+      }
+
+      this.$alias = relation;
+      this.$options = options;
+
+      if (typeof this[relation] === "function") {
+        this[relation]();
+      }
+    } else if (typeof relation === "object") {
+      for (const key in relation) {
+        this.$alias = key
+        this.$nested = relation[key]
+
+        if (typeof this[key] === "function") {
+          this[key]();
+        }
+      }
     }
 
     return this;
