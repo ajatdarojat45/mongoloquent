@@ -260,6 +260,14 @@ export default class HasManyThrough<T, M, TM> extends QueryBuilder<M> {
       });
     }
 
+    hasManyThrough.model["$nested"].forEach(el => {
+      if (typeof hasManyThrough.relatedModel[el] === "function") {
+        hasManyThrough.relatedModel["$alias"] = el
+        const nested = hasManyThrough.relatedModel[el]()
+        pipeline.push(...nested.model.$lookups)
+      }
+    })
+
     // Define the $lookup stages
     lookup.push(
       {
