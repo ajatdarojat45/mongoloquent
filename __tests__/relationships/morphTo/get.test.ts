@@ -1,39 +1,49 @@
+import { ObjectId } from "mongodb";
+
+import DB from "../../../src/DB";
 import Model from "../../../src/Model";
 import {
   IMongoloquentSchema,
   IMongoloquentSoftDelete,
 } from "../../../src/interfaces/ISchema";
 
+beforeEach(async () => {
+  await DB.collection("comments").getCollection().deleteMany({});
+  await DB.collection("posts").getCollection().deleteMany({});
+});
+
+afterEach(async () => {
+  await DB.collection("posts").getCollection().deleteMany({});
+  await DB.collection("comments").getCollection().deleteMany({});
+});
+
 describe("get method", () => {
   describe("without soft delete", () => {
     interface IPost extends IMongoloquentSchema {
       title: string;
       body: string;
-      comments?: Comment[];
+      comment?: Comment;
     }
 
     interface IComment extends IMongoloquentSchema {
       body: string;
       url: string;
-      post: Post;
+      commentableId: ObjectId;
+      commentableType: string;
     }
 
     class Post extends Model<IPost> {
       protected $collection: string = "posts";
       static $schema: IPost;
 
-      comments() {
-        return this.morphMany(Comment, "commentable");
+      comment() {
+        return this.morphTo(Comment, "commentable");
       }
     }
 
     class Comment extends Model<IComment> {
       protected $collection: string = "comments";
       static $schema: IComment;
-
-      post() {
-        return this.morphTo(Post, "commentable");
-      }
     }
 
     it("return all doc", async () => {
@@ -43,15 +53,24 @@ describe("get method", () => {
         { title: "Post 3", body: "Post 3 body" },
       ]);
 
-      const post1 = await Post.find(postIds[0]);
-      const commentIds = await post1.comments().saveMany([
-        { body: "Comment 1", url: "url1" },
-        { body: "Comment 2", url: "url2" },
+      await Comment.insertMany([
+        {
+          body: "Comment 1",
+          url: "url1",
+          commentableId: postIds[0],
+          commentableType: "Post",
+        },
+        {
+          body: "Comment 2",
+          url: "url2",
+          commentableId: postIds[1],
+          commentableType: "Post",
+        },
       ]);
 
-      const comment1 = await Comment.find(commentIds[0]);
-      const posts = await comment1.post().get();
-      expect(posts.length).toBe(1);
+      const post = await Post.find(postIds[0]);
+      const comments = await post.comment().get();
+      expect(comments.length).toBe(1);
     });
   });
 
@@ -59,13 +78,15 @@ describe("get method", () => {
     interface IPost extends IMongoloquentSchema, IMongoloquentSoftDelete {
       title: string;
       body: string;
-      comments?: Comment[];
+      comment?: Comment;
     }
 
     interface IComment extends IMongoloquentSchema, IMongoloquentSoftDelete {
       body: string;
       url: string;
-      post: Post;
+      commentableId: ObjectId;
+      commentableType: string;
+      post?: Post;
     }
 
     class Post extends Model<IPost> {
@@ -73,8 +94,8 @@ describe("get method", () => {
       static $schema: IPost;
       protected $useSoftDelete: boolean = true;
 
-      comments() {
-        return this.morphMany(Comment, "commentable");
+      comment() {
+        return this.morphTo(Comment, "commentable");
       }
     }
 
@@ -82,10 +103,6 @@ describe("get method", () => {
       protected $collection: string = "comments";
       static $schema: IComment;
       protected $useSoftDelete: boolean = true;
-
-      post() {
-        return this.morphTo(Post, "commentable");
-      }
     }
 
     it("return all doc", async () => {
@@ -94,21 +111,29 @@ describe("get method", () => {
         { title: "Post 2", body: "Post 2 body" },
         { title: "Post 3", body: "Post 3 body" },
       ]);
-
-      const post1 = await Post.find(postIds[0]);
-      const commentIds = await post1.comments().saveMany([
-        { body: "Comment 1", url: "url1" },
-        { body: "Comment 2", url: "url2" },
+      const commentIds = await Comment.insertMany([
+        {
+          body: "Comment 1",
+          url: "url1",
+          commentableId: postIds[0],
+          commentableType: "Post",
+        },
+        {
+          body: "Comment 2",
+          url: "url2",
+          commentableId: postIds[1],
+          commentableType: "Post",
+        },
       ]);
 
-      await Post.destroy(postIds[0]);
+      await Comment.destroy(commentIds[0]);
 
-      const comment1 = await Comment.find(commentIds[0]);
-      const posts = await comment1.post().get();
-      expect(posts.length).toBe(0);
+      const post = await Post.find(postIds[0]);
+      const comments = await post.comment().get();
+      expect(comments.length).toBe(0);
 
-      const posts2 = await comment1.post().withTrashed().get();
-      expect(posts2.length).toBe(1);
+      const comments2 = await post.comment().withTrashed().get();
+      expect(comments2.length).toBe(1);
     });
   });
 });
