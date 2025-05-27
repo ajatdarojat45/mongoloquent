@@ -639,6 +639,14 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
       });
     }
 
+    belongsToMany.model["$nested"].forEach(el => {
+      if (typeof belongsToMany.relatedModel[el] === "function") {
+        belongsToMany.relatedModel["$alias"] = el
+        const nested = belongsToMany.relatedModel[el]()
+        pipeline.push(...nested.model.$lookups)
+      }
+    })
+
     // Define the $lookup stages
     lookup.push(
       {
