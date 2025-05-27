@@ -226,6 +226,14 @@ export default class BelongsTo<T, M> extends QueryBuilder<M> {
       });
     }
 
+    belongsTo.model["$nested"].forEach(el => {
+      if (typeof belongsTo.relatedModel[el] === "function") {
+        belongsTo.relatedModel["$alias"] = el
+        const nested = belongsTo.relatedModel[el]()
+        pipeline.push(...nested.model.$lookups)
+      }
+    })
+
     // Define the $lookup stage
     const $lookup = {
       from: belongsTo.relatedModel["$collection"],
