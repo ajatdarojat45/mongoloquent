@@ -7,6 +7,7 @@ import QueryBuilder from "../QueryBuilder";
 import { IModelPaginate } from "../interfaces/IModel";
 import { IRelationMorphMany } from "../interfaces/IRelation";
 import { FormSchema } from "../types/schema";
+import { populate } from "dotenv";
 
 /**
  * MorphMany relationship class
@@ -304,27 +305,6 @@ export default class MorphMany<T, M> extends QueryBuilder<M> {
       lookup.push(...exclude);
     }
 
-    // // Generate the sort stages if options.sort is provided
-    // if (morphMany.options?.sort) {
-    //   const sort = LookupBuilder.sort(
-    //     morphMany.options?.sort[0],
-    //     morphMany.options?.sort[1],
-    //   );
-    //   lookup.push(sort);
-    // }
-
-    // // Generate the skip stages if options.skip is provided
-    // if (morphMany.options?.skip) {
-    //   const skip = LookupBuilder.skip(morphMany.options?.skip);
-    //   lookup.push(skip);
-    // }
-
-    // // Generate the limit stages if options.limit is provided
-    // if (morphMany.options?.limit) {
-    //   const limit = LookupBuilder.limit(morphMany.options?.limit);
-    //   lookup.push(limit);
-    // }
-
     // Return the combined lookup, select, and exclude stages
     return lookup;
   }
@@ -372,6 +352,35 @@ export default class MorphMany<T, M> extends QueryBuilder<M> {
         },
       });
     }
+
+    // Generate the sort stages if options.sort is provided
+    if (morphMany.options?.sort) {
+      const sort = LookupBuilder.sort(
+        morphMany.options?.sort[0],
+        morphMany.options?.sort[1],
+      );
+      pipeline.push(sort);
+    }
+
+    // Generate the skip stages if options.skip is provided
+    if (morphMany.options?.skip) {
+      const skip = LookupBuilder.skip(morphMany.options?.skip);
+      pipeline.push(skip);
+    }
+
+    // Generate the limit stages if options.limit is provided
+    if (morphMany.options?.limit) {
+      const limit = LookupBuilder.limit(morphMany.options?.limit);
+      pipeline.push(limit);
+    }
+
+    morphMany.model["$nested"].forEach(el => {
+      if (typeof morphMany.relatedModel[el] === "function") {
+        morphMany.relatedModel["$alias"] = el
+        const nested = morphMany.relatedModel[el]()
+        pipeline.push(...nested.model.$lookups)
+      }
+    })
 
     // Define the $lookup stage
     const $lookup = {

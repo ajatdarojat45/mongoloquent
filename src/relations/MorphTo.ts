@@ -161,7 +161,10 @@ export default class MorphTo<T, M> extends QueryBuilder<M> {
    * @returns {Promise<void>}
    */
   private async setDefaultCondition() {
-    this.where("_id" as keyof M, this.model["$original"][this.morphId]);
+    this.where(this.morphType as any, this.model.constructor.name).where(
+      this.morphId as any,
+      (this.model["$original"] as any)["_id"],
+    );
   }
 
   /**
@@ -205,17 +208,42 @@ export default class MorphTo<T, M> extends QueryBuilder<M> {
       pipeline.push({
         $match: {
           $expr: {
-            $and: [{ $eq: [`$${morphTo.relatedModel.getIsDeleted()}`, false] }],
+            $and: [
+              { $eq: [`$${morphTo.relatedModel.getIsDeleted()}`, false] },
+              {
+                $eq: [`$${morphTo.morphType}`, morphTo.model.constructor.name],
+              },
+            ],
+          },
+        },
+      });
+    } else {
+      pipeline.push({
+        $match: {
+          $expr: {
+            $and: [
+              {
+                $eq: [`$${morphTo.morphType}`, morphTo.model.constructor.name],
+              },
+            ],
           },
         },
       });
     }
 
+    morphTo.model["$nested"].forEach((el) => {
+      if (typeof morphTo.relatedModel[el] === "function") {
+        morphTo.relatedModel["$alias"] = el;
+        const nested = morphTo.relatedModel[el]();
+        pipeline.push(...nested.model.$lookups);
+      }
+    });
+
     // Define the $lookup stage
     const $lookup = {
       from: morphTo.relatedModel["$collection"],
-      foreignField: "_id",
-      localField: `${morphTo.morphId}`,
+      localField: "_id",
+      foreignField: `${morphTo.morphId}`,
       as: alias,
       pipeline: pipeline,
     };

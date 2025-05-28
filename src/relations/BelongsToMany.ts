@@ -592,27 +592,6 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
       lookup.push(...exclude);
     }
 
-    // // Generate the sort stages if options.sort is provided
-    // if (belongsToMany.options?.sort) {
-    //   const sort = LookupBuilder.sort(
-    //     belongsToMany.options?.sort[0],
-    //     belongsToMany.options?.sort[1],
-    //   );
-    //   lookup.push(sort);
-    // }
-
-    // // Generate the skip stage if options.skip is provided
-    // if (belongsToMany.options?.skip) {
-    //   const skip = LookupBuilder.skip(belongsToMany.options?.skip);
-    //   lookup.push(skip);
-    // }
-
-    // // Generate the limit stage if options.limit is provided
-    // if (belongsToMany.options?.limit) {
-    //   const limit = LookupBuilder.limit(belongsToMany.options?.limit);
-    //   lookup.push(limit);
-    // }
-
     // Return the combined lookup, select, exclude, sort, skip, and limit stages
     return lookup;
   }
@@ -638,6 +617,35 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
         },
       });
     }
+
+    // Generate the sort stages if options.sort is provided
+    if (belongsToMany.options?.sort) {
+      const sort = LookupBuilder.sort(
+        belongsToMany.options?.sort[0],
+        belongsToMany.options?.sort[1],
+      );
+      pipeline.push(sort);
+    }
+
+    // Generate the skip stage if options.skip is provided
+    if (belongsToMany.options?.skip) {
+      const skip = LookupBuilder.skip(belongsToMany.options?.skip);
+      pipeline.push(skip);
+    }
+
+    // Generate the limit stage if options.limit is provided
+    if (belongsToMany.options?.limit) {
+      const limit = LookupBuilder.limit(belongsToMany.options?.limit);
+      pipeline.push(limit);
+    }
+
+    belongsToMany.model["$nested"].forEach(el => {
+      if (typeof belongsToMany.relatedModel[el] === "function") {
+        belongsToMany.relatedModel["$alias"] = el
+        const nested = belongsToMany.relatedModel[el]()
+        pipeline.push(...nested.model.$lookups)
+      }
+    })
 
     // Define the $lookup stages
     lookup.push(

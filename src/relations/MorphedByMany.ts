@@ -204,27 +204,6 @@ export default class MorphedByMany<T, M> extends QueryBuilder<M> {
       lookup.push(...exclude);
     }
 
-    // // Generate the sort stages if options.sort is provided
-    // if (morphedByMany.options?.sort) {
-    //   const sort = LookupBuilder.sort(
-    //     morphedByMany.options?.sort[0],
-    //     morphedByMany.options?.sort[1],
-    //   );
-    //   lookup.push(sort);
-    // }
-
-    // // Generate the skip stages if options.skip is provided
-    // if (morphedByMany.options?.skip) {
-    //   const skip = LookupBuilder.skip(morphedByMany.options?.skip);
-    //   lookup.push(skip);
-    // }
-
-    // // Generate the limit stages if options.limit is provided
-    // if (morphedByMany.options?.limit) {
-    //   const limit = LookupBuilder.limit(morphedByMany.options?.limit);
-    //   lookup.push(limit);
-    // }
-
     // Return the combined lookup, select, exclude, sort, skip, and limit stages
     return lookup;
   }
@@ -250,6 +229,35 @@ export default class MorphedByMany<T, M> extends QueryBuilder<M> {
         },
       });
     }
+
+    // Generate the sort stages if options.sort is provided
+    if (morphedByMany.options?.sort) {
+      const sort = LookupBuilder.sort(
+        morphedByMany.options?.sort[0],
+        morphedByMany.options?.sort[1],
+      );
+      pipeline.push(sort);
+    }
+
+    // Generate the skip stages if options.skip is provided
+    if (morphedByMany.options?.skip) {
+      const skip = LookupBuilder.skip(morphedByMany.options?.skip);
+      pipeline.push(skip);
+    }
+
+    // Generate the limit stages if options.limit is provided
+    if (morphedByMany.options?.limit) {
+      const limit = LookupBuilder.limit(morphedByMany.options?.limit);
+      pipeline.push(limit);
+    }
+
+    morphedByMany.model["$nested"].forEach(el => {
+      if (typeof morphedByMany.relatedModel[el] === "function") {
+        morphedByMany.relatedModel["$alias"] = el
+        const nested = morphedByMany.relatedModel[el]()
+        pipeline.push(...nested.model.$lookups)
+      }
+    })
 
     // Define the $lookup stages
     lookup.push(
