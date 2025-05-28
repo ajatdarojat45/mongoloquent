@@ -213,27 +213,6 @@ export default class HasManyThrough<T, M, TM> extends QueryBuilder<M> {
       lookup.push(...exclude);
     }
 
-    // // Generate the sort stages if options.sort is provided
-    // if (hasManyThrough.options?.sort) {
-    //   const sort = LookupBuilder.sort(
-    //     hasManyThrough.options?.sort[0],
-    //     hasManyThrough.options?.sort[1],
-    //   );
-    //   lookup.push(sort);
-    // }
-
-    // // Generate the skip stages if options.skip is provided
-    // if (hasManyThrough.options?.skip) {
-    //   const skip = LookupBuilder.skip(hasManyThrough.options?.skip);
-    //   lookup.push(skip);
-    // }
-
-    // // Generate the limit stages if options.limit is provided
-    // if (hasManyThrough.options?.limit) {
-    //   const limit = LookupBuilder.limit(hasManyThrough.options?.limit);
-    //   lookup.push(limit);
-    // }
-
     // Return the combined lookup, select, exclude, sort, skip, and limit stages
     return lookup;
   }
@@ -258,6 +237,27 @@ export default class HasManyThrough<T, M, TM> extends QueryBuilder<M> {
           },
         },
       });
+    }
+
+    // Generate the sort stages if options.sort is provided
+    if (hasManyThrough.options?.sort) {
+      const sort = LookupBuilder.sort(
+        hasManyThrough.options?.sort[0],
+        hasManyThrough.options?.sort[1],
+      );
+      pipeline.push(sort);
+    }
+
+    // Generate the skip stages if options.skip is provided
+    if (hasManyThrough.options?.skip) {
+      const skip = LookupBuilder.skip(hasManyThrough.options?.skip);
+      lookup.push(skip);
+    }
+
+    // Generate the limit stages if options.limit is provided
+    if (hasManyThrough.options?.limit) {
+      const limit = LookupBuilder.limit(hasManyThrough.options?.limit);
+      pipeline.push(limit);
     }
 
     hasManyThrough.model["$nested"].forEach(el => {

@@ -718,6 +718,7 @@ export default class Model<T> extends QueryBuilder<T> {
     options: IRelationOptions = {},
   ) {
     const model = this.query();
+    model.$options = options;
 
     if (typeof relation === "string") {
       if (relation.includes(".")) {
@@ -728,7 +729,6 @@ export default class Model<T> extends QueryBuilder<T> {
       }
 
       model.$alias = relation;
-      model.$options = options;
 
       if (typeof model[relation] === "function") {
         model[relation]();

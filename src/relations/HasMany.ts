@@ -291,26 +291,6 @@ export default class HasMany<T, M> extends QueryBuilder<M> {
       lookup.push(...exclude);
     }
 
-    // Generate the sort stages if options.sort is provided
-    // if (hasMany.options?.sort) {
-    //   const sort = LookupBuilder.sort(
-    //     hasMany.options?.sort[0],
-    //     hasMany.options?.sort[1],
-    //   );
-    //   lookup.push(sort);
-    // }
-
-    // Generate the skip stages if options.skip is provided
-    // if (hasMany.options?.skip) {
-    //   const skip = LookupBuilder.skip(hasMany.options?.skip);
-    //   lookup.push(skip);
-    // }
-
-    // Generate the limit stages if options.limit is provided
-    // if (hasMany.options?.limit) {
-    //   const limit = LookupBuilder.limit(hasMany.options?.limit);
-    //   lookup.push(limit);
-    // }
 
     // Return the combined lookup, select, exclude, sort, skip, and limit stages
     return lookup;
@@ -334,6 +314,27 @@ export default class HasMany<T, M> extends QueryBuilder<M> {
           },
         },
       });
+    }
+
+    // Generate the sort stages if options.sort is provided
+    if (hasMany.options?.sort) {
+      const sort = LookupBuilder.sort(
+        hasMany.options?.sort[0],
+        hasMany.options?.sort[1],
+      );
+      pipeline.push(sort);
+    }
+
+    //  Generate the skip stages if options.skip is provided
+    if (hasMany.options?.skip) {
+      const skip = LookupBuilder.skip(hasMany.options?.skip);
+      pipeline.push(skip);
+    }
+
+    // Generate the limit stages if options.limit is provided
+    if (hasMany.options?.limit) {
+      const limit = LookupBuilder.limit(hasMany.options?.limit);
+      pipeline.push(limit);
     }
 
     hasMany.model["$nested"].forEach(el => {
