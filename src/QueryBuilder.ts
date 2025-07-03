@@ -1,5 +1,6 @@
 import {
   BulkWriteOptions,
+  DeleteOptions,
   Document,
   FindOneAndUpdateOptions,
   InsertOneOptions,
@@ -257,11 +258,13 @@ export default class QueryBuilder<T> {
    * Updates a document if it exists, otherwise creates it
    * @param {Partial<FormSchema<T>>} filter - Filter to find the document
    * @param {Partial<FormSchema<T>>} [doc] - Document fields to update or insert
+   * @param {FindOneAndUpdateOptions | InsertOneOptions} [options] - MongoDB options
    * @returns {Promise<Document>} Updated or created document
    */
   async updateOrCreate(
     filter: Partial<FormSchema<T>>,
     doc?: Partial<FormSchema<T>>,
+    options?: FindOneAndUpdateOptions | InsertOneOptions,
   ) {
     for (var key in filter) {
       if (filter.hasOwnProperty(key)) {
@@ -271,23 +274,25 @@ export default class QueryBuilder<T> {
 
     const payload = { ...filter, ...doc };
 
-    const data = await this.update(payload);
+    const data = await this.update(payload, options);
     if (data) return data;
 
-    return this.insert(payload as FormSchema<T>);
+    return this.insert(payload as FormSchema<T>, options);
   }
 
   /**
    * Alias for updateOrCreate
    * @param {Partial<FormSchema<T>>} filter - Filter to find the document
    * @param {Partial<FormSchema<T>>} [doc] - Document fields to update or insert
+   * @param {FindOneAndUpdateOptions | InsertOneOptions} [options] - MongoDB options
    * @returns {Promise<Document>} Updated or created document
    */
   async updateOrInsert(
     filter: Partial<FormSchema<T>>,
     doc?: Partial<FormSchema<T>>,
+    options?: FindOneAndUpdateOptions | InsertOneOptions,
   ) {
-    return this.updateOrCreate(filter, doc);
+    return this.updateOrCreate(filter, doc, options);
   }
 
   /**
@@ -335,9 +340,10 @@ export default class QueryBuilder<T> {
 
   /**
    * Saves the current instance to the database (insert or update)
+   * @param {UpdateOptions | FindOneAndUpdateOptions} [options] - MongoDB options for update
    * @returns {Promise<T|Document>} Saved document
    */
-  public async save() {
+  public async save(options?: UpdateOptions | FindOneAndUpdateOptions) {
     let payload = {};
     for (const key in this.$changes) {
       if (key.startsWith("$") || key === "_id") continue;
@@ -349,7 +355,7 @@ export default class QueryBuilder<T> {
     }
 
     if (Object.keys(this.$original).length === 0) {
-      const result = await this.insert(payload as FormSchema<T>);
+      const result = await this.insert(payload as FormSchema<T>, options);
       this.$original = { ...result };
       Object.assign(this, result);
       // @ts-ignore
@@ -358,16 +364,22 @@ export default class QueryBuilder<T> {
     } else {
       // @ts-ignore
       const id = this.$original?._id;
-      return this.where("_id" as keyof T, id).update(payload as FormSchema<T>);
+      return this.where("_id" as keyof T, id).update(
+        payload as FormSchema<T>,
+        options as FindOneAndUpdateOptions,
+      );
     }
   }
 
   /**
    * Deletes documents matching the current query (soft delete if enabled)
+   * @param {DeleteOptions | UpdateOptions} [options] - MongoDB options for deletion
    * @returns {Promise<number>} Number of documents deleted or soft-deleted
    * @throws {Error} If deletion fails
    */
-  public async delete(): Promise<number> {
+  public async delete(
+    options?: DeleteOptions | UpdateOptions,
+  ): Promise<number> {
     try {
       const collection = this.getCollection();
       this.generateWheres();
@@ -386,6 +398,7 @@ export default class QueryBuilder<T> {
               ...(doc as Partial<T>),
             },
           },
+          options,
         );
 
         this.resetQuery();
@@ -393,7 +406,7 @@ export default class QueryBuilder<T> {
         return data?.modifiedCount || 0;
       }
 
-      const data = await collection?.deleteMany(filter);
+      const data = await collection?.deleteMany(filter, options);
       this.resetQuery();
 
       return data?.deletedCount || 0;
@@ -405,10 +418,11 @@ export default class QueryBuilder<T> {
 
   /**
    * Deletes documents matching the current query
+   * @param {DeleteOptions} [options] - MongoDB options for deletion
    * @returns {Promise<number>} Number of documents deleted
    * @throws {Error} If deletion fails
    */
-  public async forceDelete(): Promise<number> {
+  public async forceDelete(options?: DeleteOptions): Promise<number> {
     try {
       const collection = this.getCollection();
       this.generateWheres();
@@ -416,7 +430,7 @@ export default class QueryBuilder<T> {
       let filter = {};
       if (stages.length > 0) filter = stages[0].$match;
 
-      const data = await collection?.deleteMany(filter);
+      const data = await collection?.deleteMany(filter, options);
       this.resetQuery();
 
       return data?.deletedCount || 0;
@@ -490,14 +504,14 @@ export default class QueryBuilder<T> {
    * @returns {Promise<number>} Number of documents restored
    * @throws {Error} If restoration fails
    */
-  public async restore(): Promise<number> {
+  public async restore(options?: UpdateOptions): Promise<number> {
     try {
       this.onlyTrashed();
       const payload = {
         [this.$isDeleted]: false,
         [this.$deletedAt]: null,
       } as Partial<FormSchema<T>>;
-      return await this.updateMany(payload);
+      return await this.updateMany(payload, options);
     } catch (error) {
       console.log(error);
       throw new Error(`Restoring documents failed`);
@@ -925,11 +939,13 @@ export default class QueryBuilder<T> {
    * Returns first matching document or creates a new one
    * @param {Partial<FormSchema<T>>} filter - Filter to find existing document
    * @param {Partial<FormSchema<T>>} [doc] - Data to use for creation if no match is found
+   * @param {InsertOneOptions} [options] - MongoDB insert options
    * @returns {Promise<any>} Existing or newly created document
    */
   public async firstOrCreate(
     filter: Partial<FormSchema<T>>,
     doc?: Partial<FormSchema<T>>,
+    options?: InsertOneOptions,
   ) {
     for (var key in filter) {
       if (filter.hasOwnProperty(key)) {
@@ -941,20 +957,22 @@ export default class QueryBuilder<T> {
     if (data) return data;
 
     const payload = { ...filter, ...doc } as FormSchema<T>;
-    return this.insert(payload as FormSchema<T>);
+    return this.insert(payload as FormSchema<T>, options);
   }
 
   /**
    * Alias for firstOrCreate - returns existing document or creates a new model instance
    * @param {Partial<FormSchema<T>>} filter - Filter to find existing document
    * @param {Partial<FormSchema<T>>} [doc] - Data to use for the new instance if no match is found
+   * @param {InsertOneOptions} [options] - MongoDB insert options
    * @returns {Promise<any>} Existing or newly created document
    */
   public async firstOrNew(
     filter: Partial<FormSchema<T>>,
     doc?: Partial<FormSchema<T>>,
+    options?: InsertOneOptions,
   ) {
-    return this.firstOrCreate(filter, doc);
+    return this.firstOrCreate(filter, doc, options);
   }
 
   /**

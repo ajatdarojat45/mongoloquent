@@ -1,7 +1,9 @@
-import { Document } from "mongodb";
+import { ClientSession, Document, MongoClient } from "mongodb";
 
+import Database from "./Database";
 import QueryBuilder from "./QueryBuilder";
-import { IDBLookup } from "./interfaces/IDB";
+import { MONGOLOQUENT_DATABASE_URI } from "./configs/app";
+import { IDBLookup, ITransactionConfig } from "./interfaces/IDB";
 
 /**
  * DB class represents a database collection wrapper that extends QueryBuilder
@@ -132,5 +134,65 @@ export default class DB<T> extends QueryBuilder<T> {
     this["$stages"].push(...docs);
 
     return this;
+  }
+
+  /**
+   * Executes a function within a MongoDB transaction and handles retries for transient errors.
+   *
+   * @template T - The return type of the transaction function
+   * @param {function(ClientSession): Promise<T>} fn - The function to execute within the transaction.
+   *        This function receives the session object and should return a Promise.
+   * @param {ITransactionConfig} [config={}] - Configuration options for the transaction
+   * @param {Object} [config.transactionOptions={}] - MongoDB transaction options (readConcern, writeConcern, etc.)
+   * @param {number} [config.retries=1] - Maximum number of retry attempts for transient transaction errors
+   * @returns {Promise<T>} A promise that resolves with the result of the transaction function
+   * @throws {Error} If the transaction fails after all retry attempts
+   *
+   */
+  static async transaction<T>(
+    fn: (session: ClientSession) => Promise<T>,
+    config: ITransactionConfig = {},
+  ): Promise<T> {
+    const client: MongoClient = Database.getClient(MONGOLOQUENT_DATABASE_URI);
+    const session: ClientSession = client.startSession();
+
+    const {
+      transactionOptions = {},
+      retries = 1, // default retry
+    } = config;
+
+    let attempt = 0;
+
+    while (attempt < retries) {
+      try {
+        const result = await session.withTransaction(async () => {
+          return await fn(session);
+        }, transactionOptions);
+
+        return result;
+      } catch (err: any) {
+        const isRetryable =
+          err.hasErrorLabel?.("TransientTransactionError") ||
+          err.hasErrorLabel?.("UnknownTransactionCommitResult") ||
+          err.message?.includes("TransientTransactionError") ||
+          err.message?.includes("UnknownTransactionCommitResult");
+
+        attempt++;
+
+        if (!isRetryable || attempt >= retries) {
+          throw err;
+        }
+
+        console.warn(
+          `Mongoloquent Transaction retry ${attempt}/${retries} due to: ${err.message}`,
+        );
+      } finally {
+        if (attempt >= retries || session.inTransaction() === false) {
+          await session.endSession();
+        }
+      }
+    }
+
+    throw new Error("Transaction failed after maximum retries");
   }
 }
