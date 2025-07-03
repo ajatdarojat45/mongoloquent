@@ -1,4 +1,9 @@
-import { BulkWriteOptions, InsertOneOptions, ObjectId } from "mongodb";
+import {
+  BulkWriteOptions,
+  FindOneAndUpdateOptions,
+  InsertOneOptions,
+  ObjectId,
+} from "mongodb";
 
 import QueryBuilder from "./QueryBuilder";
 import {
@@ -150,14 +155,16 @@ export default class Model<T> extends QueryBuilder<T> {
    * @template M Type of the model class
    * @param {Partial<M["$schema"]>} filter Filter to find document
    * @param {Partial<FormSchema<M["$schema"]>>} doc Document to update or create
+   * @param {FindOneAndUpdateOptions | InsertOneOptions} [options] MongoDB options
    * @returns {Promise<any>} Updated or created document
    */
   public static async updateOrCreate<M extends typeof Model<any>>(
     this: M,
     filter: Partial<FormSchema<M["$schema"]>>,
     doc?: Partial<FormSchema<M["$schema"]>>,
+    options?: FindOneAndUpdateOptions | InsertOneOptions,
   ) {
-    return this.query().updateOrCreate(filter, doc);
+    return this.query().updateOrCreate(filter, doc, options);
   }
 
   /**
@@ -165,14 +172,16 @@ export default class Model<T> extends QueryBuilder<T> {
    * @template M Type of the model class
    * @param {Partial<M["$schema"]>} filter Filter to find document
    * @param {Partial<FormSchema<M["$schema"]>>} doc Document to update or insert
+   * @param {FindOneAndUpdateOptions | InsertOneOptions} [options] MongoDB options
    * @returns {Promise<any>} Updated or inserted document
    */
   public static async updateOrInsert<M extends typeof Model<any>>(
     this: M,
     filter: Partial<FormSchema<M["$schema"]>>,
     doc?: Partial<FormSchema<M["$schema"]>>,
+    options?: FindOneAndUpdateOptions | InsertOneOptions,
   ) {
-    return this.query().updateOrInsert(filter, doc);
+    return this.query().updateOrInsert(filter, doc, options);
   }
 
   /**
@@ -583,14 +592,16 @@ export default class Model<T> extends QueryBuilder<T> {
    * @template M Type of the model class
    * @param {Partial<M["$schema"]>} filter Filter to find the document
    * @param {Partial<FormSchema<M["$schema"]>>} doc Document to create if not found
+   * @param {InsertOneOptions} [options] MongoDB insert options
    * @returns {Promise<any>} Retrieved or created document
    */
   public static firstOrCreate<M extends typeof Model<any>>(
     this: M,
     filter: Partial<M["$schema"]>,
     doc?: Partial<FormSchema<M["$schema"]>>,
+    options?: InsertOneOptions,
   ) {
-    return this.query().firstOrCreate(filter, doc);
+    return this.query().firstOrCreate(filter, doc, options);
   }
 
   /**
@@ -598,14 +609,16 @@ export default class Model<T> extends QueryBuilder<T> {
    * @template M Type of the model class
    * @param {Partial<M["$schema"]>} filter Filter to find the document
    * @param {Partial<FormSchema<M["$schema"]>>} doc Document properties for the new instance
+   * @param {InsertOneOptions} [options] MongoDB insert options
    * @returns {Promise<any>} Retrieved document or new instance
    */
   public static firstOrNew<M extends typeof Model<any>>(
     this: M,
     filter: Partial<M["$schema"]>,
     doc?: Partial<FormSchema<M["$schema"]>>,
+    options?: InsertOneOptions,
   ) {
-    return this.query().firstOrNew(filter, doc);
+    return this.query().firstOrNew(filter, doc, options);
   }
 
   /**
