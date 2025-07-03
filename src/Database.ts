@@ -8,6 +8,9 @@ export default class Database {
   /** Map to store database connections */
   private static $dbs: Map<string, Db> = new Map();
 
+  /** Map to store mongodb client */
+  private static $clients: Map<string, MongoClient> = new Map()
+
   /**
    * Gets a database instance for the specified connection and database name
    * @param {string} connection - MongoDB connection string
@@ -38,6 +41,52 @@ export default class Database {
   }
 
   /**
+   * Gets all MongoDB client connections
+   * @returns {Map<string, MongoClient>} Map of all MongoDB client connections
+   * @protected
+   */
+  protected static getClients(): Map<string, MongoClient> {
+    // Return the map of connected databases
+    return this.$clients;
+  }
+
+  /**
+   * Gets an existing MongoDB client connection or creates a new one
+   * @param {string} connection - MongoDB connection string
+   * @returns {MongoClient} MongoDB client instance
+   * @public
+   */
+  public static getClient(connection: string): MongoClient {
+    // Check if the database connection already exists
+    if (this.$clients.has(connection)) {
+      // Return the existing database connection
+      return this.$clients.get(connection) as MongoClient;
+    }
+
+    return this.setClient(connection)
+  }
+
+  /**
+   * Creates a new MongoDB client connection and stores it
+   * @param {string} connection - MongoDB connection string
+   * @returns {MongoClient} New MongoDB client instance
+   * @public
+   */
+  public static setClient(connection: string): MongoClient {
+    // Create a new MongoClient instance
+    const client = new MongoClient(connection, {
+      serverApi: {
+        version: ServerApiVersion.v1,
+        strict: true,
+        deprecationErrors: true,
+      },
+    });
+
+    this.$clients.set(connection, client);
+    return client
+  }
+
+  /**
    * Creates a new database connection
    * @param {string} connection - MongoDB connection string
    * @param {string} databaseName - Name of the database
@@ -50,13 +99,7 @@ export default class Database {
       console.log("Mongoloquent trying to connect to MongoDB database...");
 
       // Create a new MongoClient instance
-      const client = new MongoClient(connection, {
-        serverApi: {
-          version: ServerApiVersion.v1,
-          strict: true,
-          deprecationErrors: true,
-        },
-      });
+      const client = this.getClient(connection)
 
       // Connect to the MongoDB server
       client.connect();
