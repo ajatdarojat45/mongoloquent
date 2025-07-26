@@ -1180,7 +1180,15 @@ export default class Model<T> extends QueryBuilder<T> {
   public static query<M extends typeof Model<any>>(
     this: M,
   ): Model<M["$schema"]> {
-    return new this().runDefaultRelation();
+    const model = new this()
+
+    if (this.$connection) model.setConnection(this.$connection)
+    if (this.$databaseName) model.setDatabaseName(this.$databaseName)
+    if (this.$timezone) model.setTimezone(this.$timezone)
+
+    model.runDefaultRelation();
+
+    return model
   }
 
   public static setConnection(connection: string): string {
