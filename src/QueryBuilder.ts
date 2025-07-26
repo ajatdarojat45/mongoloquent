@@ -1452,6 +1452,18 @@ export default class QueryBuilder<T> {
     return this.$isDeleted;
   }
 
+  public setConnection(connection: string): string {
+    return this.$connection = connection
+  }
+
+  public setDatabaseName(name: string): string {
+    return this.$databaseName = name
+  }
+
+  public setTimezone(timezone: string): string {
+    return this.$timezone = timezone
+  }
+
   /**
    * Adds soft delete condition to the query if enabled
    * @private
