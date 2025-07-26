@@ -1444,12 +1444,20 @@ export default class QueryBuilder<T> {
     else this.$lookups = [...this.$lookups, doc];
   }
 
-  /**
-   * Gets the field name used for soft delete
-   * @returns {string} Field name
-   */
-  public getIsDeleted() {
+  public getIsDeleted(): string {
     return this.$isDeleted;
+  }
+
+  public setConnection(connection: string): string {
+    return this.$connection = connection
+  }
+
+  public setDatabaseName(name: string): string {
+    return this.$databaseName = name
+  }
+
+  public setTimezone(timezone: string): string {
+    return this.$timezone = timezone
   }
 
   /**
