@@ -46,6 +46,13 @@ export default class Model<T> extends QueryBuilder<T> {
   /** Schema definition for the document */
   public static $schema: any;
 
+  /** Timezone setting for dates */
+  protected static $timezone: string;
+  /** MongoDB connection string */
+  protected static $connection: string
+  /** Database name */
+  protected static $databaseName: string
+
   /**
    * The relationships that should always be loaded.
    *
@@ -1173,7 +1180,27 @@ export default class Model<T> extends QueryBuilder<T> {
   public static query<M extends typeof Model<any>>(
     this: M,
   ): Model<M["$schema"]> {
-    return new this().runDefaultRelation();
+    const model = new this()
+
+    if (this.$connection) model.setConnection(this.$connection)
+    if (this.$databaseName) model.setDatabaseName(this.$databaseName)
+    if (this.$timezone) model.setTimezone(this.$timezone)
+
+    model.runDefaultRelation();
+
+    return model
+  }
+
+  public static setConnection(connection: string): string {
+    return this.$connection = connection
+  }
+
+  public static setDatabaseName(name: string): string {
+    return this.$databaseName = name
+  }
+
+  public static setTimezone(timezone: string): string {
+    return this.$timezone = timezone
   }
 
   /**
