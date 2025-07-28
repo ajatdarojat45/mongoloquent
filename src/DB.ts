@@ -15,6 +15,10 @@ export default class DB<T> extends QueryBuilder<T> {
   /** Allow dynamic property access */
   [key: string]: any;
 
+  protected static $timezone: string;
+  protected static $connection: string;
+  protected static $databaseName: string;
+
   /**
    * Creates a new instance of the DB class
    */
@@ -87,12 +91,13 @@ export default class DB<T> extends QueryBuilder<T> {
    * @returns {DB<T>} A new DB instance configured for the specified collection
    * @static
    */
-  public static collection<T>(
-    this: new () => DB<T>,
-    collection: string,
-  ): DB<T> {
-    const q = new this();
+  public static collection<T>(collection: string): DB<T> {
+    const q = new this() as DB<T>;
     q["$collection"] = collection;
+
+    if (this.$connection) q.setConnection(this.$connection);
+    if (this.$databaseName) q.setDatabaseName(this.$databaseName);
+    if (this.$timezone) q.setTimezone(this.$timezone);
 
     return q;
   }
@@ -153,7 +158,9 @@ export default class DB<T> extends QueryBuilder<T> {
     fn: (session: ClientSession) => Promise<T>,
     config: ITransactionConfig = {},
   ): Promise<T> {
-    const client: MongoClient = Database.getClient(MONGOLOQUENT_DATABASE_URI);
+    const client: MongoClient = Database.getClient(
+      this.$connection || MONGOLOQUENT_DATABASE_URI,
+    );
     const session: ClientSession = client.startSession();
 
     const {
@@ -194,5 +201,20 @@ export default class DB<T> extends QueryBuilder<T> {
     }
 
     throw new Error("Transaction failed after maximum retries");
+  }
+
+  public static setConnection(connection: string): string {
+    this.$connection = connection;
+    return this.$connection;
+  }
+
+  public static setDatabaseName(name: string): string {
+    this.$databaseName = name;
+    return this.$databaseName;
+  }
+
+  public static setTimezone(timezone: string): string {
+    this.$timezone = timezone;
+    return this.$timezone;
   }
 }
