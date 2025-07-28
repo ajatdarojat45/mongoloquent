@@ -69,7 +69,9 @@ export default class HasOne<T, M> extends QueryBuilder<M> {
    * @param {...(K | K[])[]} fields - Fields to retrieve
    * @returns {Promise<Pick<M, K>[]>} Promise resolving to an array of related model instances with selected fields
    */
-  public get<K extends keyof M>(...fields: (K | K[])[]) {
+  public get<K extends keyof M>(
+    ...fields: (K | (string & {}) | (K | (string & {}))[])[]
+  ) {
     this.where(this.foreignKey, this.model["$original"][this.localKey]);
     return super.get(...fields);
   }
@@ -96,7 +98,9 @@ export default class HasOne<T, M> extends QueryBuilder<M> {
    * @param {...(K | K[])[]} fields - Fields to retrieve
    * @returns {Promise<Pick<M, K> | null>} Promise resolving to the first related record or null
    */
-  public first<K extends keyof M>(...fields: (K | K[])[]) {
+  public first<K extends keyof M>(
+    ...fields: (K | (string & {}) | (K | (string & {}))[])[]
+  ) {
     this.where(this.foreignKey, this.model["$original"][this.localKey]);
     return super.first(...fields);
   }
@@ -118,7 +122,7 @@ export default class HasOne<T, M> extends QueryBuilder<M> {
    * @param {K} field - The field to sum
    * @returns {Promise<number>} Promise resolving to the sum
    */
-  public sum<K extends keyof M>(field: K): Promise<number> {
+  public sum<K extends keyof M>(field: K | (string & {})): Promise<number> {
     this.where(this.foreignKey, this.model["$original"][this.localKey]);
     return super.sum(field);
   }
@@ -130,7 +134,7 @@ export default class HasOne<T, M> extends QueryBuilder<M> {
    * @param {K} field - The field to find minimum value for
    * @returns {Promise<number>} Promise resolving to the minimum value
    */
-  public min<K extends keyof M>(field: K): Promise<number> {
+  public min<K extends keyof M>(field: K | (string & {})): Promise<number> {
     this.where(this.foreignKey, this.model["$original"][this.localKey]);
     return super.min(field);
   }
@@ -142,7 +146,7 @@ export default class HasOne<T, M> extends QueryBuilder<M> {
    * @param {K} field - The field to find maximum value for
    * @returns {Promise<number>} Promise resolving to the maximum value
    */
-  public max<K extends keyof M>(field: K): Promise<number> {
+  public max<K extends keyof M>(field: K | (string & {})): Promise<number> {
     this.where(this.foreignKey, this.model["$original"][this.localKey]);
     return super.max(field);
   }
@@ -154,7 +158,7 @@ export default class HasOne<T, M> extends QueryBuilder<M> {
    * @param {K} field - The field to calculate average for
    * @returns {Promise<number>} Promise resolving to the average value
    */
-  public avg<K extends keyof M>(field: K): Promise<number> {
+  public avg<K extends keyof M>(field: K | (string & {})): Promise<number> {
     this.where(this.foreignKey, this.model["$original"][this.localKey]);
     return super.avg(field);
   }

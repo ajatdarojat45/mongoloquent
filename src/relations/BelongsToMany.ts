@@ -79,7 +79,9 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
    * @param {...(K | K[])[]} fields - Fields to retrieve
    * @returns {Promise<Pick<M, K>[]>} Promise resolving to an array of related model instances with selected fields
    */
-  public async get<K extends keyof M>(...fields: (K | K[])[]) {
+  public async get<K extends keyof M>(
+    ...fields: (K | (string & {}) | (K | (string & {}))[])[]
+  ) {
     await this.setDefaultCondition();
     return super.get(...fields);
   }
@@ -107,7 +109,9 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
    * @param {...(K | K[])[]} fields - Fields to retrieve
    * @returns {Promise<Pick<M, K> | null>} Promise resolving to the first related record or null
    */
-  public async first<K extends keyof M>(...fields: (K | K[])[]) {
+  public async first<K extends keyof M>(
+    ...fields: (K | (string & {}) | (K | (string & {}))[])[]
+  ) {
     await this.setDefaultCondition();
     return super.first(...fields);
   }
@@ -129,7 +133,9 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
    * @param {K} field - The field to sum
    * @returns {Promise<number>} Promise resolving to the sum
    */
-  public async sum<K extends keyof M>(field: K): Promise<number> {
+  public async sum<K extends keyof M>(
+    field: K | (string & {}),
+  ): Promise<number> {
     await this.setDefaultCondition();
     return super.sum(field);
   }
@@ -141,7 +147,9 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
    * @param {K} field - The field to find minimum value for
    * @returns {Promise<number>} Promise resolving to the minimum value
    */
-  public async min<K extends keyof M>(field: K): Promise<number> {
+  public async min<K extends keyof M>(
+    field: K | (string & {}),
+  ): Promise<number> {
     await this.setDefaultCondition();
     return super.min(field);
   }
@@ -153,7 +161,9 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
    * @param {K} field - The field to find maximum value for
    * @returns {Promise<number>} Promise resolving to the maximum value
    */
-  public async max<K extends keyof M>(field: K): Promise<number> {
+  public async max<K extends keyof M>(
+    field: K | (string & {}),
+  ): Promise<number> {
     await this.setDefaultCondition();
     return super.max(field);
   }
@@ -165,7 +175,9 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
    * @param {K} field - The field to calculate average for
    * @returns {Promise<number>} Promise resolving to the average value
    */
-  public async avg<K extends keyof M>(field: K): Promise<number> {
+  public async avg<K extends keyof M>(
+    field: K | (string & {}),
+  ): Promise<number> {
     await this.setDefaultCondition();
     return super.avg(field);
   }
@@ -639,13 +651,13 @@ export default class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
       pipeline.push(limit);
     }
 
-    belongsToMany.model["$nested"].forEach(el => {
+    belongsToMany.model["$nested"].forEach((el) => {
       if (typeof belongsToMany.relatedModel[el] === "function") {
-        belongsToMany.relatedModel["$alias"] = el
-        const nested = belongsToMany.relatedModel[el]()
-        pipeline.push(...nested.model.$lookups)
+        belongsToMany.relatedModel["$alias"] = el;
+        const nested = belongsToMany.relatedModel[el]();
+        pipeline.push(...nested.model.$lookups);
       }
-    })
+    });
 
     // Define the $lookup stages
     lookup.push(
