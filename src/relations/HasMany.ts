@@ -181,7 +181,9 @@ export default class HasMany<T, M> extends QueryBuilder<M> {
    * @param {...(K | K[])[]} fields Fields to select
    * @returns {Promise<Collection<M>>} Collection of related models
    */
-  public get<K extends keyof M>(...fields: (K | K[])[]) {
+  public get<K extends keyof M>(
+    ...fields: (K | (string & {}) | (K | (string & {}))[])[]
+  ) {
     this.where(this.foreignKey, this.model["$original"][this.localKey]);
     return super.get(...fields);
   }
@@ -206,7 +208,9 @@ export default class HasMany<T, M> extends QueryBuilder<M> {
    * @param {...(K | K[])[]} fields Fields to select
    * @returns {Promise<M | null>} First matching related model or null
    */
-  public first<K extends keyof M>(...fields: (K | K[])[]) {
+  public first<K extends keyof M>(
+    ...fields: (K | (string & {}) | (K | (string & {}))[])[]
+  ) {
     this.where(this.foreignKey, this.model["$original"][this.localKey]);
     return super.first(...fields);
   }
@@ -226,7 +230,7 @@ export default class HasMany<T, M> extends QueryBuilder<M> {
    * @param {K} field Field to sum
    * @returns {Promise<number>} Sum of the field values
    */
-  public sum<K extends keyof M>(field: K): Promise<number> {
+  public sum<K extends keyof M>(field: K | (string & {})): Promise<number> {
     this.where(this.foreignKey, this.model["$original"][this.localKey]);
     return super.sum(field);
   }
@@ -237,7 +241,7 @@ export default class HasMany<T, M> extends QueryBuilder<M> {
    * @param {K} field Field to check
    * @returns {Promise<number>} Minimum value of the field
    */
-  public min<K extends keyof M>(field: K): Promise<number> {
+  public min<K extends keyof M>(field: K | (string & {})): Promise<number> {
     this.where(this.foreignKey, this.model["$original"][this.localKey]);
     return super.min(field);
   }
@@ -248,7 +252,7 @@ export default class HasMany<T, M> extends QueryBuilder<M> {
    * @param {K} field Field to check
    * @returns {Promise<number>} Maximum value of the field
    */
-  public max<K extends keyof M>(field: K): Promise<number> {
+  public max<K extends keyof M>(field: K | (string & {})): Promise<number> {
     this.where(this.foreignKey, this.model["$original"][this.localKey]);
     return super.max(field);
   }
@@ -259,7 +263,7 @@ export default class HasMany<T, M> extends QueryBuilder<M> {
    * @param {K} field Field to average
    * @returns {Promise<number>} Average value of the field
    */
-  public avg<K extends keyof M>(field: K): Promise<number> {
+  public avg<K extends keyof M>(field: K | (string & {})): Promise<number> {
     this.where(this.foreignKey, this.model["$original"][this.localKey]);
     return super.avg(field);
   }
@@ -290,7 +294,6 @@ export default class HasMany<T, M> extends QueryBuilder<M> {
       );
       lookup.push(...exclude);
     }
-
 
     // Return the combined lookup, select, exclude, sort, skip, and limit stages
     return lookup;
@@ -337,13 +340,13 @@ export default class HasMany<T, M> extends QueryBuilder<M> {
       pipeline.push(limit);
     }
 
-    hasMany.model["$nested"].forEach(el => {
+    hasMany.model["$nested"].forEach((el) => {
       if (typeof hasMany.relatedModel[el] === "function") {
-        hasMany.relatedModel["$alias"] = el
-        const nested = hasMany.relatedModel[el]()
-        pipeline.push(...nested.model.$lookups)
+        hasMany.relatedModel["$alias"] = el;
+        const nested = hasMany.relatedModel[el]();
+        pipeline.push(...nested.model.$lookups);
       }
-    })
+    });
 
     // Define the $lookup stage
     const $lookup = {

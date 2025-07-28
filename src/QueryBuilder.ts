@@ -534,7 +534,9 @@ export default class QueryBuilder<T> {
    * @returns {this} Current query builder instance
    * @template K - Keys of document type T
    */
-  public select<K extends keyof T>(...columns: (K | K[])[]) {
+  public select<K extends keyof T>(
+    ...columns: (K | (string & {}) | (K | (string & {}))[])[]
+  ) {
     this.setColumns(...columns);
     return this;
   }
@@ -545,7 +547,9 @@ export default class QueryBuilder<T> {
    * @returns {this} Current query builder instance
    * @template K - Keys of document type T
    */
-  public exclude<K extends keyof T>(...columns: (K | K[])[]) {
+  public exclude<K extends keyof T | string>(
+    ...columns: (K | (string & {}) | (K | (string & {}))[])[]
+  ) {
     this.setExcludes(...columns);
     return this;
   }
@@ -558,7 +562,11 @@ export default class QueryBuilder<T> {
    * @returns {this} Current query builder instance
    * @template K - Keys of document type T
    */
-  public where<K extends keyof T>(column: K, operator: any, value: any = null) {
+  public where<K extends keyof T>(
+    column: K | (string & {}),
+    operator: any,
+    value: any = null,
+  ) {
     let _value = value || operator;
     let _operator = value ? operator : "eq";
 
@@ -576,7 +584,7 @@ export default class QueryBuilder<T> {
    * @template K - Keys of document type T
    */
   public orWhere<K extends keyof T>(
-    column: K,
+    column: K | (string & {}),
     operator: any,
     value: any = null,
   ) {
@@ -595,7 +603,7 @@ export default class QueryBuilder<T> {
    * @returns {this} Current query builder instance
    * @template K - Keys of document type T
    */
-  public whereNot<K extends keyof T>(column: K, value: any) {
+  public whereNot<K extends keyof T>(column: K | (string & {}), value: any) {
     this.setWheres(column, "ne", value, "and");
 
     return this;
@@ -608,7 +616,7 @@ export default class QueryBuilder<T> {
    * @returns {this} Current query builder instance
    * @template K - Keys of document type T
    */
-  public orWhereNot<K extends keyof T>(column: K, value: any) {
+  public orWhereNot<K extends keyof T>(column: K | (string & {}), value: any) {
     this.setWheres(column, "ne", value, "or");
 
     return this;
@@ -621,7 +629,7 @@ export default class QueryBuilder<T> {
    * @returns {this} Current query builder instance
    * @template K - Keys of document type T
    */
-  public whereIn<K extends keyof T>(column: K, values: any[]) {
+  public whereIn<K extends keyof T>(column: K | (string & {}), values: any[]) {
     this.setWheres(column, "in", values, "and");
 
     return this;
@@ -634,7 +642,10 @@ export default class QueryBuilder<T> {
    * @returns {this} Current query builder instance
    * @template K - Keys of document type T
    */
-  public orWhereIn<K extends keyof T>(column: K, values: any[]) {
+  public orWhereIn<K extends keyof T>(
+    column: K | (string & {}),
+    values: any[],
+  ) {
     this.setWheres(column, "in", values, "or");
 
     return this;
@@ -647,7 +658,10 @@ export default class QueryBuilder<T> {
    * @returns {this} Current query builder instance
    * @template K - Keys of document type T
    */
-  public whereNotIn<K extends keyof T>(column: K, values: any[]) {
+  public whereNotIn<K extends keyof T>(
+    column: K | (string & {}),
+    values: any[],
+  ) {
     this.setWheres(column, "nin", values, "and");
 
     return this;
@@ -660,7 +674,10 @@ export default class QueryBuilder<T> {
    * @returns {this} Current query builder instance
    * @template K - Keys of document type T
    */
-  public orWhereNotIn<K extends keyof T>(column: K, values: any[]) {
+  public orWhereNotIn<K extends keyof T>(
+    column: K | (string & {}),
+    values: any[],
+  ) {
     this.setWheres(column, "nin", values, "or");
 
     return this;
@@ -673,7 +690,10 @@ export default class QueryBuilder<T> {
    * @returns {this} Current query builder instance
    * @template K - Keys of document type T
    */
-  public whereBetween<K extends keyof T>(column: K, values: [number, number?]) {
+  public whereBetween<K extends keyof T>(
+    column: K | (string & {}),
+    values: [number, number?],
+  ) {
     this.setWheres(column, "between", values, "and");
 
     return this;
@@ -687,7 +707,7 @@ export default class QueryBuilder<T> {
    * @template K - Keys of document type T
    */
   public orWhereBetween<K extends keyof T>(
-    column: K,
+    column: K | (string & {}),
     values: [number, number?],
   ) {
     this.setWheres(column, "between", values, "or");
@@ -701,7 +721,7 @@ export default class QueryBuilder<T> {
    * @returns {this} Current query builder instance
    * @template K - Keys of document type T
    */
-  public whereNull<K extends keyof T>(column: K) {
+  public whereNull<K extends keyof T>(column: K | (string & {})) {
     this.setWheres(column, "eq", null, "and");
 
     return this;
@@ -713,7 +733,7 @@ export default class QueryBuilder<T> {
    * @returns {this} Current query builder instance
    * @template K - Keys of document type T
    */
-  public orWhereNull<K extends keyof T>(column: K) {
+  public orWhereNull<K extends keyof T>(column: K | (string & {})) {
     this.setWheres(column, "eq", null, "or");
 
     return this;
@@ -725,7 +745,7 @@ export default class QueryBuilder<T> {
    * @returns {this} Current query builder instance
    * @template K - Keys of document type T
    */
-  public whereNotNull<K extends keyof T>(column: K) {
+  public whereNotNull<K extends keyof T>(column: K | (string & {})) {
     this.setWheres(column, "ne", null, "and");
 
     return this;
@@ -737,7 +757,7 @@ export default class QueryBuilder<T> {
    * @returns {this} Current query builder instance
    * @template K - Keys of document type T
    */
-  public orWhereNotNull<K extends keyof T>(column: K) {
+  public orWhereNotNull<K extends keyof T>(column: K | (string & {})) {
     this.setWheres(column, "ne", null, "or");
 
     return this;
@@ -802,7 +822,7 @@ export default class QueryBuilder<T> {
    * @template K - Keys of document type T
    */
   public orderBy<K extends keyof T>(
-    column: K,
+    column: K | (string & {}),
     direction: "asc" | "desc" = "asc",
     caseSensitive: boolean = false,
   ) {
@@ -823,7 +843,9 @@ export default class QueryBuilder<T> {
    * @throws {Error} If query execution fails
    * @template K - Keys of document type T
    */
-  public async get<K extends keyof T>(...fields: (K | K[])[]) {
+  public async get<K extends keyof T>(
+    ...fields: (K | (string & {}) | (K | (string & {}))[])[]
+  ) {
     try {
       this.setColumns(...fields);
       const aggregate = await this.aggregate();
@@ -849,7 +871,9 @@ export default class QueryBuilder<T> {
    * @returns {Promise<any>} Object with field values
    * @template K - Keys of document type T
    */
-  public async pluck<K extends keyof T>(...fields: (K | K[])[]) {
+  public async pluck<K extends keyof T>(
+    ...fields: (K | (string & {}) | (K | (string & {}))[])[]
+  ) {
     const result = await this.get(...fields);
     const flattenedFields = fields.flat() as K[];
     return result.pluck(...flattenedFields);
@@ -920,7 +944,7 @@ export default class QueryBuilder<T> {
    * @template K - Keys of document type T
    */
   public async first<K extends keyof T>(
-    ...fields: (K | K[])[]
+    ...fields: (K | (string & {}) | (K | (string & {}))[])[]
   ): Promise<T | null> {
     let data = await this.get(...fields);
     if (data && data.length > 0) {
@@ -1081,7 +1105,9 @@ export default class QueryBuilder<T> {
    * @returns {Promise<number>} Maximum value
    * @template K - Keys of document type T
    */
-  public async max<K extends keyof T>(field: K): Promise<number> {
+  public async max<K extends keyof T>(
+    field: K | (string & {}),
+  ): Promise<number> {
     return this.aggregates(field, "max");
   }
 
@@ -1091,7 +1117,9 @@ export default class QueryBuilder<T> {
    * @returns {Promise<number>} Minimum value
    * @template K - Keys of document type T
    */
-  public async min<K extends keyof T>(field: K): Promise<number> {
+  public async min<K extends keyof T>(
+    field: K | (string & {}),
+  ): Promise<number> {
     return this.aggregates(field, "min");
   }
 
@@ -1101,7 +1129,9 @@ export default class QueryBuilder<T> {
    * @returns {Promise<number>} Average value
    * @template K - Keys of document type T
    */
-  public async avg<K extends keyof T>(field: K): Promise<number> {
+  public async avg<K extends keyof T>(
+    field: K | (string & {}),
+  ): Promise<number> {
     return this.aggregates(field, "avg");
   }
 
@@ -1111,7 +1141,9 @@ export default class QueryBuilder<T> {
    * @returns {Promise<number>} Sum of values
    * @template K - Keys of document type T
    */
-  public async sum<K extends keyof T>(field: K): Promise<number> {
+  public async sum<K extends keyof T>(
+    field: K | (string & {}),
+  ): Promise<number> {
     return this.aggregates(field, "sum");
   }
 
@@ -1121,7 +1153,9 @@ export default class QueryBuilder<T> {
    * @returns {this} Current query builder instance
    * @template K - Keys of document type T
    */
-  public groupBy<K extends keyof T>(...fields: (K | K[])[]) {
+  public groupBy<K extends keyof T>(
+    ...fields: (K | (string & {}) | (K | (string & {}))[])[]
+  ) {
     const flattenedFields = fields.flat() as (keyof T)[];
     this.$groups = [...this.$groups, ...flattenedFields];
     return this;
@@ -1136,7 +1170,7 @@ export default class QueryBuilder<T> {
    * @template K - Keys of document type T
    */
   private async aggregates<K extends keyof T>(
-    field: K,
+    field: K | (string & {}),
     type: "avg" | "sum" | "max" | "min",
   ): Promise<number> {
     try {
@@ -1371,7 +1405,9 @@ export default class QueryBuilder<T> {
    * @private
    * @template K - Keys of document type T
    */
-  private setColumns<K extends keyof T>(...columns: (K | K[])[]): void {
+  private setColumns<K extends keyof T>(
+    ...columns: (K | (string & {}) | (K | (string & {}))[])[]
+  ): void {
     if (Array.isArray(columns)) {
       const flattenedColumns = columns.flat() as unknown as keyof T[];
       this.$columns = [
@@ -1387,7 +1423,9 @@ export default class QueryBuilder<T> {
    * @private
    * @template K - Keys of document type T
    */
-  private setExcludes<K extends keyof T>(...columns: (K | K[])[]): void {
+  private setExcludes<K extends keyof T>(
+    ...columns: (K | (string & {}) | (K | (string & {}))[])[]
+  ): void {
     if (Array.isArray(columns)) {
       const flattenedColumns = columns.flat() as unknown as keyof T[];
       this.$excludes = [
@@ -1407,7 +1445,7 @@ export default class QueryBuilder<T> {
    * @template K - Keys of document type T
    */
   private setWheres<K extends keyof T>(
-    column: K,
+    column: K | (string & {}),
     operator: any,
     value: any,
     boolean: string = "and",
@@ -1449,15 +1487,18 @@ export default class QueryBuilder<T> {
   }
 
   public setConnection(connection: string): string {
-    return this.$connection = connection
+    this.$connection = connection;
+    return this.$connection;
   }
 
   public setDatabaseName(name: string): string {
-    return this.$databaseName = name
+    this.$databaseName = name;
+    return this.$databaseName;
   }
 
   public setTimezone(timezone: string): string {
-    return this.$timezone = timezone
+    this.$timezone = timezone;
+    return this.$timezone;
   }
 
   /**
@@ -1503,7 +1544,7 @@ export default class QueryBuilder<T> {
    * Generates match conditions for the query
    * @private
    */
-  private generateWheres(): void {
+  private generateWheres(isNested: boolean = false): void {
     let $and: Document[] = [];
     let $or: Document[] = [];
 
@@ -1512,39 +1553,42 @@ export default class QueryBuilder<T> {
     }
 
     // sort by type(E/R/S) for better peformace query in MongoDB
-    this.$wheres.sort().forEach((el) => {
-      const op = operators.find(
-        (op) => op.operator === el.operator || op.mongoOperator === el.operator,
-      );
+    const typeOrder = ["E", "R", "S"];
+    this.$wheres
+      .filter((el) => isNested ? el.column.includes('.') : !el.column.includes('.'))
+      .sort((a, b) => typeOrder.indexOf(a.type) - typeOrder.indexOf(b.type)).forEach((el) => {
+        const op = operators.find(
+          (op) => op.operator === el.operator || op.mongoOperator === el.operator,
+        );
 
-      let value;
-      if (el.column === "_id") {
-        if (Array.isArray(el.value))
-          value = el.value.map((val) => new ObjectId(val));
-        else value = new ObjectId(el.value);
-      }
+        let value;
+        if (el.column === "_id") {
+          if (Array.isArray(el.value))
+            value = el.value.map((val) => new ObjectId(val));
+          else value = new ObjectId(el.value);
+        }
 
-      let condition = {
-        [el.column]: {
-          [`$${op?.mongoOperator}`]: value || el.value,
-        },
-        $options: op?.options,
-      };
-
-      if (el.operator === "between")
-        condition = {
+        let condition = {
           [el.column]: {
-            $gte: el.value?.[0],
-            $lte: el.value?.[el.value.length - 1],
+            [`$${op?.mongoOperator}`]: value || el.value,
           },
           $options: op?.options,
         };
 
-      if (!condition.$options) delete condition.$options;
+        if (el.operator === "between")
+          condition = {
+            [el.column]: {
+              $gte: el.value?.[0],
+              $lte: el.value?.[el.value.length - 1],
+            },
+            $options: op?.options,
+          };
 
-      if (el.boolean === "and") $and.push(condition);
-      else $or.push(condition);
-    });
+        if (!condition.$options) delete condition.$options;
+
+        if (el.boolean === "and") $and.push(condition);
+        else $or.push(condition);
+      });
 
     if ($or.length > 0) {
       if ($and.length > 0) $or.push({ $and });
@@ -1685,7 +1729,14 @@ export default class QueryBuilder<T> {
       const stages = this.getStages();
       const lookups = this.getLookups();
 
-      const aggregate = collection?.aggregate([...stages, ...lookups]);
+      this.$stages = [];
+      this.$columns = [];
+      this.$excludes = [];
+
+      this.generateWheres(true)
+      const nestedStages = this.getStages()
+
+      const aggregate = collection?.aggregate([...stages, ...lookups, ...nestedStages]);
 
       this.resetQuery();
 

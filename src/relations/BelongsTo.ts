@@ -61,7 +61,9 @@ export default class BelongsTo<T, M> extends QueryBuilder<M> {
    * @param {(K | K[])[]} fields - The fields to retrieve
    * @returns {Promise<Pick<M, K>[]>} Promise that resolves with the selected fields
    */
-  public get<K extends keyof M>(...fields: (K | K[])[]) {
+  public get<K extends keyof M>(
+    ...fields: (K | (string & {}) | (K | (string & {}))[])[]
+  ) {
     this.where(this.ownerKey, this.model["$original"][this.foreignKey]);
     return super.get(...fields);
   }
@@ -86,7 +88,9 @@ export default class BelongsTo<T, M> extends QueryBuilder<M> {
    * @param {(K | K[])[]} fields - The fields to retrieve
    * @returns {Promise<Pick<M, K> | null>} Promise that resolves with the first matching record or null
    */
-  public first<K extends keyof M>(...fields: (K | K[])[]) {
+  public first<K extends keyof M>(
+    ...fields: (K | (string & {}) | (K | (string & {}))[])[]
+  ) {
     this.where(this.ownerKey, this.model["$original"][this.foreignKey]);
     return super.first(...fields);
   }
@@ -106,7 +110,7 @@ export default class BelongsTo<T, M> extends QueryBuilder<M> {
    * @param {K} field - The field to sum
    * @returns {Promise<number>} Promise that resolves with the sum
    */
-  public sum<K extends keyof M>(field: K): Promise<number> {
+  public sum<K extends keyof M>(field: K | (string & {})): Promise<number> {
     this.where(this.ownerKey, this.model["$original"][this.foreignKey]);
     return super.sum(field);
   }
@@ -117,7 +121,7 @@ export default class BelongsTo<T, M> extends QueryBuilder<M> {
    * @param {K} field - The field to check
    * @returns {Promise<number>} Promise that resolves with the minimum value
    */
-  public min<K extends keyof M>(field: K): Promise<number> {
+  public min<K extends keyof M>(field: K | (string & {})): Promise<number> {
     this.where(this.ownerKey, this.model["$original"][this.foreignKey]);
     return super.min(field);
   }
@@ -128,7 +132,7 @@ export default class BelongsTo<T, M> extends QueryBuilder<M> {
    * @param {K} field - The field to check
    * @returns {Promise<number>} Promise that resolves with the maximum value
    */
-  public max<K extends keyof M>(field: K): Promise<number> {
+  public max<K extends keyof M>(field: K | (string & {})): Promise<number> {
     this.where(this.ownerKey, this.model["$original"][this.foreignKey]);
     return super.max(field);
   }
@@ -139,7 +143,7 @@ export default class BelongsTo<T, M> extends QueryBuilder<M> {
    * @param {K} field - The field to average
    * @returns {Promise<number>} Promise that resolves with the average value
    */
-  public avg<K extends keyof M>(field: K): Promise<number> {
+  public avg<K extends keyof M>(field: K | (string & {})): Promise<number> {
     this.where(this.ownerKey, this.model["$original"][this.foreignKey]);
     return super.avg(field);
   }
@@ -226,13 +230,13 @@ export default class BelongsTo<T, M> extends QueryBuilder<M> {
       });
     }
 
-    belongsTo.model["$nested"].forEach(el => {
+    belongsTo.model["$nested"].forEach((el) => {
       if (typeof belongsTo.relatedModel[el] === "function") {
-        belongsTo.relatedModel["$alias"] = el
-        const nested = belongsTo.relatedModel[el]()
-        pipeline.push(...nested.model.$lookups)
+        belongsTo.relatedModel["$alias"] = el;
+        const nested = belongsTo.relatedModel[el]();
+        pipeline.push(...nested.model.$lookups);
       }
-    })
+    });
 
     // Define the $lookup stage
     const $lookup = {
