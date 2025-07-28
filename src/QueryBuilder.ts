@@ -1544,7 +1544,7 @@ export default class QueryBuilder<T> {
    * Generates match conditions for the query
    * @private
    */
-  private generateWheres(): void {
+  private generateWheres(isNested: boolean = false): void {
     let $and: Document[] = [];
     let $or: Document[] = [];
 
@@ -1553,39 +1553,42 @@ export default class QueryBuilder<T> {
     }
 
     // sort by type(E/R/S) for better peformace query in MongoDB
-    this.$wheres.sort().forEach((el) => {
-      const op = operators.find(
-        (op) => op.operator === el.operator || op.mongoOperator === el.operator,
-      );
+    const typeOrder = ["E", "R", "S"];
+    this.$wheres
+      .filter((el) => isNested ? el.column.includes('.') : !el.column.includes('.'))
+      .sort((a, b) => typeOrder.indexOf(a.type) - typeOrder.indexOf(b.type)).forEach((el) => {
+        const op = operators.find(
+          (op) => op.operator === el.operator || op.mongoOperator === el.operator,
+        );
 
-      let value;
-      if (el.column === "_id") {
-        if (Array.isArray(el.value))
-          value = el.value.map((val) => new ObjectId(val));
-        else value = new ObjectId(el.value);
-      }
+        let value;
+        if (el.column === "_id") {
+          if (Array.isArray(el.value))
+            value = el.value.map((val) => new ObjectId(val));
+          else value = new ObjectId(el.value);
+        }
 
-      let condition = {
-        [el.column]: {
-          [`$${op?.mongoOperator}`]: value || el.value,
-        },
-        $options: op?.options,
-      };
-
-      if (el.operator === "between")
-        condition = {
+        let condition = {
           [el.column]: {
-            $gte: el.value?.[0],
-            $lte: el.value?.[el.value.length - 1],
+            [`$${op?.mongoOperator}`]: value || el.value,
           },
           $options: op?.options,
         };
 
-      if (!condition.$options) delete condition.$options;
+        if (el.operator === "between")
+          condition = {
+            [el.column]: {
+              $gte: el.value?.[0],
+              $lte: el.value?.[el.value.length - 1],
+            },
+            $options: op?.options,
+          };
 
-      if (el.boolean === "and") $and.push(condition);
-      else $or.push(condition);
-    });
+        if (!condition.$options) delete condition.$options;
+
+        if (el.boolean === "and") $and.push(condition);
+        else $or.push(condition);
+      });
 
     if ($or.length > 0) {
       if ($and.length > 0) $or.push({ $and });
@@ -1726,7 +1729,14 @@ export default class QueryBuilder<T> {
       const stages = this.getStages();
       const lookups = this.getLookups();
 
-      const aggregate = collection?.aggregate([...stages, ...lookups]);
+      this.$stages = [];
+      this.$columns = [];
+      this.$excludes = [];
+
+      this.generateWheres(true)
+      const nestedStages = this.getStages()
+
+      const aggregate = collection?.aggregate([...stages, ...lookups, ...nestedStages]);
 
       this.resetQuery();
 
