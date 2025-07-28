@@ -232,7 +232,7 @@ export default class Model<T> extends QueryBuilder<T> {
    */
   public static select<M extends typeof Model<any>>(
     this: M,
-    ...fields: (keyof M["$schema"] | Array<keyof M["$schema"]>)[]
+    ...fields: (keyof M["$schema"] | Array<keyof M["$schema"]> | (string & {}))[]
   ) {
     return this.query().select(...fields);
   }
@@ -245,7 +245,7 @@ export default class Model<T> extends QueryBuilder<T> {
    */
   public static exclude<M extends typeof Model<any>>(
     this: M,
-    ...fields: (keyof M["$schema"] | Array<keyof M["$schema"]>)[]
+    ...fields: (keyof M["$schema"] | Array<keyof M["$schema"]> | (string & {}))[]
   ) {
     return this.query().exclude(...fields);
   }
@@ -260,7 +260,7 @@ export default class Model<T> extends QueryBuilder<T> {
    */
   public static where<M extends typeof Model<any>>(
     this: M,
-    column: keyof M["$schema"],
+    column: keyof M["$schema"] | (string & {}),
     operator: any,
     value: any = null,
   ) {
@@ -277,7 +277,7 @@ export default class Model<T> extends QueryBuilder<T> {
    */
   public static orWhere<M extends typeof Model<any>>(
     this: M,
-    column: keyof M["$schema"],
+    column: keyof M["$schema"] | (string & {}),
     operator: any,
     value: any = null,
   ) {
@@ -293,7 +293,7 @@ export default class Model<T> extends QueryBuilder<T> {
    */
   public static whereNot<M extends typeof Model<any>>(
     this: M,
-    column: keyof M["$schema"],
+    column: keyof M["$schema"] | (string & {}),
     value: any,
   ) {
     return this.query().whereNot(column, value);
@@ -308,7 +308,7 @@ export default class Model<T> extends QueryBuilder<T> {
    */
   public static orWhereNot<M extends typeof Model<any>>(
     this: M,
-    column: keyof M["$schema"],
+    column: keyof M["$schema"] | (string & {}),
     value: any,
   ) {
     return this.query().orWhereNot(column, value);
@@ -323,7 +323,7 @@ export default class Model<T> extends QueryBuilder<T> {
    */
   public static whereIn<M extends typeof Model<any>>(
     this: M,
-    column: keyof M["$schema"],
+    column: keyof M["$schema"] | (string & {}),
     value: any[],
   ) {
     return this.query().whereIn(column, value);
@@ -338,7 +338,7 @@ export default class Model<T> extends QueryBuilder<T> {
    */
   public static orWhereIn<M extends typeof Model<any>>(
     this: M,
-    column: keyof M["$schema"],
+    column: keyof M["$schema"] | (string & {}),
     value: any[],
   ) {
     return this.query().orWhereIn(column, value);
@@ -353,7 +353,7 @@ export default class Model<T> extends QueryBuilder<T> {
    */
   public static whereNotIn<M extends typeof Model<any>>(
     this: M,
-    column: keyof M["$schema"],
+    column: keyof M["$schema"] | (string & {}),
     value: any[],
   ) {
     return this.query().whereNotIn(column, value);
@@ -368,7 +368,7 @@ export default class Model<T> extends QueryBuilder<T> {
    */
   public static orWhereNotIn<M extends typeof Model<any>>(
     this: M,
-    column: keyof M["$schema"],
+    column: keyof M["$schema"] | (string & {}),
     value: any[],
   ) {
     return this.query().orWhereNotIn(column, value);
@@ -383,7 +383,7 @@ export default class Model<T> extends QueryBuilder<T> {
    */
   public static whereBetween<M extends typeof Model<any>>(
     this: M,
-    column: keyof M["$schema"],
+    column: keyof M["$schema"] | (string & {}),
     value: [number, number?],
   ) {
     return this.query().whereBetween(column, value);
@@ -398,7 +398,7 @@ export default class Model<T> extends QueryBuilder<T> {
    */
   public static orWhereBetween<M extends typeof Model<any>>(
     this: M,
-    column: keyof M["$schema"],
+    column: keyof M["$schema"] | (string & {}),
     value: [number, number?],
   ) {
     return this.query().orWhereBetween(column, value);
@@ -412,7 +412,7 @@ export default class Model<T> extends QueryBuilder<T> {
    */
   public static whereNull<M extends typeof Model<any>>(
     this: M,
-    column: keyof M["$schema"],
+    column: keyof M["$schema"] | (string & {}),
   ) {
     return this.query().whereNull(column);
   }
@@ -425,7 +425,7 @@ export default class Model<T> extends QueryBuilder<T> {
    */
   public static orWhereNull<M extends typeof Model<any>>(
     this: M,
-    column: keyof M["$schema"],
+    column: keyof M["$schema"] | (string & {}),
   ) {
     return this.query().orWhereNull(column);
   }
@@ -438,7 +438,7 @@ export default class Model<T> extends QueryBuilder<T> {
    */
   public static whereNotNull<M extends typeof Model<any>>(
     this: M,
-    column: keyof M["$schema"],
+    column: keyof M["$schema"] | (string & {}),
   ) {
     return this.query().whereNotNull(column);
   }
@@ -451,7 +451,7 @@ export default class Model<T> extends QueryBuilder<T> {
    */
   public static orWhereNotNull<M extends typeof Model<any>>(
     this: M,
-    column: keyof M["$schema"],
+    column: keyof M["$schema"] | (string & {}),
   ) {
     return this.query().orWhereNotNull(column);
   }
@@ -504,7 +504,7 @@ export default class Model<T> extends QueryBuilder<T> {
    */
   public static orderBy<M extends typeof Model<any>>(
     this: M,
-    column: keyof M["$schema"],
+    column: keyof M["$schema"] | (string & {}),
     direction: "asc" | "desc" = "asc",
     caseSensitive: boolean = false,
   ) {
@@ -539,7 +539,7 @@ export default class Model<T> extends QueryBuilder<T> {
    */
   public static get<M extends typeof Model<any>>(
     this: M,
-    ...fields: (keyof M["$schema"] | Array<keyof M["$schema"]>)[]
+    ...fields: (keyof M["$schema"] | Array<keyof M["$schema"]> | (string & {}))[]
   ) {
     return this.query().get(...fields);
   }
@@ -561,7 +561,7 @@ export default class Model<T> extends QueryBuilder<T> {
    */
   public static async pluck<M extends typeof Model<any>>(
     this: M,
-    ...fields: (keyof M["$schema"] | Array<keyof M["$schema"]>)[]
+    ...fields: (keyof M["$schema"] | Array<keyof M["$schema"]> | (string & {}))[]
   ) {
     return this.query().pluck(...fields);
   }
@@ -589,7 +589,7 @@ export default class Model<T> extends QueryBuilder<T> {
    */
   public static first<M extends typeof Model<any>>(
     this: M,
-    ...fields: (keyof M["$schema"] | Array<keyof M["$schema"]>)[]
+    ...fields: (keyof M["$schema"] | Array<keyof M["$schema"]> | (string & {}))[]
   ) {
     return this.query().first(...fields);
   }
@@ -668,7 +668,7 @@ export default class Model<T> extends QueryBuilder<T> {
    */
   public static max<M extends typeof Model<any>>(
     this: M,
-    column: keyof M["$schema"],
+    column: keyof M["$schema"] | (string & {}),
   ) {
     return this.query().max(column);
   }
@@ -681,7 +681,7 @@ export default class Model<T> extends QueryBuilder<T> {
    */
   public static min<M extends typeof Model<any>>(
     this: M,
-    column: keyof M["$schema"],
+    column: keyof M["$schema"] | (string & {}),
   ) {
     return this.query().min(column);
   }
@@ -694,7 +694,7 @@ export default class Model<T> extends QueryBuilder<T> {
    */
   public static avg<M extends typeof Model<any>>(
     this: M,
-    column: keyof M["$schema"],
+    column: keyof M["$schema"] | (string & {}),
   ) {
     return this.query().avg(column);
   }
@@ -707,7 +707,7 @@ export default class Model<T> extends QueryBuilder<T> {
    */
   public static sum<M extends typeof Model<any>>(
     this: M,
-    column: keyof M["$schema"],
+    column: keyof M["$schema"] | (string & {}),
   ) {
     return this.query().sum(column);
   }
@@ -720,7 +720,7 @@ export default class Model<T> extends QueryBuilder<T> {
    */
   public static groupBy<M extends typeof Model<any>>(
     this: M,
-    ...fields: (keyof M["$schema"] | Array<keyof M["$schema"]>)[]
+    ...fields: (keyof M["$schema"] | Array<keyof M["$schema"]> | (string & {}))[]
   ) {
     return this.query().groupBy(...fields);
   }
