@@ -43,15 +43,10 @@ export default class Model<T> extends QueryBuilder<T> {
    */
   [key: string]: any;
 
-  /** Schema definition for the document */
   public static $schema: any;
-
-  /** Timezone setting for dates */
   protected static $timezone: string;
-  /** MongoDB connection string */
-  protected static $connection: string
-  /** Database name */
-  protected static $databaseName: string
+  protected static $connection: string;
+  protected static $databaseName: string;
 
   /**
    * The relationships that should always be loaded.
@@ -232,7 +227,11 @@ export default class Model<T> extends QueryBuilder<T> {
    */
   public static select<M extends typeof Model<any>>(
     this: M,
-    ...fields: (keyof M["$schema"] | Array<keyof M["$schema"]> | (string & {}))[]
+    ...fields: (
+      | keyof M["$schema"]
+      | Array<keyof M["$schema"]>
+      | (string & {})
+    )[]
   ) {
     return this.query().select(...fields);
   }
@@ -245,7 +244,11 @@ export default class Model<T> extends QueryBuilder<T> {
    */
   public static exclude<M extends typeof Model<any>>(
     this: M,
-    ...fields: (keyof M["$schema"] | Array<keyof M["$schema"]> | (string & {}))[]
+    ...fields: (
+      | keyof M["$schema"]
+      | Array<keyof M["$schema"]>
+      | (string & {})
+    )[]
   ) {
     return this.query().exclude(...fields);
   }
@@ -539,7 +542,11 @@ export default class Model<T> extends QueryBuilder<T> {
    */
   public static get<M extends typeof Model<any>>(
     this: M,
-    ...fields: (keyof M["$schema"] | Array<keyof M["$schema"]> | (string & {}))[]
+    ...fields: (
+      | keyof M["$schema"]
+      | Array<keyof M["$schema"]>
+      | (string & {})
+    )[]
   ) {
     return this.query().get(...fields);
   }
@@ -561,7 +568,11 @@ export default class Model<T> extends QueryBuilder<T> {
    */
   public static async pluck<M extends typeof Model<any>>(
     this: M,
-    ...fields: (keyof M["$schema"] | Array<keyof M["$schema"]> | (string & {}))[]
+    ...fields: (
+      | keyof M["$schema"]
+      | Array<keyof M["$schema"]>
+      | (string & {})
+    )[]
   ) {
     return this.query().pluck(...fields);
   }
@@ -589,7 +600,11 @@ export default class Model<T> extends QueryBuilder<T> {
    */
   public static first<M extends typeof Model<any>>(
     this: M,
-    ...fields: (keyof M["$schema"] | Array<keyof M["$schema"]> | (string & {}))[]
+    ...fields: (
+      | keyof M["$schema"]
+      | Array<keyof M["$schema"]>
+      | (string & {})
+    )[]
   ) {
     return this.query().first(...fields);
   }
@@ -720,7 +735,11 @@ export default class Model<T> extends QueryBuilder<T> {
    */
   public static groupBy<M extends typeof Model<any>>(
     this: M,
-    ...fields: (keyof M["$schema"] | Array<keyof M["$schema"]> | (string & {}))[]
+    ...fields: (
+      | keyof M["$schema"]
+      | Array<keyof M["$schema"]>
+      | (string & {})
+    )[]
   ) {
     return this.query().groupBy(...fields);
   }
@@ -1180,27 +1199,30 @@ export default class Model<T> extends QueryBuilder<T> {
   public static query<M extends typeof Model<any>>(
     this: M,
   ): Model<M["$schema"]> {
-    const model = new this()
+    const model = new this();
 
-    if (this.$connection) model.setConnection(this.$connection)
-    if (this.$databaseName) model.setDatabaseName(this.$databaseName)
-    if (this.$timezone) model.setTimezone(this.$timezone)
+    if (this.$connection) model.setConnection(this.$connection);
+    if (this.$databaseName) model.setDatabaseName(this.$databaseName);
+    if (this.$timezone) model.setTimezone(this.$timezone);
 
     model.runDefaultRelation();
 
-    return model
+    return model;
   }
 
   public static setConnection(connection: string): string {
-    return this.$connection = connection
+    this.$connection = connection;
+    return this.$connection;
   }
 
   public static setDatabaseName(name: string): string {
-    return this.$databaseName = name
+    this.$databaseName = name;
+    return this.$databaseName;
   }
 
   public static setTimezone(timezone: string): string {
-    return this.$timezone = timezone
+    this.$timezone = timezone;
+    return this.$timezone;
   }
 
   /**
