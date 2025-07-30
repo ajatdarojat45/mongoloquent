@@ -13,7 +13,16 @@
     "start": "ts-node src/index.ts",
     "prepublishOnly": "npm run build",
     "dev": "nodemon --exec ts-node sandbox.ts",
-    "release": "standard-version"
+    "release": "standard-version",
+    "prepare": "husky",
+    "lint": "eslint .",
+    "format": "prettier --write ."
+  },
+  "lint-staged": {
+    "*.{js,ts,json,md}": [
+      "prettier --write",
+      "eslint --fix"
+    ]
   },
   "keywords": [
     "javascript",
@@ -39,8 +48,16 @@
     "@trivago/prettier-plugin-sort-imports": "^5.2.2",
     "@types/jest": "^29.5.11",
     "@types/node": "^20.11.5",
+    "@typescript-eslint/eslint-plugin": "^8.38.0",
+    "@typescript-eslint/parser": "^8.38.0",
+    "eslint": "^9.32.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.3",
+    "husky": "^9.1.7",
     "jest": "^29.7.0",
+    "lint-staged": "^16.1.2",
     "mongodb": "^6.18.0",
+    "prettier": "^3.6.2",
     "standard-version": "^9.5.0",
     "ts-jest": "^29.1.2",
     "ts-node": "^10.9.2",
