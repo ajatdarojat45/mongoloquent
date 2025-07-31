@@ -1,9 +1,14 @@
 import { Document } from "mongodb";
-import { Collection, Model, QueryBuilder } from "../core";
-import { IQueryBuilderPaginated, IRelationshipHasOne } from "../types";
-import { LookupBuilder } from "./index";
+import {
+	IQueryBuilderPaginated,
+	IRelationshipHasOne,
+	Collection,
+	Model,
+	QueryBuilder,
+	LookupBuilder,
+} from "../index";
 
-export class HasOne<T, M> extends QueryBuilder<M> {
+export class HasOne<T = any, M = any> extends QueryBuilder<M> {
 	model: Model<T>;
 	relatedModel: Model<M>;
 	foreignKey: keyof M;
@@ -21,12 +26,11 @@ export class HasOne<T, M> extends QueryBuilder<M> {
 		this.foreignKey = foreignKey;
 		this.localKey = localKey;
 
-		this.$connection = relatedModel["$connection"];
-		this.$collection = relatedModel["$collection"];
-		this.$useSoftDelete = relatedModel["$useSoftDelete"];
-		this.$databaseName = relatedModel["$databaseName"];
-		this.$useSoftDelete = relatedModel["$useSoftDelete"];
-		this.$useTimestamps = relatedModel["$useTimestamps"];
+		this.setConnection(relatedModel["$connection"]);
+		this.setCollection(relatedModel["$collection"]);
+		this.setDatabaseName(relatedModel["$databaseName"]);
+		this.setUseSoftDelete(relatedModel["$useSoftDelete"]);
+		this.setUseTimestamps(relatedModel["$useTimestamps"]);
 		this.setIsDeleted(relatedModel["$isDeleted"]);
 	}
 
@@ -52,7 +56,7 @@ export class HasOne<T, M> extends QueryBuilder<M> {
 
 	public first<K extends keyof M>(
 		...fields: (K | (string & {}) | (K | (string & {}))[])[]
-	) {
+	): Promise<M | null> {
 		this.where(this.foreignKey, this.model["$original"][this.localKey]);
 		return super.first(...fields);
 	}
