@@ -16,8 +16,8 @@ import {
 	IQueryBuilderWhere,
 	IRelationshipOptions,
 } from "../../types";
-import { AbstractQueryBuilder } from "./index";
 import { Database, Collection } from "../index";
+import { AbstractQueryBuilder } from "./abstract-query-builder.core";
 import {
 	MongoloquentNotFoundException,
 	MongoloquentQueryException,
@@ -30,7 +30,9 @@ import {
 	OPERATORS,
 } from "../../constants";
 
-export abstract class QueryBuilder<T = any> extends AbstractQueryBuilder<T> {
+export abstract class QueryBuilder<
+	T = WithId<Document>,
+> extends AbstractQueryBuilder<T> {
 	protected $timezone: string = "";
 	protected $connection: string = "";
 	protected $databaseName: string = "";

@@ -17,7 +17,7 @@ import {
 } from "../../types";
 import { Collection } from "../index";
 
-export abstract class AbstractQueryBuilder<T> {
+export abstract class AbstractQueryBuilder<T = WithId<Document>> {
 	protected abstract $timezone: string;
 	protected abstract $connection: string;
 	protected abstract $databaseName: string;
