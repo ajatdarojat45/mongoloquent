@@ -16,7 +16,7 @@ import {
 	IQueryBuilderWhere,
 	IRelationshipsOptions,
 } from "../../types";
-import { AbstractQueryBuilder } from "./abstract-query-builder.core";
+import { AbstractQueryBuilder } from "./index";
 import { operators } from "../../utils";
 import { Database, Collection } from "../index";
 import {
@@ -25,7 +25,7 @@ import {
 } from "../../exceptions";
 import dayjs from "dayjs";
 
-export abstract class QueryBuilder<T> extends AbstractQueryBuilder<T> {
+export abstract class QueryBuilder<T = any> extends AbstractQueryBuilder<T> {
 	protected $timezone: string = "";
 	protected $connection: string = "";
 	protected $databaseName: string = "";
@@ -1338,6 +1338,34 @@ export abstract class QueryBuilder<T> extends AbstractQueryBuilder<T> {
 
 	public getWheres(): IQueryBuilderWhere[] {
 		return this.$wheres;
+	}
+
+	public setOrders(orders: IQueryBuilderOrder[]): this {
+		this.$orders = orders;
+		return this;
+	}
+
+	public addOrder(order: IQueryBuilderOrder): this {
+		this.$orders.push(order);
+		return this;
+	}
+
+	public getOrders(): IQueryBuilderOrder[] {
+		return this.$orders;
+	}
+
+	public setGroups(groups: (keyof T)[]): this {
+		this.$groups = groups;
+		return this;
+	}
+
+	public addGroup(group: keyof T): this {
+		this.$groups.push(group);
+		return this;
+	}
+
+	public getGroups(): (keyof T)[] {
+		return this.$groups;
 	}
 
 	public setWithTrashed(withTrashed: boolean): this {
