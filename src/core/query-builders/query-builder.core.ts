@@ -14,7 +14,7 @@ import {
 	IQueryBuilderOrder,
 	IQueryBuilderPaginated,
 	IQueryBuilderWhere,
-	IRelationshipsOptions,
+	IRelationshipOptions,
 } from "../../types";
 import { AbstractQueryBuilder } from "./index";
 import { operators } from "../../utils";
@@ -24,6 +24,11 @@ import {
 	MongoloquentQueryException,
 } from "../../exceptions";
 import dayjs from "dayjs";
+import {
+	MONGOLOQUENT_DATABASE_NAME,
+	MONGOLOQUENT_DATABASE_URI,
+	TIMEZONE,
+} from "../../constants";
 
 export abstract class QueryBuilder<T = any> extends AbstractQueryBuilder<T> {
 	protected $timezone: string = "";
@@ -53,7 +58,16 @@ export abstract class QueryBuilder<T = any> extends AbstractQueryBuilder<T> {
 	private $limit: number = 0;
 	private $attributes: Partial<T> = {};
 	private $alias: string = "";
-	private $options: IRelationshipsOptions = {};
+	private $options: IRelationshipOptions = {};
+
+	constructor() {
+		super();
+		this.$timezone = this.$timezone || TIMEZONE;
+		this.$connection = this.$connection || MONGOLOQUENT_DATABASE_URI;
+		this.$databaseName = this.$databaseName || MONGOLOQUENT_DATABASE_NAME;
+		this.$collection =
+			this.$collection || `${this.constructor.name.toLowerCase()}s`;
+	}
 
 	public select<K extends keyof T>(
 		...columns: (K | (string & {}) | (K | (string & {}))[])[]
@@ -1473,12 +1487,12 @@ export abstract class QueryBuilder<T = any> extends AbstractQueryBuilder<T> {
 		return this.$alias;
 	}
 
-	public setOptions(options: IRelationshipsOptions): this {
+	public setOptions(options: IRelationshipOptions): this {
 		this.$options = options;
 		return this;
 	}
 
-	public getOptions(): IRelationshipsOptions {
+	public getOptions(): IRelationshipOptions {
 		return this.$options;
 	}
 }
