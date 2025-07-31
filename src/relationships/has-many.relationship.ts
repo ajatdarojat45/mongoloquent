@@ -1,13 +1,15 @@
 import { Document } from "mongodb";
-import { Collection, Model, QueryBuilder } from "../core";
 import {
 	IQueryBuilderFormSchema,
 	IQueryBuilderPaginated,
 	IRelationshipHasMany,
-} from "../types";
-import { LookupBuilder } from "./index";
+	Collection,
+	Model,
+	QueryBuilder,
+	LookupBuilder,
+} from "../index";
 
-export class HasMany<T, M> extends QueryBuilder<M> {
+export class HasMany<T = any, M = any> extends QueryBuilder<M> {
 	model: Model<T>;
 	relatedModel: Model<M>;
 	localKey: keyof T;
@@ -24,19 +26,19 @@ export class HasMany<T, M> extends QueryBuilder<M> {
 		this.relatedModel = relatedModel;
 		this.localKey = localKey;
 		this.foreignKey = foreignKey;
-		this.$connection = relatedModel["$connection"];
-		this.$collection = relatedModel["$collection"];
-		this.$useSoftDelete = relatedModel["$useSoftDelete"];
-		this.$databaseName = relatedModel["$databaseName"];
-		this.$useSoftDelete = relatedModel["$useSoftDelete"];
-		this.$useTimestamps = relatedModel["$useTimestamps"];
+
+		this.setConnection(relatedModel["$connection"]);
+		this.setCollection(relatedModel["$collection"]);
+		this.setDatabaseName(relatedModel["$databaseName"]);
+		this.setUseSoftDelete(relatedModel["$useSoftDelete"]);
+		this.setUseTimestamps(relatedModel["$useTimestamps"]);
 		this.setIsDeleted(relatedModel["$isDeleted"]);
 	}
 
 	public firstOrNew(
 		filter: Partial<IQueryBuilderFormSchema<M>>,
 		doc?: Partial<IQueryBuilderFormSchema<M>>,
-	) {
+	): Promise<M> {
 		const _filter = {
 			...filter,
 			[this.foreignKey]: this.model["$original"][this.localKey],
@@ -47,7 +49,7 @@ export class HasMany<T, M> extends QueryBuilder<M> {
 	public firstOrCreate(
 		filter: Partial<IQueryBuilderFormSchema<M>>,
 		doc?: Partial<IQueryBuilderFormSchema<M>>,
-	) {
+	): Promise<M> {
 		const _filter = {
 			...filter,
 			[this.foreignKey]: this.model["$original"][this.localKey],
@@ -67,7 +69,7 @@ export class HasMany<T, M> extends QueryBuilder<M> {
 	}
 
 	// @ts-ignore
-	public save(doc: Partial<M>) {
+	public save(doc: Partial<M>): Promise<M> {
 		const data = {
 			...doc,
 			[this.foreignKey]: this.model["$original"][this.localKey],
@@ -86,7 +88,7 @@ export class HasMany<T, M> extends QueryBuilder<M> {
 	}
 
 	// @ts-ignore
-	public create(doc: Partial<M>) {
+	public create(doc: Partial<M>): Promise<M> {
 		return this.save(doc);
 	}
 
@@ -102,7 +104,7 @@ export class HasMany<T, M> extends QueryBuilder<M> {
 
 	public get<K extends keyof M>(
 		...fields: (K | (string & {}) | (K | (string & {}))[])[]
-	) {
+	): Promise<Collection<M>> {
 		this.where(this.foreignKey, this.model["$original"][this.localKey]);
 		return super.get(...fields);
 	}
@@ -117,7 +119,7 @@ export class HasMany<T, M> extends QueryBuilder<M> {
 
 	public first<K extends keyof M>(
 		...fields: (K | (string & {}) | (K | (string & {}))[])[]
-	) {
+	): Promise<M | null> {
 		this.where(this.foreignKey, this.model["$original"][this.localKey]);
 		return super.first(...fields);
 	}
