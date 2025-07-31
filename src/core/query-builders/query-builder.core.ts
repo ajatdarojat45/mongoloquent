@@ -17,9 +17,8 @@ import {
 	IRelationshipsOptions,
 } from "../../types";
 import { AbstractQueryBuilder } from "./abstract-query-builder.core";
-import { Collection } from "../index";
 import { operators } from "../../utils";
-import { Database } from "./../index";
+import { Database, Collection } from "../index";
 import {
 	MongoloquentNotFoundException,
 	MongoloquentQueryException,
