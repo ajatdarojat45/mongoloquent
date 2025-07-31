@@ -1,20 +1,20 @@
-import { TIMEZONE } from "../configs/app";
-import dayjs from "dayjs";
+import { TIMEZONE } from "../constants";
+import djs from "dayjs";
 
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
 
-dayjs.extend(utc);
-dayjs.extend(timezone);
-dayjs.tz.setDefault(TIMEZONE);
+djs.extend(utc);
+djs.extend(timezone);
+djs.tz.setDefault(TIMEZONE);
 
 export function getDayjs(tz?: string) {
-  dayjs.extend(utc);
-  dayjs.extend(timezone);
+	djs.extend(utc);
+	djs.extend(timezone);
 
-  const _tz = tz ? tz : TIMEZONE;
+	const _tz = tz ? tz : TIMEZONE;
 
-  dayjs.tz.setDefault(_tz);
+	djs.tz.setDefault(_tz);
 }
 
-export default dayjs;
+export const dayjs = djs;

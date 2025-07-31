@@ -22,7 +22,7 @@ import {
 	MongoloquentNotFoundException,
 	MongoloquentQueryException,
 } from "../../exceptions";
-import dayjs from "dayjs";
+import { dayjs } from "../../utils";
 import {
 	MONGOLOQUENT_DATABASE_NAME,
 	MONGOLOQUENT_DATABASE_URI,
