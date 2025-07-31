@@ -17,7 +17,6 @@ import {
 	IRelationshipOptions,
 } from "../../types";
 import { AbstractQueryBuilder } from "./index";
-import { operators } from "../../utils";
 import { Database, Collection } from "../index";
 import {
 	MongoloquentNotFoundException,
@@ -28,6 +27,7 @@ import {
 	MONGOLOQUENT_DATABASE_NAME,
 	MONGOLOQUENT_DATABASE_URI,
 	TIMEZONE,
+	OPERATORS,
 } from "../../constants";
 
 export abstract class QueryBuilder<T = any> extends AbstractQueryBuilder<T> {
@@ -988,7 +988,7 @@ export abstract class QueryBuilder<T = any> extends AbstractQueryBuilder<T> {
 			)
 			.sort((a, b) => typeOrder.indexOf(a.type) - typeOrder.indexOf(b.type))
 			.forEach((el) => {
-				const op = operators.find(
+				const op = OPERATORS.find(
 					(op) =>
 						op.operator === el.operator || op.mongoOperator === el.operator,
 				);
