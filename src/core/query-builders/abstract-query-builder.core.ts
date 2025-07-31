@@ -13,7 +13,7 @@ import {
 	IQueryBuilderOrder,
 	IQueryBuilderPaginated,
 	IQueryBuilderWhere,
-	IRelationshipsOptions,
+	IRelationshipOptions,
 } from "../../types";
 import { Collection } from "../index";
 
@@ -271,6 +271,6 @@ export abstract class AbstractQueryBuilder<T> {
 	public abstract getAttributes(): Partial<T>;
 	public abstract setAlias(alias: string): this;
 	public abstract getAlias(): string;
-	public abstract setOptions(options: IRelationshipsOptions): this;
-	public abstract getOptions(): IRelationshipsOptions;
+	public abstract setOptions(options: IRelationshipOptions): this;
+	public abstract getOptions(): IRelationshipOptions;
 }
