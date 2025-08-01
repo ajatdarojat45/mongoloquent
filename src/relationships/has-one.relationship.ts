@@ -41,7 +41,7 @@ export class HasOne<T = any, M = any> extends QueryBuilder<M> {
 
 	public get<K extends keyof M>(
 		...fields: (K | (string & {}) | (K | (string & {}))[])[]
-	): Promise<Collection<M>> {
+	): Promise<Collection<Pick<M, K>>> {
 		this.where(this.foreignKey, this.model["$original"][this.localKey]);
 		return super.get(...fields);
 	}
@@ -56,7 +56,7 @@ export class HasOne<T = any, M = any> extends QueryBuilder<M> {
 
 	public first<K extends keyof M>(
 		...fields: (K | (string & {}) | (K | (string & {}))[])[]
-	): Promise<M | null> {
+	): Promise<Pick<M, K> | null> {
 		this.where(this.foreignKey, this.model["$original"][this.localKey]);
 		return super.first(...fields);
 	}
@@ -109,19 +109,18 @@ export class HasOne<T = any, M = any> extends QueryBuilder<M> {
 		const lookup: Document[] = [];
 		const pipeline: Document[] = [];
 
-		// Add soft delete condition to the pipeline if enabled
-		if (hasOne.relatedModel["$useSoftDelete"]) {
+		if (hasOne.relatedModel.getUseSoftDelete()) {
 			pipeline.push({
 				$match: {
 					$expr: {
-						$and: [{ $eq: [`$${hasOne.relatedModel["$isDeleted"]}`, false] }],
+						$and: [{ $eq: [`$${hasOne.relatedModel.getIsDeleted()}`, false] }],
 					},
 				},
 			});
 		}
 
 		const $lookup = {
-			from: hasOne.relatedModel["$collection"],
+			from: hasOne.relatedModel.getCollection(),
 			localField: hasOne.localKey,
 			foreignField: hasOne.foreignKey,
 			as: hasOne.alias,
