@@ -17,7 +17,7 @@ import {
 	IRelationshipOptions,
 } from "../../types";
 import { Database, Collection } from "../index";
-import { AbstractQueryBuilder } from "./abstract-query-builder.core";
+import { AbstractQueryBuilder } from "./index";
 import {
 	MongoloquentNotFoundException,
 	MongoloquentQueryException,
@@ -220,7 +220,7 @@ export abstract class QueryBuilder<
 
 	public async get<K extends keyof T>(
 		...fields: (K | (string & {}) | (K | (string & {}))[])[]
-	): Promise<Collection<T>> {
+	): Promise<Collection<Pick<T, K>>> {
 		try {
 			this.setColumns(...fields);
 			const aggregate = await this.generateAggregateForMongoDBQuery();
@@ -238,7 +238,7 @@ export abstract class QueryBuilder<
 
 	public async pluck<K extends keyof T>(
 		...fields: (K | (string & {}) | (K | (string & {}))[])[]
-	) {
+	): Promise<Collection<Pick<T, K>>> {
 		const result = await this.get(...fields);
 		const flattenedFields = fields.flat() as K[];
 		return result.pluck(...flattenedFields);
@@ -296,10 +296,10 @@ export abstract class QueryBuilder<
 
 	public async first<K extends keyof T>(
 		...fields: (K | (string & {}) | (K | (string & {}))[])[]
-	): Promise<T | null> {
+	): Promise<T | Pick<T, K> | null> {
 		let data = await this.get(...fields);
 		if (data && data.length > 0) {
-			this.$original = { ...data[0] };
+			this.$original = { ...data[0] } as Partial<T>;
 		}
 
 		if (data.length === 0) {
@@ -345,7 +345,7 @@ export abstract class QueryBuilder<
 				"No document found matching the query",
 			);
 		}
-		return data;
+		return data as T;
 	}
 
 	public async find(id: string | ObjectId): Promise<(this & T) | null> {
@@ -995,7 +995,7 @@ export abstract class QueryBuilder<
 						op.operator === el.operator || op.mongoOperator === el.operator,
 				);
 
-				let value;
+				let value: any;
 				if (el.column === "_id") {
 					if (Array.isArray(el.value))
 						value = el.value.map((val) => new ObjectId(val));
@@ -1188,7 +1188,7 @@ export abstract class QueryBuilder<
 		return this;
 	}
 
-	private getMongoDBCollection(collectionName?: string) {
+	public getMongoDBCollection(collectionName?: string) {
 		const db = Database.getDb(this.$connection, this.$databaseName);
 		return db.collection<IQueryBuilderFormSchema<T>>(
 			collectionName || this.$collection,
