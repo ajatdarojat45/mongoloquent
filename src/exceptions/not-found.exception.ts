@@ -5,7 +5,7 @@ export class MongoloquentNotFoundException extends MongoloquentException {
 
 	constructor(message: string, error?: any) {
 		super(message, error);
-		this.name = "MongoloquentConfigurationException";
+		this.name = "MongoloquentNotFoundException";
 		Object.setPrototypeOf(this, MongoloquentNotFoundException.prototype);
 	}
 }
