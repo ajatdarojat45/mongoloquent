@@ -104,7 +104,7 @@ export class HasMany<T = any, M = any> extends QueryBuilder<M> {
 
 	public get<K extends keyof M>(
 		...fields: (K | (string & {}) | (K | (string & {}))[])[]
-	): Promise<Collection<M>> {
+	): Promise<Collection<Pick<M, K>>> {
 		this.where(this.foreignKey, this.model["$original"][this.localKey]);
 		return super.get(...fields);
 	}
@@ -119,7 +119,7 @@ export class HasMany<T = any, M = any> extends QueryBuilder<M> {
 
 	public first<K extends keyof M>(
 		...fields: (K | (string & {}) | (K | (string & {}))[])[]
-	): Promise<M | null> {
+	): Promise<Pick<M, K> | null> {
 		this.where(this.foreignKey, this.model["$original"][this.localKey]);
 		return super.first(...fields);
 	}
@@ -175,11 +175,11 @@ export class HasMany<T = any, M = any> extends QueryBuilder<M> {
 		const lookup: Document[] = [];
 		const pipeline: Document[] = [];
 
-		if (hasMany.relatedModel["$useSoftDelete"]) {
+		if (hasMany.relatedModel.getUseSoftDelete()) {
 			pipeline.push({
 				$match: {
 					$expr: {
-						$and: [{ $eq: [`$${hasMany.relatedModel["$isDeleted"]}`, false] }],
+						$and: [{ $eq: [`$${hasMany.relatedModel.getIsDeleted()}`, false] }],
 					},
 				},
 			});
@@ -205,14 +205,14 @@ export class HasMany<T = any, M = any> extends QueryBuilder<M> {
 
 		hasMany.model["$nested"].forEach((el) => {
 			if (typeof hasMany.relatedModel[el] === "function") {
-				hasMany.relatedModel["$alias"] = el;
+				hasMany.relatedModel.setAlias(el);
 				const nested = hasMany.relatedModel[el]();
 				pipeline.push(...nested.model.$lookups);
 			}
 		});
 
 		const $lookup = {
-			from: hasMany.relatedModel["$collection"],
+			from: hasMany.relatedModel.getCollection(),
 			localField: hasMany.localKey,
 			foreignField: hasMany.foreignKey,
 			as: hasMany.alias || "alias",
