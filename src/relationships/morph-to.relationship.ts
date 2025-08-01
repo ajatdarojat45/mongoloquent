@@ -1,7 +1,12 @@
 import { Document } from "mongodb";
-import { Collection, Model, QueryBuilder } from "../core";
-import { IQueryBuilderPaginated, IRelationshipMorphTo } from "../types";
 import { LookupBuilder } from "./lookup-builder.relationship";
+import {
+	Collection,
+	Model,
+	QueryBuilder,
+	IQueryBuilderPaginated,
+	IRelationshipMorphTo,
+} from "../index";
 
 export class MorphTo<T = any, M = any> extends QueryBuilder<M> {
 	private model: Model<T>;
