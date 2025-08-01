@@ -8,7 +8,7 @@ import {
 	LookupBuilder,
 } from "../index";
 
-export class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
+export class BelongsToMany<T = any, M = any, PM = any> extends QueryBuilder<M> {
 	private model: Model<T>;
 	private relatedModel: Model<M>;
 	private pivotModel: Model<PM>;
@@ -49,7 +49,7 @@ export class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
 
 	public async get<K extends keyof M>(
 		...fields: (K | (string & {}) | (K | (string & {}))[])[]
-	): Promise<Collection<M>> {
+	): Promise<Collection<Pick<M, K>>> {
 		await this.setDefaultCondition();
 		return super.get(...fields);
 	}
@@ -64,7 +64,7 @@ export class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
 
 	public async first<K extends keyof M>(
 		...fields: (K | (string & {}) | (K | (string & {}))[])[]
-	): Promise<M | null> {
+	): Promise<Pick<M, K> | null> {
 		await this.setDefaultCondition();
 		return super.first(...fields);
 	}
@@ -141,7 +141,7 @@ export class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
 
 			if (!existingItem) payloadToInsert.push(payload[i]);
 			// @ts-ignore
-			else if (existingItem?.[this.pivotModel["$isDeleted"]]) {
+			else if (existingItem?.[this.pivotModel.getIsDeleted()]) {
 				// @ts-ignore
 				idsToUpdate.push(existingItem._id);
 			}
@@ -188,6 +188,7 @@ export class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
 		else objectIds = ids.map((el) => new ObjectId(el));
 
 		const _payload: object[] = [];
+
 		objectIds.forEach((id) =>
 			_payload.push({
 				[this.foreignPivotKey]: this.model["$original"][this.parentKey],
@@ -245,6 +246,7 @@ export class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
 		else objectIds = ids.map((el) => new ObjectId(el));
 
 		const _payload: object[] = [];
+
 		objectIds.forEach((id) =>
 			_payload.push({
 				[this.foreignPivotKey]: this.model["$original"][this.parentKey],
@@ -388,7 +390,7 @@ export class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
 			);
 			if (!existingItem) payloadToInsert.push(_payload[i]);
 			// @ts-ignore
-			else if (existingItem?.[this.pivotModel["$isDeleted"]])
+			else if (existingItem?.[this.pivotModel.getIsDeleted()])
 				// @ts-ignore
 				idsToRestore.push(existingItem._id);
 			else
@@ -450,7 +452,7 @@ export class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
 		const lookup: Document[] = [];
 		const pipeline: Document[] = [];
 
-		if (belongsToMany.relatedModel["$useSoftDelete"]) {
+		if (belongsToMany.relatedModel.getUseSoftDelete()) {
 			pipeline.push({
 				$match: {
 					$expr: {
@@ -480,7 +482,7 @@ export class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
 			pipeline.push(limit);
 		}
 
-		belongsToMany.model["$nested"].forEach((el) => {
+		belongsToMany.model.getNested().forEach((el) => {
 			if (typeof belongsToMany.relatedModel[el] === "function") {
 				belongsToMany.relatedModel["$alias"] = el;
 				const nested = belongsToMany.relatedModel[el]();
@@ -491,7 +493,7 @@ export class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
 		lookup.push(
 			{
 				$lookup: {
-					from: belongsToMany.pivotModel["$collection"],
+					from: belongsToMany.pivotModel.getCollection(),
 					localField: belongsToMany.parentKey,
 					foreignField: belongsToMany.foreignPivotKey,
 					as: "pivot",
@@ -499,7 +501,7 @@ export class BelongsToMany<T, M, PM> extends QueryBuilder<M> {
 			},
 			{
 				$lookup: {
-					from: belongsToMany.relatedModel["$collection"],
+					from: belongsToMany.relatedModel.getCollection(),
 					localField: `pivot.${belongsToMany.relatedPivotKey}`,
 					foreignField: belongsToMany.relatedKey,
 					as: belongsToMany.alias || "pivot",
