@@ -52,7 +52,7 @@ export class HasManyThrough<
 
 	public async get<K extends keyof M>(
 		...fields: (K | (string & {}) | (K | (string & {}))[])[]
-	): Promise<Collection<M>> {
+	): Promise<Collection<Pick<M, K>>> {
 		await this.setDefaultCondition();
 		return super.get(...fields);
 	}
@@ -67,7 +67,7 @@ export class HasManyThrough<
 
 	public async first<K extends keyof M>(
 		...fields: (K | (string & {}) | (K | (string & {}))[])[]
-	): Promise<M | null> {
+	): Promise<Pick<M, K> | null> {
 		await this.setDefaultCondition();
 		return super.first(...fields);
 	}
@@ -140,12 +140,14 @@ export class HasManyThrough<
 		const lookup: Document[] = [];
 		const pipeline: Document[] = [];
 
-		if (hasManyThrough.relatedModel["$useSoftDelete"]) {
+		if (hasManyThrough.relatedModel.getUseSoftDelete()) {
 			pipeline.push({
 				$match: {
 					$expr: {
 						$and: [
-							{ $eq: [`$${hasManyThrough.relatedModel["$isDeleted"]}`, false] },
+							{
+								$eq: [`$${hasManyThrough.relatedModel.getIsDeleted()}`, false],
+							},
 						],
 					},
 				},
@@ -170,9 +172,9 @@ export class HasManyThrough<
 			pipeline.push(limit);
 		}
 
-		hasManyThrough.model["$nested"].forEach((el) => {
+		hasManyThrough.model.getNested().forEach((el) => {
 			if (typeof hasManyThrough.relatedModel[el] === "function") {
-				hasManyThrough.relatedModel["$alias"] = el;
+				hasManyThrough.relatedModel.setAlias(el);
 				const nested = hasManyThrough.relatedModel[el]();
 				pipeline.push(...nested.model.$lookups);
 			}
@@ -181,7 +183,7 @@ export class HasManyThrough<
 		lookup.push(
 			{
 				$lookup: {
-					from: hasManyThrough.throughModel["$collection"],
+					from: hasManyThrough.throughModel.getCollection(),
 					localField: hasManyThrough.localKey,
 					foreignField: hasManyThrough.foreignKey,
 					as: "pivot",
@@ -189,7 +191,7 @@ export class HasManyThrough<
 			},
 			{
 				$lookup: {
-					from: hasManyThrough.relatedModel["$collection"],
+					from: hasManyThrough.relatedModel.getCollection(),
 					localField: `pivot.${hasManyThrough.localKeyThrough}`,
 					foreignField: `${hasManyThrough.foreignKeyThrough}`,
 					as: hasManyThrough.alias || "alias",
