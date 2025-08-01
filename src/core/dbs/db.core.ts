@@ -1,10 +1,10 @@
-import { ClientSession, MongoClient } from "mongodb";
+import { ClientSession, MongoClient, WithId } from "mongodb";
 import { IDBLookup, IDBTransactionConfig } from "../../types";
 import { Database, QueryBuilder } from "../index";
 import { MongoloquentTransactionException } from "../../exceptions";
 import { MONGOLOQUENT_DATABASE_URI } from "../../constants";
 
-export class DB<T = any> extends QueryBuilder<T> {
+export class DB<T = WithId<Document>> extends QueryBuilder<T> {
 	[key: string]: any;
 
 	protected static $timezone: string;
