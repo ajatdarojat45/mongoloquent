@@ -41,7 +41,7 @@ export class BelongsTo<T = any, M = any> extends QueryBuilder<M> {
 
 	public get<K extends keyof M>(
 		...fields: (K | (string & {}) | (K | (string & {}))[])[]
-	): Promise<Collection<M>> {
+	): Promise<Collection<Pick<M, K>>> {
 		this.where(this.ownerKey, this.model["$original"][this.foreignKey]);
 		return super.get(...fields);
 	}
@@ -56,7 +56,7 @@ export class BelongsTo<T = any, M = any> extends QueryBuilder<M> {
 
 	public first<K extends keyof M>(
 		...fields: (K | (string & {}) | (K | (string & {}))[])[]
-	): Promise<M | null> {
+	): Promise<Pick<M, K> | null> {
 		this.where(this.ownerKey, this.model["$original"][this.foreignKey]);
 		return super.first(...fields);
 	}
