@@ -99,7 +99,7 @@ export abstract class AbstractQueryBuilder<T = WithId<Document>> {
 
 	public abstract get<K extends keyof T>(
 		...fields: (K | (string & {}) | (K | (string & {}))[])[]
-	): Promise<Collection<T>>;
+	): Promise<Collection<Pick<T, K>>>;
 	public abstract all(): Promise<Collection<T>>;
 	public abstract pluck<K extends keyof T>(
 		...fields: (K | (string & {}) | (K | (string & {}))[])[]
@@ -110,7 +110,7 @@ export abstract class AbstractQueryBuilder<T = WithId<Document>> {
 	): Promise<IQueryBuilderPaginated>;
 	public abstract first<K extends keyof T>(
 		...fields: (K | (string & {}) | (K | (string & {}))[])[]
-	): Promise<T | null>;
+	): Promise<Pick<T, K> | null>;
 	public abstract firstOrCreate(
 		filter: Partial<IQueryBuilderFormSchema<T>>,
 		doc?: Partial<IQueryBuilderFormSchema<T>>,
