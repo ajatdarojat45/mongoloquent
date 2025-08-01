@@ -1,7 +1,12 @@
 import { Document, ObjectId } from "mongodb";
-import { Collection, Model, QueryBuilder } from "../core";
-import { IQueryBuilderPaginated, IRelationshipMorphedByMany } from "../types";
 import { LookupBuilder } from "./lookup-builder.relationship";
+import {
+	Collection,
+	Model,
+	QueryBuilder,
+	IQueryBuilderPaginated,
+	IRelationshipMorphedByMany,
+} from "../index";
 
 export class MorphedByMany<T = any, M = any> extends QueryBuilder<M> {
 	model: Model<T>;
