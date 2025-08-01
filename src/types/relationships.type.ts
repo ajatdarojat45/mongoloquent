@@ -105,7 +105,7 @@ export interface IRelationshipMorphMany {
 	nested?: string[];
 }
 
-export interface IRelationMorphToMany {
+export interface IRelationshipMorphToMany {
 	type: IRelationshipTypes.morphToMany;
 	model: Model;
 	relatedModel: Model;
@@ -118,7 +118,7 @@ export interface IRelationMorphToMany {
 	nested?: string[];
 }
 
-export interface IRelationMorphedByMany {
+export interface IRelationshipMorphedByMany {
 	type: IRelationshipTypes.morphedByMany;
 	model: Model;
 	relatedModel: Model;
