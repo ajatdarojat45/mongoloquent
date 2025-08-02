@@ -1,4 +1,4 @@
-import { ClientSession, MongoClient, WithId } from "mongodb";
+import { ClientSession, MongoClient, WithId, Document } from "mongodb";
 import { IDBLookup, IDBTransactionConfig } from "../../types";
 import { Database, QueryBuilder } from "../index";
 import { MongoloquentTransactionException } from "../../exceptions";
@@ -20,33 +20,29 @@ export class DB<T = WithId<Document>> extends QueryBuilder<T> {
 		connection: string,
 	): DB<T> {
 		const q = new this();
-		q["$connection"] = connection;
-
+		q.setConnection(connection);
 		return q;
 	}
 
 	public connection(connection: string) {
-		this["$connection"] = connection;
-
+		this.setConnection(connection);
 		return this;
 	}
 
 	public static database<T>(this: new () => DB<T>, database: string): DB<T> {
 		const q = new this();
-		q["$databaseName"] = database;
-
+		q.setDatabaseName(database);
 		return q;
 	}
 
 	public database(database: string) {
-		this["$databaseName"] = database;
-
+		this.setDatabaseName(database);
 		return this;
 	}
 
 	public static collection<T>(collection: string): DB<T> {
 		const q = new this() as DB<T>;
-		q["$collection"] = collection;
+		q.setCollection(collection);
 
 		if (this.$connection) q.setConnection(this.$connection);
 		if (this.$databaseName) q.setDatabaseName(this.$databaseName);
@@ -56,8 +52,7 @@ export class DB<T = WithId<Document>> extends QueryBuilder<T> {
 	}
 
 	public collection(collection: string) {
-		this["$collection"] = collection;
-
+		this.setCollection(collection);
 		return this;
 	}
 
@@ -79,10 +74,20 @@ export class DB<T = WithId<Document>> extends QueryBuilder<T> {
 		fn: (session: ClientSession) => Promise<T>,
 		config: IDBTransactionConfig = {},
 	): Promise<T> {
+		if (!this.$connection) {
+			this.setConnection(MONGOLOQUENT_DATABASE_URI);
+		}
+
+		const db = new this();
+		return db.transaction(fn, config);
+	}
+
+	async transaction<T>(
+		fn: (session: ClientSession) => Promise<T>,
+		config: IDBTransactionConfig = {},
+	): Promise<T> {
 		let transactionError: any = null;
-		const client: MongoClient = Database.getClient(
-			this.$connection || MONGOLOQUENT_DATABASE_URI,
-		);
+		const client: MongoClient = Database.getClient(this.getConnection());
 		const session: ClientSession = client.startSession();
 
 		const {
