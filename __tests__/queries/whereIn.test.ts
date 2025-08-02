@@ -1,193 +1,199 @@
-import Model from "../../src/Model";
-import { IMongoloquentSchema } from "../../src/interfaces/ISchema";
+import {
+	IMongoloquentSchema,
+	IMongoloquentSoftDelete,
+	IMongoloquentTimestamps,
+	Model,
+	DB,
+	MongoloquentNotFoundException,
+} from "../../src/";
 
 interface IUser extends IMongoloquentSchema {
-  name: string;
-  email: string;
-  age: number;
-  balance: number;
+	name: string;
+	email: string;
+	age: number;
+	balance: number;
 }
 class User extends Model<IUser> {}
 
 class UserD extends Model<IUser> {
-  static $schema: IUser;
-  protected $useSoftDelete = true;
-  protected $collection: string = "users";
+	static $schema: IUser;
+	protected $useSoftDelete = true;
+	protected $collection: string = "users";
 }
 
 const query = User["query"]();
-const userCollection = query["getCollection"]();
+const userCollection = query.getMongoDBCollection();
 
 beforeAll(async () => {
-  await userCollection?.deleteMany({});
+	await userCollection?.deleteMany({});
 
-  await userCollection?.insertMany([
-    {
-      name: "John",
-      email: "john@mail.com",
-      age: 10,
-      balance: 100,
-      [query.getIsDeleted()]: false,
-    },
-    {
-      name: "doe",
-      email: "doe@mail.com",
-      age: 30,
-      balance: 200,
-      [query.getIsDeleted()]: false,
-    },
-    {
-      name: "Udin",
-      email: "udin@mail.com",
-      age: 5,
-      balance: 500,
-      [query.getIsDeleted()]: false,
-    },
-    {
-      name: "Kosasih",
-      email: "kosasih@mail.com",
-      age: 5,
-      balance: 400,
-      [query.getIsDeleted()]: false,
-    },
-    {
-      name: "Joko",
-      email: "joko@mail.com",
-      age: 45,
-      balance: 500,
-      [query.getIsDeleted()]: true,
-    },
-  ]);
+	await userCollection?.insertMany([
+		{
+			name: "John",
+			email: "john@mail.com",
+			age: 10,
+			balance: 100,
+			[query.getIsDeleted()]: false,
+		},
+		{
+			name: "doe",
+			email: "doe@mail.com",
+			age: 30,
+			balance: 200,
+			[query.getIsDeleted()]: false,
+		},
+		{
+			name: "Udin",
+			email: "udin@mail.com",
+			age: 5,
+			balance: 500,
+			[query.getIsDeleted()]: false,
+		},
+		{
+			name: "Kosasih",
+			email: "kosasih@mail.com",
+			age: 5,
+			balance: 400,
+			[query.getIsDeleted()]: false,
+		},
+		{
+			name: "Joko",
+			email: "joko@mail.com",
+			age: 45,
+			balance: 500,
+			[query.getIsDeleted()]: true,
+		},
+	]);
 });
 
 afterAll(async () => {
-  await userCollection?.deleteMany({});
+	await userCollection?.deleteMany({});
 });
 
 describe("Model - whereIn query method", () => {
-  it("should return records when using whereIn with single condition", async () => {
-    const result = await User.whereIn("balance", [500, 200]).get();
+	it("should return records when using whereIn with single condition", async () => {
+		const result = await User.whereIn("balance", [500, 200]).get();
 
-    expect(result).toEqual(expect.any(Array));
-    expect(result).toHaveLength(3);
-  });
+		expect(result).toEqual(expect.any(Array));
+		expect(result).toHaveLength(3);
+	});
 
-  it("whereIn with whereIn", async () => {
-    const result = await User.whereIn("balance", [500, 200])
-      .whereIn("name", ["Udin"])
-      .get();
+	it("whereIn with whereIn", async () => {
+		const result = await User.whereIn("balance", [500, 200])
+			.whereIn("name", ["Udin"])
+			.get();
 
-    expect(result).toEqual(expect.any(Array));
-    expect(result).toHaveLength(1);
-  });
+		expect(result).toEqual(expect.any(Array));
+		expect(result).toHaveLength(1);
+	});
 
-  it("whereIn with where", async () => {
-    const result = await User.where("name", "doe")
-      .whereIn("balance", [500, 200])
-      .get();
+	it("whereIn with where", async () => {
+		const result = await User.where("name", "doe")
+			.whereIn("balance", [500, 200])
+			.get();
 
-    expect(result).toEqual(expect.any(Array));
-    expect(result).toHaveLength(1);
-  });
+		expect(result).toEqual(expect.any(Array));
+		expect(result).toHaveLength(1);
+	});
 
-  it("whereIn with orWhereIn", async () => {
-    const result = await User.where("name", "doe")
-      .orWhereIn("balance", [500, 200])
-      .get();
+	it("whereIn with orWhereIn", async () => {
+		const result = await User.where("name", "doe")
+			.orWhereIn("balance", [500, 200])
+			.get();
 
-    expect(result).toEqual(expect.any(Array));
-    expect(result).toHaveLength(3);
-  });
+		expect(result).toEqual(expect.any(Array));
+		expect(result).toHaveLength(3);
+	});
 
-  it("whereIn with orWhere", async () => {
-    const result = await User.whereIn("balance", [500, 200])
-      .orWhere("name", "Kosasih")
-      .get();
+	it("whereIn with orWhere", async () => {
+		const result = await User.whereIn("balance", [500, 200])
+			.orWhere("name", "Kosasih")
+			.get();
 
-    expect(result).toEqual(expect.any(Array));
-    expect(result).toHaveLength(4);
-  });
+		expect(result).toEqual(expect.any(Array));
+		expect(result).toHaveLength(4);
+	});
 
-  it("whereIn with orWhereIn", async () => {
-    const result = await User.whereIn("balance", [500, 200])
-      .orWhereIn("name", ["Kosasih"])
-      .get();
+	it("whereIn with orWhereIn", async () => {
+		const result = await User.whereIn("balance", [500, 200])
+			.orWhereIn("name", ["Kosasih"])
+			.get();
 
-    expect(result).toEqual(expect.any(Array));
-    expect(result).toHaveLength(4);
-  });
+		expect(result).toEqual(expect.any(Array));
+		expect(result).toHaveLength(4);
+	});
 
-  it("whereIn with soft delete", async () => {
-    const result = await UserD.whereIn("balance", [500, 200]).get();
+	it("whereIn with soft delete", async () => {
+		const result = await UserD.whereIn("balance", [500, 200]).get();
 
-    expect(result).toEqual(expect.any(Array));
-    expect(result).toHaveLength(2);
-  });
+		expect(result).toEqual(expect.any(Array));
+		expect(result).toHaveLength(2);
+	});
 
-  it("whereIn with soft delete & and condition", async () => {
-    const result = await UserD.whereIn("balance", [500, 200])
-      .where("name", "Udin")
-      .get();
+	it("whereIn with soft delete & and condition", async () => {
+		const result = await UserD.whereIn("balance", [500, 200])
+			.where("name", "Udin")
+			.get();
 
-    expect(result).toEqual(expect.any(Array));
-    expect(result).toHaveLength(1);
-  });
+		expect(result).toEqual(expect.any(Array));
+		expect(result).toHaveLength(1);
+	});
 
-  it("whereIn with soft delete & or condition", async () => {
-    const result = await UserD.whereIn("balance", [500, 200])
-      .orWhere("name", "Kosasih")
-      .get();
+	it("whereIn with soft delete & or condition", async () => {
+		const result = await UserD.whereIn("balance", [500, 200])
+			.orWhere("name", "Kosasih")
+			.get();
 
-    expect(result).toEqual(expect.any(Array));
-    expect(result).toHaveLength(3);
-  });
+		expect(result).toEqual(expect.any(Array));
+		expect(result).toHaveLength(3);
+	});
 
-  it("whereIn with soft delete, withTrashed & or condition", async () => {
-    const result = await UserD.whereIn("balance", [500, 200])
-      .orWhere("name", "Kosasih")
-      .withTrashed()
-      .get();
+	it("whereIn with soft delete, withTrashed & or condition", async () => {
+		const result = await UserD.whereIn("balance", [500, 200])
+			.orWhere("name", "Kosasih")
+			.withTrashed()
+			.get();
 
-    expect(result).toEqual(expect.any(Array));
-    expect(result).toHaveLength(4);
-  });
+		expect(result).toEqual(expect.any(Array));
+		expect(result).toHaveLength(4);
+	});
 
-  it("whereIn with soft delete, withTrashed & and condition", async () => {
-    const result = await UserD.whereIn("balance", [500, 200])
-      .where("age", 5)
-      .withTrashed()
-      .get();
+	it("whereIn with soft delete, withTrashed & and condition", async () => {
+		const result = await UserD.whereIn("balance", [500, 200])
+			.where("age", 5)
+			.withTrashed()
+			.get();
 
-    expect(result).toEqual(expect.any(Array));
-    expect(result).toHaveLength(1);
-  });
+		expect(result).toEqual(expect.any(Array));
+		expect(result).toHaveLength(1);
+	});
 
-  it("whereIn with soft delete & onlyTrashed", async () => {
-    const result = await UserD.whereIn("balance", [500, 200])
-      .onlyTrashed()
-      .get();
+	it("whereIn with soft delete & onlyTrashed", async () => {
+		const result = await UserD.whereIn("balance", [500, 200])
+			.onlyTrashed()
+			.get();
 
-    expect(result).toEqual(expect.any(Array));
-    expect(result).toHaveLength(1);
-  });
+		expect(result).toEqual(expect.any(Array));
+		expect(result).toHaveLength(1);
+	});
 
-  it("whereIn with soft delete, onlyTrashed & or condition", async () => {
-    const result = await UserD.whereIn("balance", [500, 200])
-      .orWhere("name", "Kosasih")
-      .onlyTrashed()
-      .get();
+	it("whereIn with soft delete, onlyTrashed & or condition", async () => {
+		const result = await UserD.whereIn("balance", [500, 200])
+			.orWhere("name", "Kosasih")
+			.onlyTrashed()
+			.get();
 
-    expect(result).toEqual(expect.any(Array));
-    expect(result).toHaveLength(1);
-  });
+		expect(result).toEqual(expect.any(Array));
+		expect(result).toHaveLength(1);
+	});
 
-  it("whereIn with soft delete, onlyTrashed & and condition", async () => {
-    const result = await UserD.whereIn("balance", [500, 200])
-      .where("age", 100)
-      .onlyTrashed()
-      .get();
+	it("whereIn with soft delete, onlyTrashed & and condition", async () => {
+		const result = await UserD.whereIn("balance", [500, 200])
+			.where("age", 100)
+			.onlyTrashed()
+			.get();
 
-    expect(result).toEqual(expect.any(Array));
-    expect(result).toHaveLength(0);
-  });
+		expect(result).toEqual(expect.any(Array));
+		expect(result).toHaveLength(0);
+	});
 });
