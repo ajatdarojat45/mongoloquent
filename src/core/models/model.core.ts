@@ -406,6 +406,39 @@ export class Model<T = any> extends QueryBuilder<T> {
 		return this.query().sum(column);
 	}
 
+	public static with(
+		relation: string | Record<string, string[]>,
+		options: IRelationshipOptions = {},
+	) {
+		const model = this.query();
+		model.setOptions(options);
+
+		if (typeof relation === "string") {
+			const [_relation, ...rest] = relation.split(".");
+			if (relation.includes(".")) {
+				relation = _relation;
+				model.setNested([...model.getNested(), ...rest]);
+			}
+
+			model.setAlias(relation);
+
+			if (typeof model[relation] === "function") {
+				model[relation]();
+			}
+		} else if (typeof relation === "object") {
+			for (const key in relation) {
+				model.setAlias(key);
+				model.setNested(relation[key]);
+
+				if (typeof model[key] === "function") {
+					model[key]();
+				}
+			}
+		}
+
+		return model;
+	}
+
 	public with(
 		relation: string | Record<string, string[]>,
 		options: IRelationshipOptions = {},
@@ -663,7 +696,7 @@ export class Model<T = any> extends QueryBuilder<T> {
 			options: this.getOptions(),
 		};
 		const lookups = MorphToMany.generate(morphToMany);
-		this.setlookups([...this.getLookups(), ...lookups]);
+		this.setLookups([...this.getLookups(), ...lookups]);
 
 		return new MorphToMany<T, M>(this, relation, name);
 	}
