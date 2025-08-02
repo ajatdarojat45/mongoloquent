@@ -5,7 +5,7 @@ let databaseName: string =
 
 if (process.env.NODE_ENV === "test") {
 	databaseName =
-		process.env.MONGOLOQUENT_DATABASE_NAME || databaseName + "_test";
+		process.env.MONGOLOQUENT_DATABASE_NAME_TEST || databaseName + "_test";
 }
 
 export const MONGOLOQUENT_DATABASE_NAME: string = databaseName;
