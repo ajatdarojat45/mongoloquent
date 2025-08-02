@@ -39,6 +39,7 @@ export abstract class QueryBuilder<
 	protected $collection: string = "";
 	protected $useTimestamps: boolean = true;
 	protected $useSoftDelete: boolean = false;
+	protected $attributes: Partial<T> = {};
 
 	private $createdAt: string = "createdAt";
 	private $updatedAt: string = "updatedAt";
@@ -58,7 +59,6 @@ export abstract class QueryBuilder<
 	private $isDeleted: string = "isDeleted";
 	private $deletedAt: string = "deletedAt";
 	private $limit: number = 0;
-	private $attributes: Partial<T> = {};
 	private $alias: string = "";
 	private $options: IRelationshipOptions = {};
 
@@ -517,7 +517,7 @@ export abstract class QueryBuilder<
 
 	public async update(
 		doc: Partial<IQueryBuilderFormSchema<T>>,
-		options: FindOneAndUpdateOptions,
+		options?: FindOneAndUpdateOptions,
 	): Promise<WithId<IQueryBuilderFormSchema<T>> | null> {
 		try {
 			const collection = this.getMongoDBCollection();
