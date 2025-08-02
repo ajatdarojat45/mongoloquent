@@ -24,6 +24,7 @@ export abstract class AbstractQueryBuilder<T = WithId<Document>> {
 	protected abstract $collection: string;
 	protected abstract $useTimestamps: boolean;
 	protected abstract $useSoftDelete: boolean;
+	protected abstract $attributes: Partial<T>;
 
 	public abstract select<K extends keyof T>(
 		...columns: (K | (string & {}) | (K | (string & {}))[])[]
