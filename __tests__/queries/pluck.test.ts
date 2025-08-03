@@ -1,77 +1,82 @@
-import DB from "../../src/DB";
-import Model from "../../src/Model";
-import { IMongoloquentSchema } from "../../src/interfaces/ISchema";
+import {
+	IMongoloquentSchema,
+	IMongoloquentSoftDelete,
+	IMongoloquentTimestamps,
+	Model,
+	DB,
+	MongoloquentNotFoundException,
+} from "../../src/";
 
 beforeEach(async () => {
-  await DB.collection("flights").getCollection().deleteMany({});
+	await DB.collection("flights").getMongoDBCollection().deleteMany({});
 });
 
 describe("pluck method", () => {
-  it("with single param", async () => {
-    interface IFlight extends IMongoloquentSchema {
-      name: string;
-      active: boolean;
-      delayed: boolean;
-    }
+	it("with single param", async () => {
+		interface IFlight extends IMongoloquentSchema {
+			name: string;
+			active: boolean;
+			delayed: boolean;
+		}
 
-    class Flight extends Model<IFlight> {
-      static $schema: IFlight;
-      protected $useTimestamps = false;
-    }
+		class Flight extends Model<IFlight> {
+			static $schema: IFlight;
+			protected $useTimestamps = false;
+		}
 
-    await Flight.insertMany([
-      { name: "Flight 1", active: true, delayed: false },
-      { name: "Flight 2", active: false, delayed: true },
-    ]);
+		await Flight.insertMany([
+			{ name: "Flight 1", active: true, delayed: false },
+			{ name: "Flight 2", active: false, delayed: true },
+		]);
 
-    const flights = await Flight.pluck("name");
+		const flights = await Flight.pluck("name");
 
-    expect(flights).toEqual(["Flight 1", "Flight 2"]);
-  });
+		expect(flights).toEqual(["Flight 1", "Flight 2"]);
+	});
 
-  it("with multiple param", async () => {
-    interface IFlight extends IMongoloquentSchema {
-      name: string;
-      active: boolean;
-      delayed: boolean;
-    }
+	it("with multiple param", async () => {
+		interface IFlight extends IMongoloquentSchema {
+			name: string;
+			active: boolean;
+			delayed: boolean;
+		}
 
-    class Flight extends Model<IFlight> {
-      static $schema: IFlight;
-      protected $useTimestamps = false;
-    }
+		class Flight extends Model<IFlight> {
+			static $schema: IFlight;
+			protected $useTimestamps = false;
+		}
 
-    await Flight.insertMany([
-      { name: "Flight 1", active: true, delayed: false },
-      { name: "Flight 2", active: false, delayed: true },
-    ]);
+		await Flight.insertMany([
+			{ name: "Flight 1", active: true, delayed: false },
+			{ name: "Flight 2", active: false, delayed: true },
+		]);
 
-    const flights = await Flight.pluck("name", "active");
+		const flights = await Flight.pluck("name", "active");
 
-    expect(flights).toEqual([
-      { name: "Flight 1", active: true },
-      { name: "Flight 2", active: false },
-    ]);
-  });
+		expect(flights).toEqual([
+			{ name: "Flight 1", active: true },
+			{ name: "Flight 2", active: false },
+		]);
+	});
 
-  it("with array param", async () => {
-    interface IFlight extends IMongoloquentSchema {
-      name: string;
-      active: boolean;
-      delayed: boolean;
-    }
-    class Flight extends Model<IFlight> {
-      static $schema: IFlight;
-      protected $useTimestamps = false;
-    }
-    await Flight.insertMany([
-      { name: "Flight 1", active: true, delayed: false },
-      { name: "Flight 2", active: false, delayed: true },
-    ]);
-    const flights = await Flight.pluck(["name", "active"]);
-    expect(flights).toEqual([
-      { name: "Flight 1", active: true },
-      { name: "Flight 2", active: false },
-    ]);
-  });
+	it("with array param", async () => {
+		interface IFlight extends IMongoloquentSchema {
+			name: string;
+			active: boolean;
+			delayed: boolean;
+		}
+		class Flight extends Model<IFlight> {
+			static $schema: IFlight;
+			protected $useTimestamps = false;
+		}
+		await Flight.insertMany([
+			{ name: "Flight 1", active: true, delayed: false },
+			{ name: "Flight 2", active: false, delayed: true },
+		]);
+		const flights = await Flight.pluck(["name", "active"]);
+		expect(flights).toEqual([
+			{ name: "Flight 1", active: true },
+			{ name: "Flight 2", active: false },
+		]);
+	});
 });

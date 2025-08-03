@@ -1,81 +1,83 @@
-import DB from "../../../src/DB";
-import Model from "../../../src/Model";
 import {
-  IMongoloquentSchema,
-  IMongoloquentSoftDelete,
-} from "../../../src/interfaces/ISchema";
+	IMongoloquentSchema,
+	IMongoloquentSoftDelete,
+	IMongoloquentTimestamps,
+	Model,
+	DB,
+	MongoloquentNotFoundException,
+} from "../../../src/";
 
 beforeEach(async () => {
-  await DB.collection("users").getCollection().deleteMany({});
-  await DB.collection("roles").getCollection().deleteMany({});
-  await DB.collection("role_user").getCollection().deleteMany({});
+	await DB.collection("users").getMongoDBCollection().deleteMany({});
+	await DB.collection("roles").getMongoDBCollection().deleteMany({});
+	await DB.collection("role_user").getMongoDBCollection().deleteMany({});
 });
 
 afterEach(async () => {
-  await DB.collection("users").getCollection().deleteMany({});
-  await DB.collection("roles").getCollection().deleteMany({});
-  await DB.collection("role_user").getCollection().deleteMany({});
+	await DB.collection("users").getMongoDBCollection().deleteMany({});
+	await DB.collection("roles").getMongoDBCollection().deleteMany({});
+	await DB.collection("role_user").getMongoDBCollection().deleteMany({});
 });
 
 describe("syncWithPivotValues method", () => {
-  interface IUser extends IMongoloquentSchema {
-    name: string;
-    email: string;
-    roles?: IRole[];
-  }
+	interface IUser extends IMongoloquentSchema {
+		name: string;
+		email: string;
+		roles?: IRole[];
+	}
 
-  interface IRole extends IMongoloquentSchema {
-    name: string;
-    description: string;
-    likes?: number;
-  }
+	interface IRole extends IMongoloquentSchema {
+		name: string;
+		description: string;
+		likes?: number;
+	}
 
-  class User extends Model<IUser> {
-    protected $collection: string = "users";
-    static $schema: IUser;
+	class User extends Model<IUser> {
+		protected $collection: string = "users";
+		static $schema: IUser;
 
-    roles() {
-      return this.belongsToMany(Role);
-    }
-  }
+		roles() {
+			return this.belongsToMany(Role);
+		}
+	}
 
-  class Role extends Model<IRole> {
-    protected $collection: string = "roles";
-    static $schema: IRole;
-  }
+	class Role extends Model<IRole> {
+		protected $collection: string = "roles";
+		static $schema: IRole;
+	}
 
-  const names = [User.name.toLowerCase(), Role.name.toLowerCase()].sort();
-  const pivotCollection = `${names[0]}_${names[1]}`;
+	const names = [User.name.toLowerCase(), Role.name.toLowerCase()].sort();
+	const pivotCollection = `${names[0]}_${names[1]}`;
 
-  it("syncWithPivotValues roles to user", async () => {
-    const userIds = await User.insertMany([
-      { name: "Udin", email: "udin@mail.com" },
-      { name: "Kosasih", email: "kosasih@mail.com" },
-    ]);
+	it("syncWithPivotValues roles to user", async () => {
+		const userIds = await User.insertMany([
+			{ name: "Udin", email: "udin@mail.com" },
+			{ name: "Kosasih", email: "kosasih@mail.com" },
+		]);
 
-    const roleIds = await Role.insertMany([
-      { name: "Admin", description: "Administrator", likes: 10 },
-      { name: "User", description: "Regular User", likes: 20 },
-      { name: "Guest", description: "Guest User", likes: 5 },
-    ]);
+		const roleIds = await Role.insertMany([
+			{ name: "Admin", description: "Administrator", likes: 10 },
+			{ name: "User", description: "Regular User", likes: 20 },
+			{ name: "Guest", description: "Guest User", likes: 5 },
+		]);
 
-    const user = await User.find(userIds[0]);
-    await user.roles().attach(roleIds[0]);
-    const roles = await user.roles().get();
-    expect(roles.length).toBe(1);
+		const user = await User.find(userIds[0]);
+		await user.roles().attach(roleIds[0]);
+		const roles = await user.roles().get();
+		expect(roles.length).toBe(1);
 
-    await user.roles().syncWithPivotValues<{
-      additional: string;
-    }>([roleIds[0], roleIds[1]], { additional: "value" });
+		await user.roles().syncWithPivotValues<{
+			additional: string;
+		}>([roleIds[0], roleIds[1]], { additional: "value" });
 
-    const rolesAfterDetach = await user.roles().get();
-    expect(rolesAfterDetach.length).toBe(2);
+		const rolesAfterDetach = await user.roles().get();
+		expect(rolesAfterDetach.length).toBe(2);
 
-    const pivot = await DB.collection<any>(pivotCollection)
-      .where("userId", userIds[0])
-      .first();
+		const pivot = await DB.collection<any>(pivotCollection)
+			.where("userId", userIds[0])
+			.first();
 
-    expect(pivot).toBeDefined();
-    expect(pivot.additional).toBe("value");
-  });
+		expect(pivot).toBeDefined();
+		expect(pivot.additional).toBe("value");
+	});
 });
