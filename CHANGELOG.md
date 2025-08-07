@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.7.1](https://github.com/ajatdarojat45/mongoloquent/compare/v3.7.0...v3.7.1) (2025-08-07)
+
+
+### Bug Fixes
+
+* add generic type parameter to static 'with' method in Model class ([380e422](https://github.com/ajatdarojat45/mongoloquent/commit/380e422fef7d45ba9b85ce4e7d1ac6f9f74d8b36))
+
 ## [3.7.0](https://github.com/ajatdarojat45/mongoloquent/compare/v3.6.0...v3.7.0) (2025-08-03)
 
 
