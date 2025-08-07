@@ -406,7 +406,8 @@ export class Model<T = any> extends QueryBuilder<T> {
 		return this.query().sum(column);
 	}
 
-	public static with(
+	public static with<M extends typeof Model<any>>(
+		this: M,
 		relation: string | Record<string, string[]>,
 		options: IRelationshipOptions = {},
 	) {
