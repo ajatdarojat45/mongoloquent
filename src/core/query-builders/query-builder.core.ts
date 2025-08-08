@@ -1,4 +1,5 @@
 import {
+	AggregateOptions,
 	BulkWriteOptions,
 	DeleteOptions,
 	Document,
@@ -61,6 +62,7 @@ export abstract class QueryBuilder<
 	private $limit: number = 0;
 	private $alias: string = "";
 	private $options: IRelationshipOptions = {};
+	private $aggregateOptions: AggregateOptions = {};
 
 	constructor() {
 		super();
@@ -348,9 +350,13 @@ export abstract class QueryBuilder<
 		return data as T;
 	}
 
-	public async find(id: string | ObjectId): Promise<(this & T) | null> {
+	public async find(
+		id: string | ObjectId,
+		options?: AggregateOptions,
+	): Promise<(this & T) | null> {
 		const _id = new ObjectId(id);
 		this.setId(_id);
+		if (options) this.setAggregateOptions(options);
 
 		let data = await this.get();
 		if (data && data.length > 0) {
@@ -950,11 +956,10 @@ export abstract class QueryBuilder<
 			this.generateConditionsForMongoDBQuery(true);
 			const nestedStages = this.getStages();
 
-			const aggregate = collection?.aggregate([
-				...stages,
-				...lookups,
-				...nestedStages,
-			]);
+			const aggregate = collection?.aggregate(
+				[...stages, ...lookups, ...nestedStages],
+				this.getAggregateOptions(),
+			);
 
 			this.resetQueryProperties();
 
@@ -1496,5 +1501,14 @@ export abstract class QueryBuilder<
 
 	public getOptions(): IRelationshipOptions {
 		return this.$options;
+	}
+
+	public setAggregateOptions(options: AggregateOptions): this {
+		this.$aggregateOptions = options;
+		return this;
+	}
+
+	public getAggregateOptions(): AggregateOptions {
+		return this.$aggregateOptions;
 	}
 }

@@ -1,4 +1,5 @@
 import {
+	AggregateOptions,
 	BulkWriteOptions,
 	FindOneAndUpdateOptions,
 	InsertOneOptions,
@@ -366,8 +367,9 @@ export class Model<T = any> extends QueryBuilder<T> {
 	public static find<M extends typeof Model<any>>(
 		this: M,
 		id: string | ObjectId,
+		options?: AggregateOptions,
 	): Promise<InstanceType<M>> {
-		return this.query().find(id) as Promise<InstanceType<M>>;
+		return this.query().find(id, options) as Promise<InstanceType<M>>;
 	}
 
 	public static async findOrFail(id: string | ObjectId) {

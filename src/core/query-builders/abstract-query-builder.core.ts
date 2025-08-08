@@ -1,4 +1,5 @@
 import {
+	AggregateOptions,
 	BulkWriteOptions,
 	DeleteOptions,
 	Document,
@@ -125,7 +126,10 @@ export abstract class AbstractQueryBuilder<T = WithId<Document>> {
 	public abstract firstOrFail<K extends keyof T>(
 		...columns: (K | K[])[]
 	): Promise<T>;
-	public abstract find(id: string | ObjectId): Promise<(this & T) | null>;
+	public abstract find(
+		id: string | ObjectId,
+		options: AggregateOptions,
+	): Promise<(this & T) | null>;
 	public abstract findOrFail(id: string | ObjectId): Promise<this & T>;
 
 	public abstract count(): Promise<number>;
