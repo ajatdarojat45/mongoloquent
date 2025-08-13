@@ -74,12 +74,13 @@ export class DB<T = WithId<Document>> extends QueryBuilder<T> {
 		fn: (session: ClientSession) => Promise<T>,
 		config: IDBTransactionConfig = {},
 	): Promise<T> {
-		if (!this.$connection) {
-			this.setConnection(MONGOLOQUENT_DATABASE_URI);
-		}
+		const q = new this();
 
-		const db = new this();
-		return db.transaction(fn, config);
+		if (this.$connection) q.setConnection(this.$connection);
+		if (this.$databaseName) q.setDatabaseName(this.$databaseName);
+		if (this.$timezone) q.setTimezone(this.$timezone);
+
+		return q.transaction(fn, config);
 	}
 
 	async transaction<T>(
