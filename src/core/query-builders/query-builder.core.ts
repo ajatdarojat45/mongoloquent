@@ -1094,7 +1094,7 @@ export abstract class QueryBuilder<
 	private generateHiddenForMongoDBQuery(): this {
 		let $project = {};
 		this.getHidden().forEach((el) => {
-			if (!this.getColumns().includes(el)) {
+			if (!this.getVisible().includes(el)) {
 				$project = { ...$project, [el as any]: 0 };
 			}
 		});
@@ -1105,9 +1105,13 @@ export abstract class QueryBuilder<
 
 	private generateColumnsForMongoDBQuery(): this {
 		let $project = {};
-		this.getColumns().forEach((el) => {
-			$project = { ...$project, [el]: 1 };
-		});
+
+		if (this.getColumns().length > 0) {
+			const columns = [...this.getColumns(), ...this.getVisible()];
+			columns.forEach((el) => {
+				$project = { ...$project, [el]: 1 };
+			});
+		}
 		if (Object.keys($project).length > 0) this.addStage({ $project });
 
 		return this;
