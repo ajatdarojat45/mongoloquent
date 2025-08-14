@@ -42,6 +42,7 @@ export abstract class QueryBuilder<
 	protected $useSoftDelete: boolean = false;
 	protected $attributes: Partial<T> = {};
 	protected $hidden: (keyof T)[] = [];
+	protected $visible: (keyof T)[] = [];
 
 	private $createdAt: string = "createdAt";
 	private $updatedAt: string = "updatedAt";
@@ -1303,11 +1304,8 @@ export abstract class QueryBuilder<
 	): this {
 		if (Array.isArray(columns)) {
 			const flattenedColumns = columns.flat() as unknown as keyof T[];
-			this.$hidden = [
-				...this.$hidden,
-				...(flattenedColumns as unknown as (keyof T)[]),
-			];
-		} else this.$hidden = [...this.$hidden, columns];
+			this.$hidden = [...(flattenedColumns as unknown as (keyof T)[])];
+		} else this.$hidden = [columns];
 
 		return this;
 	}
@@ -1317,8 +1315,38 @@ export abstract class QueryBuilder<
 		return this;
 	}
 
+	public makeHidden<K extends keyof T>(column: K): this {
+		this.$hidden.push(column);
+		return this;
+	}
+
 	public getHidden(): (keyof T)[] {
 		return this.$hidden;
+	}
+
+	public setVisible<K extends keyof T>(
+		...columns: (K | (string & {}) | (K | (string & {}))[])[]
+	): this {
+		if (Array.isArray(columns)) {
+			const flattenedColumns = columns.flat() as unknown as keyof T[];
+			this.$visible = [...(flattenedColumns as unknown as (keyof T)[])];
+		} else this.$visible = [columns];
+
+		return this;
+	}
+
+	public addVisible(column: keyof T): this {
+		this.$visible.push(column);
+		return this;
+	}
+
+	public makeVisible<K extends keyof T>(column: K): this {
+		this.$visible.push(column);
+		return this;
+	}
+
+	public getVisible(): (keyof T)[] {
+		return this.$visible;
 	}
 
 	public setCreatedAt(createdAt: string): this {
