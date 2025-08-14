@@ -236,15 +236,23 @@ export abstract class AbstractQueryBuilder<T = WithId<Document>> {
 	public abstract setHidden<K extends keyof T>(
 		...columns: (K | (string & {}) | (K | (string & {}))[])[]
 	): this;
-	public abstract addHidden(column: keyof T): this;
-	public abstract makeHidden<K extends keyof T>(column: K): this;
+	public abstract addHidden<K extends keyof T>(
+		...columns: (K | (string & {}) | (K | (string & {}))[])[]
+	): this;
+	public abstract makeHidden<K extends keyof T>(
+		...columns: (K | (string & {}) | (K | (string & {}))[])[]
+	): this;
 	public abstract getHidden(): (keyof T)[];
 
 	public abstract setVisible<K extends keyof T>(
 		...columns: (K | (string & {}) | (K | (string & {}))[])[]
 	): this;
-	public abstract addVisible(column: keyof T): this;
-	public abstract makeVisible<K extends keyof T>(column: K): this;
+	public abstract addVisible<K extends keyof T>(
+		...columns: (K | (string & {}) | (K | (string & {}))[])[]
+	): this;
+	public abstract makeVisible<K extends keyof T>(
+		...columns: (K | (string & {}) | (K | (string & {}))[])[]
+	): this;
 	public abstract getVisible(): (keyof T)[];
 
 	public abstract setCreatedAt(createdAt: string): this;
