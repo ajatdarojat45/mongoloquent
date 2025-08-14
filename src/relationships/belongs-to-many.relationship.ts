@@ -1,4 +1,10 @@
-import { Document, ObjectId } from "mongodb";
+import {
+	BulkWriteOptions,
+	DeleteOptions,
+	Document,
+	ObjectId,
+	UpdateOptions,
+} from "mongodb";
 import {
 	IQueryBuilderPaginated,
 	IRelationshipBelongsToMany,
@@ -104,10 +110,15 @@ export class BelongsToMany<T = any, M = any, PM = any> extends QueryBuilder<M> {
 
 	public async attach<D>(
 		ids: string | ObjectId | (string | ObjectId)[],
-		doc: Partial<D> = {},
+		options?: {
+			options?: BulkWriteOptions;
+			doc?: Partial<D>;
+		},
 	): Promise<{ message: string }> {
 		let objectIds: ObjectId[] = [];
 		let query: Document = {};
+		const doc = options?.doc || {};
+		const mongodbOptions = options?.options || {};
 
 		if (!Array.isArray(ids)) objectIds = ids ? [new ObjectId(ids)] : [];
 		else objectIds = ids.map((el) => new ObjectId(el));
@@ -148,11 +159,13 @@ export class BelongsToMany<T = any, M = any, PM = any> extends QueryBuilder<M> {
 		}
 
 		if (payloadToInsert.length > 0) {
-			await this.pivotModel.insertMany(payloadToInsert as any);
+			await this.pivotModel.insertMany(payloadToInsert as any, mongodbOptions);
 		}
 
 		if (idsToUpdate.length > 0) {
-			await this.pivotModel.whereIn("_id" as keyof PM, idsToUpdate).restore();
+			await this.pivotModel
+				.whereIn("_id" as keyof PM, idsToUpdate)
+				.restore(mongodbOptions);
 		}
 
 		return {
@@ -162,6 +175,7 @@ export class BelongsToMany<T = any, M = any, PM = any> extends QueryBuilder<M> {
 
 	public async detach(
 		ids: string | ObjectId | (string | ObjectId)[],
+		options?: DeleteOptions | UpdateOptions,
 	): Promise<{ message: string }> {
 		let objectIds: ObjectId[] = [];
 
@@ -171,7 +185,7 @@ export class BelongsToMany<T = any, M = any, PM = any> extends QueryBuilder<M> {
 		await this.pivotModel
 			.whereIn(this.relatedPivotKey, objectIds)
 			.where(this.foreignPivotKey, this.model["$original"][this.parentKey])
-			.delete();
+			.delete(options);
 
 		return {
 			message: "Detach successfully",
@@ -180,9 +194,14 @@ export class BelongsToMany<T = any, M = any, PM = any> extends QueryBuilder<M> {
 
 	public async sync<D>(
 		ids: string | ObjectId | (string | ObjectId)[],
-		doc: Partial<D> = {},
+		options?: {
+			doc?: Partial<D>;
+			options?: BulkWriteOptions | UpdateOptions | DeleteOptions;
+		},
 	): Promise<{ message: string }> {
 		let objectIds: ObjectId[] = [];
+		const doc = options?.doc || {};
+		const mongodbOptions = options?.options || {};
 
 		if (!Array.isArray(ids)) objectIds = [new ObjectId(ids)];
 		else objectIds = ids.map((el) => new ObjectId(el));
@@ -219,17 +238,19 @@ export class BelongsToMany<T = any, M = any, PM = any> extends QueryBuilder<M> {
 		}
 
 		if (payloadToInsert.length > 0) {
-			await this.pivotModel.insertMany(payloadToInsert as any);
+			await this.pivotModel.insertMany(payloadToInsert as any, mongodbOptions);
 		}
 
 		if (idsToUpdate.length > 0) {
-			await this.pivotModel.whereIn("_id" as keyof PM, idsToUpdate).restore();
+			await this.pivotModel
+				.whereIn("_id" as keyof PM, idsToUpdate)
+				.restore(mongodbOptions);
 		}
 
 		await this.pivotModel
 			.whereNotIn(this.relatedPivotKey, objectIds)
 			.where(this.foreignPivotKey, this.model["$original"][this.parentKey])
-			.delete();
+			.delete(mongodbOptions);
 
 		return {
 			message: "Sync successfully",
@@ -238,9 +259,14 @@ export class BelongsToMany<T = any, M = any, PM = any> extends QueryBuilder<M> {
 
 	public async syncWithoutDetaching<D>(
 		ids: string | ObjectId | (string | ObjectId)[],
-		doc: Partial<D> = {},
+		options?: {
+			doc?: Partial<D>;
+			options?: BulkWriteOptions | DeleteOptions | UpdateOptions;
+		},
 	): Promise<{ message: string }> {
 		let objectIds: ObjectId[] = [];
+		const doc = options?.doc || {};
+		const mongodbOptions = options?.options || {};
 
 		if (!Array.isArray(ids)) objectIds = [new ObjectId(ids)];
 		else objectIds = ids.map((el) => new ObjectId(el));
@@ -277,11 +303,13 @@ export class BelongsToMany<T = any, M = any, PM = any> extends QueryBuilder<M> {
 		}
 
 		if (payloadToInsert.length > 0) {
-			await this.pivotModel.insertMany(payloadToInsert as any);
+			await this.pivotModel.insertMany(payloadToInsert as any, mongodbOptions);
 		}
 
 		if (idsToUpdate.length > 0) {
-			await this.pivotModel.whereIn("_id" as keyof PM, idsToUpdate).restore();
+			await this.pivotModel
+				.whereIn("_id" as keyof PM, idsToUpdate)
+				.restore(mongodbOptions);
 		}
 
 		return {
@@ -291,9 +319,14 @@ export class BelongsToMany<T = any, M = any, PM = any> extends QueryBuilder<M> {
 
 	public async syncWithPivotValues<D>(
 		ids: string | ObjectId | (string | ObjectId)[],
-		doc: Partial<D> = {},
+		options: {
+			doc: Partial<D>;
+			options?: BulkWriteOptions | DeleteOptions | UpdateOptions;
+		},
 	): Promise<{ message: string }> {
 		let objectIds: ObjectId[] = [];
+		const doc = options.doc || {};
+		const mongodbOptions = options.options || {};
 
 		if (!Array.isArray(ids)) objectIds = [new ObjectId(ids)];
 		else objectIds = ids.map((el) => new ObjectId(el));
@@ -327,20 +360,20 @@ export class BelongsToMany<T = any, M = any, PM = any> extends QueryBuilder<M> {
 		}
 
 		if (payloadToInsert.length > 0) {
-			await this.pivotModel.insertMany(payloadToInsert as any);
+			await this.pivotModel.insertMany(payloadToInsert as any, mongodbOptions);
 		}
 
 		if (idsToUpdate.length > 0) {
 			await this.pivotModel
 				.whereIn(this.relatedPivotKey, idsToUpdate)
 				.where(this.foreignPivotKey, this.model["$original"][this.parentKey])
-				.updateMany(doc as any);
+				.updateMany(doc as any, mongodbOptions);
 		}
 
 		await this.pivotModel
 			.whereNotIn(this.relatedPivotKey, objectIds)
 			.where(this.foreignPivotKey, this.model["$original"][this.parentKey])
-			.delete();
+			.delete(mongodbOptions);
 
 		return {
 			message: "syncWithPivotValues successfully",
@@ -349,6 +382,7 @@ export class BelongsToMany<T = any, M = any, PM = any> extends QueryBuilder<M> {
 
 	public async toggle(
 		ids: string | ObjectId | (string | ObjectId)[],
+		options?: UpdateOptions | DeleteOptions | BulkWriteOptions,
 	): Promise<{ message: string }> {
 		let objectIds: ObjectId[] = [];
 
@@ -400,18 +434,20 @@ export class BelongsToMany<T = any, M = any, PM = any> extends QueryBuilder<M> {
 		}
 
 		if (payloadToInsert.length > 0) {
-			await this.pivotModel.insertMany(payloadToInsert as any);
+			await this.pivotModel.insertMany(payloadToInsert as any, options);
 		}
 
 		if (idsToRestore.length > 0) {
-			await this.pivotModel.whereIn("_id" as keyof PM, idsToRestore).restore();
+			await this.pivotModel
+				.whereIn("_id" as keyof PM, idsToRestore)
+				.restore(options);
 		}
 
 		if (idsToDelete.length > 0) {
 			await this.pivotModel
 				.whereIn(this.relatedPivotKey, idsToDelete)
 				.where(this.foreignPivotKey, this.model["$original"][this.parentKey])
-				.delete();
+				.delete(options);
 		}
 
 		return {

@@ -1,4 +1,4 @@
-import { Document } from "mongodb";
+import { BulkWriteOptions, Document, InsertOneOptions } from "mongodb";
 import {
 	IQueryBuilderFormSchema,
 	IQueryBuilderPaginated,
@@ -38,63 +38,66 @@ export class HasMany<T = any, M = any> extends QueryBuilder<M> {
 	public firstOrNew(
 		filter: Partial<IQueryBuilderFormSchema<M>>,
 		doc?: Partial<IQueryBuilderFormSchema<M>>,
+		options?: InsertOneOptions,
 	): Promise<M> {
 		const _filter = {
 			...filter,
 			[this.foreignKey]: this.model["$original"][this.localKey],
 		} as IQueryBuilderFormSchema<M>;
-		return super.firstOrNew(_filter, doc);
+		return super.firstOrNew(_filter, doc, options);
 	}
 
 	public firstOrCreate(
 		filter: Partial<IQueryBuilderFormSchema<M>>,
 		doc?: Partial<IQueryBuilderFormSchema<M>>,
+		options?: InsertOneOptions,
 	): Promise<M> {
 		const _filter = {
 			...filter,
 			[this.foreignKey]: this.model["$original"][this.localKey],
 		} as IQueryBuilderFormSchema<M>;
-		return super.firstOrCreate(_filter, doc);
+		return super.firstOrCreate(_filter, doc, options);
 	}
 
 	public updateOrCreate(
 		filter: Partial<IQueryBuilderFormSchema<M>>,
 		doc: Partial<IQueryBuilderFormSchema<M>>,
+		options?: InsertOneOptions,
 	) {
 		const _filter = {
 			...filter,
 			[this.foreignKey]: this.model["$original"][this.localKey],
 		} as IQueryBuilderFormSchema<M>;
-		return super.updateOrCreate(_filter, doc);
+		return super.updateOrCreate(_filter, doc, options);
 	}
 
 	// @ts-ignore
-	public save(doc: Partial<M>): Promise<M> {
+	public save(doc: Partial<M>, options?: InsertOneOptions): Promise<M> {
 		const data = {
 			...doc,
 			[this.foreignKey]: this.model["$original"][this.localKey],
 		} as IQueryBuilderFormSchema<M>;
 
-		return this.insert(data);
+		return this.insert(data, options);
 	}
 
-	public saveMany(docs: Partial<M>[]) {
+	public saveMany(docs: Partial<M>[], options?: BulkWriteOptions) {
 		const data = docs.map((doc) => ({
 			...doc,
 			[this.foreignKey]: this.model["$original"][this.localKey],
 		})) as IQueryBuilderFormSchema<M>[];
 
-		return this.insertMany(data);
+		return this.insertMany(data, options);
 	}
 
 	// @ts-ignore
-	public create(doc: Partial<M>): Promise<M> {
-		return this.save(doc);
+	public create(doc: Partial<M>, options?: InsertOneOptions): Promise<M> {
+		return this.save(doc, options);
 	}
 
 	// @ts-ignore
-	public createMany(docs: Partial<M>[]) {
-		return this.saveMany(docs);
+	public createMany(docs: Partial<M>[], options?: BulkWriteOptions) {
+		return this.saveMany(docs, options);
 	}
 
 	public all(): Promise<Collection<M>> {

@@ -41,6 +41,7 @@ export abstract class QueryBuilder<
 	protected $useTimestamps: boolean = true;
 	protected $useSoftDelete: boolean = false;
 	protected $attributes: Partial<T> = {};
+	protected $hidden: (keyof T)[] = [];
 
 	private $createdAt: string = "createdAt";
 	private $updatedAt: string = "updatedAt";
@@ -251,21 +252,35 @@ export abstract class QueryBuilder<
 		limit: number = 15,
 	): Promise<IQueryBuilderPaginated> {
 		try {
-			this.checkSoftDelete()
-				.generateColumnsForMongoDBQuery()
-				.generateExcludesForMongoDBQuery()
-				.generateConditionsForMongoDBQuery()
-				.generateOrdersForMongoDBQuery()
-				.generateGroupsForMongoDBQuery();
+			this.checkSoftDelete().generateConditionsForMongoDBQuery();
 
 			const collection = this.getMongoDBCollection();
 			const stages = this.getStages();
 			const lookups = this.getLookups();
-			const aggregate = collection.aggregate([...stages, ...lookups]);
+			this.setStages([]);
+
+			this.generateConditionsForMongoDBQuery(true);
+			const nestedStages = this.getStages();
+			this.setStages([]);
+
+			this.generateHiddenForMongoDBQuery()
+				.generateExcludesForMongoDBQuery()
+				.generateColumnsForMongoDBQuery()
+				.generateOrdersForMongoDBQuery()
+				.generateGroupsForMongoDBQuery();
+			const projectionStages = this.getStages();
+
+			const aggregate = collection?.aggregate(
+				[...stages, ...lookups, ...nestedStages, ...projectionStages],
+				this.getAggregateOptions(),
+			);
 
 			let totalResult = await collection
 				.aggregate([
 					...stages,
+					...lookups,
+					...nestedStages,
+					...projectionStages,
 					{
 						$count: "total",
 					},
@@ -938,31 +953,31 @@ export abstract class QueryBuilder<
 		try {
 			this.checkSoftDelete()
 				.generateConditionsForMongoDBQuery()
-				.generateColumnsForMongoDBQuery()
-				.generateExcludesForMongoDBQuery()
 				.checkOffset()
-				.checkLimit()
-				.generateOrdersForMongoDBQuery()
-				.generateGroupsForMongoDBQuery();
+				.checkLimit();
+			const stages = this.getStages();
+			this.setStages([]);
 
 			const collection = this.getMongoDBCollection();
-			const stages = this.getStages();
 			const lookups = this.getLookups();
-
-			this.$stages = [];
-			this.$columns = [];
-			this.$excludes = [];
 
 			this.generateConditionsForMongoDBQuery(true);
 			const nestedStages = this.getStages();
+			this.setStages([]);
+
+			this.generateHiddenForMongoDBQuery()
+				.generateExcludesForMongoDBQuery()
+				.generateColumnsForMongoDBQuery()
+				.generateOrdersForMongoDBQuery()
+				.generateGroupsForMongoDBQuery();
+			const projectionStages = this.getStages();
 
 			const aggregate = collection?.aggregate(
-				[...stages, ...lookups, ...nestedStages],
+				[...stages, ...lookups, ...nestedStages, ...projectionStages],
 				this.getAggregateOptions(),
 			);
 
 			this.resetQueryProperties();
-
 			return aggregate;
 		} catch (error) {
 			throw new MongoloquentQueryException(
@@ -1075,6 +1090,18 @@ export abstract class QueryBuilder<
 		return this;
 	}
 
+	private generateHiddenForMongoDBQuery(): this {
+		let $project = {};
+		this.getHidden().forEach((el) => {
+			if (!this.getColumns().includes(el)) {
+				$project = { ...$project, [el as any]: 0 };
+			}
+		});
+		if (Object.keys($project).length > 0) this.addStage({ $project });
+
+		return this;
+	}
+
 	private generateColumnsForMongoDBQuery(): this {
 		let $project = {};
 		this.getColumns().forEach((el) => {
@@ -1088,7 +1115,9 @@ export abstract class QueryBuilder<
 	private generateExcludesForMongoDBQuery(): this {
 		let $project = {};
 		this.getExcludes().forEach((el) => {
-			$project = { ...$project, [el]: 0 };
+			if (!this.getColumns().includes(el)) {
+				$project = { ...$project, [el]: 0 };
+			}
 		});
 		if (Object.keys($project).length > 0) this.addStage({ $project });
 
@@ -1267,6 +1296,29 @@ export abstract class QueryBuilder<
 
 	public getUseSoftDelete(): boolean {
 		return this.$useSoftDelete;
+	}
+
+	public setHidden<K extends keyof T>(
+		...columns: (K | (string & {}) | (K | (string & {}))[])[]
+	): this {
+		if (Array.isArray(columns)) {
+			const flattenedColumns = columns.flat() as unknown as keyof T[];
+			this.$hidden = [
+				...this.$hidden,
+				...(flattenedColumns as unknown as (keyof T)[]),
+			];
+		} else this.$hidden = [...this.$hidden, columns];
+
+		return this;
+	}
+
+	public addHidden(column: keyof T): this {
+		this.$hidden.push(column);
+		return this;
+	}
+
+	public getHidden(): (keyof T)[] {
+		return this.$hidden;
 	}
 
 	public setCreatedAt(createdAt: string): this {
