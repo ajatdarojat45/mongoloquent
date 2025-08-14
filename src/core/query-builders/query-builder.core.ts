@@ -1310,13 +1310,31 @@ export abstract class QueryBuilder<
 		return this;
 	}
 
-	public addHidden(column: keyof T): this {
-		this.$hidden.push(column);
+	public addHidden<K extends keyof T>(
+		...columns: (K | (string & {}) | (K | (string & {}))[])[]
+	): this {
+		if (Array.isArray(columns)) {
+			const flattenedColumns = columns.flat() as unknown as keyof T[];
+			this.$hidden = [
+				...this.getHidden(),
+				...(flattenedColumns as unknown as (keyof T)[]),
+			];
+		} else this.$hidden = [columns];
+
 		return this;
 	}
 
-	public makeHidden<K extends keyof T>(column: K): this {
-		this.$hidden.push(column);
+	public makeHidden<K extends keyof T>(
+		...columns: (K | (string & {}) | (K | (string & {}))[])[]
+	): this {
+		if (Array.isArray(columns)) {
+			const flattenedColumns = columns.flat() as unknown as keyof T[];
+			this.$hidden = [
+				...this.getHidden(),
+				...(flattenedColumns as unknown as (keyof T)[]),
+			];
+		} else this.$hidden = [columns];
+
 		return this;
 	}
 
@@ -1335,13 +1353,31 @@ export abstract class QueryBuilder<
 		return this;
 	}
 
-	public addVisible(column: keyof T): this {
-		this.$visible.push(column);
+	public addVisible<K extends keyof T>(
+		...columns: (K | (string & {}) | (K | (string & {}))[])[]
+	): this {
+		if (Array.isArray(columns)) {
+			const flattenedColumns = columns.flat() as unknown as keyof T[];
+			this.$visible = [
+				...this.getVisible(),
+				...(flattenedColumns as unknown as (keyof T)[]),
+			];
+		} else this.$visible = [columns];
+
 		return this;
 	}
 
-	public makeVisible<K extends keyof T>(column: K): this {
-		this.$visible.push(column);
+	public makeVisible<K extends keyof T>(
+		...columns: (K | (string & {}) | (K | (string & {}))[])[]
+	): this {
+		if (Array.isArray(columns)) {
+			const flattenedColumns = columns.flat() as unknown as keyof T[];
+			this.$visible = [
+				...this.getVisible(),
+				...(flattenedColumns as unknown as (keyof T)[]),
+			];
+		} else this.$visible = [columns];
+
 		return this;
 	}
 
