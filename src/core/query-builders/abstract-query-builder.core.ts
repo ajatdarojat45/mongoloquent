@@ -26,6 +26,7 @@ export abstract class AbstractQueryBuilder<T = WithId<Document>> {
 	protected abstract $useTimestamps: boolean;
 	protected abstract $useSoftDelete: boolean;
 	protected abstract $attributes: Partial<T>;
+	protected abstract $hidden: (keyof T)[];
 
 	public abstract select<K extends keyof T>(
 		...columns: (K | (string & {}) | (K | (string & {}))[])[]
@@ -215,67 +216,99 @@ export abstract class AbstractQueryBuilder<T = WithId<Document>> {
 
 	public abstract setTimezone(timezone: string): this;
 	public abstract getTimezone(): string;
+
 	public abstract setConnection(connection: string): this;
 	public abstract getConnection(): string;
+
 	public abstract setDatabaseName(name: string): this;
 	public abstract getDatabaseName(): string;
+
 	public abstract setCollection(collection: string): this;
 	public abstract getCollection(): string;
+
 	public abstract setUseTimestamps(useTimestamps: boolean): this;
 	public abstract getUseTimestamps(): boolean;
+
 	public abstract setUseSoftDelete(useSoftDelete: boolean): this;
 	public abstract getUseSoftDelete(): boolean;
+
+	public abstract setHidden<K extends keyof T>(
+		...columns: (K | (string & {}) | (K | (string & {}))[])[]
+	): this;
+	public abstract addHidden(column: keyof T): this;
+	public abstract getHidden(): (keyof T)[];
+
 	public abstract setCreatedAt(createdAt: string): this;
 	public abstract getCreatedAt(): string;
+
 	public abstract setUpdatedAt(updatedAt: string): this;
 	public abstract getUpdatedAt(): string;
+
 	public abstract setStages(documents: Document[]): this;
 	public abstract addStage(document: Document): this;
 	public abstract getStages(): Document[];
+
 	public abstract setColumns<K extends keyof T>(
 		...columns: (K | (string & {}) | (K | (string & {}))[])[]
 	): this;
 	public abstract addColumn(column: keyof T): this;
 	public abstract getColumns(): (keyof T)[];
+
 	public abstract setExcludes<K extends keyof T>(
 		...columns: (K | (string & {}) | (K | (string & {}))[])[]
 	): this;
 	public abstract addExclude(column: keyof T): this;
 	public abstract getExcludes(): (keyof T)[];
+
 	public abstract setWheres(wheres: IQueryBuilderWhere[]): this;
 	public abstract addWhere(where: IQueryBuilderWhere): this;
 	public abstract getWheres(): IQueryBuilderWhere[];
+
 	public abstract setOrders(orders: IQueryBuilderOrder[]): this;
 	public abstract addOrder(order: IQueryBuilderOrder): this;
 	public abstract getOrders(): IQueryBuilderOrder[];
+
 	public abstract setGroups(columns: (keyof T)[]): this;
 	public abstract addGroup(column: keyof T): this;
 	public abstract getGroups(): (keyof T)[];
+
 	public abstract setWithTrashed(withTrashed: boolean): this;
 	public abstract getWithTrashed(): boolean;
+
 	public abstract setOnlyTrashed(onlyTrashed: boolean): this;
 	public abstract getOnlyTrashed(): boolean;
+
 	public abstract setOffset(offset: number): this;
 	public abstract getOffset(): number;
+
 	public abstract setId(id: ObjectId | string | null): this;
 	public abstract getId(): ObjectId | string | null;
+
 	public abstract setOriginal(original: Partial<T>): this;
 	//public abstract getOriginal(): Partial<T>
+
 	public abstract setChanges(changes: Partial<Record<keyof T, any>>): this;
 	// public abstract getChanges(): Partial<Record<keyof T, any>>
+
 	public abstract setLookups(lookups: Document[]): this;
 	public abstract addLookup(lookup: Document): this;
 	public abstract getLookups(): Document[];
+
 	public abstract setIsDeleted(isDeleted: string): this;
 	public abstract getIsDeleted(): string;
+
 	public abstract setDeletedAt(deletedAt: string): this;
 	public abstract getDeletedAt(): string;
+
 	public abstract setLimit(limit: number): this;
 	public abstract getLimit(): number;
+
 	public abstract setAttributes(attributes: Partial<T>): this;
 	public abstract getAttributes(): Partial<T>;
+
 	public abstract setAlias(alias: string): this;
 	public abstract getAlias(): string;
+
 	public abstract setOptions(options: IRelationshipOptions): this;
 	public abstract getOptions(): IRelationshipOptions;
 }
