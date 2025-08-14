@@ -1,11 +1,4 @@
-import {
-	IMongoloquentSchema,
-	IMongoloquentSoftDelete,
-	IMongoloquentTimestamps,
-	Model,
-	DB,
-	MongoloquentNotFoundException,
-} from "../../../src/";
+import { IMongoloquentSchema, Model, DB } from "../../../src/";
 beforeEach(async () => {
 	await DB.collection("users").getMongoDBCollection().deleteMany({});
 	await DB.collection("roles").getMongoDBCollection().deleteMany({});
@@ -79,7 +72,9 @@ describe("attach method", () => {
 		const user = await User.find(userIds[0]);
 		await user.roles().attach<{
 			additional: string;
-		}>(roleIds[0], { additional: "value" });
+		}>(roleIds[0], {
+			doc: { additional: "value" },
+		});
 
 		const roles = await user.roles().get();
 		expect(roles.length).toBe(1);
