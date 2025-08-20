@@ -105,9 +105,10 @@ export class HasOne<T = any, M = any> extends QueryBuilder<M> {
 			);
 		}
 
-		const exclude = LookupBuilder.exclude(hidden as string[], hasOne.alias);
-		lookup.push(...exclude);
-
+		if (hidden.length > 0) {
+			const exclude = LookupBuilder.exclude(hidden as string[], hasOne.alias);
+			lookup.push(...exclude);
+		}
 		return lookup;
 	}
 

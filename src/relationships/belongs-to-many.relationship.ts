@@ -484,11 +484,13 @@ export class BelongsToMany<T = any, M = any, PM = any> extends QueryBuilder<M> {
 			);
 		}
 
-		const exclude = LookupBuilder.exclude(
-			hidden as string[],
-			belongsToMany.alias,
-		);
-		lookup.push(...exclude);
+		if (hidden.length > 0) {
+			const exclude = LookupBuilder.exclude(
+				hidden as string[],
+				belongsToMany.alias,
+			);
+			lookup.push(...exclude);
+		}
 
 		return lookup;
 	}
