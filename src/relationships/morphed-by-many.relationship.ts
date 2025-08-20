@@ -1,5 +1,3 @@
-import { Document, ObjectId } from "mongodb";
-import { LookupBuilder } from "./lookup-builder.relationship";
 import {
 	Collection,
 	Model,
@@ -7,6 +5,8 @@ import {
 	IQueryBuilderPaginated,
 	IRelationshipMorphedByMany,
 } from "../index";
+import { LookupBuilder } from "./lookup-builder.relationship";
+import { Document, ObjectId } from "mongodb";
 
 export class MorphedByMany<T = any, M = any> extends QueryBuilder<M> {
 	model: Model<T>;
@@ -109,6 +109,7 @@ export class MorphedByMany<T = any, M = any> extends QueryBuilder<M> {
 
 	static generate(morphedByMany: IRelationshipMorphedByMany): Document[] {
 		const lookup = this.lookup(morphedByMany);
+		let hidden = morphedByMany.relatedModel.getHidden();
 
 		if (morphedByMany.options?.select) {
 			const select = LookupBuilder.select(
@@ -119,8 +120,18 @@ export class MorphedByMany<T = any, M = any> extends QueryBuilder<M> {
 		}
 
 		if (morphedByMany.options?.exclude) {
+			hidden.push(...morphedByMany.options.exclude);
+		}
+
+		if (morphedByMany.options.makeVisible) {
+			hidden = hidden.filter(
+				(el) => !morphedByMany.options.makeVisible?.includes(el as string),
+			);
+		}
+
+		if (hidden.length > 0) {
 			const exclude = LookupBuilder.exclude(
-				morphedByMany.options.exclude,
+				hidden as string[],
 				morphedByMany.alias,
 			);
 			lookup.push(...exclude);
