@@ -154,6 +154,7 @@ export class HasMany<T = any, M = any> extends QueryBuilder<M> {
 
 	public static generate(hasMany: IRelationshipHasMany): Document[] {
 		const lookup = this.lookup(hasMany);
+		let hidden = hasMany.relatedModel.getHidden();
 
 		if (hasMany.options?.select) {
 			const select = LookupBuilder.select(
@@ -164,12 +165,17 @@ export class HasMany<T = any, M = any> extends QueryBuilder<M> {
 		}
 
 		if (hasMany.options?.exclude) {
-			const exclude = LookupBuilder.exclude(
-				hasMany.options.exclude,
-				hasMany.alias,
-			);
-			lookup.push(...exclude);
+			hidden.push(...hasMany.options.exclude);
 		}
+
+		if (hasMany.options.makeVisible) {
+			hidden = hidden.filter(
+				(el) => !hasMany.options.makeVisible?.includes(el as string),
+			);
+		}
+
+		const exclude = LookupBuilder.exclude(hidden as string[], hasMany.alias);
+		lookup.push(...exclude);
 
 		return lookup;
 	}
