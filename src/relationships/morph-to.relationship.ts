@@ -1,5 +1,3 @@
-import { Document } from "mongodb";
-import { LookupBuilder } from "./lookup-builder.relationship";
 import {
 	Collection,
 	Model,
@@ -7,6 +5,8 @@ import {
 	IQueryBuilderPaginated,
 	IRelationshipMorphTo,
 } from "../index";
+import { LookupBuilder } from "./lookup-builder.relationship";
+import { Document } from "mongodb";
 
 export class MorphTo<T = any, M = any> extends QueryBuilder<M> {
 	private model: Model<T>;
@@ -97,16 +97,29 @@ export class MorphTo<T = any, M = any> extends QueryBuilder<M> {
 	}
 
 	static generate(morphTo: IRelationshipMorphTo): Document[] {
-		const alias = morphTo.alias || "alias";
 		const lookup = this.lookup(morphTo);
+		let hidden = morphTo.relatedModel.getHidden();
 
 		if (morphTo.options?.select) {
-			const select = LookupBuilder.select(morphTo.options.select, alias);
+			const select = LookupBuilder.select(
+				morphTo.options.select,
+				morphTo.alias,
+			);
 			lookup.push(...select);
 		}
 
 		if (morphTo.options?.exclude) {
-			const exclude = LookupBuilder.exclude(morphTo.options.exclude, alias);
+			hidden.push(...morphTo.options.exclude);
+		}
+
+		if (morphTo.options.makeVisible) {
+			hidden = hidden.filter(
+				(el) => !morphTo.options.makeVisible?.includes(el as string),
+			);
+		}
+
+		if (hidden.length > 0) {
+			const exclude = LookupBuilder.exclude(hidden as string[], morphTo.alias);
 			lookup.push(...exclude);
 		}
 
