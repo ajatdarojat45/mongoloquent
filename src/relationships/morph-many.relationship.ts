@@ -1,11 +1,4 @@
 import {
-	BulkWriteOptions,
-	Document,
-	InsertOneOptions,
-	ObjectId,
-	WithId,
-} from "mongodb";
-import {
 	Collection,
 	IQueryBuilderFormSchema,
 	IQueryBuilderPaginated,
@@ -14,6 +7,13 @@ import {
 	Model,
 	QueryBuilder,
 } from "../index";
+import {
+	BulkWriteOptions,
+	Document,
+	InsertOneOptions,
+	ObjectId,
+	WithId,
+} from "mongodb";
 
 export class MorphMany<T = any, M = any> extends QueryBuilder<M> {
 	model: Model<T>;
@@ -189,16 +189,32 @@ export class MorphMany<T = any, M = any> extends QueryBuilder<M> {
 	}
 
 	static generate(morphMany: IRelationshipMorphMany): Document[] {
-		const alias = morphMany.alias || "alias";
 		const lookup = this.lookup(morphMany);
+		let hidden = morphMany.relatedModel.getHidden();
 
 		if (morphMany.options?.select) {
-			const select = LookupBuilder.select(morphMany.options.select, alias);
+			const select = LookupBuilder.select(
+				morphMany.options.select,
+				morphMany.alias,
+			);
 			lookup.push(...select);
 		}
 
 		if (morphMany.options?.exclude) {
-			const exclude = LookupBuilder.exclude(morphMany.options.exclude, alias);
+			hidden.push(...morphMany.options.exclude);
+		}
+
+		if (morphMany.options.makeVisible) {
+			hidden = hidden.filter(
+				(el) => !morphMany.options.makeVisible?.includes(el as string),
+			);
+		}
+
+		if (hidden.length > 0) {
+			const exclude = LookupBuilder.exclude(
+				hidden as string[],
+				morphMany.alias,
+			);
 			lookup.push(...exclude);
 		}
 
