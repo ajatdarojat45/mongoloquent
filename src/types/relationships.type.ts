@@ -15,6 +15,7 @@ export enum IRelationshipTypes {
 export interface IRelationshipOptions {
 	select?: string | string[];
 	exclude?: string | string[];
+	makeVisible?: string | string[];
 	sort?: [string, "asc" | "desc"];
 	skip?: number;
 	limit?: number;

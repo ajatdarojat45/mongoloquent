@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.9.0](https://github.com/ajatdarojat45/mongoloquent/compare/v3.8.2...v3.9.0) (2025-08-20)
+
+
+### Features
+
+* add methods for setting and making fields visible or hidden in Model class ([96cea64](https://github.com/ajatdarojat45/mongoloquent/commit/96cea643f29fc664e26afe5909d97420666f82b0))
+* add support for hidden fields management in HasMany relationship generation ([0d6301e](https://github.com/ajatdarojat45/mongoloquent/commit/0d6301e294f22dc969f0a0aacfa21ce6192d42bb))
+* add support for timestamps and soft delete in HasMany relationship ([3701cfb](https://github.com/ajatdarojat45/mongoloquent/commit/3701cfba32222c99ffcb78b81760ddf6e2a728d3))
+* add visible method for control visibility columns ([9f84143](https://github.com/ajatdarojat45/mongoloquent/commit/9f8414305a5de83d0fbade086b376eeb05dd361b))
+* enhance generate method in HasManyThrough relationship to manage hidden fields and visibility options ([0769972](https://github.com/ajatdarojat45/mongoloquent/commit/07699725b97f08e18ef2450898ecb25bd1f9dcf9))
+* enhance generate method in HasOne relationship to manage hidden fields and visibility options ([33726f9](https://github.com/ajatdarojat45/mongoloquent/commit/33726f992a482f311f9da2ff32e36e3d84d99bcb))
+* enhance generate method in MorphedByMany relationship to manage hidden fields and visibility options ([b2b0c00](https://github.com/ajatdarojat45/mongoloquent/commit/b2b0c00ec051a0472cc6c4b5d17f2aedebe25645))
+* enhance generate method in MorphMany relationship to manage hidden fields and visibility options ([843e061](https://github.com/ajatdarojat45/mongoloquent/commit/843e06170a5bd422371d8eff1c16b32284fb6c78))
+* enhance generate method in MorphTo relationship to manage hidden fields and visibility options ([537505a](https://github.com/ajatdarojat45/mongoloquent/commit/537505aab3a574a74a70f114df4c9b696a7a58c5))
+* enhance generate method in MorphToMany relationship to manage hidden fields and visibility options ([d7911fd](https://github.com/ajatdarojat45/mongoloquent/commit/d7911fd7530260d7024a7d80b0f811d7d0366113))
+* enhance generate method to manage hidden fields and visibility options in BelongsTo relationship ([0102969](https://github.com/ajatdarojat45/mongoloquent/commit/01029699392c16d9c2976a77f2aa59c27bae0335))
+* enhance visibility control methods to accept multiple columns ([2fc3187](https://github.com/ajatdarojat45/mongoloquent/commit/2fc3187a1215e7d714cebbf0fa352ac4509e4cc2))
+* refactor BelongsToMany relationship methods for improved readability and maintainability ([a7151f6](https://github.com/ajatdarojat45/mongoloquent/commit/a7151f660a0b05f7b8c8935c8d684d71d9d0a494))
+* remove biome configuration file and add Prettier configuration ([7c68b18](https://github.com/ajatdarojat45/mongoloquent/commit/7c68b185ce3733afe35aa5677cb07c2318969720))
+* streamline visibility management by filtering hidden and visible fields in makeHidden and makeVisible methods ([9e2ed54](https://github.com/ajatdarojat45/mongoloquent/commit/9e2ed54231cd55a0f041f515fd377be3ce5e8419))
+
+
+### Bug Fixes
+
+* update hidden field generation to use visible fields in MongoDB query ([efe1c1b](https://github.com/ajatdarojat45/mongoloquent/commit/efe1c1b7b12c15ab3db1649eddd5d05802848a13))
+
 ### [3.8.2](https://github.com/ajatdarojat45/mongoloquent/compare/v3.8.1...v3.8.2) (2025-08-14)
 
 ### [3.8.1](https://github.com/ajatdarojat45/mongoloquent/compare/v3.8.0...v3.8.1) (2025-08-13)

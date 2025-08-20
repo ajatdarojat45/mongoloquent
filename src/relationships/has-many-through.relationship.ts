@@ -1,4 +1,3 @@
-import { Document } from "mongodb";
 import {
 	IQueryBuilderPaginated,
 	IRelationshipHasManyThrough,
@@ -7,6 +6,7 @@ import {
 	QueryBuilder,
 	LookupBuilder,
 } from "../index";
+import { Document } from "mongodb";
 
 export class HasManyThrough<
 	T = any,
@@ -116,6 +116,7 @@ export class HasManyThrough<
 
 	static generate(hasManyThrough: IRelationshipHasManyThrough): Document[] {
 		const lookup = this.lookup(hasManyThrough);
+		let hidden = hasManyThrough.relatedModel.getHidden();
 
 		if (hasManyThrough.options?.select) {
 			const select = LookupBuilder.select(
@@ -126,8 +127,18 @@ export class HasManyThrough<
 		}
 
 		if (hasManyThrough.options?.exclude) {
+			hidden.push(...hasManyThrough.options.exclude);
+		}
+
+		if (hasManyThrough.options.makeVisible) {
+			hidden = hidden.filter(
+				(el) => !hasManyThrough.options.makeVisible?.includes(el as string),
+			);
+		}
+
+		if (hidden.length > 0) {
 			const exclude = LookupBuilder.exclude(
-				hasManyThrough.options.exclude,
+				hidden as string[],
 				hasManyThrough.alias,
 			);
 			lookup.push(...exclude);

@@ -153,6 +153,50 @@ export class Model<T = any> extends QueryBuilder<T> {
 		return this.query().exclude(...fields);
 	}
 
+	public static setVisible<M extends typeof Model<any>>(
+		this: M,
+		...fields: (
+			| keyof M["$schema"]
+			| Array<keyof M["$schema"]>
+			| (string & {})
+		)[]
+	) {
+		return this.query().setVisible(...fields);
+	}
+
+	public static makeVisible<M extends typeof Model<any>>(
+		this: M,
+		...fields: (
+			| keyof M["$schema"]
+			| Array<keyof M["$schema"]>
+			| (string & {})
+		)[]
+	) {
+		return this.query().makeVisible(...fields);
+	}
+
+	public static setHidden<M extends typeof Model<any>>(
+		this: M,
+		...fields: (
+			| keyof M["$schema"]
+			| Array<keyof M["$schema"]>
+			| (string & {})
+		)[]
+	) {
+		return this.query().setHidden(...fields);
+	}
+
+	public static makeHidden<M extends typeof Model<any>>(
+		this: M,
+		...fields: (
+			| keyof M["$schema"]
+			| Array<keyof M["$schema"]>
+			| (string & {})
+		)[]
+	) {
+		return this.query().makeHidden(...fields);
+	}
+
 	public static where<M extends typeof Model<any>>(
 		this: M,
 		column: keyof M["$schema"] | (string & {}),

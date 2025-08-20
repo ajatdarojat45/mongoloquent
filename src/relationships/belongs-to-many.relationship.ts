@@ -1,11 +1,4 @@
 import {
-	BulkWriteOptions,
-	DeleteOptions,
-	Document,
-	ObjectId,
-	UpdateOptions,
-} from "mongodb";
-import {
 	IQueryBuilderPaginated,
 	IRelationshipBelongsToMany,
 	Collection,
@@ -13,6 +6,13 @@ import {
 	QueryBuilder,
 	LookupBuilder,
 } from "../index";
+import {
+	BulkWriteOptions,
+	DeleteOptions,
+	Document,
+	ObjectId,
+	UpdateOptions,
+} from "mongodb";
 
 export class BelongsToMany<T = any, M = any, PM = any> extends QueryBuilder<M> {
 	private model: Model<T>;
@@ -464,6 +464,7 @@ export class BelongsToMany<T = any, M = any, PM = any> extends QueryBuilder<M> {
 
 	static generate(belongsToMany: IRelationshipBelongsToMany): Document[] {
 		const lookup = this.lookup(belongsToMany);
+		let hidden = belongsToMany.relatedModel.getHidden();
 
 		if (belongsToMany.options?.select) {
 			const select = LookupBuilder.select(
@@ -474,8 +475,18 @@ export class BelongsToMany<T = any, M = any, PM = any> extends QueryBuilder<M> {
 		}
 
 		if (belongsToMany.options?.exclude) {
+			hidden.push(...belongsToMany.options.exclude);
+		}
+
+		if (belongsToMany.options.makeVisible) {
+			hidden = hidden.filter(
+				(el) => !belongsToMany.options.makeVisible?.includes(el as string),
+			);
+		}
+
+		if (hidden.length > 0) {
 			const exclude = LookupBuilder.exclude(
-				belongsToMany.options.exclude,
+				hidden as string[],
 				belongsToMany.alias,
 			);
 			lookup.push(...exclude);

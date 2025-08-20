@@ -27,6 +27,7 @@ export abstract class AbstractQueryBuilder<T = WithId<Document>> {
 	protected abstract $useSoftDelete: boolean;
 	protected abstract $attributes: Partial<T>;
 	protected abstract $hidden: (keyof T)[];
+	protected abstract $visible: (keyof T)[];
 
 	public abstract select<K extends keyof T>(
 		...columns: (K | (string & {}) | (K | (string & {}))[])[]
@@ -235,8 +236,24 @@ export abstract class AbstractQueryBuilder<T = WithId<Document>> {
 	public abstract setHidden<K extends keyof T>(
 		...columns: (K | (string & {}) | (K | (string & {}))[])[]
 	): this;
-	public abstract addHidden(column: keyof T): this;
+	public abstract addHidden<K extends keyof T>(
+		...columns: (K | (string & {}) | (K | (string & {}))[])[]
+	): this;
+	public abstract makeHidden<K extends keyof T>(
+		...columns: (K | (string & {}) | (K | (string & {}))[])[]
+	): this;
 	public abstract getHidden(): (keyof T)[];
+
+	public abstract setVisible<K extends keyof T>(
+		...columns: (K | (string & {}) | (K | (string & {}))[])[]
+	): this;
+	public abstract addVisible<K extends keyof T>(
+		...columns: (K | (string & {}) | (K | (string & {}))[])[]
+	): this;
+	public abstract makeVisible<K extends keyof T>(
+		...columns: (K | (string & {}) | (K | (string & {}))[])[]
+	): this;
+	public abstract getVisible(): (keyof T)[];
 
 	public abstract setCreatedAt(createdAt: string): this;
 	public abstract getCreatedAt(): string;

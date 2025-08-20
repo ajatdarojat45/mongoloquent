@@ -42,6 +42,7 @@ export abstract class QueryBuilder<
 	protected $useSoftDelete: boolean = false;
 	protected $attributes: Partial<T> = {};
 	protected $hidden: (keyof T)[] = [];
+	protected $visible: (keyof T)[] = [];
 
 	private $createdAt: string = "createdAt";
 	private $updatedAt: string = "updatedAt";
@@ -1093,7 +1094,7 @@ export abstract class QueryBuilder<
 	private generateHiddenForMongoDBQuery(): this {
 		let $project = {};
 		this.getHidden().forEach((el) => {
-			if (!this.getColumns().includes(el)) {
+			if (!this.getVisible().includes(el)) {
 				$project = { ...$project, [el as any]: 0 };
 			}
 		});
@@ -1104,9 +1105,13 @@ export abstract class QueryBuilder<
 
 	private generateColumnsForMongoDBQuery(): this {
 		let $project = {};
-		this.getColumns().forEach((el) => {
-			$project = { ...$project, [el]: 1 };
-		});
+
+		if (this.getColumns().length > 0) {
+			const columns = [...this.getColumns(), ...this.getVisible()];
+			columns.forEach((el) => {
+				$project = { ...$project, [el]: 1 };
+			});
+		}
 		if (Object.keys($project).length > 0) this.addStage({ $project });
 
 		return this;
@@ -1303,22 +1308,85 @@ export abstract class QueryBuilder<
 	): this {
 		if (Array.isArray(columns)) {
 			const flattenedColumns = columns.flat() as unknown as keyof T[];
-			this.$hidden = [
-				...this.$hidden,
-				...(flattenedColumns as unknown as (keyof T)[]),
-			];
-		} else this.$hidden = [...this.$hidden, columns];
+			this.$hidden = [...(flattenedColumns as unknown as (keyof T)[])];
+		} else this.$hidden = [columns];
+
+		this.$visible = this.$visible.filter(
+			(el) => !this.$hidden.includes(el as keyof T),
+		);
 
 		return this;
 	}
 
-	public addHidden(column: keyof T): this {
-		this.$hidden.push(column);
+	public addHidden<K extends keyof T>(
+		...columns: (K | (string & {}) | (K | (string & {}))[])[]
+	): this {
+		if (Array.isArray(columns)) {
+			const flattenedColumns = columns.flat() as unknown as keyof T[];
+			this.$hidden = [
+				...this.getHidden(),
+				...(flattenedColumns as unknown as (keyof T)[]),
+			];
+		} else this.$hidden = [columns];
+
+		this.$visible = this.$visible.filter(
+			(el) => !this.$hidden.includes(el as keyof T),
+		);
+
 		return this;
+	}
+
+	public makeHidden<K extends keyof T>(
+		...columns: (K | (string & {}) | (K | (string & {}))[])[]
+	): this {
+		return this.addHidden(...columns);
 	}
 
 	public getHidden(): (keyof T)[] {
 		return this.$hidden;
+	}
+
+	public setVisible<K extends keyof T>(
+		...columns: (K | (string & {}) | (K | (string & {}))[])[]
+	): this {
+		if (Array.isArray(columns)) {
+			const flattenedColumns = columns.flat() as unknown as keyof T[];
+			this.$visible = [...(flattenedColumns as unknown as (keyof T)[])];
+		} else this.$visible = [columns];
+
+		this.$hidden = this.$hidden.filter(
+			(el) => !this.$visible.includes(el as keyof T),
+		);
+
+		return this;
+	}
+
+	public addVisible<K extends keyof T>(
+		...columns: (K | (string & {}) | (K | (string & {}))[])[]
+	): this {
+		if (Array.isArray(columns)) {
+			const flattenedColumns = columns.flat() as unknown as keyof T[];
+			this.$visible = [
+				...this.getVisible(),
+				...(flattenedColumns as unknown as (keyof T)[]),
+			];
+		} else this.$visible = [columns];
+
+		this.$hidden = this.$hidden.filter(
+			(el) => !this.$visible.includes(el as keyof T),
+		);
+
+		return this;
+	}
+
+	public makeVisible<K extends keyof T>(
+		...columns: (K | (string & {}) | (K | (string & {}))[])[]
+	): this {
+		return this.addVisible(...columns);
+	}
+
+	public getVisible(): (keyof T)[] {
+		return this.$visible;
 	}
 
 	public setCreatedAt(createdAt: string): this {
