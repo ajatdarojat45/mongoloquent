@@ -1,4 +1,3 @@
-import { Document } from "mongodb";
 import {
 	IQueryBuilderPaginated,
 	IRelationshipBelongsTo,
@@ -7,6 +6,7 @@ import {
 	QueryBuilder,
 	LookupBuilder,
 } from "../index";
+import { Document } from "mongodb";
 
 export class BelongsTo<T = any, M = any> extends QueryBuilder<M> {
 	private model: Model<T>;
@@ -103,6 +103,7 @@ export class BelongsTo<T = any, M = any> extends QueryBuilder<M> {
 
 	public static generate(belongsTo: IRelationshipBelongsTo): Document[] {
 		const lookup = this.lookup(belongsTo);
+		let hidden = belongsTo.relatedModel.getHidden();
 
 		if (belongsTo.options?.select) {
 			const select = LookupBuilder.select(
@@ -113,12 +114,17 @@ export class BelongsTo<T = any, M = any> extends QueryBuilder<M> {
 		}
 
 		if (belongsTo.options?.exclude) {
-			const exclude = LookupBuilder.exclude(
-				belongsTo.options.exclude,
-				belongsTo.alias,
-			);
-			lookup.push(...exclude);
+			hidden.push(...belongsTo.options.exclude);
 		}
+
+		if (belongsTo.options.makeVisible) {
+			hidden = hidden.filter(
+				(el) => !belongsTo.options.makeVisible?.includes(el as string),
+			);
+		}
+
+		const exclude = LookupBuilder.exclude(hidden as string[], belongsTo.alias);
+		lookup.push(...exclude);
 
 		return lookup;
 	}
