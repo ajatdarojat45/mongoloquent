@@ -1,4 +1,3 @@
-import { BulkWriteOptions, Document, InsertOneOptions } from "mongodb";
 import {
 	IQueryBuilderFormSchema,
 	IQueryBuilderPaginated,
@@ -8,6 +7,7 @@ import {
 	QueryBuilder,
 	LookupBuilder,
 } from "../index";
+import { BulkWriteOptions, Document, InsertOneOptions } from "mongodb";
 
 export class HasMany<T = any, M = any> extends QueryBuilder<M> {
 	model: Model<T>;
