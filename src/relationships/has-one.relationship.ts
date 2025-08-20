@@ -1,4 +1,3 @@
-import { Document } from "mongodb";
 import {
 	IQueryBuilderPaginated,
 	IRelationshipHasOne,
@@ -7,6 +6,7 @@ import {
 	QueryBuilder,
 	LookupBuilder,
 } from "../index";
+import { Document } from "mongodb";
 
 export class HasOne<T = any, M = any> extends QueryBuilder<M> {
 	model: Model<T>;
@@ -88,6 +88,7 @@ export class HasOne<T = any, M = any> extends QueryBuilder<M> {
 
 	static generate(hasOne: IRelationshipHasOne): Document[] {
 		const lookup = this.lookup(hasOne);
+		let hidden = hasOne.relatedModel.getHidden();
 
 		if (hasOne.options?.select) {
 			const select = LookupBuilder.select(hasOne.options.select, hasOne.alias);
@@ -95,12 +96,17 @@ export class HasOne<T = any, M = any> extends QueryBuilder<M> {
 		}
 
 		if (hasOne.options?.exclude) {
-			const exclude = LookupBuilder.exclude(
-				hasOne.options.exclude,
-				hasOne.alias,
-			);
-			lookup.push(...exclude);
+			hidden.push(...hasOne.options.exclude);
 		}
+
+		if (hasOne.options.makeVisible) {
+			hidden = hidden.filter(
+				(el) => !hasOne.options.makeVisible?.includes(el as string),
+			);
+		}
+
+		const exclude = LookupBuilder.exclude(hidden as string[], hasOne.alias);
+		lookup.push(...exclude);
 
 		return lookup;
 	}
