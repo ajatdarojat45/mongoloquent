@@ -1,4 +1,21 @@
 import {
+	MONGOLOQUENT_DATABASE_NAME,
+	MONGOLOQUENT_DATABASE_URI,
+	TIMEZONE,
+	OPERATORS,
+} from "../../constants";
+import { MongoloquentNotFoundException, MongoloquentQueryException } from "../../exceptions";
+import {
+	IQueryBuilderFormSchema,
+	IQueryBuilderOrder,
+	IQueryBuilderPaginated,
+	IQueryBuilderWhere,
+	IRelationshipOptions,
+} from "../../types";
+import { dayjs } from "../../utils";
+import { Database, Collection } from "../index";
+import { AbstractQueryBuilder } from "./index";
+import {
 	AggregateOptions,
 	BulkWriteOptions,
 	DeleteOptions,
@@ -10,30 +27,8 @@ import {
 	UpdateOptions,
 	WithId,
 } from "mongodb";
-import {
-	IQueryBuilderFormSchema,
-	IQueryBuilderOrder,
-	IQueryBuilderPaginated,
-	IQueryBuilderWhere,
-	IRelationshipOptions,
-} from "../../types";
-import { Database, Collection } from "../index";
-import { AbstractQueryBuilder } from "./index";
-import {
-	MongoloquentNotFoundException,
-	MongoloquentQueryException,
-} from "../../exceptions";
-import { dayjs } from "../../utils";
-import {
-	MONGOLOQUENT_DATABASE_NAME,
-	MONGOLOQUENT_DATABASE_URI,
-	TIMEZONE,
-	OPERATORS,
-} from "../../constants";
 
-export abstract class QueryBuilder<
-	T = WithId<Document>,
-> extends AbstractQueryBuilder<T> {
+export abstract class QueryBuilder<T = WithId<Document>> extends AbstractQueryBuilder<T> {
 	protected $timezone: string = "";
 	protected $connection: string = "";
 	protected $databaseName: string = "";
@@ -71,8 +66,7 @@ export abstract class QueryBuilder<
 		this.$timezone = this.$timezone || TIMEZONE;
 		this.$connection = this.$connection || MONGOLOQUENT_DATABASE_URI;
 		this.$databaseName = this.$databaseName || MONGOLOQUENT_DATABASE_NAME;
-		this.$collection =
-			this.$collection || `${this.constructor.name.toLowerCase()}s`;
+		this.$collection = this.$collection || `${this.constructor.name.toLowerCase()}s`;
 	}
 
 	public select<K extends keyof T>(
@@ -109,45 +103,27 @@ export abstract class QueryBuilder<
 		return this.formatAndSaveWhereCondition(column, _operator, _value, "or");
 	}
 
-	public whereNot<K extends keyof T>(
-		column: K | (string & {}),
-		value: any,
-	): this {
+	public whereNot<K extends keyof T>(column: K | (string & {}), value: any): this {
 		return this.formatAndSaveWhereCondition(column, "ne", value, "and");
 	}
 
-	public orWhereNot<K extends keyof T>(
-		column: K | (string & {}),
-		value: any,
-	): this {
+	public orWhereNot<K extends keyof T>(column: K | (string & {}), value: any): this {
 		return this.formatAndSaveWhereCondition(column, "ne", value, "or");
 	}
 
-	public whereIn<K extends keyof T>(
-		column: K | (string & {}),
-		values: any[],
-	): this {
+	public whereIn<K extends keyof T>(column: K | (string & {}), values: any[]): this {
 		return this.formatAndSaveWhereCondition(column, "in", values, "and");
 	}
 
-	public orWhereIn<K extends keyof T>(
-		column: K | (string & {}),
-		values: any[],
-	): this {
+	public orWhereIn<K extends keyof T>(column: K | (string & {}), values: any[]): this {
 		return this.formatAndSaveWhereCondition(column, "in", values, "or");
 	}
 
-	public whereNotIn<K extends keyof T>(
-		column: K | (string & {}),
-		values: any[],
-	): this {
+	public whereNotIn<K extends keyof T>(column: K | (string & {}), values: any[]): this {
 		return this.formatAndSaveWhereCondition(column, "nin", values, "and");
 	}
 
-	public orWhereNotIn<K extends keyof T>(
-		column: K | (string & {}),
-		values: any[],
-	): this {
+	public orWhereNotIn<K extends keyof T>(column: K | (string & {}), values: any[]): this {
 		return this.formatAndSaveWhereCondition(column, "nin", values, "or");
 	}
 
@@ -248,10 +224,7 @@ export abstract class QueryBuilder<
 		return result.pluck(...flattenedFields);
 	}
 
-	public async paginate(
-		page: number = 1,
-		limit: number = 15,
-	): Promise<IQueryBuilderPaginated> {
+	public async paginate(page: number = 1, limit: number = 15): Promise<IQueryBuilderPaginated> {
 		try {
 			this.checkSoftDelete().generateConditionsForMongoDBQuery();
 
@@ -354,22 +327,15 @@ export abstract class QueryBuilder<
 		return this.firstOrCreate(filter, doc, options);
 	}
 
-	public async firstOrFail<K extends keyof T>(
-		...columns: (K | K[])[]
-	): Promise<T> {
+	public async firstOrFail<K extends keyof T>(...columns: (K | K[])[]): Promise<T> {
 		const data = await this.first(...columns);
 		if (!data) {
-			throw new MongoloquentNotFoundException(
-				"No document found matching the query",
-			);
+			throw new MongoloquentNotFoundException("No document found matching the query");
 		}
 		return data as T;
 	}
 
-	public async find(
-		id: string | ObjectId,
-		options?: AggregateOptions,
-	): Promise<(this & T) | null> {
+	public async find(id: string | ObjectId, options?: AggregateOptions): Promise<(this & T) | null> {
 		const _id = new ObjectId(id);
 		this.setId(_id);
 		if (options) this.setAggregateOptions(options);
@@ -406,9 +372,7 @@ export abstract class QueryBuilder<
 	public async findOrFail(id: string | ObjectId): Promise<this & T> {
 		const data = await this.find(id);
 		if (!data) {
-			throw new MongoloquentNotFoundException(
-				"No document found with the given ID",
-			);
+			throw new MongoloquentNotFoundException("No document found with the given ID");
 		}
 		return data;
 	}
@@ -436,27 +400,19 @@ export abstract class QueryBuilder<
 		}
 	}
 
-	public async max<K extends keyof T>(
-		column: (string & {}) | K,
-	): Promise<number> {
+	public async max<K extends keyof T>(column: (string & {}) | K): Promise<number> {
 		return this.runAggregate(column, "max");
 	}
 
-	public async min<K extends keyof T>(
-		column: (string & {}) | K,
-	): Promise<number> {
+	public async min<K extends keyof T>(column: (string & {}) | K): Promise<number> {
 		return this.runAggregate(column, "min");
 	}
 
-	public async avg<K extends keyof T>(
-		column: (string & {}) | K,
-	): Promise<number> {
+	public async avg<K extends keyof T>(column: (string & {}) | K): Promise<number> {
 		return this.runAggregate(column, "avg");
 	}
 
-	public async sum<K extends keyof T>(
-		column: (string & {}) | K,
-	): Promise<number> {
+	public async sum<K extends keyof T>(column: (string & {}) | K): Promise<number> {
 		return this.runAggregate(column, "sum");
 	}
 
@@ -469,8 +425,7 @@ export abstract class QueryBuilder<
 			let newDoc = this.checkUseTimestamps(doc);
 			newDoc = this.checkUseSoftdelete(newDoc);
 
-			if (typeof this.$attributes === "object")
-				newDoc = { ...newDoc, ...this.$attributes };
+			if (typeof this.$attributes === "object") newDoc = { ...newDoc, ...this.$attributes };
 
 			const data = await collection?.insertOne(
 				newDoc as OptionalUnlessRequiredId<IQueryBuilderFormSchema<T>>,
@@ -498,12 +453,11 @@ export abstract class QueryBuilder<
 		try {
 			const collection = this.getMongoDBCollection();
 
-			const newDocs = docs.map((el) => {
+			const newDocs = docs.map(el => {
 				let newEl = this.checkUseTimestamps(el);
 				newEl = this.checkUseSoftdelete(newEl);
 
-				if (typeof this.$attributes === "object")
-					newEl = { ...newEl, ...this.$attributes };
+				if (typeof this.$attributes === "object") newEl = { ...newEl, ...this.$attributes };
 
 				return newEl;
 			});
@@ -515,18 +469,13 @@ export abstract class QueryBuilder<
 
 			const result: ObjectId[] = [];
 			for (const key in data?.insertedIds) {
-				result.push(
-					data?.insertedIds[key as unknown as keyof typeof data.insertedIds],
-				);
+				result.push(data?.insertedIds[key as unknown as keyof typeof data.insertedIds]);
 			}
 
 			this.resetQueryProperties();
 			return result;
 		} catch (error) {
-			throw new MongoloquentQueryException(
-				"Failed to insert multiple documents",
-				error,
-			);
+			throw new MongoloquentQueryException("Failed to insert multiple documents", error);
 		}
 	}
 
@@ -629,10 +578,7 @@ export abstract class QueryBuilder<
 			this.resetQueryProperties();
 			return data.modifiedCount;
 		} catch (error) {
-			throw new MongoloquentQueryException(
-				"Failed to update multiple documents",
-				error,
-			);
+			throw new MongoloquentQueryException("Failed to update multiple documents", error);
 		}
 	}
 
@@ -650,10 +596,7 @@ export abstract class QueryBuilder<
 		}
 
 		if (Object.keys(this.$original).length === 0) {
-			const result = await this.insert(
-				payload as IQueryBuilderFormSchema<T>,
-				options,
-			);
+			const result = await this.insert(payload as IQueryBuilderFormSchema<T>, options);
 			this.$original = { ...result };
 			Object.assign(this, result);
 			// @ts-ignore
@@ -669,9 +612,7 @@ export abstract class QueryBuilder<
 		}
 	}
 
-	public async delete(
-		options?: DeleteOptions | UpdateOptions | undefined,
-	): Promise<number> {
+	public async delete(options?: DeleteOptions | UpdateOptions | undefined): Promise<number> {
 		try {
 			const collection = this.getMongoDBCollection();
 			this.generateConditionsForMongoDBQuery();
@@ -706,9 +647,7 @@ export abstract class QueryBuilder<
 		}
 	}
 
-	public async forceDelete(
-		options?: DeleteOptions | undefined,
-	): Promise<number> {
+	public async forceDelete(options?: DeleteOptions | undefined): Promise<number> {
 		try {
 			const collection = this.getMongoDBCollection();
 			this.generateConditionsForMongoDBQuery();
@@ -721,21 +660,16 @@ export abstract class QueryBuilder<
 
 			return data?.deletedCount || 0;
 		} catch (error) {
-			throw new MongoloquentQueryException(
-				"Failed to force delete documents",
-				error,
-			);
+			throw new MongoloquentQueryException("Failed to force delete documents", error);
 		}
 	}
 
-	public async destroy(
-		...ids: (string | ObjectId | (string | ObjectId)[])[]
-	): Promise<number> {
+	public async destroy(...ids: (string | ObjectId | (string | ObjectId)[])[]): Promise<number> {
 		let flattenedIds = ids.reduce<(string | ObjectId)[]>((acc, id) => {
 			return acc.concat(Array.isArray(id) ? id : [id]);
 		}, []);
 
-		flattenedIds = flattenedIds.map((el) => {
+		flattenedIds = flattenedIds.map(el => {
 			if (typeof el === "string") return new ObjectId(el);
 			return el;
 		});
@@ -752,7 +686,7 @@ export abstract class QueryBuilder<
 				return acc.concat(Array.isArray(id) ? id : [id]);
 			}, []);
 
-			flattenedIds = flattenedIds.map((el) => {
+			flattenedIds = flattenedIds.map(el => {
 				if (typeof el === "string") return new ObjectId(el);
 				return el;
 			});
@@ -771,10 +705,7 @@ export abstract class QueryBuilder<
 
 			return data.deletedCount;
 		} catch (error) {
-			throw new MongoloquentQueryException(
-				"Failed to force destroy documents",
-				error,
-			);
+			throw new MongoloquentQueryException("Failed to force destroy documents", error);
 		}
 	}
 
@@ -788,10 +719,7 @@ export abstract class QueryBuilder<
 
 			return await this.updateMany(payload, options);
 		} catch (error) {
-			throw new MongoloquentQueryException(
-				"Failed to restore documents",
-				error,
-			);
+			throw new MongoloquentQueryException("Failed to restore documents", error);
 		}
 	}
 
@@ -807,7 +735,7 @@ export abstract class QueryBuilder<
 	public isDirty<K extends keyof T>(...fields: (K | K[])[]): boolean {
 		if (fields && fields.length > 0) {
 			const flattenedFields = fields.flat() as (keyof T)[];
-			return flattenedFields.some((field) => field in this.$changes);
+			return flattenedFields.some(field => field in this.$changes);
 		}
 
 		return this.hasChanges();
@@ -816,7 +744,7 @@ export abstract class QueryBuilder<
 	public isClean<K extends keyof T>(...fields: (K | K[])[]): boolean {
 		if (fields && fields.length > 0) {
 			const flattenedFields = fields.flat() as (keyof T)[];
-			return flattenedFields.every((field) => !(field in this.$changes));
+			return flattenedFields.every(field => !(field in this.$changes));
 		}
 		return !this.hasChanges();
 	}
@@ -824,7 +752,7 @@ export abstract class QueryBuilder<
 	public wasChanged<K extends keyof T>(...fields: (K | K[])[]): boolean {
 		if (fields && fields.length > 0) {
 			const flattenedFields = fields.flat() as (keyof T)[];
-			return flattenedFields.some((field) => {
+			return flattenedFields.some(field => {
 				const _new = this.$changes[field];
 				const old = this.$original[field];
 				return _new && old !== _new;
@@ -841,7 +769,7 @@ export abstract class QueryBuilder<
 		if (fields && fields.length > 0) {
 			const flattenedFields = fields.flat() as (keyof T)[];
 			const original: Partial<Record<keyof T, any>> = {};
-			flattenedFields.forEach((field) => {
+			flattenedFields.forEach(field => {
 				if (field in this.$original) {
 					original[field] = this.$original[field];
 				}
@@ -877,8 +805,7 @@ export abstract class QueryBuilder<
 	protected trackChange<K extends keyof T>(field: K, value: any): void {
 		if (!(field in this.$original)) {
 			const schema = (this.constructor as any).$schema;
-			this.$original[field] =
-				schema && field in schema ? schema[field] : undefined;
+			this.$original[field] = schema && field in schema ? schema[field] : undefined;
 		}
 
 		if (this.$original[field] !== value) {
@@ -952,10 +879,7 @@ export abstract class QueryBuilder<
 
 	private async generateAggregateForMongoDBQuery() {
 		try {
-			this.checkSoftDelete()
-				.generateConditionsForMongoDBQuery()
-				.checkOffset()
-				.checkLimit();
+			this.checkSoftDelete().generateConditionsForMongoDBQuery().checkOffset().checkLimit();
 			const stages = this.getStages();
 			this.setStages([]);
 
@@ -981,10 +905,7 @@ export abstract class QueryBuilder<
 			this.resetQueryProperties();
 			return aggregate;
 		} catch (error) {
-			throw new MongoloquentQueryException(
-				"Failed to generate aggregate query",
-				error,
-			);
+			throw new MongoloquentQueryException("Failed to generate aggregate query", error);
 		}
 	}
 
@@ -1006,28 +927,24 @@ export abstract class QueryBuilder<
 		// sort by type(E/R/S) for better peformace query in MongoDB
 		const typeOrder = ["E", "R", "S"];
 		this.getWheres()
-			.filter((el) =>
-				isNested ? el.column.includes(".") : !el.column.includes("."),
-			)
+			.filter(el => (isNested ? el.column.includes(".") : !el.column.includes(".")))
 			.sort((a, b) => typeOrder.indexOf(a.type) - typeOrder.indexOf(b.type))
-			.forEach((el) => {
+			.forEach(el => {
 				const op = OPERATORS.find(
-					(op) =>
-						op.operator === el.operator || op.mongoOperator === el.operator,
+					op => op.operator === el.operator || op.mongoOperator === el.operator,
 				);
 
 				let value: any;
 				if (el.column === "_id") {
-					if (Array.isArray(el.value))
-						value = el.value.map((val) => new ObjectId(val));
+					if (Array.isArray(el.value)) value = el.value.map(val => new ObjectId(val));
 					else value = new ObjectId(el.value);
 				}
 
-				let condition = {
+				let condition: any = {
 					[el.column]: {
 						[`$${op?.mongoOperator}`]: value || el.value,
+						$options: op?.options,
 					},
-					$options: op?.options,
 				};
 
 				if (el.operator === "between")
@@ -1035,11 +952,11 @@ export abstract class QueryBuilder<
 						[el.column]: {
 							$gte: el.value?.[0],
 							$lte: el.value?.[el.value.length - 1],
+							$options: op?.options,
 						},
-						$options: op?.options,
 					};
 
-				if (!condition.$options) delete condition.$options;
+				if (!condition[el.column].$options) delete condition[el.column].$options;
 
 				if (el.boolean === "and") $and.push(condition);
 				else $or.push(condition);
@@ -1093,7 +1010,7 @@ export abstract class QueryBuilder<
 
 	private generateHiddenForMongoDBQuery(): this {
 		let $project = {};
-		this.getHidden().forEach((el) => {
+		this.getHidden().forEach(el => {
 			if (!this.getVisible().includes(el)) {
 				$project = { ...$project, [el as any]: 0 };
 			}
@@ -1108,7 +1025,7 @@ export abstract class QueryBuilder<
 
 		if (this.getColumns().length > 0) {
 			const columns = [...this.getColumns(), ...this.getVisible()];
-			columns.forEach((el) => {
+			columns.forEach(el => {
 				$project = { ...$project, [el]: 1 };
 			});
 		}
@@ -1119,7 +1036,7 @@ export abstract class QueryBuilder<
 
 	private generateExcludesForMongoDBQuery(): this {
 		let $project = {};
-		this.getExcludes().forEach((el) => {
+		this.getExcludes().forEach(el => {
 			if (!this.getColumns().includes(el)) {
 				$project = { ...$project, [el]: 0 };
 			}
@@ -1185,7 +1102,7 @@ export abstract class QueryBuilder<
 		};
 		let $sort = {};
 
-		this.getOrders().forEach((el) => {
+		this.getOrders().forEach(el => {
 			$project = { ...$project, [el.column]: 1 };
 			const direction = el.order === "asc" ? 1 : -1;
 
@@ -1229,9 +1146,7 @@ export abstract class QueryBuilder<
 
 	public getMongoDBCollection(collectionName?: string) {
 		const db = Database.getDb(this.$connection, this.$databaseName);
-		return db.collection<IQueryBuilderFormSchema<T>>(
-			collectionName || this.$collection,
-		);
+		return db.collection<IQueryBuilderFormSchema<T>>(collectionName || this.$collection);
 	}
 
 	private resetQueryProperties(): this {
@@ -1311,9 +1226,7 @@ export abstract class QueryBuilder<
 			this.$hidden = [...(flattenedColumns as unknown as (keyof T)[])];
 		} else this.$hidden = [columns];
 
-		this.$visible = this.$visible.filter(
-			(el) => !this.$hidden.includes(el as keyof T),
-		);
+		this.$visible = this.$visible.filter(el => !this.$hidden.includes(el as keyof T));
 
 		return this;
 	}
@@ -1323,15 +1236,10 @@ export abstract class QueryBuilder<
 	): this {
 		if (Array.isArray(columns)) {
 			const flattenedColumns = columns.flat() as unknown as keyof T[];
-			this.$hidden = [
-				...this.getHidden(),
-				...(flattenedColumns as unknown as (keyof T)[]),
-			];
+			this.$hidden = [...this.getHidden(), ...(flattenedColumns as unknown as (keyof T)[])];
 		} else this.$hidden = [columns];
 
-		this.$visible = this.$visible.filter(
-			(el) => !this.$hidden.includes(el as keyof T),
-		);
+		this.$visible = this.$visible.filter(el => !this.$hidden.includes(el as keyof T));
 
 		return this;
 	}
@@ -1354,9 +1262,7 @@ export abstract class QueryBuilder<
 			this.$visible = [...(flattenedColumns as unknown as (keyof T)[])];
 		} else this.$visible = [columns];
 
-		this.$hidden = this.$hidden.filter(
-			(el) => !this.$visible.includes(el as keyof T),
-		);
+		this.$hidden = this.$hidden.filter(el => !this.$visible.includes(el as keyof T));
 
 		return this;
 	}
@@ -1366,15 +1272,10 @@ export abstract class QueryBuilder<
 	): this {
 		if (Array.isArray(columns)) {
 			const flattenedColumns = columns.flat() as unknown as keyof T[];
-			this.$visible = [
-				...this.getVisible(),
-				...(flattenedColumns as unknown as (keyof T)[]),
-			];
+			this.$visible = [...this.getVisible(), ...(flattenedColumns as unknown as (keyof T)[])];
 		} else this.$visible = [columns];
 
-		this.$hidden = this.$hidden.filter(
-			(el) => !this.$visible.includes(el as keyof T),
-		);
+		this.$hidden = this.$hidden.filter(el => !this.$visible.includes(el as keyof T));
 
 		return this;
 	}
@@ -1421,15 +1322,10 @@ export abstract class QueryBuilder<
 		return this.$stages;
 	}
 
-	setColumns<K extends keyof T>(
-		...columns: (K | (string & {}) | (K | (string & {}))[])[]
-	): this {
+	setColumns<K extends keyof T>(...columns: (K | (string & {}) | (K | (string & {}))[])[]): this {
 		if (Array.isArray(columns)) {
 			const flattenedColumns = columns.flat() as unknown as keyof T[];
-			this.$columns = [
-				...this.$columns,
-				...(flattenedColumns as unknown as (keyof T)[]),
-			];
+			this.$columns = [...this.$columns, ...(flattenedColumns as unknown as (keyof T)[])];
 		} else this.$columns = [...this.$columns, columns];
 
 		return this;
@@ -1449,10 +1345,7 @@ export abstract class QueryBuilder<
 	): this {
 		if (Array.isArray(columns)) {
 			const flattenedColumns = columns.flat() as unknown as keyof T[];
-			this.$excludes = [
-				...this.$excludes,
-				...(flattenedColumns as unknown as (keyof T)[]),
-			];
+			this.$excludes = [...this.$excludes, ...(flattenedColumns as unknown as (keyof T)[])];
 		} else this.$excludes = [...this.$excludes, columns];
 
 		return this;

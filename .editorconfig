@@ -1,38 +1,9 @@
-# Top-level EditorConfig file
 root = true
 
-# Set default format for all files
 [*]
 charset = utf-8
+indent_style = tab
+indent_size = 2
 end_of_line = lf
 insert_final_newline = true
-indent_style = tab
 trim_trailing_whitespace = true
-
-# Specific configuration for TypeScript files
-[*.ts]
-indent_style = space
-indent_size = 2
-
-# Configuration for JSON files (e.g., config, package.json, tsconfig.json)
-[*.json]
-indent_style = space
-indent_size = 2
-
-# Configuration for Markdown files
-[*.md]
-trim_trailing_whitespace = false
-indent_style = space
-indent_size = 2
-
-
-# Configuration for YAML files (e.g., .yml, .yaml)
-[*.yml, *.yaml]
-indent_style = tab
-indent_size = 2
-
-# Override for JavaScript files if needed
-[*.js]
-indent_style = tab
-indent_size = 2
-
