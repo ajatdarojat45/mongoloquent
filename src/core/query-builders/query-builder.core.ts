@@ -224,7 +224,7 @@ export abstract class QueryBuilder<T = WithId<Document>> extends AbstractQueryBu
 		return result.pluck(...flattenedFields);
 	}
 
-	public async paginate(page: number = 1, limit: number = 15): Promise<IQueryBuilderPaginated> {
+	public async paginate(page: number = 1, limit: number = 15): Promise<IQueryBuilderPaginated<Collection<T>>> {
 		try {
 			this.checkSoftDelete().generateConditionsForMongoDBQuery();
 
@@ -1322,7 +1322,7 @@ export abstract class QueryBuilder<T = WithId<Document>> extends AbstractQueryBu
 		return this.$stages;
 	}
 
-	setColumns<K extends keyof T>(...columns: (K | (string & {}) | (K | (string & {}))[])[]): this {
+	public setColumns<K extends keyof T>(...columns: (K | (string & {}) | (K | (string & {}))[])[]): this {
 		if (Array.isArray(columns)) {
 			const flattenedColumns = columns.flat() as unknown as keyof T[];
 			this.$columns = [...this.$columns, ...(flattenedColumns as unknown as (keyof T)[])];
