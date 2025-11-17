@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.9.2](https://github.com/ajatdarojat45/mongoloquent/compare/v3.9.1...v3.9.2) (2025-11-17)
+
+
+### Bug Fixes
+
+* update paginate method return type and setColumns visibility ([66f324a](https://github.com/ajatdarojat45/mongoloquent/commit/66f324a9bcc128898a8e5a3d9a7e5d7ce88db9cc))
+
 ### [3.9.1](https://github.com/ajatdarojat45/mongoloquent/compare/v3.9.0...v3.9.1) (2025-08-23)
 
 ### Bug Fixes
