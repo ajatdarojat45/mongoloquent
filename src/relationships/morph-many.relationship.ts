@@ -188,12 +188,12 @@ export class MorphMany<T = any, M = any> extends QueryBuilder<M> {
 		);
 	}
 
-	static generate(morphMany: IRelationshipMorphMany): Document[] {
-		const lookup = this.lookup(morphMany);
+	static generate<T>(morphMany: IRelationshipMorphMany<T>): Document[] {
+		const lookup = this.lookup<T>(morphMany);
 		let hidden = morphMany.relatedModel.getHidden();
 
 		if (morphMany.options?.select) {
-			const select = LookupBuilder.select(
+			const select = LookupBuilder.select<T>(
 				morphMany.options.select,
 				morphMany.alias,
 			);
@@ -201,18 +201,25 @@ export class MorphMany<T = any, M = any> extends QueryBuilder<M> {
 		}
 
 		if (morphMany.options?.exclude) {
-			hidden.push(...morphMany.options.exclude);
+			const excludeArray = Array.isArray(morphMany.options.exclude)
+				? morphMany.options.exclude
+				: [morphMany.options.exclude];
+			hidden.push(...excludeArray);
 		}
 
 		if (morphMany.options.makeVisible) {
+			const makeVisibleArray = Array.isArray(morphMany.options.makeVisible)
+				? morphMany.options.makeVisible
+				: [morphMany.options.makeVisible];
+
 			hidden = hidden.filter(
-				(el) => !morphMany.options.makeVisible?.includes(el as string),
+				(el) => !makeVisibleArray.map(v => String(v)).includes(String(el)),
 			);
-		}
+    }
 
 		if (hidden.length > 0) {
-			const exclude = LookupBuilder.exclude(
-				hidden as string[],
+			const exclude = LookupBuilder.exclude<T>(
+				hidden,
 				morphMany.alias,
 			);
 			lookup.push(...exclude);
@@ -221,7 +228,7 @@ export class MorphMany<T = any, M = any> extends QueryBuilder<M> {
 		return lookup;
 	}
 
-	static lookup(morphMany: IRelationshipMorphMany): Document[] {
+	static lookup<T>(morphMany: IRelationshipMorphMany<T>): Document[] {
 		const lookup: Document[] = [{ $project: { alias: 0 } }];
 		const pipeline: Document[] = [];
 		const alias = morphMany.alias || "alias";
@@ -260,7 +267,7 @@ export class MorphMany<T = any, M = any> extends QueryBuilder<M> {
 		}
 
 		if (morphMany.options?.sort) {
-			const sort = LookupBuilder.sort(
+			const sort = LookupBuilder.sort<T>(
 				morphMany.options?.sort[0],
 				morphMany.options?.sort[1],
 			);
