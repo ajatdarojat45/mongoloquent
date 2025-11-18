@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.10.0](https://github.com/ajatdarojat45/mongoloquent/compare/v3.9.3...v3.10.0) (2025-11-18)
+
+### Features
+
+- add generic type support for relationship methods in Model class ([cc7ede2](https://github.com/ajatdarojat45/mongoloquent/commit/cc7ede234db8fa470ff28e39772ed5b317d1ba36))
+- add generic type support to generate and lookup methods in BelongsTo relationship ([cdcc2ad](https://github.com/ajatdarojat45/mongoloquent/commit/cdcc2ad4728751b87f5d5acf80e4071b4d6739d8))
+- add generic type support to generate and lookup methods in BelongsToMany relationship ([0b8eb40](https://github.com/ajatdarojat45/mongoloquent/commit/0b8eb406c36d1e3b087bd60f0bb1597e7f865d1f))
+- add generic type support to generate and lookup methods in HasMany relationship ([98abefa](https://github.com/ajatdarojat45/mongoloquent/commit/98abefafb250fe7a0ce99bdd41f942f47f272997))
+- add generic type support to generate and lookup methods in HasManyThrough relationship ([62ee367](https://github.com/ajatdarojat45/mongoloquent/commit/62ee367a7985f014ddaebdf685fda47b7ba8970a))
+- add generic type support to generate and lookup methods in HasOne relationship ([18d2a56](https://github.com/ajatdarojat45/mongoloquent/commit/18d2a56cc385a39d0aa0fb8dfcf0d4f02215eedb))
+- add generic type support to generate and lookup methods in MorphedByMany relationship ([ff630c9](https://github.com/ajatdarojat45/mongoloquent/commit/ff630c9b16d121868a531d2c77db1d3902a97ce6))
+- add generic type support to generate and lookup methods in MorphMany relationship ([f5290a6](https://github.com/ajatdarojat45/mongoloquent/commit/f5290a618bb1fd21f8aad680389247c46618722d))
+- add generic type support to generate and lookup methods in MorphTo relationship ([438b236](https://github.com/ajatdarojat45/mongoloquent/commit/438b236f5c33c940a515ad67f4633e5f33a248a8))
+- add generic type support to generate and lookup methods in MorphToMany relationship ([4e1ba99](https://github.com/ajatdarojat45/mongoloquent/commit/4e1ba99cccfcc5e48f021b6755374e6f448b9bb8))
+- add generic type support to LookupBuilder methods ([f6481e3](https://github.com/ajatdarojat45/mongoloquent/commit/f6481e33529f8386fc45cc15b77f7342072b1ee8))
+- enhance relationship interfaces with generic model support ([81de5ff](https://github.com/ajatdarojat45/mongoloquent/commit/81de5ffbb0a7145abd9b5e5122a25bcc16bf1314))
+
 ### [3.9.3](https://github.com/ajatdarojat45/mongoloquent/compare/v3.9.2...v3.9.3) (2025-11-18)
 
 ### Bug Fixes
