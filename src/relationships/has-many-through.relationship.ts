@@ -114,12 +114,12 @@ export class HasManyThrough<
 		this.whereIn(this.foreignKeyThrough, hmtIds);
 	}
 
-	static generate(hasManyThrough: IRelationshipHasManyThrough): Document[] {
-		const lookup = this.lookup(hasManyThrough);
+	static generate<T>(hasManyThrough: IRelationshipHasManyThrough<T>): Document[] {
+		const lookup = this.lookup<T>(hasManyThrough);
 		let hidden = hasManyThrough.relatedModel.getHidden();
 
 		if (hasManyThrough.options?.select) {
-			const select = LookupBuilder.select(
+			const select = LookupBuilder.select<T>(
 				hasManyThrough.options.select,
 				hasManyThrough.alias,
 			);
@@ -127,18 +127,25 @@ export class HasManyThrough<
 		}
 
 		if (hasManyThrough.options?.exclude) {
-			hidden.push(...hasManyThrough.options.exclude);
+			const excludeArray = Array.isArray(hasManyThrough.options.exclude)
+				? hasManyThrough.options.exclude
+				: [hasManyThrough.options.exclude];
+			hidden.push(...excludeArray);
 		}
 
 		if (hasManyThrough.options.makeVisible) {
+			const makeVisibleArray = Array.isArray(hasManyThrough.options.makeVisible)
+				? hasManyThrough.options.makeVisible
+				: [hasManyThrough.options.makeVisible];
+
 			hidden = hidden.filter(
-				(el) => !hasManyThrough.options.makeVisible?.includes(el as string),
+				(el) => !makeVisibleArray.map(v => String(v)).includes(String(el)),
 			);
-		}
+    }
 
 		if (hidden.length > 0) {
-			const exclude = LookupBuilder.exclude(
-				hidden as string[],
+			const exclude = LookupBuilder.exclude<T>(
+				hidden,
 				hasManyThrough.alias,
 			);
 			lookup.push(...exclude);
@@ -147,7 +154,7 @@ export class HasManyThrough<
 		return lookup;
 	}
 
-	static lookup(hasManyThrough: IRelationshipHasManyThrough): Document[] {
+	static lookup<T>(hasManyThrough: IRelationshipHasManyThrough<T>): Document[] {
 		const lookup: Document[] = [];
 		const pipeline: Document[] = [];
 

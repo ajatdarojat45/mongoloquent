@@ -96,12 +96,12 @@ export class MorphTo<T = any, M = any> extends QueryBuilder<M> {
 		);
 	}
 
-	static generate(morphTo: IRelationshipMorphTo): Document[] {
-		const lookup = this.lookup(morphTo);
+	static generate<T>(morphTo: IRelationshipMorphTo<T>): Document[] {
+		const lookup = this.lookup<T>(morphTo);
 		let hidden = morphTo.relatedModel.getHidden();
 
 		if (morphTo.options?.select) {
-			const select = LookupBuilder.select(
+			const select = LookupBuilder.select<T>(
 				morphTo.options.select,
 				morphTo.alias,
 			);
@@ -109,24 +109,31 @@ export class MorphTo<T = any, M = any> extends QueryBuilder<M> {
 		}
 
 		if (morphTo.options?.exclude) {
-			hidden.push(...morphTo.options.exclude);
+			const excludeArray = Array.isArray(morphTo.options.exclude)
+				? morphTo.options.exclude
+				: [morphTo.options.exclude];
+			hidden.push(...excludeArray);
 		}
 
 		if (morphTo.options.makeVisible) {
+			const makeVisibleArray = Array.isArray(morphTo.options.makeVisible)
+				? morphTo.options.makeVisible
+				: [morphTo.options.makeVisible];
+
 			hidden = hidden.filter(
-				(el) => !morphTo.options.makeVisible?.includes(el as string),
+				(el) => !makeVisibleArray.map(v => String(v)).includes(String(el)),
 			);
-		}
+    }
 
 		if (hidden.length > 0) {
-			const exclude = LookupBuilder.exclude(hidden as string[], morphTo.alias);
+			const exclude = LookupBuilder.exclude<T>(hidden, morphTo.alias);
 			lookup.push(...exclude);
 		}
 
 		return lookup;
 	}
 
-	static lookup(morphTo: IRelationshipMorphTo): Document[] {
+	static lookup<T>(morphTo: IRelationshipMorphTo<T>): Document[] {
 		const alias = morphTo.alias || "alias";
 		const lookup: Document[] = [{ $project: { alias: 0 } }];
 		const pipeline: Document[] = [];

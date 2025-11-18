@@ -1,9 +1,9 @@
 import { Document } from "mongodb";
 
 export class LookupBuilder {
-	static select(columns: string | string[], alias: string): Document[] {
+	public static select<T>(columns: keyof T | (keyof T)[], alias: string): Document[] {
 		const lookup: Document[] = [];
-		const _columns: string[] = [];
+		const _columns: (keyof T)[] = [];
 		const pipeline: any = [];
 		let project = {
 			$project: {
@@ -12,14 +12,14 @@ export class LookupBuilder {
 		};
 
 		if (typeof columns === "string") _columns.push(columns);
-		else _columns.push(...columns);
+		else if (Array.isArray(columns)) _columns.push(...columns);
 
 		_columns.forEach((el) => {
 			project = {
 				...project,
 				$project: {
 					...project.$project,
-					[`${alias}.${el}`]: 1,
+					[`${alias}.${String(el)}`]: 1,
 				},
 			};
 		});
@@ -42,12 +42,12 @@ export class LookupBuilder {
 		return lookup;
 	}
 
-	static exclude(columns: string | string[], alias: string): Document[] {
+	public static exclude<T>(columns: keyof T | (keyof T)[], alias: string): Document[] {
 		const lookup: Document[] = [];
-		const _columns: string[] = [];
-		// Convert columns to an array if it's a string
+		const _columns: (keyof T)[] = [];
+
 		if (typeof columns === "string") _columns.push(columns);
-		else _columns.push(...columns);
+		else if (Array.isArray(columns)) _columns.push(...columns);
 
 		let project = {
 			$project: {},
@@ -68,7 +68,7 @@ export class LookupBuilder {
 		return lookup;
 	}
 
-	static sort(column: string, sort: "asc" | "desc"): Document {
+	public static sort<T>(column: keyof T | (string & {}), sort: "asc" | "desc"): Document {
 		const _sort = sort === "asc" ? 1 : -1;
 		const $sort = {
 			[column]: _sort,
@@ -77,11 +77,11 @@ export class LookupBuilder {
 		return { $sort };
 	}
 
-	static skip(skip: number): Document {
+	public static skip(skip: number): Document {
 		return { $skip: skip };
 	}
 
-	static limit(limit: number): Document {
+	public static limit(limit: number): Document {
 		return { $limit: limit };
 	}
 }
