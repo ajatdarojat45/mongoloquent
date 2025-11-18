@@ -28,6 +28,8 @@ import {
 	MorphMany,
 	MorphTo,
 	MorphToMany,
+	RelationshipKeys,
+	ExtractRelationshipType,
 } from "../../index";
 import { QueryBuilder } from "../query-builders";
 
@@ -452,10 +454,20 @@ export class Model<T = any> extends QueryBuilder<T> {
 		return this.query().sum(column);
 	}
 
+	public static with<M extends typeof Model<any>, K extends RelationshipKeys<InstanceType<M>> & string>(
+		this: M,
+		relation: K,
+		options?: IRelationshipOptions<ExtractRelationshipType<InstanceType<M>, K>>,
+	): Model<M["$schema"]>;
+	public static with<M extends typeof Model<any>>(
+		this: M,
+		relation: Record<RelationshipKeys<InstanceType<M>> & string, string[]>,
+		options?: IRelationshipOptions<any>,
+	): Model<M["$schema"]>;
 	public static with<M extends typeof Model<any>>(
 		this: M,
 		relation: string | Record<string, string[]>,
-		options: IRelationshipOptions = {},
+		options: IRelationshipOptions<M> = {},
 	) {
 		const model = this.query();
 		model.setOptions(options);
@@ -486,16 +498,26 @@ export class Model<T = any> extends QueryBuilder<T> {
 		return model;
 	}
 
-	public with(
-		relation: string | Record<string, string[]>,
-		options: IRelationshipOptions = {},
-	) {
+	public with<K extends RelationshipKeys<this> & string>(
+        relation: K,
+        options?: IRelationshipOptions<ExtractRelationshipType<this, K>>,
+    ): this;
+    public with(
+        relation: Record<RelationshipKeys<this> & string, string[]>,
+        options?: IRelationshipOptions<any>,
+    ): this;
+    public with(
+        relation:
+            | (RelationshipKeys<this> & string)
+            | Record<RelationshipKeys<this> & string, string[]>,
+        options: IRelationshipOptions<any> = {},
+    ) {
 		this.setOptions(options);
 
 		if (typeof relation === "string") {
 			const [_relation, ...rest] = relation.split(".");
 			if (relation.includes(".")) {
-				relation = _relation;
+				relation = _relation as RelationshipKeys<this> & string;
 				this.$nested = [...this.$nested, ...rest];
 			}
 
@@ -507,7 +529,7 @@ export class Model<T = any> extends QueryBuilder<T> {
 		} else if (typeof relation === "object") {
 			for (const key in relation) {
 				this.setAlias(key);
-				this.$nested = relation[key];
+				this.$nested = relation[key as keyof typeof relation];
 
 				if (typeof this[key] === "function") {
 					this[key]();
@@ -529,7 +551,7 @@ export class Model<T = any> extends QueryBuilder<T> {
 			foreignKey = (this.constructor.name.toLowerCase() + "Id") as keyof M;
 		if (!localKey) localKey = "_id" as keyof T;
 
-		const hasMany: IRelationshipHasMany = {
+		const hasMany: IRelationshipHasMany<M> = {
 			type: IRelationshipTypes.hasMany,
 			model: this,
 			relatedModel: relation,
@@ -538,7 +560,7 @@ export class Model<T = any> extends QueryBuilder<T> {
 			alias: this.getAlias(),
 			options: this.getOptions(),
 		};
-		const lookups = HasMany.generate(hasMany);
+		const lookups = HasMany.generate<M>(hasMany);
 		this.setLookups([...this.getLookups(), ...lookups]);
 
 		return new HasMany<T, M>(this, relation, foreignKey, localKey);
@@ -556,7 +578,7 @@ export class Model<T = any> extends QueryBuilder<T> {
 
 		if (!localKey) localKey = "_id" as keyof T;
 
-		const hasOne: IRelationshipHasOne = {
+		const hasOne: IRelationshipHasOne<M> = {
 			type: IRelationshipTypes.hasOne,
 			model: this,
 			relatedModel: relation,
@@ -565,7 +587,7 @@ export class Model<T = any> extends QueryBuilder<T> {
 			alias: this.getAlias(),
 			options: this.getOptions(),
 		};
-		const lookups = HasOne.generate(hasOne);
+		const lookups = HasOne.generate<M>(hasOne);
 		this.setLookups([...this.getLookups(), ...lookups]);
 
 		return new HasOne<T, M>(this, relation, foreignKey, localKey);
@@ -582,7 +604,7 @@ export class Model<T = any> extends QueryBuilder<T> {
 			foreignKey = (relation.constructor.name.toLowerCase() + "Id") as keyof T;
 		if (!ownerKey) ownerKey = "_id" as keyof M;
 
-		const belongsTo: IRelationshipBelongsTo = {
+		const belongsTo: IRelationshipBelongsTo<M> = {
 			type: IRelationshipTypes.belongsTo,
 			model: this,
 			relatedModel: relation,
@@ -591,7 +613,7 @@ export class Model<T = any> extends QueryBuilder<T> {
 			alias: this.getAlias(),
 			options: this.getOptions(),
 		};
-		const lookupsBelongsTo = BelongsTo.generate(belongsTo);
+		const lookupsBelongsTo = BelongsTo.generate<M>(belongsTo);
 		this.setLookups([...this.getLookups(), ...lookupsBelongsTo]);
 
 		return new BelongsTo<T, M>(this, relation, foreignKey, ownerKey);
@@ -614,7 +636,7 @@ export class Model<T = any> extends QueryBuilder<T> {
 			foreignKeyThrough = (through.constructor.name.toLowerCase() +
 				"Id") as keyof M;
 
-		const hasManyThrough: IRelationshipHasManyThrough = {
+		const hasManyThrough: IRelationshipHasManyThrough<M> = {
 			type: IRelationshipTypes.hasManyThrough,
 			model: this,
 			relatedModel: relation,
@@ -626,7 +648,7 @@ export class Model<T = any> extends QueryBuilder<T> {
 			alias: this.getAlias(),
 			options: this.getOptions(),
 		};
-		const lookups = HasManyThrough.generate(hasManyThrough);
+		const lookups = HasManyThrough.generate<M>(hasManyThrough);
 		this.setLookups([...this.getLookups(), ...lookups]);
 
 		return new HasManyThrough<T, M, TM>(
@@ -666,7 +688,7 @@ export class Model<T = any> extends QueryBuilder<T> {
 			relatedPivotKey = (relation.constructor.name.toLowerCase() +
 				"Id") as keyof TM;
 
-		const belongsToMany: IRelationshipBelongsToMany = {
+		const belongsToMany: IRelationshipBelongsToMany<M> = {
 			type: IRelationshipTypes.belongsToMany,
 			model: this,
 			relatedModel: relation,
@@ -678,7 +700,7 @@ export class Model<T = any> extends QueryBuilder<T> {
 			alias: this.getAlias(),
 			options: this.getOptions(),
 		};
-		const lookups = BelongsToMany.generate(belongsToMany);
+		const lookups = BelongsToMany.generate<M>(belongsToMany);
 		this.setLookups([...this.getLookups(), ...lookups]);
 
 		return new BelongsToMany<T, M, TM>(
@@ -694,7 +716,7 @@ export class Model<T = any> extends QueryBuilder<T> {
 
 	public morphMany<M>(model: new () => Model<M>, name: string) {
 		const relation = new model();
-		const morphMany: IRelationshipMorphMany = {
+		const morphMany: IRelationshipMorphMany<M> = {
 			type: IRelationshipTypes.morphMany,
 			model: this,
 			relatedModel: relation,
@@ -705,14 +727,14 @@ export class Model<T = any> extends QueryBuilder<T> {
 			options: this.getOptions(),
 		};
 
-		const lookups = MorphMany.generate(morphMany);
+		const lookups = MorphMany.generate<M>(morphMany);
 		this.setLookups([...this.getLookups(), ...lookups]);
 		return new MorphMany<T, M>(this, relation, name);
 	}
 
 	public morphTo<M>(model: new () => Model<M>, name: string) {
 		const relation = new model();
-		const morphTo: IRelationshipMorphTo = {
+		const morphTo: IRelationshipMorphTo<M> = {
 			type: IRelationshipTypes.morphTo,
 			model: this,
 			relatedModel: relation,
@@ -722,7 +744,7 @@ export class Model<T = any> extends QueryBuilder<T> {
 			alias: this.getAlias(),
 			options: this.getOptions(),
 		};
-		const lookups = MorphTo.generate(morphTo);
+		const lookups = MorphTo.generate<M>(morphTo);
 		this.setLookups([...this.getLookups(), ...lookups]);
 
 		return new MorphTo<T, M>(this, relation, name);
@@ -731,7 +753,7 @@ export class Model<T = any> extends QueryBuilder<T> {
 	public morphToMany<M>(model: new () => Model<M>, name: string) {
 		const relation = new model();
 
-		const morphToMany: IRelationshipMorphToMany = {
+		const morphToMany: IRelationshipMorphToMany<M> = {
 			type: IRelationshipTypes.morphToMany,
 			model: this,
 			relatedModel: relation,
@@ -742,7 +764,7 @@ export class Model<T = any> extends QueryBuilder<T> {
 			alias: this.getAlias(),
 			options: this.getOptions(),
 		};
-		const lookups = MorphToMany.generate(morphToMany);
+		const lookups = MorphToMany.generate<M>(morphToMany);
 		this.setLookups([...this.getLookups(), ...lookups]);
 
 		return new MorphToMany<T, M>(this, relation, name);
@@ -751,7 +773,7 @@ export class Model<T = any> extends QueryBuilder<T> {
 	public morphedByMany<M>(model: new () => Model<M>, name: string) {
 		const relation = new model();
 
-		const morphedByMany: IRelationshipMorphedByMany = {
+		const morphedByMany: IRelationshipMorphedByMany<M> = {
 			type: IRelationshipTypes.morphedByMany,
 			model: this,
 			relatedModel: relation,
@@ -762,7 +784,7 @@ export class Model<T = any> extends QueryBuilder<T> {
 			alias: this.getAlias(),
 			options: this.getOptions(),
 		};
-		const lookups = MorphedByMany.generate(morphedByMany);
+		const lookups = MorphedByMany.generate<M>(morphedByMany);
 		this.setLookups([...this.getLookups(), ...lookups]);
 
 		return new MorphedByMany<T, M>(this, relation, name);
@@ -817,7 +839,7 @@ export class Model<T = any> extends QueryBuilder<T> {
 		}
 
 		_with.forEach((el) => {
-			this.with(el);
+			this.with(el as RelationshipKeys<this> & string);
 		});
 		return this;
 	}
