@@ -63,7 +63,7 @@ export class BelongsToMany<T = any, M = any, PM = any> extends QueryBuilder<M> {
 	public async paginate(
 		page: number = 1,
 		limit: number = 15,
-	): Promise<IQueryBuilderPaginated> {
+	): Promise<IQueryBuilderPaginated<Collection<M>>> {
 		await this.setDefaultCondition();
 		return super.paginate(page, limit);
 	}

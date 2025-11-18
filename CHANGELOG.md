@@ -2,12 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-### [3.9.2](https://github.com/ajatdarojat45/mongoloquent/compare/v3.9.1...v3.9.2) (2025-11-17)
-
+### [3.9.3](https://github.com/ajatdarojat45/mongoloquent/compare/v3.9.2...v3.9.3) (2025-11-18)
 
 ### Bug Fixes
 
-* update paginate method return type and setColumns visibility ([66f324a](https://github.com/ajatdarojat45/mongoloquent/commit/66f324a9bcc128898a8e5a3d9a7e5d7ce88db9cc))
+- update paginate method return type to include Collection<M> ([b116310](https://github.com/ajatdarojat45/mongoloquent/commit/b116310b3124d231b557f23e320d784167ec7bf1))
+- update paginate method return type to include Collection<M> ([69b84f0](https://github.com/ajatdarojat45/mongoloquent/commit/69b84f0ad66f8dc98204850c8097acf37138576a))
+- update paginate method return type to include Collection<M> ([5aa6f86](https://github.com/ajatdarojat45/mongoloquent/commit/5aa6f863e2558eec4d5890864de4d35dd4d764e9))
+- update paginate method return type to include Collection<M> ([017cb3b](https://github.com/ajatdarojat45/mongoloquent/commit/017cb3b5a5b65457c44e040c3a8b35adaa6e13ed))
+- update paginate method return type to include Collection<M> ([794faa5](https://github.com/ajatdarojat45/mongoloquent/commit/794faa524c181b0eff00ea521cfa02eba7e00e3c))
+- update paginate method return type to include Collection<M> ([b498992](https://github.com/ajatdarojat45/mongoloquent/commit/b498992e482ee6a887d3d5a73504e9895ffb6ece))
+- update paginate method return type to include Collection<M> ([6c8fa66](https://github.com/ajatdarojat45/mongoloquent/commit/6c8fa66a642a8decb26465c271d32eff6739d84c))
+- update paginate method return type to include Collection<M> ([28ad790](https://github.com/ajatdarojat45/mongoloquent/commit/28ad790f4aad7505aaea01ea840d7585034f02bd))
+- update paginate method return type to include Collection<M> ([b8390f5](https://github.com/ajatdarojat45/mongoloquent/commit/b8390f585d461940e302f9782855e1b4e565cfa6))
+
+### [3.9.2](https://github.com/ajatdarojat45/mongoloquent/compare/v3.9.1...v3.9.2) (2025-11-17)
+
+### Bug Fixes
+
+- update paginate method return type and setColumns visibility ([66f324a](https://github.com/ajatdarojat45/mongoloquent/commit/66f324a9bcc128898a8e5a3d9a7e5d7ce88db9cc))
 
 ### [3.9.1](https://github.com/ajatdarojat45/mongoloquent/compare/v3.9.0...v3.9.1) (2025-08-23)
 

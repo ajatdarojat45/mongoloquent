@@ -49,7 +49,7 @@ export class HasOne<T = any, M = any> extends QueryBuilder<M> {
 	public paginate(
 		page: number = 1,
 		limit: number = 15,
-	): Promise<IQueryBuilderPaginated> {
+	): Promise<IQueryBuilderPaginated<Collection<M>>> {
 		this.where(this.foreignKey, this.model["$original"][this.localKey]);
 		return super.paginate(page, limit);
 	}

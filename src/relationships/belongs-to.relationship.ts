@@ -49,7 +49,7 @@ export class BelongsTo<T = any, M = any> extends QueryBuilder<M> {
 	public paginate(
 		page: number = 1,
 		limit: number = 15,
-	): Promise<IQueryBuilderPaginated> {
+	): Promise<IQueryBuilderPaginated<Collection<M>>> {
 		this.where(this.ownerKey, this.model["$original"][this.foreignKey]);
 		return super.paginate(page, limit);
 	}
