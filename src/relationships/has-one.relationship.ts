@@ -86,33 +86,40 @@ export class HasOne<T = any, M = any> extends QueryBuilder<M> {
 		return super.avg(field);
 	}
 
-	static generate(hasOne: IRelationshipHasOne): Document[] {
-		const lookup = this.lookup(hasOne);
+	static generate<T>(hasOne: IRelationshipHasOne<T>): Document[] {
+		const lookup = this.lookup<T>(hasOne);
 		let hidden = hasOne.relatedModel.getHidden();
 
 		if (hasOne.options?.select) {
-			const select = LookupBuilder.select(hasOne.options.select, hasOne.alias);
+			const select = LookupBuilder.select<T>(hasOne.options.select, hasOne.alias);
 			lookup.push(...select);
 		}
 
 		if (hasOne.options?.exclude) {
-			hidden.push(...hasOne.options.exclude);
+			const excludeArray = Array.isArray(hasOne.options.exclude)
+				? hasOne.options.exclude
+				: [hasOne.options.exclude];
+			hidden.push(...excludeArray);
 		}
 
 		if (hasOne.options.makeVisible) {
+			const makeVisibleArray = Array.isArray(hasOne.options.makeVisible)
+				? hasOne.options.makeVisible
+				: [hasOne.options.makeVisible];
+
 			hidden = hidden.filter(
-				(el) => !hasOne.options.makeVisible?.includes(el as string),
+				(el) => !makeVisibleArray.map(v => String(v)).includes(String(el)),
 			);
-		}
+    }
 
 		if (hidden.length > 0) {
-			const exclude = LookupBuilder.exclude(hidden as string[], hasOne.alias);
+			const exclude = LookupBuilder.exclude<T>(hidden, hasOne.alias);
 			lookup.push(...exclude);
 		}
 		return lookup;
 	}
 
-	static lookup(hasOne: IRelationshipHasOne): Document[] {
+	static lookup<T>(hasOne: IRelationshipHasOne<T>): Document[] {
 		const lookup: Document[] = [];
 		const pipeline: Document[] = [];
 
