@@ -101,12 +101,12 @@ export class BelongsTo<T = any, M = any> extends QueryBuilder<M> {
 		return this.model;
 	}
 
-	public static generate(belongsTo: IRelationshipBelongsTo): Document[] {
-		const lookup = this.lookup(belongsTo);
+	public static generate<T>(belongsTo: IRelationshipBelongsTo<T>): Document[] {
+		const lookup = this.lookup<T>(belongsTo);
 		let hidden = belongsTo.relatedModel.getHidden();
 
 		if (belongsTo.options?.select) {
-			const select = LookupBuilder.select(
+			const select = LookupBuilder.select<T>(
 				belongsTo.options.select,
 				belongsTo.alias,
 			);
@@ -114,18 +114,25 @@ export class BelongsTo<T = any, M = any> extends QueryBuilder<M> {
 		}
 
 		if (belongsTo.options?.exclude) {
-			hidden.push(...belongsTo.options.exclude);
+			const excludeArray = Array.isArray(belongsTo.options.exclude)
+				? belongsTo.options.exclude
+				: [belongsTo.options.exclude];
+			hidden.push(...excludeArray);
 		}
 
 		if (belongsTo.options.makeVisible) {
+			const makeVisibleArray = Array.isArray(belongsTo.options.makeVisible)
+				? belongsTo.options.makeVisible
+				: [belongsTo.options.makeVisible];
+
 			hidden = hidden.filter(
-				(el) => !belongsTo.options.makeVisible?.includes(el as string),
+				(el) => !makeVisibleArray.map(v => String(v)).includes(String(el)),
 			);
-		}
+    }
 
 		if (hidden.length > 0) {
-			const exclude = LookupBuilder.exclude(
-				hidden as string[],
+			const exclude = LookupBuilder.exclude<T>(
+				hidden,
 				belongsTo.alias,
 			);
 			lookup.push(...exclude);
@@ -134,7 +141,7 @@ export class BelongsTo<T = any, M = any> extends QueryBuilder<M> {
 		return lookup;
 	}
 
-	static lookup(belongsTo: IRelationshipBelongsTo): Document[] {
+	static lookup<T>(belongsTo: IRelationshipBelongsTo<T>): Document[] {
 		const lookup: Document[] = [];
 		const pipeline: Document[] = [];
 
