@@ -152,12 +152,12 @@ export class HasMany<T = any, M = any> extends QueryBuilder<M> {
 		return super.avg(field);
 	}
 
-	public static generate(hasMany: IRelationshipHasMany): Document[] {
-		const lookup = this.lookup(hasMany);
+	public static generate<T>(hasMany: IRelationshipHasMany<T>): Document[] {
+		const lookup = this.lookup<T>(hasMany);
 		let hidden = hasMany.relatedModel.getHidden();
 
 		if (hasMany.options?.select) {
-			const select = LookupBuilder.select(
+			const select = LookupBuilder.select<T>(
 				hasMany.options.select,
 				hasMany.alias,
 			);
@@ -165,23 +165,30 @@ export class HasMany<T = any, M = any> extends QueryBuilder<M> {
 		}
 
 		if (hasMany.options?.exclude) {
-			hidden.push(...hasMany.options.exclude);
+			const excludeArray = Array.isArray(hasMany.options.exclude)
+				? hasMany.options.exclude
+				: [hasMany.options.exclude];
+			hidden.push(...excludeArray);
 		}
 
 		if (hasMany.options.makeVisible) {
+			const makeVisibleArray = Array.isArray(hasMany.options.makeVisible)
+				? hasMany.options.makeVisible
+				: [hasMany.options.makeVisible];
+
 			hidden = hidden.filter(
-				(el) => !hasMany.options.makeVisible?.includes(el as string),
+				(el) => !makeVisibleArray.map(v => String(v)).includes(String(el)),
 			);
-		}
+    }
 
 		if (hidden.length > 0) {
-			const exclude = LookupBuilder.exclude(hidden as string[], hasMany.alias);
+			const exclude = LookupBuilder.exclude<T>(hidden, hasMany.alias);
 			lookup.push(...exclude);
 		}
 		return lookup;
 	}
 
-	public static lookup(hasMany: IRelationshipHasMany): Document[] {
+	public static lookup<T>(hasMany: IRelationshipHasMany<T>): Document[] {
 		const lookup: Document[] = [];
 		const pipeline: Document[] = [];
 
@@ -196,7 +203,7 @@ export class HasMany<T = any, M = any> extends QueryBuilder<M> {
 		}
 
 		if (hasMany.options?.sort) {
-			const sort = LookupBuilder.sort(
+			const sort = LookupBuilder.sort<T>(
 				hasMany.options?.sort[0],
 				hasMany.options?.sort[1],
 			);
