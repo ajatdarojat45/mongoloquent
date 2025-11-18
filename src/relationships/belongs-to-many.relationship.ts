@@ -462,12 +462,12 @@ export class BelongsToMany<T = any, M = any, PM = any> extends QueryBuilder<M> {
 		this.whereIn(this.relatedKey, btmIds);
 	}
 
-	static generate(belongsToMany: IRelationshipBelongsToMany): Document[] {
-		const lookup = this.lookup(belongsToMany);
+	static generate<T>(belongsToMany: IRelationshipBelongsToMany<T>): Document[] {
+		const lookup = this.lookup<T>(belongsToMany);
 		let hidden = belongsToMany.relatedModel.getHidden();
 
 		if (belongsToMany.options?.select) {
-			const select = LookupBuilder.select(
+			const select = LookupBuilder.select<T>(
 				belongsToMany.options.select,
 				belongsToMany.alias,
 			);
@@ -475,18 +475,25 @@ export class BelongsToMany<T = any, M = any, PM = any> extends QueryBuilder<M> {
 		}
 
 		if (belongsToMany.options?.exclude) {
-			hidden.push(...belongsToMany.options.exclude);
+			const excludeArray = Array.isArray(belongsToMany.options.exclude)
+				? belongsToMany.options.exclude
+				: [belongsToMany.options.exclude];
+			hidden.push(...excludeArray);
 		}
 
 		if (belongsToMany.options.makeVisible) {
+			const makeVisibleArray = Array.isArray(belongsToMany.options.makeVisible)
+				? belongsToMany.options.makeVisible
+				: [belongsToMany.options.makeVisible];
+
 			hidden = hidden.filter(
-				(el) => !belongsToMany.options.makeVisible?.includes(el as string),
+				(el) => !makeVisibleArray.map(v => String(v)).includes(String(el)),
 			);
-		}
+    }
 
 		if (hidden.length > 0) {
-			const exclude = LookupBuilder.exclude(
-				hidden as string[],
+			const exclude = LookupBuilder.exclude<T>(
+				hidden,
 				belongsToMany.alias,
 			);
 			lookup.push(...exclude);
@@ -495,7 +502,7 @@ export class BelongsToMany<T = any, M = any, PM = any> extends QueryBuilder<M> {
 		return lookup;
 	}
 
-	static lookup(belongsToMany: IRelationshipBelongsToMany): Document[] {
+	static lookup<T>(belongsToMany: IRelationshipBelongsToMany<T>): Document[] {
 		const lookup: Document[] = [];
 		const pipeline: Document[] = [];
 
@@ -512,7 +519,7 @@ export class BelongsToMany<T = any, M = any, PM = any> extends QueryBuilder<M> {
 		}
 
 		if (belongsToMany.options?.sort) {
-			const sort = LookupBuilder.sort(
+			const sort = LookupBuilder.sort<T>(
 				belongsToMany.options?.sort[0],
 				belongsToMany.options?.sort[1],
 			);
