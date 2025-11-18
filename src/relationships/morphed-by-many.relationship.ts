@@ -107,12 +107,12 @@ export class MorphedByMany<T = any, M = any> extends QueryBuilder<M> {
 		this.whereIn("_id" as keyof M, mbmIds);
 	}
 
-	static generate(morphedByMany: IRelationshipMorphedByMany): Document[] {
-		const lookup = this.lookup(morphedByMany);
+	static generate<T>(morphedByMany: IRelationshipMorphedByMany<T>): Document[] {
+		const lookup = this.lookup<T>(morphedByMany);
 		let hidden = morphedByMany.relatedModel.getHidden();
 
 		if (morphedByMany.options?.select) {
-			const select = LookupBuilder.select(
+			const select = LookupBuilder.select<T>(
 				morphedByMany.options.select,
 				morphedByMany.alias,
 			);
@@ -120,18 +120,25 @@ export class MorphedByMany<T = any, M = any> extends QueryBuilder<M> {
 		}
 
 		if (morphedByMany.options?.exclude) {
-			hidden.push(...morphedByMany.options.exclude);
+			const excludeArray = Array.isArray(morphedByMany.options.exclude)
+				? morphedByMany.options.exclude
+				: [morphedByMany.options.exclude];
+			hidden.push(...excludeArray);
 		}
 
 		if (morphedByMany.options.makeVisible) {
+			const makeVisibleArray = Array.isArray(morphedByMany.options.makeVisible)
+				? morphedByMany.options.makeVisible
+				: [morphedByMany.options.makeVisible];
+
 			hidden = hidden.filter(
-				(el) => !morphedByMany.options.makeVisible?.includes(el as string),
+				(el) => !makeVisibleArray.map(v => String(v)).includes(String(el)),
 			);
-		}
+    }
 
 		if (hidden.length > 0) {
-			const exclude = LookupBuilder.exclude(
-				hidden as string[],
+			const exclude = LookupBuilder.exclude<T>(
+				hidden,
 				morphedByMany.alias,
 			);
 			lookup.push(...exclude);
@@ -140,7 +147,7 @@ export class MorphedByMany<T = any, M = any> extends QueryBuilder<M> {
 		return lookup;
 	}
 
-	static lookup(morphedByMany: IRelationshipMorphedByMany): Document[] {
+	static lookup<T>(morphedByMany: IRelationshipMorphedByMany<T>): Document[] {
 		const lookup: Document[] = [];
 		const pipeline: Document[] = [];
 
@@ -157,7 +164,7 @@ export class MorphedByMany<T = any, M = any> extends QueryBuilder<M> {
 		}
 
 		if (morphedByMany.options?.sort) {
-			const sort = LookupBuilder.sort(
+			const sort = LookupBuilder.sort<T>(
 				morphedByMany.options?.sort[0],
 				morphedByMany.options?.sort[1],
 			);
