@@ -9,10 +9,10 @@ import {
 import { Document } from "mongodb";
 
 export class BelongsTo<T = any, M = any> extends QueryBuilder<M> {
-	private model: Model<T>;
-	private relatedModel: Model<M>;
-	private foreignKey: keyof T;
-	private ownerKey: keyof M;
+	public model: Model<T>;
+	public relatedModel: Model<M>;
+	public foreignKey: keyof T;
+	public ownerKey: keyof M;
 
 	constructor(
 		model: Model<T>,
