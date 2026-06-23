@@ -482,7 +482,11 @@ export class Model<T = any> extends QueryBuilder<T> {
 			model.setAlias(relation);
 
 			if (typeof model[relation] === "function") {
-				model[relation]();
+				const relationshipModel: unknown = model[relation]();
+
+				if (model.isSupportedRelationship(relationshipModel)) {
+					model.buildRelationshipLookupPipeline(relationshipModel);
+				}
 			}
 		} else if (typeof relation === "object") {
 			for (const key in relation) {
@@ -490,7 +494,11 @@ export class Model<T = any> extends QueryBuilder<T> {
 				model.setNested(relation[key]);
 
 				if (typeof model[key] === "function") {
-					model[key]();
+					const relationshipModel: unknown = model[key]();
+
+					if (model.isSupportedRelationship(relationshipModel)) {
+						model.buildRelationshipLookupPipeline(relationshipModel);
+					}
 				}
 			}
 		}
@@ -524,7 +532,11 @@ export class Model<T = any> extends QueryBuilder<T> {
 			this.setAlias(relation);
 
 			if (typeof this[relation] === "function") {
-				this[relation]();
+				const relationshipModel: unknown = this[relation]();
+
+				if (this.isSupportedRelationship(relationshipModel)) {
+					this.buildRelationshipLookupPipeline(relationshipModel);
+				}
 			}
 		} else if (typeof relation === "object") {
 			for (const key in relation) {
@@ -532,7 +544,11 @@ export class Model<T = any> extends QueryBuilder<T> {
 				this.$nested = relation[key as keyof typeof relation];
 
 				if (typeof this[key] === "function") {
-					this[key]();
+					const relationshipModel: unknown = this[key]();
+
+					if (this.isSupportedRelationship(relationshipModel)) {
+						this.buildRelationshipLookupPipeline(relationshipModel);
+					}
 				}
 			}
 		}
@@ -896,5 +912,57 @@ export class Model<T = any> extends QueryBuilder<T> {
 	public addWithOnly(param: string): this {
 		this.$withOnly.push(param);
 		return this;
+	}
+
+	private isSupportedRelationship(model: unknown): boolean {
+		return (
+			model instanceof HasMany ||
+			model instanceof BelongsTo ||
+			model instanceof HasOne ||
+			model instanceof BelongsToMany ||
+			model instanceof HasManyThrough ||
+			model instanceof MorphMany ||
+			model instanceof MorphTo ||
+			model instanceof MorphToMany ||
+			model instanceof MorphedByMany
+		);
+	}
+
+	private buildRelationshipLookupPipeline(relationshipModel: any): void {
+		relationshipModel["checkSoftDelete"]()
+			["generateConditionsForMongoDBQuery"]()
+			["checkOffset"]()
+			["checkLimit"]();
+
+		const stages = relationshipModel.getStages();
+		relationshipModel.setStages([]);
+
+		relationshipModel["generateConditionsForMongoDBQuery"](true);
+		const nestedStages = this.getStages();
+		relationshipModel.setStages([]);
+
+		relationshipModel["generateHiddenForMongoDBQuery"]()
+			["generateExcludesForMongoDBQuery"]()
+			["generateColumnsForMongoDBQuery"]()
+			["generateOrdersForMongoDBQuery"]()
+			["generateGroupsForMongoDBQuery"]();
+
+		const projectionStages = relationshipModel.getStages();
+
+		const pipeline = [...stages, ...nestedStages, ...projectionStages];
+
+		relationshipModel["resetQueryProperties"]();
+
+		const alias = relationshipModel.model.getAlias();
+
+		this["$lookups"] = this["$lookups"].map((stage: any) => {
+			if ("$lookup" in stage && stage["$lookup"].as === alias) {
+				stage.$lookup.pipeline = [
+					...pipeline,
+					...(stage?.$lookup?.pipeline || [])
+				];
+			}
+			return stage;
+		});
 	}
 }
