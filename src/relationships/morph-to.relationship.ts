@@ -9,11 +9,11 @@ import { LookupBuilder } from "./lookup-builder.relationship";
 import { Document } from "mongodb";
 
 export class MorphTo<T = any, M = any> extends QueryBuilder<M> {
-	private model: Model<T>;
-	private relatedModel: Model<M>;
-	private morph: string;
-	private morphId: keyof T;
-	private morphType: keyof T;
+	public model: Model<T>;
+	public relatedModel: Model<M>;
+	public morph: string;
+	public morphId: keyof T;
+	public morphType: keyof T;
 
 	constructor(model: Model<T>, relatedModel: Model<M>, morph: string) {
 		super();

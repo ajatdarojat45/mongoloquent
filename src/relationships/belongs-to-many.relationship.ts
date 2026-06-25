@@ -15,13 +15,13 @@ import {
 } from "mongodb";
 
 export class BelongsToMany<T = any, M = any, PM = any> extends QueryBuilder<M> {
-	private model: Model<T>;
-	private relatedModel: Model<M>;
-	private pivotModel: Model<PM>;
-	private foreignPivotKey: keyof PM;
-	private relatedPivotKey: keyof PM;
-	private parentKey: keyof T;
-	private relatedKey: keyof M;
+	public model: Model<T>;
+	public relatedModel: Model<M>;
+	public pivotModel: Model<PM>;
+	public foreignPivotKey: keyof PM;
+	public relatedPivotKey: keyof PM;
+	public parentKey: keyof T;
+	public relatedKey: keyof M;
 
 	constructor(
 		model: Model<T>,

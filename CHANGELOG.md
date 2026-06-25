@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.11.0](https://github.com/ajatdarojat45/mongoloquent/compare/v3.10.0...v3.11.0) (2026-06-25)
+
+### Features
+
+- add scoped relationships to all relationships ([85be230](https://github.com/ajatdarojat45/mongoloquent/commit/85be230288f92c1ee6a55bea65db736acacb4a7f))
+
 ## [3.10.0](https://github.com/ajatdarojat45/mongoloquent/compare/v3.9.3...v3.10.0) (2025-11-18)
 
 ### Features
