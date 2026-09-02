@@ -7,11 +7,18 @@
 </p>
 
 <p align="center">
-<a href="https://www.npmjs.com/mongoloquent" target="_blank"><img src="https://img.shields.io/npm/v/mongoloquent.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/mongoloquent" target="_blank"><img src="https://img.shields.io/npm/l/mongoloquent.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/mongoloquent" target="_blank"><img src="https://img.shields.io/npm/dm/mongoloquent.svg" alt="NPM Downloads" /></a>
-<a href="https://github.com/sponsors/ajatdarojat45"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Github%20Sponsor-41B883.svg" alt="Support us"></a>
-
+    <a href="https://www.npmjs.com/@mongoloquent/core" target="_blank">
+        <img src="https://img.shields.io/npm/v/@mongoloquent/core.svg" alt="NPM Version" />
+    </a>
+    <a href="https://www.npmjs.com/@mongoloquent/core" target="_blank">
+        <img src="https://img.shields.io/npm/l/@mongoloquent/core.svg" alt="Package License" />
+    </a>
+    <a href="https://www.npmjs.com/@mongoloquent/core" target="_blank">
+        <img src="https://img.shields.io/npm/dm/@mongoloquent/core.svg" alt="NPM Downloads" />
+    </a>
+    <a href="https://github.com/sponsors/ajatdarojat45"  target="_blank">
+        <img src="https://img.shields.io/badge/Support%20us-Github%20Sponsor-41B883.svg" alt="Support us">
+    </a>
 </p>
 
 ## Description
@@ -45,10 +52,7 @@ Mongoloquent is an MIT-licensed open source project. It can grow thanks to the s
 
 <p align="center">
     <a href="https://youtube.com/@digicodeacademy" target="_blank">
-    <img height="50px" src="./assets/digicode.png"/>
-    </a>
-    <a href="https://ideacamp.id" target="_blank">
-    <img height="50px" src="./assets/ideacamp.png"/>
+        <img height="50px" src="./assets/digicode.png"/>
     </a>
 </p>
 
