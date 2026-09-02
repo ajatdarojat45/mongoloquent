@@ -827,14 +827,21 @@ export abstract class QueryBuilder<T = WithId<Document>> extends AbstractQueryBu
 	): Promise<number> {
 		try {
 			const collection = this.getMongoDBCollection();
-			//await this.checkRelation();
-			this.checkSoftDelete();
-			this.generateConditionsForMongoDBQuery();
+			this.checkSoftDelete().generateConditionsForMongoDBQuery();
 
 			const stages = this.getStages();
+			this.setStages([]);
+
+			const lookups = this.getLookups();
+			this.generateConditionsForMongoDBQuery(true);
+			const nestedStages = this.getStages();
+			this.setStages([]);
+
 			const aggregate = await collection
 				.aggregate([
 					...stages,
+					...lookups,
+					...nestedStages,
 					{
 						$group: {
 							_id: null,
@@ -844,7 +851,7 @@ export abstract class QueryBuilder<T = WithId<Document>> extends AbstractQueryBu
 							},
 						},
 					},
-				])
+				], this.getAggregateOptions())
 				.next();
 
 			this.resetQueryProperties();
