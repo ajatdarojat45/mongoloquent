@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.0.1](https://github.com/mongoloquent/core/compare/v4.0.0...v4.0.1) (2026-09-02)
+
+### Bug Fixes
+
+- change MongoClient serverApi strict mode to false ([43d6750](https://github.com/mongoloquent/core/commit/43d6750821d1bfe83fd3e6004179acd7fac95557))
+- enhance aggregate query to include lookups and nested stages ([81e38f2](https://github.com/mongoloquent/core/commit/81e38f26493fe9ccdf46e7c92091c4d55682a4dd))
+- update README.md with correct npm package links and badges ([f56a08d](https://github.com/mongoloquent/core/commit/f56a08d69e69d995d05affb55e9ea1435e193a95))
+
 ## [4.0.0](https://github.com/mongoloquent/core/compare/v3.15.0...v4.0.0) (2026-08-12)
 
 ## [3.15.0](https://github.com/ajatdarojat45/mongoloquent/compare/v3.14.0...v3.15.0) (2026-08-10)
