@@ -34,7 +34,7 @@ export class Database {
 		const client = new MongoClient(connection, {
 			serverApi: {
 				version: ServerApiVersion.v1,
-				strict: true,
+				strict: false,
 				deprecationErrors: true,
 			},
 		});
