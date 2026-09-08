@@ -100,6 +100,7 @@ export abstract class AbstractQueryBuilder<T = WithId<Document>> {
 	public abstract groupBy<K extends keyof T>(
 		...fields: (K | (string & {}) | (K | (string & {}))[])[]
 	): this;
+	public abstract allowDiskUse(allow?: boolean): this;
 
 	public abstract get<K extends keyof T>(
 		...fields: (K | (string & {}) | (K | (string & {}))[])[]
