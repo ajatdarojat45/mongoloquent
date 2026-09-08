@@ -226,21 +226,22 @@ export abstract class QueryBuilder<T = WithId<Document>> extends AbstractQueryBu
 
 	public async paginate(page: number = 1, limit: number = 15): Promise<IQueryBuilderPaginated<Collection<T>>> {
 		try {
-			this.checkSoftDelete().generateConditionsForMongoDBQuery();
+			this.checkSoftDelete()
+				.generateConditionsForMongoDBQuery()
+				.generateOrdersForMongoDBQuery("top");
 
 			const collection = this.getMongoDBCollection();
 			const stages = this.getStages();
 			const lookups = this.getLookups();
 			this.setStages([]);
 
-			this.generateConditionsForMongoDBQuery(true);
+			this.generateConditionsForMongoDBQuery(true).generateOrdersForMongoDBQuery("nested");
 			const nestedStages = this.getStages();
 			this.setStages([]);
 
 			this.generateHiddenForMongoDBQuery()
 				.generateExcludesForMongoDBQuery()
 				.generateColumnsForMongoDBQuery()
-				.generateOrdersForMongoDBQuery()
 				.generateGroupsForMongoDBQuery();
 			const projectionStages = this.getStages();
 
@@ -250,15 +251,18 @@ export abstract class QueryBuilder<T = WithId<Document>> extends AbstractQueryBu
 			);
 
 			let totalResult = await collection
-				.aggregate([
-					...stages,
-					...lookups,
-					...nestedStages,
-					...projectionStages,
-					{
-						$count: "total",
-					},
-				])
+				.aggregate(
+					[
+						...stages,
+						...lookups,
+						...nestedStages,
+						...projectionStages,
+						{
+							$count: "total",
+						},
+					],
+					this.getAggregateOptions(),
+				)
 				.next();
 			let total = 0;
 
@@ -886,21 +890,24 @@ export abstract class QueryBuilder<T = WithId<Document>> extends AbstractQueryBu
 
 	private async generateAggregateForMongoDBQuery() {
 		try {
-			this.checkSoftDelete().generateConditionsForMongoDBQuery().checkOffset().checkLimit();
+			this.checkSoftDelete()
+				.generateConditionsForMongoDBQuery()
+				.generateOrdersForMongoDBQuery("top")
+				.checkOffset()
+				.checkLimit();
 			const stages = this.getStages();
 			this.setStages([]);
 
 			const collection = this.getMongoDBCollection();
 			const lookups = this.getLookups();
 
-			this.generateConditionsForMongoDBQuery(true);
+			this.generateConditionsForMongoDBQuery(true).generateOrdersForMongoDBQuery("nested");
 			const nestedStages = this.getStages();
 			this.setStages([]);
 
 			this.generateHiddenForMongoDBQuery()
 				.generateExcludesForMongoDBQuery()
 				.generateColumnsForMongoDBQuery()
-				.generateOrdersForMongoDBQuery()
 				.generateGroupsForMongoDBQuery();
 			const projectionStages = this.getStages();
 
@@ -1103,13 +1110,37 @@ export abstract class QueryBuilder<T = WithId<Document>> extends AbstractQueryBu
 		return this;
 	}
 
-	private generateOrdersForMongoDBQuery(): this {
+	private generateOrdersForMongoDBQuery(mode: "all" | "top" | "nested" = "all"): this {
+		const orders = this.getOrders().filter(el => {
+			if (mode === "top") return !el.column.includes(".");
+			if (mode === "nested") return el.column.includes(".");
+			return true;
+		});
+
+		if (orders.length === 0) return this;
+
+		const hasCaseSensitive = orders.some(el => el.caseSensitive);
+
+		// Plain, case-sensitive sorts only need a single, bare `$sort` stage.
+		// Avoiding the `$project`/`$replaceRoot` wrapper keeps the memory
+		// footprint small and lets MongoDB use index-backed sorts.
+		if (!hasCaseSensitive) {
+			let $sort = {};
+
+			orders.forEach(el => {
+				const direction = el.order === "asc" ? 1 : -1;
+				$sort = { ...$sort, [el.column]: direction };
+			});
+
+			return this.addStage({ $sort });
+		}
+
 		let $project = {
 			document: "$$ROOT",
 		};
 		let $sort = {};
 
-		this.getOrders().forEach(el => {
+		orders.forEach(el => {
 			$project = { ...$project, [el.column]: 1 };
 			const direction = el.order === "asc" ? 1 : -1;
 
@@ -1125,16 +1156,13 @@ export abstract class QueryBuilder<T = WithId<Document>> extends AbstractQueryBu
 			} else $sort = { ...$sort, [el.column]: direction };
 		});
 
-		if (this.$orders.length > 0)
-			this.addStage({ $project })
-				.addStage({ $sort })
-				.addStage({
-					$replaceRoot: {
-						newRoot: "$document",
-					},
-				});
-
-		return this;
+		return this.addStage({ $project })
+			.addStage({ $sort })
+			.addStage({
+				$replaceRoot: {
+					newRoot: "$document",
+				},
+			});
 	}
 
 	private generateGroupsForMongoDBQuery(): this {
@@ -1521,6 +1549,11 @@ export abstract class QueryBuilder<T = WithId<Document>> extends AbstractQueryBu
 
 	public getOptions(): IRelationshipOptions {
 		return this.$options;
+	}
+
+	public allowDiskUse(allow: boolean = true): this {
+		this.$aggregateOptions = { ...this.$aggregateOptions, allowDiskUse: allow };
+		return this;
 	}
 
 	public setAggregateOptions(options: AggregateOptions): this {
